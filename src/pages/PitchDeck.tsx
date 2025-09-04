@@ -32,6 +32,8 @@ const Index = () => {
   const [currentScene, setCurrentScene] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const nextScene = useCallback(() => {
     setCurrentScene((prev) => (prev + 1) % scenes.length);
@@ -65,6 +67,31 @@ const Index = () => {
     return () => clearInterval(interval);
   }, [isAutoPlaying, currentScene, nextScene]);
 
+  // Touch handling for swipe gestures
+  const handleTouchStart = (e: TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && currentScene < scenes.length - 1) {
+      nextScene();
+    }
+    if (isRightSwipe && currentScene > 0) {
+      prevScene();
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight" || e.key === " ") {
@@ -79,8 +106,17 @@ const Index = () => {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nextScene, prevScene]);
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd);
+    
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [nextScene, prevScene, currentScene, touchStart, touchEnd]);
 
   const CurrentSceneComponent = scenes[currentScene].component;
 
@@ -94,11 +130,13 @@ const Index = () => {
       {/* Navigation Controls */}
       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
         <div className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-surface/80 backdrop-blur-lg border border-border">
+          {/* Hide arrow buttons on mobile, show on desktop */}
           <Button
             variant="ghost"
             size="sm"
             onClick={prevScene}
             disabled={currentScene === 0}
+            className="hidden sm:flex"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
@@ -122,11 +160,13 @@ const Index = () => {
             </span>
           </div>
 
+          {/* Hide arrow buttons on mobile, show on desktop */}
           <Button
             variant="ghost"
             size="sm"
             onClick={nextScene}
             disabled={currentScene === scenes.length - 1}
+            className="hidden sm:flex"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
