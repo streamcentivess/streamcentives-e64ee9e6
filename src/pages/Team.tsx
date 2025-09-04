@@ -80,16 +80,6 @@ const Team = () => {
       image: "/lovable-uploads/8cdc3579-a77c-42cf-8350-09d9f6c75009.png",
       specialization: "Creative Marketing",
       status: "Team Member"
-    },
-    {
-      id: 5,
-      name: "Industry Advisor",
-      title: "Music Industry Advisor",
-      company: "Former Executive at Universal Music",
-      bio: "20+ years in music industry operations and artist relations.",
-      image: "",
-      specialization: "Music Industry Relations",
-      status: "Hiring"
     }
   ];
 
@@ -120,6 +110,14 @@ const Team = () => {
       status: "Hiring",
       skills: ["Streaming Technology", "Platform Scalability", "System Architecture"],
       description: "Expert in streaming technology and platform scalability."
+    },
+    {
+      id: 9,
+      name: "Industry Advisor",
+      title: "Music Industry Advisor",
+      status: "Hiring",
+      skills: ["Music Industry Relations", "Artist Development", "Label Partnerships"],
+      description: "Seeking experienced music industry professional with 15+ years in operations, artist relations, and strategic partnerships."
     }
   ];
 
