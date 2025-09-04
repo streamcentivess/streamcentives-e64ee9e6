@@ -127,25 +127,31 @@ const Team = () => {
       <nav className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3 flex-shrink-0">
               <img src={logoUrl} alt="Streamcentives" className="w-8 h-8" />
-              <span className="text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
+              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
                 Streamcentives
               </span>
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link to="/">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="text-sm">
                   Home
                 </Button>
               </Link>
               <Link to="/pitch">
-                <Button variant="ghost" size="sm">
-                  Investor Pitch
+                <Button variant="ghost" size="sm" className="text-sm">
+                  <span className="hidden sm:inline">Investor Pitch</span>
+                  <span className="sm:hidden">Pitch</span>
                 </Button>
               </Link>
-              <Button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>
-                Contact Us
+              <Button 
+                size="sm" 
+                className="text-sm"
+                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <span className="hidden sm:inline">Contact Us</span>
+                <span className="sm:hidden">Contact</span>
               </Button>
             </div>
           </div>
