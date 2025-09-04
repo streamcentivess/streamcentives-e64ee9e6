@@ -158,7 +158,11 @@ const Website = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-              <span className="block text-brand-primary">Where Fans and Creators Team Up!</span>
+              <span className="block">
+                <span className="text-brand-primary">Where </span>
+                <span className="text-foreground">Fans and Creators</span>
+                <span className="text-brand-primary"> Team Up!</span>
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Our platform uses gamification and AI to help creators grow their community, 
