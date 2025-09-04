@@ -14,10 +14,10 @@ const BusinessModelScene = () => {
       icon: CreditCard,
       title: "SaaS Subscriptions",
       description: "Tiered monthly plans for artists and labels",
-      revenue: "$50-500/month",
+      revenue: "$9.99-500/month",
       color: "text-brand-primary",
       bgColor: "bg-brand-primary/10",
-      details: ["Creator Basic: $50/mo", "Creator Pro: $150/mo", "Label Enterprise: $500/mo"]
+      details: ["Creator Basic: $9.99/mo", "Creator Pro: $19.99/mo", "Label Enterprise: $500/mo"]
     },
     {
       icon: ShoppingCart,
