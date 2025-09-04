@@ -90,16 +90,6 @@ const Team = () => {
       image: "",
       specialization: "Music Industry Relations",
       status: "Hiring"
-    },
-    {
-      id: 6,
-      name: "Tech Advisor",
-      title: "Technical Advisor", 
-      company: "Former CTO at Twitch",
-      bio: "Expert in streaming technology and platform scalability.",
-      image: "",
-      specialization: "Streaming Technology",
-      status: "Hiring"
     }
   ];
 
@@ -122,6 +112,14 @@ const Team = () => {
       status: "Hiring",
       skills: ["React", "Node.js", "Real-time Systems"],
       description: "Seeking experienced developer to help scale our platform."
+    },
+    {
+      id: 8,
+      name: "Tech Advisor",
+      title: "Technical Advisor",
+      status: "Hiring",
+      skills: ["Streaming Technology", "Platform Scalability", "System Architecture"],
+      description: "Expert in streaming technology and platform scalability."
     }
   ];
 
