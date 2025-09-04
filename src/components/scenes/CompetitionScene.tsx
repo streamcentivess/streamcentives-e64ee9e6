@@ -70,14 +70,14 @@ const CompetitionScene = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-8 py-16">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-8 py-8 sm:py-16">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Main Title */}
-        <div className="text-center mb-16 scene-fade-in">
-          <h1 className="heading-section mb-6">
+        <div className="text-center mb-8 sm:mb-16 scene-fade-in">
+          <h1 className="heading-section mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl px-2">
             No One Else Combines <span className="text-brand-primary">Our Technology</span>
           </h1>
-          <p className="text-cinematic max-w-4xl mx-auto">
+          <p className="text-cinematic max-w-4xl mx-auto text-sm sm:text-base px-2">
             While others focus on single aspects of creator-fan relationships, 
             Streamcentives uniquely combines multi-platform tracking, AI automation, 
             and gamified engagement in one integrated platform.
@@ -85,16 +85,16 @@ const CompetitionScene = () => {
         </div>
 
         {/* Competitive Landscape */}
-        <div className={`grid lg:grid-cols-3 gap-8 mb-16 transition-all duration-1000 ${showComparison ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-16 transition-all duration-1000 ${showComparison ? 'opacity-100' : 'opacity-0'}`}>
           {competitors.map((competitor, index) => (
-            <div key={competitor.name} className="pitch-card p-6">
-              <h3 className="text-xl font-bold mb-2">{competitor.name}</h3>
-              <p className="text-muted-foreground mb-4">{competitor.description}</p>
+            <div key={competitor.name} className="pitch-card p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold mb-2">{competitor.name}</h3>
+              <p className="text-muted-foreground mb-4 text-sm">{competitor.description}</p>
               
               <div className="space-y-2">
                 <div className="text-sm font-medium text-destructive mb-2">Limitations:</div>
                 {competitor.limitations.map((limitation, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm">
+                  <div key={i} className="flex items-start gap-2 text-xs sm:text-sm">
                     <XCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
                     <span className="text-muted-foreground">{limitation}</span>
                   </div>
@@ -105,22 +105,22 @@ const CompetitionScene = () => {
         </div>
 
         {/* Streamcentives Advantages */}
-        <div className="pitch-card p-8 mb-16">
-          <h3 className="text-2xl font-bold text-center mb-8 flex items-center justify-center gap-3">
-            <CheckCircle className="w-8 h-8 text-success" />
-            Streamcentives Competitive Moat
+        <div className="pitch-card p-4 sm:p-8 mb-8 sm:mb-16">
+          <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <CheckCircle className="w-6 sm:w-8 h-6 sm:h-8 text-success" />
+            <span className="text-center">Streamcentives Competitive Moat</span>
           </h3>
           
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
             {differentiators.map((diff, index) => (
-              <div key={diff.title} className="flex gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+              <div key={diff.title} className="flex gap-3 sm:gap-4">
+                <div className={`w-10 sm:w-12 h-10 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                   index === 0 ? 'bg-brand-primary/20' :
                   index === 1 ? 'bg-brand-secondary/20' :
                   index === 2 ? 'bg-brand-accent/20' :
                   'bg-success/20'
                 }`}>
-                  <diff.icon className={`w-6 h-6 ${
+                  <diff.icon className={`w-5 sm:w-6 h-5 sm:h-6 ${
                     index === 0 ? 'text-brand-primary' :
                     index === 1 ? 'text-brand-secondary' :
                     index === 2 ? 'text-brand-accent' :
@@ -128,9 +128,9 @@ const CompetitionScene = () => {
                   }`} />
                 </div>
                 
-                <div className="flex-1">
-                  <h4 className="font-bold mb-2">{diff.title}</h4>
-                  <p className="text-sm text-muted-foreground mb-3">{diff.description}</p>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold mb-2 text-sm sm:text-base">{diff.title}</h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3">{diff.description}</p>
                   <div className="text-xs text-success font-medium">
                     ✓ {diff.competitive}
                   </div>
@@ -141,18 +141,18 @@ const CompetitionScene = () => {
         </div>
 
         {/* Feature Comparison Table */}
-        <div className="pitch-card p-8">
-          <h3 className="text-2xl font-bold text-center mb-8">Feature Comparison</h3>
+        <div className="pitch-card p-4 sm:p-8 mb-8 sm:mb-16">
+          <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Feature Comparison</h3>
           
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left p-4 font-semibold">Feature</th>
-                  <th className="text-center p-4 font-semibold">Discord</th>
-                  <th className="text-center p-4 font-semibold">Patreon</th>
-                  <th className="text-center p-4 font-semibold">Bandcamp</th>
-                  <th className="text-center p-4 font-semibold text-brand-primary">Streamcentives</th>
+                  <th className="text-left p-2 sm:p-4 font-semibold text-xs sm:text-sm">Feature</th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-xs sm:text-sm">Discord</th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-xs sm:text-sm">Patreon</th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-xs sm:text-sm">Bandcamp</th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-xs sm:text-sm text-brand-primary">Streamcentives</th>
                 </tr>
               </thead>
               <tbody>
@@ -165,13 +165,13 @@ const CompetitionScene = () => {
                   { feature: "Automated Engagement", values: [false, false, false, true] },
                 ].map((row, index) => (
                   <tr key={row.feature} className="border-b border-border/50">
-                    <td className="p-4 font-medium">{row.feature}</td>
+                    <td className="p-2 sm:p-4 font-medium text-xs sm:text-sm">{row.feature}</td>
                     {row.values.map((hasFeature, i) => (
-                      <td key={i} className="p-4 text-center">
+                      <td key={i} className="p-2 sm:p-4 text-center">
                         {hasFeature ? (
-                          <CheckCircle className={`w-5 h-5 mx-auto ${i === 3 ? 'text-success' : 'text-success'}`} />
+                          <CheckCircle className={`w-4 sm:w-5 h-4 sm:h-5 mx-auto ${i === 3 ? 'text-success' : 'text-success'}`} />
                         ) : (
-                          <XCircle className="w-5 h-5 mx-auto text-muted-foreground" />
+                          <XCircle className="w-4 sm:w-5 h-4 sm:h-5 mx-auto text-muted-foreground" />
                         )}
                       </td>
                     ))}
@@ -184,11 +184,11 @@ const CompetitionScene = () => {
 
         {/* Market Position */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-4 px-8 py-4 bg-brand-primary/10 rounded-2xl border border-brand-primary/20">
-            <Shield className="w-8 h-8 text-brand-primary" />
-            <div>
-              <div className="font-bold text-lg">Technology + Data = Defensible Moat</div>
-              <div className="text-sm text-muted-foreground">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-3 sm:gap-4 px-4 sm:px-8 py-4 bg-brand-primary/10 rounded-2xl border border-brand-primary/20 max-w-full">
+            <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-brand-primary flex-shrink-0" />
+            <div className="text-center sm:text-left">
+              <div className="font-bold text-sm sm:text-lg">Technology + Data = Defensible Moat</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">
                 Our competitive advantage strengthens with every artist and fan interaction
               </div>
             </div>
