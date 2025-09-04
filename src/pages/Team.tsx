@@ -23,19 +23,19 @@ const Team = () => {
   const founders = [
     {
       id: 1,
-      name: "Add Your Name",
+      name: "CEO & Founder",
       title: "CEO & Co-Founder",
-      bio: "Visionary leader with 10+ years in music tech and community building. Previously scaled platforms to millions of users.",
-      image: "", // Upload your photo here
-      resume: "", // Upload your resume PDF here
-      skills: ["Product Strategy", "Music Industry", "Community Growth"],
+      bio: "A decorated military veteran and visionary entrepreneur with over a decade of proven success at the intersection of entertainment, technology, and marketing. Architected merchandising strategies that drove hundreds of thousands of dollars in revenue for 500+ major and independent artists at Merched Out.",
+      image: "/lovable-uploads/0f33e720-6b49-472b-9bf9-885964b78755.png",
+      resume: "", 
+      skills: ["Product Strategy", "Music Industry", "Community Growth", "Military Leadership", "Artist Management", "Brand Amplification", "E-commerce Strategy", "Revenue Generation", "Network Building"],
       social: {
         linkedin: "",
         twitter: "",
         email: ""
       },
-      education: "MBA, Stanford Business School",
-      previousRoles: ["Former VP at Spotify", "Product Lead at SoundCloud"]
+      education: "UCLA",
+      previousRoles: ["Production Manager at Merched Out", "Artist Management & A&R", "Military Veteran"]
     },
     {
       id: 2,
