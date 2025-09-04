@@ -28,13 +28,6 @@ const VideoModal = ({ children }: VideoModalProps) => {
       type: "youtube"
     },
     {
-      id: 3,
-      title: "Creator Dashboard", 
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Replace with your video ID
-      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video ID
-      type: "youtube"
-    },
-    {
       id: 4,
       title: "Streamcentives Demo",
       thumbnail: "https://img.youtube.com/vi/sSGxzzDK_y0/maxresdefault.jpg",
