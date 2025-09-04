@@ -70,7 +70,7 @@ const Website = () => {
 
   const stats = [
     { value: "120+", label: "Active Creators" },
-    { value: "2M+", label: "Engaged Fans" },
+    { value: "240+", label: "Engaged Fans" },
     { value: "73%", label: "Revenue Increase" },
     { value: "24/7", label: "Support" }
   ];
