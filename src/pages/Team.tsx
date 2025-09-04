@@ -40,7 +40,7 @@ const Team = () => {
     {
       id: 2,
       name: "Trev Case",
-      title: "CTO & Co-Founder",
+      title: "Co-Founder",
       bio: "Trev Case is a seasoned producer, songwriter, and audio engineer with over 20 years of experience across the music, broadcasting, and multimedia industries. He has collaborated with an impressive roster of artists including Young Thug, Ty Dolla $ign, T.I., P-LO, Clyde Carson, Big K.R.I.T., Young Dro, Kap G, Ktlyn, Too Short, Prince Royce, Pia Mia, Marc E. Bassy, Bobby Brackins, Mann, and many more. Beyond the studio, Trev's work has been featured by major brands and platforms such as PlayStation, Ubisoft, NFL, MLB, Hulu, the Los Angeles Rams, CW Network, Apple TV+, and the Oprah Winfrey Network, showcasing his versatility and industry reach.",
       image: "/lovable-uploads/5897885b-dc57-41a0-b75a-5fd38b676bad.png",
       resume: "",
