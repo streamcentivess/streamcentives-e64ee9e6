@@ -11,25 +11,28 @@ const VideoModal = ({ children }: VideoModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
 
-  // Placeholder videos - you can replace these with your actual video URLs
+  // YouTube videos - paste your YouTube embed URLs here
   const videos = [
     {
       id: 1,
       title: "Platform Demo",
-      thumbnail: "https://via.placeholder.com/320x180?text=Demo+Video+1",
-      url: "https://www.w3schools.com/html/mov_bbb.mp4" // Sample video
+      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Auto-generated thumbnail
+      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video ID
+      type: "youtube"
     },
     {
       id: 2,
       title: "Fan Rewards System",
-      thumbnail: "https://via.placeholder.com/320x180?text=Demo+Video+2", 
-      url: "https://www.w3schools.com/html/movie.mp4" // Sample video
+      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Auto-generated thumbnail
+      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video ID
+      type: "youtube"
     },
     {
       id: 3,
-      title: "Creator Dashboard",
-      thumbnail: "https://via.placeholder.com/320x180?text=Demo+Video+3",
-      url: "https://www.w3schools.com/html/mov_bbb.mp4" // Sample video
+      title: "Creator Dashboard", 
+      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Auto-generated thumbnail
+      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video ID
+      type: "youtube"
     }
   ];
 
@@ -50,7 +53,7 @@ const VideoModal = ({ children }: VideoModalProps) => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">
-                  {videos.find(v => v.url === selectedVideo)?.title}
+                  {videos.find(v => v.embedUrl === selectedVideo)?.title}
                 </h3>
                 <Button 
                   variant="ghost" 
@@ -62,15 +65,15 @@ const VideoModal = ({ children }: VideoModalProps) => {
                 </Button>
               </div>
               <div className="aspect-video w-full">
-                <video
+                <iframe
                   key={selectedVideo}
-                  controls
-                  autoPlay
-                  className="w-full h-full rounded-lg"
                   src={selectedVideo}
-                >
-                  Your browser does not support the video tag.
-                </video>
+                  title="Video Player"
+                  className="w-full h-full rounded-lg"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
             </div>
           ) : (
@@ -79,7 +82,7 @@ const VideoModal = ({ children }: VideoModalProps) => {
                 <div 
                   key={video.id}
                   className="group cursor-pointer"
-                  onClick={() => setSelectedVideo(video.url)}
+                  onClick={() => setSelectedVideo(video.embedUrl)}
                 >
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
                     <img 
@@ -103,7 +106,13 @@ const VideoModal = ({ children }: VideoModalProps) => {
           {!selectedVideo && (
             <div className="text-center mt-6 p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">
-                📁 <strong>Ready to add your videos?</strong> Replace the placeholder videos above with your actual demo content.
+                🎥 <strong>Ready to add your YouTube videos?</strong> 
+                <br />
+                1. Get your YouTube video ID from the URL (e.g., "dQw4w9WgXcQ" from youtube.com/watch?v=dQw4w9WgXcQ)
+                <br />
+                2. Replace the video IDs in the embedUrl and thumbnail fields above
+                <br />
+                3. Update the titles to match your content
               </p>
             </div>
           )}
