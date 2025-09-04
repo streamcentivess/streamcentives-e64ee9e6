@@ -163,7 +163,7 @@ const Website = () => {
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Our platform combines gamification, AI insights, and community building 
-              to help streamers maximize engagement and revenue.
+              to help creators maximize engagement and revenue.
             </p>
           </div>
           
