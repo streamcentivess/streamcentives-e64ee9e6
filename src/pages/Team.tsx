@@ -34,7 +34,7 @@ const Team = () => {
         twitter: "",
         email: ""
       },
-      education: "UCLA",
+      education: "Bachelor's in Entertainment Business, Minor in Marketing",
       previousRoles: ["Project Manager at Merched Out", "Artist Management & A&R", "Military Veteran"]
     },
     {
