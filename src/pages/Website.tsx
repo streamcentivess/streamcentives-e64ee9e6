@@ -64,7 +64,7 @@ const Website = () => {
     {
       icon: Zap,
       title: "Real-time Analytics",
-      description: "Track engagement metrics and optimize your streaming strategy"
+      description: "Track engagement metrics and optimize your content strategy"
     }
   ];
 
