@@ -113,13 +113,13 @@ const VideoModal = ({ children }: VideoModalProps) => {
           {!selectedVideo && (
             <div className="text-center mt-6 p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">
-                🎥 <strong>Ready to add your YouTube videos?</strong> 
+                🎥 <strong>Explore Streamcentives Platform</strong> 
                 <br />
-                1. Get your YouTube video ID from the URL (e.g., "dQw4w9WgXcQ" from youtube.com/watch?v=dQw4w9WgXcQ)
+                Watch demos showcasing our revolutionary fan engagement tools, creator dashboard features, 
                 <br />
-                2. Replace the video IDs in the embedUrl and thumbnail fields above
+                and real-time monetization capabilities that transform how artists connect with their audience.
                 <br />
-                3. Update the titles to match your content
+                Click any video above to see Streamcentives in action!
               </p>
             </div>
           )}
