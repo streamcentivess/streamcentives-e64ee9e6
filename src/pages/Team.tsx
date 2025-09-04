@@ -52,12 +52,27 @@ const Team = () => {
       },
       education: "MS Computer Science, MIT",
       previousRoles: ["Senior Engineer at Google", "Tech Lead at Meta"]
+    },
+    {
+      id: 3,
+      name: "Derek Hawkridge",
+      title: "Chief Financial Officer",
+      bio: "With a career rooted in wealth management, professional sports representation, and high-stakes negotiation, Hawkridge brings Wall Street precision and financial strategy to the executive table. As a certified NFL agent, he has negotiated over $117 million in player contracts, including a $60M contract in the winter of 2025.",
+      image: "/lovable-uploads/fd07d7e0-e80d-4ffa-bea3-0d4b61d6b06a.png",
+      resume: "",
+      skills: ["Financial Strategy", "Contract Negotiation", "Investment Management", "Capital Structure"],
+      social: {
+        linkedin: "",
+        email: ""
+      },
+      education: "Dual certifications as broker and investment advisor",
+      previousRoles: ["NFL Agent - $117M+ in negotiations", "Wealth Manager at Merrill Lynch - $134M-$160M AUM", "IPO Advisory Specialist"]
     }
   ];
 
   const advisors = [
     {
-      id: 3,
+      id: 4,
       name: "Industry Advisor 1",
       title: "Music Industry Advisor",
       company: "Former Executive at Universal Music",
@@ -66,7 +81,7 @@ const Team = () => {
       specialization: "Music Industry Relations"
     },
     {
-      id: 4,
+      id: 5,
       name: "Tech Advisor 1", 
       title: "Technical Advisor",
       company: "Former CTO at Twitch",
@@ -78,7 +93,7 @@ const Team = () => {
 
   const keyHires = [
     {
-      id: 5,
+      id: 6,
       name: "Marketing Lead",
       title: "Head of Growth Marketing",
       status: "Hiring",
@@ -86,7 +101,7 @@ const Team = () => {
       description: "Looking for a growth marketing expert with music industry experience."
     },
     {
-      id: 6,
+      id: 7,
       name: "Senior Developer",
       title: "Senior Full-Stack Engineer",
       status: "Hiring",
