@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import HeroScene from "@/components/scenes/HeroScene";
 import ProblemScene from "@/components/scenes/ProblemScene";
 import SolutionScene from "@/components/scenes/SolutionScene";
 import HowItWorksScene from "@/components/scenes/HowItWorksScene";
@@ -16,7 +15,6 @@ import FundingScene from "@/components/scenes/FundingScene";
 import ClosingScene from "@/components/scenes/ClosingScene";
 
 const scenes = [
-  { component: HeroScene, title: "Streamcentives", duration: 10 },
   { component: ProblemScene, title: "The Problem", duration: 20 },
   { component: SolutionScene, title: "The Solution", duration: 20 },
   { component: HowItWorksScene, title: "How It Works", duration: 20 },
