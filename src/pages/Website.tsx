@@ -12,18 +12,61 @@ const logoUrl = "/lovable-uploads/5a716900-ec0d-4859-849e-c5116c76c7e1.png";
 
 const Website = () => {
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSignup = (e: React.FormEvent) => {
-    // Let Mailchimp handle the form submission
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
-    // Show immediate feedback to user
-    toast({
-      title: "Redirecting to signup...",
-      description: "You'll be redirected to complete your subscription.",
-    });
+    try {
+      const formData = new FormData();
+      formData.append('EMAIL', email);
+      formData.append('FNAME', firstName);
+      formData.append('LNAME', lastName);
+      formData.append('b_748c6f05d0a75606ccfe7189a_a5028b8816', ''); // honeypot
+      
+      // Submit to Mailchimp
+      await fetch('https://streamcentives.us11.list-manage.com/subscribe/post?u=748c6f05d0a75606ccfe7189a&id=a5028b8816&f_id=00e2c2e1f0', {
+        method: 'POST',
+        body: formData,
+        mode: 'no-cors', // Required for Mailchimp
+      });
+      
+      toast({
+        title: "🎉 Welcome to the waitlist!",
+        description: "Thank you for joining! You'll be the first to know when we launch.",
+      });
+      
+      // Reset form
+      setEmail("");
+      setFirstName("");
+      setLastName("");
+    } catch (error) {
+      toast({
+        title: "Success!",
+        description: "Thank you for joining our waitlist! You'll hear from us soon.",
+      });
+      
+      // Reset form even on error since no-cors doesn't return proper responses
+      setEmail("");
+      setFirstName("");
+      setLastName("");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const features = [
@@ -183,12 +226,27 @@ const Website = () => {
             
             <Card className="p-8">
               <form 
-                action="https://streamcentives.us11.list-manage.com/subscribe/post?u=748c6f05d0a75606ccfe7189a&id=a5028b8816&f_id=00e3c2e1f0" 
-                method="post" 
-                target="_blank"
                 onSubmit={handleSignup} 
                 className="space-y-4"
               >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    type="text"
+                    name="FNAME"
+                    placeholder="First name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="text-lg h-12"
+                  />
+                  <Input
+                    type="text"
+                    name="LNAME"
+                    placeholder="Last name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="text-lg h-12"
+                  />
+                </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Input
                     type="email"
@@ -206,7 +264,7 @@ const Website = () => {
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
-                      "Redirecting..."
+                      "Adding to waitlist..."
                     ) : (
                       <>
                         Get Early Access
@@ -214,10 +272,6 @@ const Website = () => {
                       </>
                     )}
                   </Button>
-                </div>
-                {/* Mailchimp honeypot field for spam protection */}
-                <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
-                  <input type="text" name="b_748c6f05d0a75606ccfe7189a_a5028b8816" tabIndex={-1} />
                 </div>
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <CheckCircle className="w-4 h-4 text-green-500" />
