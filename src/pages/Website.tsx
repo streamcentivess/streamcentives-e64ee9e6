@@ -199,8 +199,7 @@ const Website = () => {
               <span className="block text-brand-primary">First Reward?</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join thousands of streamers who are already growing their communities 
-              and revenue with Streamcentives.
+              Join thousands of creators and fans who are building the future of fandom together on Streamcentives.
             </p>
             
             <Card className="p-8">
