@@ -75,7 +75,7 @@ const Team = () => {
       id: 4,
       name: "Markeith Nelson",
       title: "Marketing manager/Creative",
-      company: "Industry Marketing Expert",
+      company: "Top Dog Ent.",
       bio: "Creative marketing professional with expertise in brand strategy and campaign development.",
       image: "/lovable-uploads/8cdc3579-a77c-42cf-8350-09d9f6c75009.png",
       specialization: "Creative Marketing"
