@@ -15,22 +15,22 @@ const VideoModal = ({ children }: VideoModalProps) => {
   const videos = [
     {
       id: 1,
-      title: "Platform Demo",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Auto-generated thumbnail
-      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video ID
+      title: "Platform Demo", // Update this title to match your video
+      thumbnail: "https://img.youtube.com/vi/38arSmCyHxY/maxresdefault.jpg",
+      embedUrl: "https://www.youtube.com/embed/38arSmCyHxY",
       type: "youtube"
     },
     {
       id: 2,
       title: "Fan Rewards System",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Auto-generated thumbnail
+      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Replace with your video ID
       embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video ID
       type: "youtube"
     },
     {
       id: 3,
       title: "Creator Dashboard", 
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Auto-generated thumbnail
+      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Replace with your video ID
       embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video ID
       type: "youtube"
     }
