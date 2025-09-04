@@ -23,7 +23,7 @@ const Team = () => {
   const founders = [
     {
       id: 1,
-      name: "CEO & Founder",
+      name: "Kofa Muse",
       title: "CEO & Co-Founder",
       bio: "A decorated military veteran and visionary entrepreneur with over a decade of proven success at the intersection of entertainment, technology, and marketing. Architected merchandising strategies that drove hundreds of thousands of dollars in revenue for 500+ major and independent artists at Merched Out.",
       image: "/lovable-uploads/0f33e720-6b49-472b-9bf9-885964b78755.png",
@@ -35,7 +35,7 @@ const Team = () => {
         email: ""
       },
       education: "UCLA",
-      previousRoles: ["Production Manager at Merched Out", "Artist Management & A&R", "Military Veteran"]
+      previousRoles: ["Project Manager at Merched Out", "Artist Management & A&R", "Military Veteran"]
     },
     {
       id: 2,
