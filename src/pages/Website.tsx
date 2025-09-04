@@ -32,18 +32,56 @@ const Website = () => {
     setIsSubmitting(true);
     
     try {
-      const formData = new FormData();
-      formData.append('EMAIL', email);
-      formData.append('FNAME', firstName);
-      formData.append('LNAME', lastName);
-      formData.append('b_748c6f05d0a75606ccfe7189a_a5028b8816', ''); // honeypot
+      // Create a hidden iframe to submit the form properly
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.name = 'hiddenFrame';
+      document.body.appendChild(iframe);
       
-      // Submit to Mailchimp
-      await fetch('https://streamcentives.us11.list-manage.com/subscribe/post?u=748c6f05d0a75606ccfe7189a&id=a5028b8816&f_id=00e2c2e1f0', {
-        method: 'POST',
-        body: formData,
-        mode: 'no-cors', // Required for Mailchimp
-      });
+      // Create and submit form to iframe
+      const form = document.createElement('form');
+      form.action = 'https://streamcentives.us11.list-manage.com/subscribe/post?u=748c6f05d0a75606ccfe7189a&id=a5028b8816&f_id=00e2c2e1f0';
+      form.method = 'post';
+      form.target = 'hiddenFrame';
+      
+      // Add form fields
+      const emailField = document.createElement('input');
+      emailField.type = 'hidden';
+      emailField.name = 'EMAIL';
+      emailField.value = email;
+      form.appendChild(emailField);
+      
+      if (firstName) {
+        const fnameField = document.createElement('input');
+        fnameField.type = 'hidden';
+        fnameField.name = 'FNAME';
+        fnameField.value = firstName;
+        form.appendChild(fnameField);
+      }
+      
+      if (lastName) {
+        const lnameField = document.createElement('input');
+        lnameField.type = 'hidden';
+        lnameField.name = 'LNAME';
+        lnameField.value = lastName;
+        form.appendChild(lnameField);
+      }
+      
+      // Honeypot field
+      const honeypot = document.createElement('input');
+      honeypot.type = 'hidden';
+      honeypot.name = 'b_748c6f05d0a75606ccfe7189a_a5028b8816';
+      honeypot.value = '';
+      form.appendChild(honeypot);
+      
+      document.body.appendChild(form);
+      form.submit();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
+      }, 1000);
       
       toast({
         title: "🎉 Welcome to the waitlist!",
@@ -56,14 +94,10 @@ const Website = () => {
       setLastName("");
     } catch (error) {
       toast({
-        title: "Success!",
-        description: "Thank you for joining our waitlist! You'll hear from us soon.",
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
       });
-      
-      // Reset form even on error since no-cors doesn't return proper responses
-      setEmail("");
-      setFirstName("");
-      setLastName("");
     } finally {
       setIsSubmitting(false);
     }
