@@ -17,11 +17,11 @@ const HeroScene = () => {
         {/* Logo Animation */}
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
           <div className="flex justify-center mb-12">
-            <div className="logo-s w-24 h-24">
+            <div className="logo-s w-24 h-24 rounded-full overflow-hidden">
               <img 
                 src={logoImage} 
                 alt="Streamcentives Logo" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
           </div>
