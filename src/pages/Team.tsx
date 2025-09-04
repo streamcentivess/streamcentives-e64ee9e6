@@ -39,19 +39,19 @@ const Team = () => {
     },
     {
       id: 2,
-      name: "Add Co-Founder Name",
+      name: "Trev Case",
       title: "CTO & Co-Founder",
-      bio: "Technical architect with expertise in scalable systems, AI/ML, and real-time applications. Built platforms serving millions.",
-      image: "", // Upload your photo here
-      resume: "", // Upload your resume PDF here
-      skills: ["Full-Stack Development", "AI/ML", "System Architecture"],
+      bio: "Trev Case is a seasoned producer, songwriter, and audio engineer with over 20 years of experience across the music, broadcasting, and multimedia industries. He has collaborated with an impressive roster of artists including Young Thug, Ty Dolla $ign, T.I., P-LO, Clyde Carson, Big K.R.I.T., Young Dro, Kap G, Ktlyn, Too Short, Prince Royce, Pia Mia, Marc E. Bassy, Bobby Brackins, Mann, and many more. Beyond the studio, Trev's work has been featured by major brands and platforms such as PlayStation, Ubisoft, NFL, MLB, Hulu, the Los Angeles Rams, CW Network, Apple TV+, and the Oprah Winfrey Network, showcasing his versatility and industry reach.",
+      image: "/lovable-uploads/5897885b-dc57-41a0-b75a-5fd38b676bad.png",
+      resume: "",
+      skills: ["Music Production", "Audio Engineering", "Broadcasting", "Multimedia", "Artist Collaboration", "Brand Partnerships", "Studio Management", "Songwriting"],
       social: {
         linkedin: "",
         github: "",
         email: ""
       },
-      education: "MS Computer Science, MIT",
-      previousRoles: ["Senior Engineer at Google", "Tech Lead at Meta"]
+      education: "20+ years in Music, Broadcasting & Multimedia",
+      previousRoles: ["Producer & Audio Engineer", "Collaborated with 50+ Major Artists", "Featured on PlayStation, NFL, MLB, Apple TV+"]
     },
     {
       id: 3,
