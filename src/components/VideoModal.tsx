@@ -22,9 +22,9 @@ const VideoModal = ({ children }: VideoModalProps) => {
     },
     {
       id: 2,
-      title: "Fan Rewards System",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", // Replace with your video ID
-      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with your video ID
+      title: "More marketing vids until we get a budget",
+      thumbnail: "https://img.youtube.com/vi/KK_vHOMlQbc/maxresdefault.jpg",
+      embedUrl: "https://www.youtube.com/embed/KK_vHOMlQbc",
       type: "youtube"
     },
     {
