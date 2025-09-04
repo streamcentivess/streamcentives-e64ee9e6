@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import streamcentivesLogo from "@/assets/streamcentives-logo.png";
+const logoUrl = "/lovable-uploads/5a716900-ec0d-4859-849e-c5116c76c7e1.png";
 
 const Website = () => {
   const [email, setEmail] = useState("");
@@ -82,7 +82,7 @@ const Website = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <img src={streamcentivesLogo} alt="Streamcentives" className="w-8 h-8" />
+              <img src={logoUrl} alt="Streamcentives" className="w-8 h-8" />
               <span className="text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
                 Streamcentives
               </span>
@@ -106,6 +106,9 @@ const Website = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/20 via-background to-brand-accent/20" />
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
+            <div className="flex justify-center mb-8">
+              <img src={logoUrl} alt="Streamcentives" className="w-24 h-24 animate-pulse" />
+            </div>
             <Badge variant="secondary" className="mb-6">
               🚀 Now in Beta
             </Badge>
@@ -244,7 +247,7 @@ const Website = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-3 mb-4 md:mb-0">
-              <img src={streamcentivesLogo} alt="Streamcentives" className="w-8 h-8" />
+              <img src={logoUrl} alt="Streamcentives" className="w-8 h-8" />
               <span className="text-xl font-bold">Streamcentives</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
