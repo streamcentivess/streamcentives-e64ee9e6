@@ -51,13 +51,6 @@ const HeroScene = () => {
           <div className="xp-orb absolute bottom-1/4 left-3/4 animation-delay-2000"></div>
         </div>
 
-        {/* Data Flow Animation */}
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="w-2 h-2 rounded-full bg-brand-secondary animate-ping"></div>
-            <span>Streaming data flows...</span>
-          </div>
-        </div>
       </div>
     </div>
   );
