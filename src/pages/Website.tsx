@@ -162,7 +162,7 @@ const Website = () => {
               <span className="block text-brand-primary">Grow Your Stream</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Our platform combines gamification, AI insights, and community building 
+              Our platform combines gamification, A.I Tools, and community building 
               to help creators maximize engagement and revenue.
             </p>
           </div>
