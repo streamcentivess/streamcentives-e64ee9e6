@@ -58,7 +58,7 @@ const Team = () => {
       name: "Derek Hawkridge",
       title: "Chief Financial Officer",
       bio: "With a career rooted in wealth management, professional sports representation, and high-stakes negotiation, Hawkridge brings Wall Street precision and financial strategy to the executive table. As a certified NFL agent, he has negotiated over $117 million in player contracts, including a $60M contract in the winter of 2025.",
-      image: "/lovable-uploads/fd07d7e0-e80d-4ffa-bea3-0d4b61d6b06a.png",
+      image: "/lovable-uploads/f8f02f72-0dbe-4034-b5af-0619db9a9016.png",
       resume: "",
       skills: ["Financial Strategy", "Contract Negotiation", "Investment Management", "Capital Structure"],
       social: {
