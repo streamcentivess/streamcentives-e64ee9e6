@@ -15,41 +15,15 @@ const Website = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email) {
-      toast({
-        title: "Error",
-        description: "Please enter your email address",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleSignup = (e: React.FormEvent) => {
+    // Let Mailchimp handle the form submission
     setIsSubmitting(true);
     
-    // For now, we'll simulate the signup process
-    // Users can integrate with their Mailchimp webhook URL later
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Success!",
-        description: "Thank you for signing up! We'll be in touch soon.",
-      });
-      
-      setEmail("");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Show immediate feedback to user
+    toast({
+      title: "Redirecting to signup...",
+      description: "You'll be redirected to complete your subscription.",
+    });
   };
 
   const features = [
@@ -208,10 +182,17 @@ const Website = () => {
             </p>
             
             <Card className="p-8">
-              <form onSubmit={handleSignup} className="space-y-4">
+              <form 
+                action="https://streamcentives.us11.list-manage.com/subscribe/post?u=748c6f05d0a75606ccfe7189a&id=a5028b8816&f_id=00e3c2e1f0" 
+                method="post" 
+                target="_blank"
+                onSubmit={handleSignup} 
+                className="space-y-4"
+              >
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Input
                     type="email"
+                    name="EMAIL"
                     placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -225,7 +206,7 @@ const Website = () => {
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
-                      "Signing Up..."
+                      "Redirecting..."
                     ) : (
                       <>
                         Get Early Access
@@ -233,6 +214,10 @@ const Website = () => {
                       </>
                     )}
                   </Button>
+                </div>
+                {/* Mailchimp honeypot field for spam protection */}
+                <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
+                  <input type="text" name="b_748c6f05d0a75606ccfe7189a_a5028b8816" tabIndex={-1} />
                 </div>
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <CheckCircle className="w-4 h-4 text-green-500" />
