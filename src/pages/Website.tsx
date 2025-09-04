@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import VideoModal from "@/components/VideoModal";
+
 const logoUrl = "/lovable-uploads/5a716900-ec0d-4859-849e-c5116c76c7e1.png";
 
 const Website = () => {
@@ -127,12 +129,12 @@ const Website = () => {
                 Start Free Trial
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <Link to="/pitch">
+              <VideoModal>
                 <Button variant="outline" size="lg" className="text-lg px-8">
                   <Play className="mr-2 w-5 h-5" />
                   Watch Demo
                 </Button>
-              </Link>
+              </VideoModal>
             </div>
           </div>
         </div>
