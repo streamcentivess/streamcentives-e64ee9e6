@@ -112,7 +112,7 @@ const Website = () => {
             <h1 className="text-4xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               The Future of
               <span className="block bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
-                Stream Engagement
+                Fan Rewards
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
