@@ -174,7 +174,7 @@ const Team = () => {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We're a passionate team of music industry veterans and tech innovators, 
+              We're a diverse passionate team of entertainment industry veterans and tech innovators, 
               united by our mission to revolutionize fan engagement and creator monetization.
             </p>
           </div>
