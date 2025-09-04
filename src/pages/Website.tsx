@@ -158,12 +158,11 @@ const Website = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-              Everything You Need to
-              <span className="block text-brand-primary">Grow Your Stream</span>
+              <span className="block text-brand-primary">Where Fans and Creators Team Up</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Our platform combines gamification, A.I Tools, and community building 
-              to help creators maximize engagement and revenue.
+              Our platform uses gamification and AI to help creators grow their community, 
+              while giving fans the rewards and recognition they deserve for their support.
             </p>
           </div>
           
