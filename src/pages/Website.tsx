@@ -54,7 +54,7 @@ const Website = () => {
     {
       icon: Users,
       title: "Community Building",
-      description: "Create engaged fan communities that actively participate in your content"
+      description: "Design the ultimate fan experience with campaigns that inspire action, foster community, and reward true dedication."
     },
     {
       icon: TrendingUp,
