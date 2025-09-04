@@ -122,7 +122,7 @@ const ClosingScene = () => {
                 <Globe className="w-6 h-6 text-brand-accent" />
                 <div>
                   <div className="font-semibold">Website</div>
-                  <div className="text-sm text-muted-foreground">streamcentives.com</div>
+                  <div className="text-sm text-muted-foreground">streamcentives.io</div>
                 </div>
               </div>
             </div>
