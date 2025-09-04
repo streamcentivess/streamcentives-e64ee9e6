@@ -78,25 +78,28 @@ const Team = () => {
       company: "Top Dog Ent.",
       bio: "Creative marketing professional with expertise in brand strategy and campaign development.",
       image: "/lovable-uploads/8cdc3579-a77c-42cf-8350-09d9f6c75009.png",
-      specialization: "Creative Marketing"
+      specialization: "Creative Marketing",
+      status: "Team Member"
     },
     {
       id: 5,
-      name: "Industry Advisor 1",
+      name: "Industry Advisor",
       title: "Music Industry Advisor",
       company: "Former Executive at Universal Music",
       bio: "20+ years in music industry operations and artist relations.",
       image: "",
-      specialization: "Music Industry Relations"
+      specialization: "Music Industry Relations",
+      status: "Hiring"
     },
     {
       id: 6,
-      name: "Tech Advisor 1", 
-      title: "Technical Advisor",
+      name: "Tech Advisor",
+      title: "Technical Advisor", 
       company: "Former CTO at Twitch",
       bio: "Expert in streaming technology and platform scalability.",
       image: "",
-      specialization: "Streaming Technology"
+      specialization: "Streaming Technology",
+      status: "Hiring"
     }
   ];
 
@@ -298,7 +301,12 @@ const Team = () => {
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <CardTitle className="text-xl">{advisor.name}</CardTitle>
+                  <div className="flex items-center justify-between mb-2">
+                    <CardTitle className="text-xl">{advisor.name}</CardTitle>
+                    <Badge variant={advisor.status === "Hiring" ? "default" : "secondary"}>
+                      {advisor.status}
+                    </Badge>
+                  </div>
                   <CardDescription className="font-medium">{advisor.title}</CardDescription>
                   <Badge variant="outline" className="mx-auto">
                     {advisor.specialization}
