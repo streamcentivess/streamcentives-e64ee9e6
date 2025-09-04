@@ -44,7 +44,7 @@ const VideoModal = ({ children }: VideoModalProps) => {
       <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
         <DialogHeader className="p-6 pb-4">
           <DialogTitle className="text-2xl font-bold text-center">
-            Watch Streamcentives in Action
+            Are you creative? good at marketing? We want you !!! come work with us at Streamcentives portfolios to meco@streamcentives.io or tag us in your work on instagram @streamcentives
           </DialogTitle>
         </DialogHeader>
         
