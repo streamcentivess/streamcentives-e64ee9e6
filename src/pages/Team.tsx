@@ -94,11 +94,14 @@ const Team = () => {
   const keyHires = [
     {
       id: 6,
-      name: "Marketing Lead",
-      title: "Head of Growth Marketing",
-      status: "Hiring",
-      skills: ["Digital Marketing", "Community Growth", "Brand Strategy"],
-      description: "Looking for a growth marketing expert with music industry experience."
+      name: "Annabelle Worrall",
+      title: "Digital Advertising Operations Manager",
+      status: "Team Member",
+      image: "/lovable-uploads/4887c953-2020-4a6c-8d86-7201c20d87bf.png",
+      bio: "Annabelle is the operational powerhouse behind our advertising strategy. With over five years of experience in the ad-tech world, she specializes in managing and scaling complex digital campaigns. Annabelle masterfully navigates the programmatic landscape, optimizing over $6 million in ad spend each quarter to ensure our partners get maximum impact for their investment. A technical expert with a passion for data, she excels at turning complex performance metrics into actionable insights and streamlined processes.",
+      education: "Master of Business Administration (MBA), Marketing | California Lutheran University\nBachelor of Arts (BA), Multimedia | California Lutheran University",
+      skills: ["Digital Advertising Technologies", "Campaign Optimization", "Data Analysis", "Creative Strategy", "Budget Forecasting", "SQL & Tableau", "A/B Testing", "CRM (Salesforce)"],
+      description: "Operational powerhouse behind our advertising strategy with expertise in programmatic advertising and data-driven optimization."
     },
     {
       id: 7,
@@ -319,6 +322,16 @@ const Team = () => {
             {keyHires.map((hire) => (
               <Card key={hire.id} className="group hover:shadow-xl transition-all duration-300">
                 <CardHeader>
+                  {hire.image && (
+                    <div className="flex justify-center mb-4">
+                      <Avatar className="w-20 h-20 border-2 border-brand-primary/20">
+                        <AvatarImage src={hire.image} alt={hire.name} />
+                        <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-brand-primary to-brand-accent text-white">
+                          {hire.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xl">{hire.name}</CardTitle>
                     <Badge variant={hire.status === "Hiring" ? "default" : "secondary"}>
@@ -329,10 +342,20 @@ const Team = () => {
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">{hire.description}</p>
+                  <p className="text-muted-foreground">{hire.bio || hire.description}</p>
+                  
+                  {hire.education && (
+                    <div>
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <GraduationCap className="w-4 h-4" />
+                        Education
+                      </h4>
+                      <p className="text-sm text-muted-foreground whitespace-pre-line">{hire.education}</p>
+                    </div>
+                  )}
                   
                   <div>
-                    <h4 className="font-semibold mb-2">Required Skills</h4>
+                    <h4 className="font-semibold mb-2">{hire.status === "Hiring" ? "Required Skills" : "Key Skills"}</h4>
                     <div className="flex flex-wrap gap-2">
                       {hire.skills.map((skill, index) => (
                         <Badge key={index} variant="secondary">{skill}</Badge>
