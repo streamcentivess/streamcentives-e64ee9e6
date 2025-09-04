@@ -73,6 +73,15 @@ const Team = () => {
   const advisors = [
     {
       id: 4,
+      name: "Markeith Nelson",
+      title: "Marketing manager/Creative",
+      company: "Industry Marketing Expert",
+      bio: "Creative marketing professional with expertise in brand strategy and campaign development.",
+      image: "/lovable-uploads/8cdc3579-a77c-42cf-8350-09d9f6c75009.png",
+      specialization: "Creative Marketing"
+    },
+    {
+      id: 5,
       name: "Industry Advisor 1",
       title: "Music Industry Advisor",
       company: "Former Executive at Universal Music",
@@ -81,7 +90,7 @@ const Team = () => {
       specialization: "Music Industry Relations"
     },
     {
-      id: 5,
+      id: 6,
       name: "Tech Advisor 1", 
       title: "Technical Advisor",
       company: "Former CTO at Twitch",
