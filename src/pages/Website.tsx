@@ -141,6 +141,11 @@ const Website = () => {
               </span>
             </div>
             <div className="flex items-center gap-4">
+              <Link to="/team">
+                <Button variant="ghost" size="sm">
+                  Team
+                </Button>
+              </Link>
               <Link to="/pitch">
                 <Button variant="ghost" size="sm">
                   Investor Pitch
