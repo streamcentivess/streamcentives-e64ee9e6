@@ -15,7 +15,7 @@ const VideoModal = ({ children }: VideoModalProps) => {
   const videos = [
     {
       id: 1,
-      title: "Platform Demo", // Update this title to match your video
+      title: "Content Video", // Update this title to match your video
       thumbnail: "https://img.youtube.com/vi/38arSmCyHxY/maxresdefault.jpg",
       embedUrl: "https://www.youtube.com/embed/38arSmCyHxY",
       type: "youtube"
