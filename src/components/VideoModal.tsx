@@ -29,7 +29,7 @@ const VideoModal = ({ children }: VideoModalProps) => {
     },
     {
       id: 4,
-      title: "Streamcentives Demo",
+      title: "Streamcentives Logo",
       thumbnail: "https://img.youtube.com/vi/sSGxzzDK_y0/maxresdefault.jpg",
       embedUrl: "https://www.youtube.com/embed/sSGxzzDK_y0",
       type: "youtube"
