@@ -102,20 +102,6 @@ const VideoModal = ({ children }: VideoModalProps) => {
               ))}
             </div>
           )}
-          
-          {!selectedVideo && (
-            <div className="text-center mt-6 p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                🎥 <strong>Explore Streamcentives Platform</strong> 
-                <br />
-                Watch demos showcasing our revolutionary fan engagement tools, creator dashboard features, 
-                <br />
-                and real-time monetization capabilities that transform how artists connect with their audience.
-                <br />
-                Click any video above to see Streamcentives in action!
-              </p>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
