@@ -161,7 +161,7 @@ const Website = () => {
               <Badge variant="outline" className="mb-6 text-2xl px-6 py-3 bg-transparent border-transparent font-orbitron font-bold">
                 Streamcentives
               </Badge>
-              <div className="absolute -top-32 left-1/2 transform -translate-x-1/2 animate-[fly_3s_ease-in-out_infinite] text-2xl">
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 animate-[fly_3s_ease-in-out_infinite] text-2xl">
                 🚀
               </div>
             </div>
