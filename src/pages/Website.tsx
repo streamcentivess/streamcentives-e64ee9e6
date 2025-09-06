@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle, Bot, Wand2, Mic, Target, Smartphone, Brain, MessageCircle, Shield, BarChart3, Radio } from "lucide-react";
+import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle, Bot, Wand2, Mic, Target, Smartphone, Brain, MessageCircle, Shield, BarChart3, Radio, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import VideoModal from "@/components/VideoModal";
@@ -380,7 +380,7 @@ const Website = () => {
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
                       <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                        <Badge className="w-6 h-6 text-brand-accent" />
+                        <Star className="w-6 h-6 text-brand-accent" />
                       </div>
                       <CardTitle className="text-lg">Showcase Your Status</CardTitle>
                     </CardHeader>
