@@ -282,7 +282,7 @@ const Website = () => {
             <TabsContent value="general" className="space-y-12">
               <div className="text-center mb-8">
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-white">
-                  The Ultimate Fan Experience on Streamcentives
+                  The Ultimate Fan Experience on <span className="text-brand-primary">Streamcentives</span>
                 </h3>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
                   As a fan, your support is valuable. For the first time, every action you take to champion your favorite artists is recognized, rewarded, and turned into an unforgettable experience.
