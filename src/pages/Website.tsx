@@ -275,27 +275,204 @@ const Website = () => {
           
           <Tabs defaultValue="general" className="w-full">
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-12">
-              <TabsTrigger value="general">For Everyone</TabsTrigger>
+              <TabsTrigger value="general">For Fans</TabsTrigger>
               <TabsTrigger value="creators">For Creators</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="general" className="space-y-8">
-              <div className="grid lg:grid-cols-3 gap-8">
-                {features.map((feature, index) => (
-                  <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <TabsContent value="general" className="space-y-12">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-brand-primary">
+                  The Ultimate Fan Experience on Streamcentives
+                </h3>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  As a fan, your support is valuable. For the first time, every action you take to champion your favorite artists is recognized, rewarded, and turned into an unforgettable experience.
+                </p>
+              </div>
+
+              {/* Earn & Own */}
+              <div>
+                <h4 className="text-xl font-semibold mb-6 text-center">Earn & Own</h4>
+                <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+                  Your fandom has real-world value. We give you the tools to earn and control your digital assets.
+                </p>
+                <div className="grid lg:grid-cols-3 gap-8">
+                  <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
                       <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
-                        <feature.icon className="w-6 h-6 text-brand-primary" />
+                        <Zap className="w-6 h-6 text-brand-primary" />
                       </div>
-                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl">Earn XP for Everything</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base">
-                        {feature.description}
+                        Get rewarded with experience points (XP) for the things you already do—streaming music, buying merch, sharing content, and engaging with campaigns.
                       </CardDescription>
                     </CardContent>
                   </Card>
-                ))}
+                  
+                  <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
+                        <CheckCircle className="w-6 h-6 text-brand-primary" />
+                      </div>
+                      <CardTitle className="text-xl">Unlock Exclusive Rewards</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-base">
+                        Use your XP to redeem a rich variety of rewards, from digital collectibles and exclusive content to limited-edition physical merchandise.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
+                        <TrendingUp className="w-6 h-6 text-brand-primary" />
+                      </div>
+                      <CardTitle className="text-xl">Monetize Your Fandom</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-base">
+                        Opt-in to sell or trade your earned rewards with other fans in the marketplace. You can also choose to share your anonymized data with trusted partners and receive a share of the revenue.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Compete & Connect */}
+              <div>
+                <h4 className="text-xl font-semibold mb-6 text-center">Compete & Connect</h4>
+                <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+                  Turn your passion into a game and connect with a global community of fans and creators.
+                </p>
+                <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                  <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
+                        <BarChart3 className="w-6 h-6 text-brand-accent" />
+                      </div>
+                      <CardTitle className="text-lg">Climb the Leaderboards</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm">
+                        Compete in real-time leaderboards for your favorite artists. See how your support stacks up against other fans and earn the ultimate bragging rights.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
+                        <Users className="w-6 h-6 text-brand-accent" />
+                      </div>
+                      <CardTitle className="text-lg">Team Up in Challenges</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm">
+                        Join forces with friends online or in real life to complete collaborative campaigns and unlock group rewards.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
+                        <Badge className="w-6 h-6 text-brand-accent" />
+                      </div>
+                      <CardTitle className="text-lg">Showcase Your Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm">
+                        Your profile features a dedicated "Flex Tab" to display all the badges, collectibles, and rewards you've earned, showcasing your dedication and status as a top fan.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
+                        <Globe className="w-6 h-6 text-brand-accent" />
+                      </div>
+                      <CardTitle className="text-lg">Join an Inner Circle</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm">
+                        Be part of a dedicated community where you can connect with other super-fans and interact more directly with the artists you love.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Influence & Access */}
+              <div className="bg-gradient-to-r from-brand-primary/5 via-brand-accent/5 to-brand-primary/5 rounded-2xl p-8">
+                <div className="text-center mb-8">
+                  <Badge variant="outline" className="mb-4 text-brand-primary border-brand-primary">
+                    Influence & Access
+                  </Badge>
+                  <h4 className="text-xl font-semibold mb-4">Go Beyond Passive Listening</h4>
+                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                    Become an active participant in your favorite artist's journey with exclusive access and real influence.
+                  </p>
+                </div>
+                <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                  <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
+                    <CardHeader className="pb-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
+                        <Shield className="w-5 h-5 text-brand-primary" />
+                      </div>
+                      <CardTitle className="text-lg">Gain Exclusive Access</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <CardDescription className="text-sm">
+                        Unlock members-only content like unreleased song demos, behind-the-scenes footage, private community channels, and early access to tickets and merch.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
+                    <CardHeader className="pb-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
+                        <Target className="w-5 h-5 text-brand-primary" />
+                      </div>
+                      <CardTitle className="text-lg">Influence Creative Decisions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <CardDescription className="text-sm">
+                        Top-tier fans can earn the right to vote on creative decisions, such as album art, new merch designs, or even the setlist for an upcoming show.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
+                    <CardHeader className="pb-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
+                        <Brain className="w-5 h-5 text-brand-primary" />
+                      </div>
+                      <CardTitle className="text-lg">AI-Powered Personalization</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <CardDescription className="text-sm">
+                        Receive a personalized "Fan Memory Timeline" generated by our AI, narrating your unique journey with an artist. Use our AI tools to enhance your own fan content and shoutouts.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
+                    <CardHeader className="pb-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
+                        <Smartphone className="w-5 h-5 text-brand-primary" />
+                      </div>
+                      <CardTitle className="text-lg">Real-World Experiences</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <CardDescription className="text-sm">
+                        Earn the ultimate perks that can't be bought, including opportunities for virtual meet-and-greets, soundcheck access, or personalized video messages directly from the artist.
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
 
