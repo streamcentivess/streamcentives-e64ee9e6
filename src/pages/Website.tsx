@@ -212,8 +212,8 @@ const Website = () => {
                 🚀
               </div>
             </div>
-            <h1 className="text-4xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Unlock your fan economy.
+            <h1 className="text-4xl lg:text-7xl font-bold mb-6">
+              <span className="text-sky-400">Unlock</span> <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">your fan economy.</span>
             </h1>
             <div className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto space-y-3">
               <p>• <strong>For Fans:</strong> Turn your streams and shares into points, climb the leaderboards, and unlock exclusive rewards.</p>
