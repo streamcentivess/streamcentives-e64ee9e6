@@ -485,7 +485,7 @@ const Website = () => {
                 </h3>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
                   Our suite of intelligent tools is designed to help you connect with your fans, 
-                  streamline your content creation, and turn engagement into real growth.
+                  streamline your content creation, and turn engagement into real growth and revenue.
                 </p>
               </div>
 
