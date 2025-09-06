@@ -213,10 +213,7 @@ const Website = () => {
               </div>
             </div>
             <h1 className="text-4xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              The Future of
-              <span className="block bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
-                Fan Rewards
-              </span>
+              Unlock your fan economy.
             </h1>
             <div className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto space-y-3">
               <p>• <strong>For Fans:</strong> Turn your streams and shares into points, climb the leaderboards, and unlock exclusive rewards.</p>
