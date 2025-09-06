@@ -141,17 +141,20 @@ const Website = () => {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/team">
-                <Button variant="ghost" size="sm">
-                  Team
-                </Button>
-              </Link>
-              <Link to="/pitch">
+              <Link to="/pitch" className="order-1 sm:order-2">
                 <Button variant="ghost" size="sm">
                   Investor Pitch
                 </Button>
               </Link>
-              <Button onClick={() => document.getElementById('signup')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Link to="/team" className="order-2 sm:order-1">
+                <Button variant="ghost" size="sm">
+                  Team
+                </Button>
+              </Link>
+              <Button 
+                className="order-3"
+                onClick={() => document.getElementById('signup')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 Get Started
               </Button>
             </div>
