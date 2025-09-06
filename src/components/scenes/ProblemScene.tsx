@@ -47,7 +47,7 @@ const ProblemScene = () => {
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-foreground flex items-center gap-3">
                 <TrendingDown className="w-6 h-6 text-destructive" />
-                Artists Struggle
+                Artists & Creators Struggle
               </h3>
               
               <ul className="space-y-3 text-muted-foreground">
