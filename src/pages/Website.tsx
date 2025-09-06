@@ -124,9 +124,9 @@ const Website = () => {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-16 px-[5px] mx-[43px]">
             <div className="flex items-center gap-3">
-              <img src={logoUrl} alt="Streamcentives" className="w-8 h-8 rounded-full" />
+              <img src={logoUrl} alt="Streamcentives" className="w-8 h-8" />
               <span className="text-lg font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
                 Streamcentives
               </span>
@@ -158,7 +158,7 @@ const Website = () => {
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex justify-center mb-8">
-              <img src={logoUrl} alt="Streamcentives" className="w-32 h-32 rounded-full animate-pulse" />
+              <img src={logoUrl} alt="Streamcentives" className="w-24 h-24 rounded-full animate-pulse" />
             </div>
             <Badge variant="secondary" className="mb-6">
               🚀 Now in Beta
