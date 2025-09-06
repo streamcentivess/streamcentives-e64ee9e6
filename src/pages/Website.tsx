@@ -213,9 +213,9 @@ const Website = () => {
               </div>
             </div>
             <h1 className="text-4xl lg:text-7xl font-bold mb-6">
-              <span className="text-fuchsia-500">Unlock</span> <span className="text-white">your</span>
+              <span className="text-white">Unlock</span> <span className="text-white">Your</span>
               <span className="block">
-                <span className="text-white">Fan</span> <span className="text-fuchsia-500">economy.</span>
+                <span className="text-fuchsia-500">Fan</span> <span className="text-fuchsia-500">Economy.</span>
               </span>
             </h1>
             <div className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto space-y-3">
