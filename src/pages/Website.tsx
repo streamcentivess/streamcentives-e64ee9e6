@@ -301,7 +301,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
                         <Zap className="w-6 h-6 text-brand-primary" />
                       </div>
-                      <CardTitle className="text-xl">Earn <span className="text-yellow-500">XP</span> for Everything</CardTitle>
+                      <CardTitle className="text-xl">Earn <span className="text-yellow-500">X<span className="drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]">P</span></span> for Everything</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base">
