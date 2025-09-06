@@ -25,7 +25,7 @@ const ProblemScene = () => {
             The Fan–Creator Connection is <span className="text-destructive">Broken</span>
           </h1>
           <p className="text-cinematic max-w-3xl mx-auto">
-            Artists face an anonymous audience, low streaming royalties, and endless marketing grind. 
+            Artists and creators face an anonymous audience, low streaming royalties, and endless marketing grind. 
             Fans remain unseen — their loyalty invisible, their experience passive.
           </p>
         </div>
