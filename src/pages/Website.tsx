@@ -157,9 +157,14 @@ const Website = () => {
             <div className="flex justify-center mb-8">
               <img src={logoUrl} alt="Streamcentives" className="w-[300px] h-[300px] rounded-full animate-pulse" />
             </div>
-            <Badge variant="outline" className="mb-6 text-lg px-4 py-2 bg-transparent border-transparent">
-              🚀 Streamcentives
-            </Badge>
+            <div className="relative">
+              <Badge variant="outline" className="mb-6 text-lg px-4 py-2 bg-transparent border-transparent">
+                Streamcentives
+              </Badge>
+              <div className="absolute -top-32 left-1/2 transform -translate-x-1/2 animate-[fly_3s_ease-in-out_infinite] text-2xl">
+                🚀
+              </div>
+            </div>
             <h1 className="text-4xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               The Future of
               <span className="block bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">

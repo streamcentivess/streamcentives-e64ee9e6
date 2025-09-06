@@ -84,11 +84,23 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fly': {
+					'0%': {
+						transform: 'translateX(-200px) translateY(0px) rotate(-45deg)'
+					},
+					'50%': {
+						transform: 'translateX(0px) translateY(-20px) rotate(0deg)'
+					},
+					'100%': {
+						transform: 'translateX(200px) translateY(0px) rotate(45deg)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fly': 'fly 3s ease-in-out infinite'
 			}
 		}
 	},
