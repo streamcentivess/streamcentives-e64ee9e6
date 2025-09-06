@@ -480,7 +480,7 @@ const Website = () => {
 
             <TabsContent value="creators" className="space-y-12">
               <div className="text-center mb-8">
-                <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-brand-primary">
+                <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-lime-400 drop-shadow-[0_0_10px_rgba(163,230,53,0.8)]">
                   Supercharge <span className="text-white">Your Creative Journey</span>
                 </h3>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
