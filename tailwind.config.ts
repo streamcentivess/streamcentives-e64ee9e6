@@ -90,13 +90,13 @@ export default {
 				},
 				'fly': {
 					'0%': {
-						transform: 'translateX(-200px) translateY(0px) rotate(-45deg)'
+						transform: 'translateX(-200px) translateY(0px) rotate(0deg)'
 					},
 					'50%': {
-						transform: 'translateX(0px) translateY(-20px) rotate(0deg)'
+						transform: 'translateX(0px) translateY(0px) rotate(0deg)'
 					},
 					'100%': {
-						transform: 'translateX(200px) translateY(0px) rotate(45deg)'
+						transform: 'translateX(200px) translateY(0px) rotate(0deg)'
 					}
 				}
 			},
