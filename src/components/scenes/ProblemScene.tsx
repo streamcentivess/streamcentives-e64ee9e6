@@ -63,6 +63,18 @@ const ProblemScene = () => {
                   <Zap className="w-5 h-5 mt-0.5 text-warning" />
                   <span>Endless marketing grind with no direct fan connection</span>
                 </li>
+                <li className="flex items-start gap-3">
+                  <TrendingDown className="w-5 h-5 mt-0.5 text-destructive" />
+                  <span>The Creator "Middle Class" is Shrinking: The top 1% of creators earn over 80% of the total income generated on platforms like Patreon, making it incredibly difficult for emerging creators to earn a sustainable living.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Zap className="w-5 h-5 mt-0.5 text-warning" />
+                  <span>Burnout is a Major Professional Hazard: In a 2023 survey, 61% of creators reported that they have considered quitting their creator career, with many citing the immense pressure to consistently produce content as a primary reason for burnout.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <TrendingDown className="w-5 h-5 mt-0.5 text-destructive" />
+                  <span>Platform Dependence Creates Instability: Over 70% of full-time creators rely on social media platforms as their primary source of revenue, leaving them vulnerable to sudden algorithm changes, shifting monetization policies, and the risk of de-platforming, which can erase their business overnight.</span>
+                </li>
               </ul>
             </div>
           </div>
