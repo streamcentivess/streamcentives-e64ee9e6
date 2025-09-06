@@ -315,7 +315,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
                         <CheckCircle className="w-6 h-6 text-brand-primary" />
                       </div>
-                      <CardTitle className="text-xl">Unlock <span className="text-pink-500">Exclusive Rewards</span></CardTitle>
+                      <CardTitle className="text-xl">Unlock <span className="text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]">Exclusive Rewards</span></CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base">
