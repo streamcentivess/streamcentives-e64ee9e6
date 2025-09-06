@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle, Bot, Wand2, Mic, Target, Smartphone, Brain, MessageCircle, Shield, BarChart3, Radio } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import VideoModal from "@/components/VideoModal";
@@ -106,6 +107,52 @@ const Website = () => {
     icon: Zap,
     title: "Real-time Analytics",
     description: "Track engagement metrics and optimize your content strategy"
+  }];
+
+  const aiFeatures = [{
+    icon: Bot,
+    title: "AI Campaign Builder",
+    description: "Go from a simple idea to a fully structured fan campaign in seconds. Our AI analyzes your goals to suggest optimal rules, rewards, and promotional content."
+  }, {
+    icon: Wand2,
+    title: "AI Content Assistant",
+    description: "Beat creative block forever. Generate platform-specific social media posts, video ideas, and captions that match your unique tone and drive engagement."
+  }, {
+    icon: Mic,
+    title: "AI Shoutout Generator",
+    description: "Make every fan feel seen. Instantly create personalized and energetic shoutouts that build stronger connections with your community."
+  }];
+
+  const aiAdvantages = [{
+    icon: Target,
+    title: "Smart Campaign Design",
+    description: "Our AI analyzes your audience and suggests campaign structures designed to maximize participation and impact."
+  }, {
+    icon: Smartphone,
+    title: "Optimized Content",
+    description: "Generate posts, captions, and ideas tailored for different platforms, ensuring your message always hits the mark."
+  }, {
+    icon: Brain,
+    title: "Advanced Insights",
+    description: "Go beyond simple metrics with AI-powered sentiment analysis and content moderation to keep your community safe and positive."
+  }];
+
+  const premiumAiFeatures = [{
+    icon: MessageCircle,
+    title: "Sentiment Analysis",
+    description: "Analyze fan comments and engagement with advanced AI to understand your community's mood and preferences."
+  }, {
+    icon: Shield,
+    title: "Content Moderation",
+    description: "Automated content safety checks powered by Claude 4 Sonnet to keep your community positive and safe."
+  }, {
+    icon: BarChart3,
+    title: "Batch Processing",
+    description: "Process multiple AI requests at once with enterprise-grade efficiency and speed."
+  }, {
+    icon: Radio,
+    title: "Real-time Streaming",
+    description: "Get AI responses as they generate with streaming technology for instant creative workflow."
   }];
   const stats = [{
     value: "120+",
@@ -226,21 +273,119 @@ const Website = () => {
             </p>
           </div>
           
-          <div className="grid lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
-                    <feature.icon className="w-6 h-6 text-brand-primary" />
-                  </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>)}
-          </div>
+          <Tabs defaultValue="general" className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-12">
+              <TabsTrigger value="general">For Everyone</TabsTrigger>
+              <TabsTrigger value="creators">For Creators</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="general" className="space-y-8">
+              <div className="grid lg:grid-cols-3 gap-8">
+                {features.map((feature, index) => (
+                  <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
+                        <feature.icon className="w-6 h-6 text-brand-primary" />
+                      </div>
+                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-base">
+                        {feature.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="creators" className="space-y-12">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-brand-primary">
+                  Supercharge Your Creative Journey
+                </h3>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  Our suite of intelligent tools is designed to help you connect with your fans, 
+                  streamline your content creation, and turn engagement into real growth.
+                </p>
+              </div>
+
+              {/* AI Toolkit */}
+              <div>
+                <h4 className="text-xl font-semibold mb-6 text-center">Your AI-Powered Toolkit</h4>
+                <div className="grid lg:grid-cols-3 gap-8">
+                  {aiFeatures.map((feature, index) => (
+                    <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-brand-primary/20">
+                      <CardHeader>
+                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-4 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
+                          <feature.icon className="w-6 h-6 text-brand-primary" />
+                        </div>
+                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <CardDescription className="text-base">
+                          {feature.description}
+                        </CardDescription>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* AI Advantages */}
+              <div>
+                <h4 className="text-xl font-semibold mb-6 text-center">The Streamcentives AI Advantage</h4>
+                <div className="grid lg:grid-cols-3 gap-8">
+                  {aiAdvantages.map((feature, index) => (
+                    <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                      <CardHeader>
+                        <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
+                          <feature.icon className="w-6 h-6 text-brand-accent" />
+                        </div>
+                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <CardDescription className="text-base">
+                          {feature.description}
+                        </CardDescription>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Premium AI Features */}
+              <div className="bg-gradient-to-r from-brand-primary/5 via-brand-accent/5 to-brand-primary/5 rounded-2xl p-8">
+                <div className="text-center mb-8">
+                  <Badge variant="outline" className="mb-4 text-brand-primary border-brand-primary">
+                    Premium AI Tools
+                  </Badge>
+                  <h4 className="text-xl font-semibold mb-4">Advanced AI Tools</h4>
+                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                    Leverage the full power of Claude 4 Sonnet + O3 with advanced features including 
+                    sentiment analysis, content moderation, batch processing, and real-time streaming.
+                  </p>
+                </div>
+                <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                  {premiumAiFeatures.map((feature, index) => (
+                    <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
+                      <CardHeader className="pb-3">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
+                          <feature.icon className="w-5 h-5 text-brand-primary" />
+                        </div>
+                        <CardTitle className="text-lg">{feature.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <CardDescription className="text-sm">
+                          {feature.description}
+                        </CardDescription>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
 
