@@ -168,7 +168,7 @@ const Website = () => {
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex justify-center mb-8">
-              <img src={logoUrl} alt="Streamcentives" className="w-24 h-24 animate-pulse" />
+              <img src={logoUrl} alt="Streamcentives" className="w-24 h-24 rounded-full animate-pulse" />
             </div>
             <Badge variant="secondary" className="mb-6">
               🚀 Now in Beta
