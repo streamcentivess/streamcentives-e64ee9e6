@@ -124,7 +124,7 @@ const Website = () => {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 px-[5px] mx-[43px]">
+          <div className="flex items-center justify-between h-16 px-0 mx-0 my-0 py-0">
             <div className="flex items-center gap-3">
               <img src={logoUrl} alt="Streamcentives" className="w-8 h-8" />
               <span className="text-lg font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
