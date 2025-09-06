@@ -285,7 +285,7 @@ const Website = () => {
                   The Ultimate Fan Experience on <span className="text-brand-primary">Streamcentives</span>
                 </h3>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                  As a fan, your support is valuable. For the first time, every action you take to champion your favorite artists is recognized, rewarded, and turned into an unforgettable experience.
+                  As a fan, your support is valuable. For the first time, every action you take to champion your favorite creators, athletes, artists is recognized, rewarded, and turned into an unforgettable experience.
                 </p>
               </div>
 
