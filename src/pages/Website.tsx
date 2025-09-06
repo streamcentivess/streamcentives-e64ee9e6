@@ -157,8 +157,8 @@ const Website = () => {
             <div className="flex justify-center mb-8">
               <img src={logoUrl} alt="Streamcentives" className="w-24 h-24 rounded-full animate-pulse" />
             </div>
-            <Badge variant="secondary" className="mb-6 text-lg px-4 py-2">
-              Streamcentives
+            <Badge variant="outline" className="mb-6 text-lg px-4 py-2 bg-transparent border-transparent">
+              🚀 Streamcentives
             </Badge>
             <h1 className="text-4xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               The Future of
