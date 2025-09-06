@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Pause, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
 import ProblemScene from "@/components/scenes/ProblemScene";
 import SolutionScene from "@/components/scenes/SolutionScene";
 import HowItWorksScene from "@/components/scenes/HowItWorksScene";
@@ -208,6 +209,20 @@ const Index = () => {
             {scenes[currentScene].title}
           </h2>
         </div>
+      </div>
+
+      {/* Home Navigation */}
+      <div className="fixed top-8 right-8 z-50">
+        <Link to="/">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="px-4 py-2 rounded-xl bg-surface/80 backdrop-blur-lg border border-border hover:bg-surface/90"
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Home
+          </Button>
+        </Link>
       </div>
     </div>
   );
