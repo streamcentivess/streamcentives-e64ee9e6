@@ -330,7 +330,7 @@ const Website = () => {
                         <TrendingUp className="w-6 h-6 text-brand-primary" />
                       </div>
                       <CardTitle className="text-xl">
-                        <span className="text-lime-500">Monetize</span> <span className="text-white">Your Fandom</span>
+                        <span className="text-lime-500 drop-shadow-[0_0_8px_rgba(132,204,22,0.8)]">Monetize</span> <span className="text-white">Your Fandom</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
