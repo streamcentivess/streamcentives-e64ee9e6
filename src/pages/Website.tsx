@@ -220,7 +220,7 @@ const Website = () => {
             </h1>
             <div className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto space-y-3">
               <p>• <strong>For Fans:</strong> Turn your streams and shares into points, climb the leaderboards, and unlock exclusive rewards.</p>
-              <p>• <strong>For Artists:</strong> Transform your audience into an active community, gain powerful insights, and create new revenue streams.</p>
+              <p>• <strong>For Creators:</strong> Transform your audience into an active community, gain powerful insights, and create new revenue streams.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="text-lg px-8" onClick={() => document.getElementById('signup')?.scrollIntoView({
