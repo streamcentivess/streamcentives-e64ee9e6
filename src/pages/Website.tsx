@@ -479,7 +479,7 @@ const Website = () => {
             <TabsContent value="creators" className="space-y-12">
               <div className="text-center mb-8">
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-brand-primary">
-                  Supercharge Your Creative Journey
+                  Supercharge <span className="text-white">Your Creative Journey</span>
                 </h3>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
                   Our suite of intelligent tools is designed to help you connect with your fans, 
