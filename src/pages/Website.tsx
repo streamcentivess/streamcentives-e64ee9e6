@@ -136,7 +136,7 @@ const Website = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <img src={logoUrl} alt="Streamcentives" className="w-8 h-8" />
-              <span className="text-xl font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
+              <span className="text-lg font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent">
                 Streamcentives
               </span>
             </div>
