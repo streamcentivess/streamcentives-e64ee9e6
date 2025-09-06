@@ -25,7 +25,7 @@ const Team = () => {
       id: 1,
       name: "Kofa Muse",
       title: "CEO & Co-Founder",
-      bio: "A decorated military veteran and visionary entrepreneur with over a decade of proven success at the intersection of entertainment, technology, and marketing. Architected merchandising strategies that drove over $5 million in gross revenue for 500+ major and independent artists at Merched Out, working with clients including Sony, Warner Music Group, Empire, Republic Records, Atlantic, Roc Nation, Universal Music Group, and Netflix.",
+      bio: "A decorated military veteran and visionary entrepreneur with over a decade of proven success at the intersection of entertainment, technology, and marketing. Architected merchandising strategies that drove over $2 million in gross revenue for 500+ major and independent artists at Merched Out, working with clients including Sony, Warner Music Group, Empire, Republic Records, Atlantic, Roc Nation, Universal Music Group, and Netflix.",
       image: "/lovable-uploads/0f33e720-6b49-472b-9bf9-885964b78755.png",
       resume: "", 
       skills: ["Product Strategy", "Music Industry", "Community Growth", "Military Leadership", "Artist Management", "Brand Amplification", "E-commerce Strategy", "Revenue Generation", "Network Building"],
@@ -34,7 +34,7 @@ const Team = () => {
         twitter: "",
         email: ""
       },
-      education: "B.A. in Entertainment Business, Minor in Marketing at UCLA",
+      education: "B.A. in Entertainment Business, Minor in Marketing at Los Angeles Film School",
       previousRoles: ["Project Manager at Merched Out", "Artist Management & A&R", "Military Veteran"]
     },
     {
