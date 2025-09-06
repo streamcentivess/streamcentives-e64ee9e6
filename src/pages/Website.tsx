@@ -262,7 +262,7 @@ const Website = () => {
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-5xl font-bold mb-6">
               <span className="block">
-                <span className="text-brand-primary">Where </span>
+                <span className="text-white">Where </span>
                 <span className="text-foreground">Fans and Creators</span>
                 <span className="text-brand-primary"> Team Up!</span>
               </span>
