@@ -209,7 +209,7 @@ const Website = () => {
                 Streamcentives
               </Badge>
               <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 animate-[fly_3s_ease-in-out_infinite] text-2xl">
-                🚀
+                🌠
               </div>
             </div>
             <h1 className="text-4xl lg:text-7xl font-bold mb-6">
