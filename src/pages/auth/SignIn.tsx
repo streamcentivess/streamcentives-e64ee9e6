@@ -108,11 +108,11 @@ const SignIn = () => {
           {/* Email Form */}
           <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Username or Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Enter username or email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
