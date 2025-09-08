@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 /* Streamcentives Design System - Cinematic Tech Startup */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -165,6 +168,30 @@
 
   .text-cinematic {
     @apply text-xl lg:text-2xl font-light text-muted-foreground leading-relaxed;
+  }
+
+  /* Modern Card Components for Auth */
+  .card-modern {
+    @apply relative overflow-hidden rounded-2xl p-6;
+    background: var(--gradient-surface);
+    box-shadow: var(--shadow-card);
+    border: 1px solid hsl(var(--border));
+    transition: all 0.4s var(--ease-smooth);
+  }
+
+  .card-modern:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-elevated);
+    border-color: hsl(var(--brand-primary) / 0.5);
+  }
+
+  /* Gradient Text Utilities */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--brand-secondary)), hsl(var(--brand-accent)));
   }
 
   /* Interactive Cards */

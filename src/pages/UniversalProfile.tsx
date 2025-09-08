@@ -1,0 +1,322 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useNavigate } from 'react-router-dom';
+
+interface Profile {
+  id: string;
+  user_id: string;
+  username?: string;
+  display_name?: string;
+  bio?: string;
+  avatar_url?: string;
+  spotify_connected: boolean;
+  created_at: string;
+}
+
+const UniversalProfile = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile data",
+          variant: "destructive"
+        });
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRoleSelection = (role: 'fan' | 'creator') => {
+    setRoleModalOpen(false);
+    if (role === 'fan') {
+      navigate('/fan-dashboard');
+    } else {
+      navigate('/creator-dashboard');
+    }
+  };
+
+  const connectSpotify = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'spotify',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private'
+      }
+    });
+
+    if (error) {
+      toast({
+        title: "Connection Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-xl font-semibold mb-2">Profile Not Found</h2>
+            <p className="text-muted-foreground mb-4">We couldn't load your profile data.</p>
+            <Button onClick={fetchProfile}>Retry</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Universal Profile
+          </h1>
+          <div className="flex gap-2">
+            <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-primary hover:opacity-90">
+                  Switch Dashboard
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Choose Your Dashboard</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <Card 
+                    className="cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => handleRoleSelection('fan')}
+                  >
+                    <CardHeader className="text-center">
+                      <Users className="h-12 w-12 mx-auto text-primary mb-2" />
+                      <CardTitle>Fan Dashboard</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground text-center">
+                        Earn XP, join campaigns, and redeem rewards from your favorite creators.
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card 
+                    className="cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => handleRoleSelection('creator')}
+                  >
+                    <CardHeader className="text-center">
+                      <Music className="h-12 w-12 mx-auto text-primary mb-2" />
+                      <CardTitle>Creator Dashboard</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground text-center">
+                        Create campaigns, manage rewards, and engage with your fans.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
+            <Button variant="outline" onClick={signOut}>
+              Sign Out
+            </Button>
+          </div>
+        </div>
+
+        {/* Profile Card */}
+        <Card className="card-modern">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Avatar Section */}
+              <div className="flex-shrink-0 text-center">
+                <div className="relative">
+                  <Avatar className="h-32 w-32 mx-auto">
+                    <AvatarImage src={profile.avatar_url || ''} />
+                    <AvatarFallback className="text-2xl">
+                      {profile.display_name?.[0] || user?.email?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    size="sm"
+                    className="absolute bottom-0 right-0 rounded-full h-8 w-8 p-0"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-1">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold">
+                      {profile.display_name || 'New User'}
+                    </h2>
+                    {profile.username && (
+                      <p className="text-muted-foreground">@{profile.username}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mt-2 md:mt-0">
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <Star className="h-3 w-3" />
+                      Bronze Tier
+                    </Badge>
+                    {profile.spotify_connected && (
+                      <Badge className="bg-[#1db954] hover:bg-[#1ed760] text-white">
+                        <Music className="h-3 w-3 mr-1" />
+                        Spotify Connected
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-sm text-muted-foreground">Posts</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-sm text-muted-foreground">Followers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-sm text-muted-foreground">Following</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">0</div>
+                    <div className="text-sm text-muted-foreground">XP</div>
+                  </div>
+                </div>
+
+                {/* Bio and Details */}
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  {profile.bio && <p>{profile.bio}</p>}
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+
+                {/* Connect Spotify Button */}
+                {!profile.spotify_connected && (
+                  <Button 
+                    onClick={connectSpotify}
+                    className="mt-4 bg-[#1db954] hover:bg-[#1ed760] text-white"
+                  >
+                    <Music className="h-4 w-4 mr-2" />
+                    Connect Spotify
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tabs Section */}
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="rewards">Rewards</TabsTrigger>
+            <TabsTrigger value="stats">Stats</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="posts" className="mt-6">
+            <Card className="card-modern">
+              <CardContent className="p-6 text-center">
+                <div className="text-muted-foreground">
+                  <p>No posts yet. Start sharing your music journey!</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="campaigns" className="mt-6">
+            <Card className="card-modern">
+              <CardContent className="p-6 text-center">
+                <div className="text-muted-foreground">
+                  <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>No campaigns yet. Join some campaigns to start earning XP!</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="rewards" className="mt-6">
+            <Card className="card-modern">
+              <CardContent className="p-6 text-center">
+                <div className="text-muted-foreground">
+                  <Gift className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>No rewards yet. Earn XP to unlock amazing rewards!</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="stats" className="mt-6">
+            <Card className="card-modern">
+              <CardContent className="p-6 text-center">
+                <div className="text-muted-foreground">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>Statistics will appear here as you engage with the platform.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default UniversalProfile;
