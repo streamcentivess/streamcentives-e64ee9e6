@@ -18,7 +18,7 @@ const SignUp = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/universal-profile');
+      navigate('/role-selection');
     }
   }, [user, navigate]);
 

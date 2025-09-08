@@ -18,6 +18,8 @@ import CreatorDashboard from "./pages/CreatorDashboard";
 import Campaigns from "./pages/Campaigns";
 import Marketplace from "./pages/Marketplace";
 import Leaderboards from "./pages/Leaderboards";
+import RoleSelection from "./pages/RoleSelection";
+import ProfileSetup from "./pages/ProfileSetup";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,16 @@ const App = () => (
             <Route path="/auth/signin" element={<SignIn />} />
             <Route path="/auth/signup" element={<SignUp />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/role-selection" element={
+              <ProtectedRoute>
+                <RoleSelection />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile-setup" element={
+              <ProtectedRoute>
+                <ProfileSetup />
+              </ProtectedRoute>
+            } />
             
             {/* Protected Routes */}
             <Route path="/universal-profile" element={
