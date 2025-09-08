@@ -46,7 +46,7 @@ const SignUp = () => {
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <img 
-              src={streamcentivesLogo} 
+              src="/lovable-uploads/fc5c3f3a-25a8-47b8-a886-bbbfd21758e9.png" 
               alt="Streamcentives" 
               className="h-16 w-16 rounded-full object-cover"
             />
