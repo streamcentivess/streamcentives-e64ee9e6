@@ -15,6 +15,9 @@ import AuthCallback from "./pages/auth/AuthCallback";
 import UniversalProfile from "./pages/UniversalProfile";
 import FanDashboard from "./pages/FanDashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
+import Campaigns from "./pages/Campaigns";
+import Marketplace from "./pages/Marketplace";
+import Leaderboards from "./pages/Leaderboards";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +52,21 @@ const App = () => (
             <Route path="/creator-dashboard" element={
               <ProtectedRoute>
                 <CreatorDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/campaigns" element={
+              <ProtectedRoute>
+                <Campaigns />
+              </ProtectedRoute>
+            } />
+            <Route path="/marketplace" element={
+              <ProtectedRoute>
+                <Marketplace />
+              </ProtectedRoute>
+            } />
+            <Route path="/leaderboards" element={
+              <ProtectedRoute>
+                <Leaderboards />
               </ProtectedRoute>
             } />
             

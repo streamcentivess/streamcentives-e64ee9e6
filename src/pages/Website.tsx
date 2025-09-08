@@ -220,12 +220,12 @@ const Website = () => {
               <p>• <strong>For Creators:</strong> Transform your audience into an active community, gain powerful insights, and create new revenue streams.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8" onClick={() => document.getElementById('signup')?.scrollIntoView({
-              behavior: 'smooth'
-            })}>
-                Start Free Trial
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
+              <Link to="/auth/signup">
+                <Button size="lg" className="text-lg px-8">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
               <VideoModal>
                 <Button variant="outline" size="lg" className="text-lg px-8">
                   <Play className="mr-2 w-5 h-5" />

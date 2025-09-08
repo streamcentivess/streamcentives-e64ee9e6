@@ -126,38 +126,80 @@ const UniversalProfile = () => {
                   Switch Dashboard
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-4xl">
                 <DialogHeader>
                   <DialogTitle>Choose Your Dashboard</DialogTitle>
                 </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                   <Card 
-                    className="cursor-pointer hover:border-primary transition-colors"
+                    className="cursor-pointer hover:border-primary transition-colors group"
                     onClick={() => handleRoleSelection('fan')}
                   >
                     <CardHeader className="text-center">
-                      <Users className="h-12 w-12 mx-auto text-primary mb-2" />
+                      <div className="mx-auto mb-4 p-4 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 group-hover:from-primary/30 group-hover:to-secondary/30">
+                        <Users className="h-12 w-12 mx-auto text-primary mb-2" />
+                      </div>
                       <CardTitle>Fan Dashboard</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground text-center">
-                        Earn XP, join campaigns, and redeem rewards from your favorite creators.
-                      </p>
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          <span className="text-sm">Earn XP for streams and engagement</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          <span className="text-sm">Join campaigns and challenges</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          <span className="text-sm">Redeem exclusive rewards</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          <span className="text-sm">Compete on leaderboards</span>
+                        </div>
+                      </div>
+                      <Button className="w-full bg-gradient-primary hover:opacity-90">
+                        <Users className="h-4 w-4 mr-2" />
+                        Enter Fan Dashboard
+                      </Button>
                     </CardContent>
                   </Card>
                   
                   <Card 
-                    className="cursor-pointer hover:border-primary transition-colors"
+                    className="cursor-pointer hover:border-primary transition-colors group"
                     onClick={() => handleRoleSelection('creator')}
                   >
                     <CardHeader className="text-center">
-                      <Music className="h-12 w-12 mx-auto text-primary mb-2" />
+                      <div className="mx-auto mb-4 p-4 rounded-full bg-gradient-to-br from-secondary/20 to-accent/20 group-hover:from-secondary/30 group-hover:to-accent/30">
+                        <Music className="h-12 w-12 mx-auto text-primary mb-2" />
+                      </div>
                       <CardTitle>Creator Dashboard</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground text-center">
-                        Create campaigns, manage rewards, and engage with your fans.
-                      </p>
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                          <span className="text-sm">Create AI-powered campaigns</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                          <span className="text-sm">Engage and reward fans</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                          <span className="text-sm">Access detailed analytics</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                          <span className="text-sm">Generate revenue streams</span>
+                        </div>
+                      </div>
+                      <Button className="w-full bg-gradient-accent hover:opacity-90">
+                        <Music className="h-4 w-4 mr-2" />
+                        Enter Creator Dashboard
+                      </Button>
                     </CardContent>
                   </Card>
                 </div>

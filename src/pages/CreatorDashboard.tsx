@@ -249,9 +249,9 @@ const CreatorDashboard = () => {
                   <Gift className="h-4 w-4 mr-2" />
                   Manage Rewards
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={() => navigate('/campaigns')}>
                   <BarChart3 className="h-4 w-4 mr-2" />
-                  View Analytics
+                  View All Campaigns
                 </Button>
                 <Button className="w-full" variant="outline">
                   <Settings className="h-4 w-4 mr-2" />
