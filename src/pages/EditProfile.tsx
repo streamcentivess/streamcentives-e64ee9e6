@@ -270,7 +270,7 @@ const EditProfile = () => {
             <Button
               variant="outline"
               className="w-full justify-start"
-              onClick={() => toast({ title: "Coming Soon", description: "Billing & Payments feature coming soon!" })}
+              onClick={() => navigate('/billing-payments')}
             >
               <CreditCard className="h-4 w-4 mr-2" />
               Billing & Payments
