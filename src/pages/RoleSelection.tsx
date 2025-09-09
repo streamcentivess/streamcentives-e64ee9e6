@@ -37,6 +37,14 @@ const RoleSelection = () => {
 
       {/* Header */}
       <div className="text-center mb-12 relative z-10">
+        {/* Logo */}
+        <div className="mb-6">
+          <img 
+            src="/lovable-uploads/streamcentives-logo-round.png" 
+            alt="StreamCentives Logo" 
+            className="w-20 h-20 mx-auto rounded-full shadow-lg"
+          />
+        </div>
         <div className="inline-block p-1 bg-gradient-to-r from-primary to-accent rounded-full mb-6">
           <div className="bg-background rounded-full px-6 py-2">
             <span className="text-sm font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
