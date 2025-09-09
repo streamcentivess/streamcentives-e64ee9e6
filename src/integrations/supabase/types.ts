@@ -299,11 +299,13 @@ export type Database = {
           analysis_status: string | null
           approved_at: string | null
           content: string
+          conversation_id: string | null
           created_at: string
           denied_at: string | null
           flagged_content: boolean
           flagged_reason: string | null
           id: string
+          parent_message_id: string | null
           recipient_id: string
           sender_id: string
           sentiment_score: number | null
@@ -315,11 +317,13 @@ export type Database = {
           analysis_status?: string | null
           approved_at?: string | null
           content: string
+          conversation_id?: string | null
           created_at?: string
           denied_at?: string | null
           flagged_content?: boolean
           flagged_reason?: string | null
           id?: string
+          parent_message_id?: string | null
           recipient_id: string
           sender_id: string
           sentiment_score?: number | null
@@ -331,11 +335,13 @@ export type Database = {
           analysis_status?: string | null
           approved_at?: string | null
           content?: string
+          conversation_id?: string | null
           created_at?: string
           denied_at?: string | null
           flagged_content?: boolean
           flagged_reason?: string | null
           id?: string
+          parent_message_id?: string | null
           recipient_id?: string
           sender_id?: string
           sentiment_score?: number | null
@@ -343,7 +349,15 @@ export type Database = {
           updated_at?: string
           xp_cost?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_comments: {
         Row: {
@@ -799,6 +813,14 @@ export type Database = {
       }
     }
     Views: {
+      conversation_participants: {
+        Row: {
+          conversation_id: string | null
+          user1_id: string | null
+          user2_id: string | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           age: string | null
