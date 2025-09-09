@@ -972,7 +972,7 @@ const UniversalProfile = () => {
           </TabsList>
           
           <TabsContent value="posts" className="mt-6">
-            <PostsGrid userId={viewingUserId || user?.id || ''} isOwnProfile={isOwnProfile} />
+            <PostsGrid userId={profile?.user_id || viewingUserId || user?.id || ''} isOwnProfile={isOwnProfile} />
           </TabsContent>
           
           <TabsContent value="campaigns" className="mt-6">
