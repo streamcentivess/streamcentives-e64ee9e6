@@ -16,11 +16,7 @@ const SignUp = () => {
   const { signUpWithEmail, signInWithSpotify, signInWithGoogle, signInWithFacebook, user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      navigate('/role-selection');
-    }
-  }, [user, navigate]);
+  // Don't automatically redirect - let users complete the sign-up flow first
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

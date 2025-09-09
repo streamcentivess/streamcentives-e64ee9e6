@@ -61,7 +61,7 @@ const AuthCallback = () => {
             description: "Your account has been created successfully.",
           });
           
-          navigate('/universal-profile');
+          navigate('/role-selection');
         } else {
           navigate('/auth/signin');
         }
