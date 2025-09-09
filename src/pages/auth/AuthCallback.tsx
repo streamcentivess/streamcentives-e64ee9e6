@@ -56,14 +56,32 @@ const AuthCallback = () => {
             }
           }
 
-          toast({
-            title: "Welcome to Streamcentives!",
-            description: "Your account has been created successfully.",
-          });
-          
-          // Clean up browser history to prevent back button going to OAuth providers
-          window.history.replaceState(null, '', '/role-selection');
-          navigate('/role-selection', { replace: true });
+          // Check if user already has a complete profile
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, display_name')
+            .eq('user_id', data.session.user.id)
+            .single();
+
+          if (profile?.username) {
+            // User has a complete profile, redirect to universal profile
+            toast({
+              title: "Welcome back!",
+              description: "You have been signed in successfully.",
+            });
+            
+            window.history.replaceState(null, '', '/universal-profile');
+            navigate('/universal-profile', { replace: true });
+          } else {
+            // New user or incomplete profile, redirect to onboarding
+            toast({
+              title: "Welcome to Streamcentives!",
+              description: "Let's set up your profile.",
+            });
+            
+            window.history.replaceState(null, '', '/role-selection');
+            navigate('/role-selection', { replace: true });
+          }
         } else {
           navigate('/auth/signin');
         }
