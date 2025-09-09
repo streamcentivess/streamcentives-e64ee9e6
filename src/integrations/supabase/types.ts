@@ -172,6 +172,47 @@ export type Database = {
         }
         Relationships: []
       }
+      message_analysis: {
+        Row: {
+          analyzed_at: string
+          confidence: number | null
+          created_at: string
+          flags: string[] | null
+          id: string
+          is_appropriate: boolean
+          message_id: string
+          severity: string | null
+        }
+        Insert: {
+          analyzed_at?: string
+          confidence?: number | null
+          created_at?: string
+          flags?: string[] | null
+          id?: string
+          is_appropriate?: boolean
+          message_id: string
+          severity?: string | null
+        }
+        Update: {
+          analyzed_at?: string
+          confidence?: number | null
+          created_at?: string
+          flags?: string[] | null
+          id?: string
+          is_appropriate?: boolean
+          message_id?: string
+          severity?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_analysis_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_costs: {
         Row: {
           created_at: string
@@ -201,6 +242,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          analysis_status: string | null
           approved_at: string | null
           content: string
           created_at: string
@@ -216,6 +258,7 @@ export type Database = {
           xp_cost: number
         }
         Insert: {
+          analysis_status?: string | null
           approved_at?: string | null
           content: string
           created_at?: string
@@ -231,6 +274,7 @@ export type Database = {
           xp_cost?: number
         }
         Update: {
+          analysis_status?: string | null
           approved_at?: string | null
           content?: string
           created_at?: string
