@@ -562,9 +562,12 @@ const UniversalProfile = () => {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Universal Profile
-          </h1>
+          <div className="flex items-center gap-3">
+            <img src="/lovable-uploads/streamcentivesloveable.PNG" alt="Streamcentives Logo" className="w-8 h-8" />
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Streamcentives
+            </h1>
+          </div>
           <div className="flex gap-2">
             <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
               <DialogTrigger asChild>
