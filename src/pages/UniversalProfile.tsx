@@ -49,6 +49,12 @@ const UniversalProfile = () => {
   const [postCount, setPostCount] = useState(0);
   const [xpBalance, setXpBalance] = useState(0);
   
+  // Swipe navigation state
+  const [currentView, setCurrentView] = useState<'profile' | 'community'>('profile');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId');
   const viewingUsername = searchParams.get('username') || searchParams.get('user');
@@ -640,33 +646,6 @@ const UniversalProfile = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <h2 className="text-xl font-semibold mb-2">Profile Not Found</h2>
-            <p className="text-muted-foreground mb-4">We couldn't load your profile data.</p>
-            <Button onClick={fetchProfile}>Retry</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const [currentView, setCurrentView] = useState<'profile' | 'community'>('profile');
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -699,6 +678,28 @@ const UniversalProfile = () => {
       }, 150);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-xl font-semibold mb-2">Profile Not Found</h2>
+            <p className="text-muted-foreground mb-4">We couldn't load your profile data.</p>
+            <Button onClick={fetchProfile}>Retry</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div 
