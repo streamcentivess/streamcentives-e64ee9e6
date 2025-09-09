@@ -45,13 +45,22 @@ const ProfileSetup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !selectedRole) return;
+    console.log('Form submitted');
+    console.log('User:', user);
+    console.log('Selected role:', selectedRole);
+    console.log('Profile data:', profileData);
+    
+    if (!user || !selectedRole) {
+      console.error('Missing user or role');
+      return;
+    }
     
     setLoading(true);
     
     try {
+      console.log('Attempting to save profile...');
       // Create or update profile
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .upsert({
           user_id: user.id,
@@ -61,33 +70,43 @@ const ProfileSetup = () => {
           age: profileData.age,
           location: profileData.location,
           interests: profileData.interests,
-        });
+        })
+        .select();
+      
+      console.log('Supabase response:', { data, error });
       
       if (error) {
+        console.error('Database error:', error);
         toast({
           title: "Error",
-          description: "Failed to save profile. Please try again.",
+          description: `Failed to save profile: ${error.message}`,
           variant: "destructive"
         });
         return;
       }
 
+      console.log('Profile saved successfully, navigating...');
+      
       // Clear the selected role from storage
       sessionStorage.removeItem('selectedRole');
       
       // Redirect based on role
       switch (selectedRole) {
         case 'fan':
+          console.log('Redirecting to fan dashboard');
           navigate('/fan-dashboard');
           break;
         case 'creator':
+          console.log('Redirecting to creator dashboard');
           navigate('/creator-dashboard');
           break;
         case 'sponsor':
+          console.log('Redirecting to creator dashboard (sponsor)');
           // For now, redirect to creator dashboard as sponsor dashboard doesn't exist yet
           navigate('/creator-dashboard');
           break;
         default:
+          console.log('Redirecting to universal profile');
           navigate('/universal-profile');
       }
       
