@@ -48,7 +48,9 @@ const UniversalProfile = () => {
   
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId');
-  const isOwnProfile = !viewingUserId || viewingUserId === user?.id;
+  const viewingUsername = searchParams.get('username');
+  // If username is provided, assume viewing someone else's profile until resolved
+  const isOwnProfile = viewingUsername ? false : (!viewingUserId || viewingUserId === user?.id);
 
   useEffect(() => {
     if (user) {
@@ -73,22 +75,28 @@ const UniversalProfile = () => {
   }, [user]);
 
   const fetchProfile = async () => {
-    const targetUserId = viewingUserId || user?.id;
-    if (!targetUserId) return;
+    const targetUserId = viewingUsername ? null : (viewingUserId || user?.id);
+    if (!targetUserId && !viewingUsername) return;
 
     try {
       let profileRes: any;
-      if (isOwnProfile) {
+      if (viewingUsername) {
+        profileRes = await supabase
+          .from('public_profiles' as any)
+          .select('*')
+          .eq('username', viewingUsername)
+          .maybeSingle();
+      } else if (isOwnProfile) {
         profileRes = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_id', targetUserId)
+          .eq('user_id', targetUserId as string)
           .maybeSingle();
       } else {
         profileRes = await supabase
           .from('public_profiles' as any)
           .select('*')
-          .eq('user_id', targetUserId)
+          .eq('user_id', targetUserId as string)
           .maybeSingle();
       }
 
@@ -103,6 +111,10 @@ const UniversalProfile = () => {
         });
       } else {
         setProfile(data);
+        // If loaded by username, fetch follow stats now that we have user_id
+        if (viewingUsername) {
+          fetchFollowStats();
+        }
         // Check if current user is following this profile (if not own profile)
         if (!isOwnProfile && user) {
           checkFollowStatus();
@@ -116,7 +128,7 @@ const UniversalProfile = () => {
   };
 
   const fetchFollowStats = async () => {
-    const targetUserId = viewingUserId || user?.id;
+    const targetUserId = profile?.user_id || viewingUserId || user?.id;
     if (!targetUserId) return;
 
     try {
@@ -124,7 +136,7 @@ const UniversalProfile = () => {
         .from('user_follow_stats')
         .select('followers_count, following_count')
         .eq('user_id', targetUserId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching follow stats:', error);
