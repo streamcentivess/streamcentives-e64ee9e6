@@ -61,7 +61,9 @@ const AuthCallback = () => {
             description: "Your account has been created successfully.",
           });
           
-          navigate('/role-selection');
+          // Clean up browser history to prevent back button going to OAuth providers
+          window.history.replaceState(null, '', '/role-selection');
+          navigate('/role-selection', { replace: true });
         } else {
           navigate('/auth/signin');
         }
