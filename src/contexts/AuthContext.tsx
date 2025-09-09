@@ -45,13 +45,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .from('profiles')
               .select('*')
               .eq('user_id', session.user.id)
-              .single();
+              .maybeSingle();
             
             if (!profile) {
               await supabase.from('profiles').insert({
                 user_id: session.user.id,
                 display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
                 avatar_url: session.user.user_metadata?.avatar_url,
+                email: session.user.email,
+                username: session.user.email?.split('@')[0]?.toLowerCase(),
               });
             }
           }, 0);
@@ -262,9 +264,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
-        },
       });
 
       if (error) {
@@ -275,8 +274,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       } else {
         toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your registration.",
+          title: "Account created successfully!",
+          description: "Welcome! You can now complete your profile setup.",
         });
       }
 

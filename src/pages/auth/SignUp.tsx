@@ -30,7 +30,8 @@ const SignUp = () => {
     const { error } = await signUpWithEmail(email, password);
     
     if (!error) {
-      // User will need to confirm email before being redirected
+      // Redirect to role selection for onboarding
+      navigate('/role-selection');
     }
     
     setLoading(false);

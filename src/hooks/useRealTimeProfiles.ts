@@ -34,10 +34,10 @@ export const useRealTimeProfiles = () => {
         .from('public_profiles')
         .select('*')
         .neq('user_id', user?.id || '')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
 
       if (fetchError) throw fetchError;
-      setProfiles(data || []);
+      setProfiles((data || []) as PublicProfile[]);
     } catch (err) {
       console.error('Error loading profiles:', err);
       setError(err instanceof Error ? err.message : 'Failed to load profiles');
@@ -62,10 +62,10 @@ export const useRealTimeProfiles = () => {
         .select('*')
         .neq('user_id', user?.id || '')
         .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,interests.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
 
       if (searchError) throw searchError;
-      setProfiles(data || []);
+      setProfiles((data || []) as PublicProfile[]);
     } catch (err) {
       console.error('Error searching profiles:', err);
       setError(err instanceof Error ? err.message : 'Failed to search profiles');
@@ -81,7 +81,7 @@ export const useRealTimeProfiles = () => {
         .from('public_profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .single() as any;
 
       if (fetchError) {
         if (fetchError.code === 'PGRST116') {
@@ -91,7 +91,7 @@ export const useRealTimeProfiles = () => {
         throw fetchError;
       }
 
-      return data;
+      return data as PublicProfile;
     } catch (err) {
       console.error('Error fetching profile:', err);
       return null;

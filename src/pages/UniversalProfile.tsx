@@ -234,8 +234,8 @@ const UniversalProfile = () => {
     try {
       const { data, error } = await supabase
         .from('public_profiles' as any)
-        .select('user_id, username, display_name, avatar_url, spotify_connected')
-        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .select('user_id, username, display_name, avatar_url, bio, location, interests, spotify_connected')
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%,bio.ilike.%${query}%,interests.ilike.%${query}%,location.ilike.%${query}%`)
         .neq('user_id', user?.id || '')
         .limit(10);
 
