@@ -72,7 +72,7 @@ const UniversalProfile = () => {
         }
       }
     }
-  }, [user]);
+  }, [user, viewingUserId, viewingUsername]);
 
   const fetchProfile = async () => {
     const targetUserId = viewingUsername ? null : (viewingUserId || user?.id);
