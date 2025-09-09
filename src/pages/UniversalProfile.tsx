@@ -78,6 +78,34 @@ const UniversalProfile = () => {
     }
   }, [user, viewingUserId, viewingUsername]);
 
+  // Set up real-time XP balance updates
+  useEffect(() => {
+    if (!profile?.user_id) return;
+
+    const channel = supabase
+      .channel('xp-balance-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_xp_balances',
+          filter: `user_id=eq.${profile.user_id}`
+        },
+        (payload: any) => {
+          console.log('XP balance updated:', payload);
+          if (payload.new && typeof payload.new.current_xp === 'number') {
+            setXpBalance(payload.new.current_xp);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.user_id]);
+
   const fetchProfile = async () => {
     const targetUserId = viewingUsername ? null : (viewingUserId || user?.id);
     if (!targetUserId && !viewingUsername) return;
