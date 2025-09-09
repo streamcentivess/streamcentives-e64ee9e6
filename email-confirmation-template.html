@@ -1,0 +1,104 @@
+<html lang="en" style="background:#0b0f1a;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Confirm your email • Streamcentives</title>
+    <meta name="x-preheader" content="Confirm your email to continue with Streamcentives." />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body style="margin:0;padding:0;background:#0b0f1a;color:#e7e9ee;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0b0f1a;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#111623;border-radius:16px;border:1px solid #1d2230;box-shadow:0 12px 40px rgba(155,92,255,0.12);">
+            <tr>
+              <td align="center" style="padding:32px 24px 8px;">
+                <img
+                  src="https://raw.githubusercontent.com/streamcentivess/streamcentives-e64ee9e6/main/public/lovable-uploads/streamcentivesloveable.PNG"
+                  width="120"
+                  height="120"
+                  alt="Streamcentives logo"
+                  border="0"
+                  style="display:block;width:120px;height:120px;margin:0 auto 16px;border-radius:50%;"
+                />
+                <div style="font-weight:800;font-size:24px;line-height:1.15;margin:4px 0 0;color:#9b5cff;">
+                  Streamcentives
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:8px 28px 0;">
+                <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;font-weight:800;color:#f3f4f8;">Thank you for joining Streamcentives</h1>
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#b9bfd4;">
+                  Please confirm your email to continue. This keeps your account secure and unlocks your creator tools and rewards.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:8px 28px 24px;">
+                <a href="{{ .ConfirmationURL }}"
+                   style="display:inline-block;background:#9b5cff;background-image:linear-gradient(135deg,#9b5cff 0%,#ff6ec7 50%,#00b3ff 100%);
+                          color:#ffffff;text-decoration:none;font-weight:800;font-size:15px;padding:14px 28px;border-radius:12px;
+                          box-shadow:0 10px 30px rgba(155,92,255,0.35);">
+                  Confirm email
+                </a>
+                <div style="font-size:12px;color:#8a90a7;margin-top:12px;">Link expires for your security.</div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 28px 8px;">
+                <p style="margin:0 0 10px;font-size:13px;line-height:1.6;color:#9aa1b8;">
+                  If the button doesn't work, copy and paste this link into your browser:
+                </p>
+                <div style="word-break:break-all;background:#0e1320;border:1px solid #1d2230;color:#cdd3ea;border-radius:10px;padding:12px 14px;font-size:12px;">
+                  {{ .ConfirmationURL }}
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:8px 28px 24px;">
+                <p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#9aa1b8;">
+                  Or use this one‑time code:
+                </p>
+                <div style="display:inline-block;background:#0e1320;border:1px solid #2a3150;color:#ffffff;border-radius:12px;padding:12px 16px;font-weight:800;letter-spacing:3px;font-size:16px;">
+                  {{ .Token }}
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:12px 24px 28px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0e1320;border-radius:12px;border:1px solid #1d2230;">
+                  <tr>
+                    <td style="padding:16px 18px;">
+                      <p style="margin:0;font-size:12px;line-height:1.7;color:#8a90a7;">
+                        You're receiving this because a signup was requested for <strong style="color:#cdd3ea;">{{ .SiteURL }}</strong>.
+                        If you didn't request this, you can safely ignore this email.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:0 24px 28px;">
+                <p style="margin:0;font-size:12px;color:#6f7692;">
+                  © Streamcentives • All rights reserved
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <p style="color:#525a75;font-size:11px;margin:18px 0 0;">
+            Having trouble? Contact support at meco@streamcentives.com
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
