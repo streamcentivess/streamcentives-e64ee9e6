@@ -42,6 +42,9 @@ const UniversalProfile = () => {
   const [followStats, setFollowStats] = useState({ followers_count: 0, following_count: 0 });
   const [showFollowersList, setShowFollowersList] = useState(false);
   const [followers, setFollowers] = useState<Profile[]>([]);
+  const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
+  const [listType, setListType] = useState<'followers' | 'following'>('followers');
+  const [userFollowStates, setUserFollowStates] = useState<Record<string, boolean>>({});
   
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId');
@@ -296,10 +299,148 @@ const UniversalProfile = () => {
     }
   };
 
-  const openFollowersList = () => {
-    fetchFollowers();
+  const fetchFollowing = async () => {
+    const targetUserId = viewingUserId || user?.id;
+    if (!targetUserId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('follows')
+        .select(`
+          following_id,
+          public_profiles!follows_following_id_fkey (
+            user_id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('follower_id', targetUserId);
+
+      if (error) {
+        console.error('Error fetching following:', error);
+        return;
+      }
+
+      const followingData = data?.map((follow: any) => ({
+        user_id: follow.public_profiles.user_id,
+        username: follow.public_profiles.username,
+        display_name: follow.public_profiles.display_name,
+        avatar_url: follow.public_profiles.avatar_url,
+        spotify_connected: false
+      })) || [];
+
+      setFollowingUsers(followingData);
+      
+      // Check follow states for all users in the list
+      if (user && !isOwnProfile) {
+        checkMultipleFollowStates(followingData);
+      }
+    } catch (error) {
+      console.error('Error fetching following:', error);
+    }
+  };
+
+  const checkMultipleFollowStates = async (users: Profile[]) => {
+    if (!user || users.length === 0) return;
+    
+    try {
+      const userIds = users.map(u => u.user_id);
+      const { data, error } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', user.id)
+        .in('following_id', userIds);
+
+      if (error) {
+        console.error('Error checking follow states:', error);
+        return;
+      }
+
+      const followingIds = new Set(data?.map(f => f.following_id) || []);
+      const states: Record<string, boolean> = {};
+      users.forEach(u => {
+        states[u.user_id] = followingIds.has(u.user_id);
+      });
+      
+      setUserFollowStates(states);
+    } catch (error) {
+      console.error('Error checking follow states:', error);
+    }
+  };
+
+  const openFollowingList = () => {
+    setListType('following');
+    fetchFollowing();
     setShowFollowersList(true);
   };
+
+  const handleUserFollowToggle = async (targetUserId: string) => {
+    if (!user || targetUserId === user.id) return;
+    
+    const isCurrentlyFollowing = userFollowStates[targetUserId];
+    
+    try {
+      if (isCurrentlyFollowing) {
+        // Unfollow
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', targetUserId);
+
+        if (error) throw error;
+        
+        setUserFollowStates(prev => ({ ...prev, [targetUserId]: false }));
+        toast({
+          title: "Success",
+          description: "Unfollowed user"
+        });
+      } else {
+        // Follow
+        const { error } = await supabase
+          .from('follows')
+          .insert([{
+            follower_id: user.id,
+            following_id: targetUserId
+          }]);
+
+        if (error) throw error;
+        
+        setUserFollowStates(prev => ({ ...prev, [targetUserId]: true }));
+        toast({
+          title: "Success",
+          description: "Following user"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const openFollowersList = async () => {
+    setListType('followers');
+    await fetchFollowers();
+    setShowFollowersList(true);
+  };
+
+  // Check follow states when followers data changes
+  useEffect(() => {
+    if (!isOwnProfile && user && followers.length > 0 && listType === 'followers') {
+      checkMultipleFollowStates(followers);
+    }
+  }, [followers, isOwnProfile, user, listType]);
+
+  // Check follow states when following data changes  
+  useEffect(() => {
+    if (!isOwnProfile && user && followingUsers.length > 0 && listType === 'following') {
+      checkMultipleFollowStates(followingUsers);
+    }
+  }, [followingUsers, isOwnProfile, user, listType]);
 
   // Remove unused handleMessage function - replaced with MessageCreator component
 
@@ -700,7 +841,7 @@ const UniversalProfile = () => {
                     <div className="text-2xl font-bold">{followStats.followers_count}</div>
                     <div className="text-sm text-muted-foreground">Followers</div>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors" onClick={openFollowingList}>
                     <div className="text-2xl font-bold">{followStats.following_count}</div>
                     <div className="text-sm text-muted-foreground">Following</div>
                   </div>
@@ -798,42 +939,75 @@ const UniversalProfile = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Followers List Modal */}
+        {/* Followers/Following List Modal */}
         <Dialog open={showFollowersList} onOpenChange={setShowFollowersList}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Followers ({followStats.followers_count})</DialogTitle>
+              <DialogTitle>
+                {listType === 'followers' 
+                  ? `Followers (${followStats.followers_count})` 
+                  : `Following (${followStats.following_count})`}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {followers.length > 0 ? (
-                followers.map((follower) => (
+              {(listType === 'followers' ? followers : followingUsers).length > 0 ? (
+                (listType === 'followers' ? followers : followingUsers).map((person) => (
                   <div
-                    key={follower.user_id}
-                    onClick={() => {
-                      viewProfile(follower.user_id);
-                      setShowFollowersList(false);
-                    }}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
+                    key={person.user_id}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
                   >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={follower.avatar_url || ''} />
+                    <Avatar 
+                      className="h-10 w-10 cursor-pointer"
+                      onClick={() => {
+                        viewProfile(person.user_id);
+                        setShowFollowersList(false);
+                      }}
+                    >
+                      <AvatarImage src={person.avatar_url || ''} />
                       <AvatarFallback>
-                        {follower.display_name?.[0] || follower.username?.[0]?.toUpperCase() || '?'}
+                        {person.display_name?.[0] || person.username?.[0]?.toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
+                    <div 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => {
+                        viewProfile(person.user_id);
+                        setShowFollowersList(false);
+                      }}
+                    >
                       <div className="font-medium">
-                        {follower.display_name || follower.username || 'Anonymous User'}
+                        {person.display_name || person.username || 'Anonymous User'}
                       </div>
-                      {follower.username && follower.display_name && (
-                        <div className="text-sm text-muted-foreground">@{follower.username}</div>
+                      {person.username && person.display_name && (
+                        <div className="text-sm text-muted-foreground">@{person.username}</div>
                       )}
                     </div>
+                    {/* Follow/Unfollow button - only show if viewing from own profile and not the person's own entry */}
+                    {isOwnProfile && person.user_id !== user?.id && (
+                      <Button
+                        size="sm"
+                        variant={userFollowStates[person.user_id] ? "outline" : "default"}
+                        onClick={() => handleUserFollowToggle(person.user_id)}
+                        className={userFollowStates[person.user_id] ? "" : "bg-gradient-primary hover:opacity-90"}
+                      >
+                        {userFollowStates[person.user_id] ? (
+                          <>
+                            <UserMinus className="h-3 w-3 mr-1" />
+                            Unfollow
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-3 w-3 mr-1" />
+                            Follow
+                          </>
+                        )}
+                      </Button>
+                    )}
                   </div>
                 ))
               ) : (
                 <div className="text-center text-muted-foreground py-8">
-                  No followers yet
+                  {listType === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
                 </div>
               )}
             </div>
