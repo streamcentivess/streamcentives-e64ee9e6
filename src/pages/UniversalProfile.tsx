@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { PostsGrid } from '@/components/PostsGrid';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -607,13 +608,7 @@ const UniversalProfile = () => {
           </TabsList>
           
           <TabsContent value="posts" className="mt-6">
-            <Card className="card-modern">
-              <CardContent className="p-6 text-center">
-                <div className="text-muted-foreground">
-                  <p>No posts yet. Start sharing your music journey!</p>
-                </div>
-              </CardContent>
-            </Card>
+            <PostsGrid userId={viewingUserId || user?.id || ''} isOwnProfile={isOwnProfile} />
           </TabsContent>
           
           <TabsContent value="campaigns" className="mt-6">

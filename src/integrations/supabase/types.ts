@@ -291,11 +291,91 @@ export type Database = {
         }
         Relationships: []
       }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          caption: string | null
+          content_type: string
+          content_url: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          content_type: string
+          content_url: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          content_type?: string
+          content_url?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: string | null
           avatar_url: string | null
           bio: string | null
+          country_code: string | null
+          country_name: string | null
           created_at: string
           display_name: string | null
           email: string | null
@@ -315,6 +395,8 @@ export type Database = {
           age?: string | null
           avatar_url?: string | null
           bio?: string | null
+          country_code?: string | null
+          country_name?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -334,6 +416,8 @@ export type Database = {
           age?: string | null
           avatar_url?: string | null
           bio?: string | null
+          country_code?: string | null
+          country_name?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
