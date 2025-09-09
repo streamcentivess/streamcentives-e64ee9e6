@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import AppNavigation from '@/components/AppNavigation';
+import CommunityUpload from '@/components/CommunityUpload';
 import { 
   Heart, 
   MessageCircle, 
@@ -99,10 +100,11 @@ const Feed = () => {
         setLoadingMore(true);
       }
 
-      // Fetch posts with pagination
+      // Fetch posts with pagination - only community posts
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select('*')
+        .eq('is_community_post', true)
         .order('created_at', { ascending: false })
         .range(pageNum * POSTS_PER_PAGE, (pageNum + 1) * POSTS_PER_PAGE - 1);
 
@@ -598,6 +600,8 @@ const Feed = () => {
           </TabsList>
 
           <TabsContent value="community" className="space-y-6">
+            <CommunityUpload onUploadComplete={() => fetchPosts(0, true)} />
+            
             {posts.length === 0 ? (
               <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-dashed border-primary/20">
                 <CardContent className="text-center py-12">

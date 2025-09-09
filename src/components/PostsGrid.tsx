@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ShareButton } from './ShareButton';
 import { useNavigate } from 'react-router-dom';
+import CrossPostToggle from './CrossPostToggle';
 
 interface Post {
   id: string;
@@ -367,6 +368,7 @@ const CreatePostModal: React.FC<{ onPostCreated: () => void }> = ({ onPostCreate
   const [caption, setCaption] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [crossPostToCommunity, setCrossPostToCommunity] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -411,17 +413,43 @@ const CreatePostModal: React.FC<{ onPostCreated: () => void }> = ({ onPostCreate
 
       const { data } = supabase.storage.from('posts').getPublicUrl(fileName);
 
-      await supabase.from('posts').insert({
+      // Create posts based on user's cross-posting preference
+      const postsToInsert = [];
+      
+      // Always create a personal profile post
+      postsToInsert.push({
         user_id: user.id,
         content_type: file.type.startsWith('video/') ? 'video' : 'image',
         content_url: data.publicUrl,
-        caption: caption.trim() || null
+        caption: caption.trim() || null,
+        is_community_post: false,
+        is_cross_posted: crossPostToCommunity
       });
 
-      toast.success('Post created successfully!');
+      // If cross-posting is enabled, also create a community post
+      if (crossPostToCommunity) {
+        postsToInsert.push({
+          user_id: user.id,
+          content_type: file.type.startsWith('video/') ? 'video' : 'image',
+          content_url: data.publicUrl,
+          caption: caption.trim() || null,
+          is_community_post: true,
+          is_cross_posted: true
+        });
+      }
+
+      // Insert all posts
+      await supabase.from('posts').insert(postsToInsert);
+
+      const successMessage = crossPostToCommunity 
+        ? 'Posts created successfully! Shared on your profile and community feed! 🎉'
+        : 'Post created successfully!';
+      
+      toast.success(successMessage);
       setIsOpen(false);
       setCaption('');
       setFile(null);
+      setCrossPostToCommunity(false);
       onPostCreated();
     } catch (error) {
       console.error('Error creating post:', error);
@@ -477,6 +505,14 @@ const CreatePostModal: React.FC<{ onPostCreated: () => void }> = ({ onPostCreate
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               className="min-h-[80px]"
+            />
+          </div>
+
+          <div className="border-t pt-4">
+            <CrossPostToggle
+              enabled={crossPostToCommunity}
+              onChange={setCrossPostToCommunity}
+              disabled={uploading}
             />
           </div>
 

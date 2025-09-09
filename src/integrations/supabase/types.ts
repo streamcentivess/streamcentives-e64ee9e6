@@ -483,6 +483,8 @@ export type Database = {
           content_url: string
           created_at: string
           id: string
+          is_community_post: boolean | null
+          is_cross_posted: boolean | null
           updated_at: string
           user_id: string
         }
@@ -492,6 +494,8 @@ export type Database = {
           content_url: string
           created_at?: string
           id?: string
+          is_community_post?: boolean | null
+          is_cross_posted?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -501,6 +505,8 @@ export type Database = {
           content_url?: string
           created_at?: string
           id?: string
+          is_community_post?: boolean | null
+          is_cross_posted?: boolean | null
           updated_at?: string
           user_id?: string
         }
