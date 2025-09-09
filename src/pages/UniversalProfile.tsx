@@ -673,6 +673,17 @@ const UniversalProfile = () => {
             </h1>
           </div>
           <div className="flex gap-2">
+            {!isOwnProfile && (
+              <Button
+                onClick={() => navigate('/universal-profile')}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                My Profile
+              </Button>
+            )}
             <Button
               onClick={() => navigate('/inbox')}
               variant="outline"
