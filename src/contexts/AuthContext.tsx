@@ -77,8 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         provider: 'spotify',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          scopes:
-            'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private',
+          scopes: 'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private',
           skipBrowserRedirect: true,
         },
       });
@@ -94,9 +93,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const url = data?.url;
       if (url) {
-        // Break out of the builder iframe to avoid "refused to connect"
-        const targetWindow = window.top ?? window;
-        targetWindow.location.href = url;
+        // Open OAuth flow in a popup window to bypass iframe restrictions
+        const popup = window.open(
+          url,
+          'spotify-auth',
+          'width=500,height=600,scrollbars=yes,resizable=yes'
+        );
+        
+        if (!popup) {
+          toast({
+            title: 'Popup Blocked',
+            description: 'Please allow popups for authentication to work.',
+            variant: 'destructive',
+          });
+        }
       } else {
         toast({
           title: 'Authentication Error',
