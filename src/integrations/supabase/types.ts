@@ -801,11 +801,15 @@ export type Database = {
     Views: {
       public_profiles: {
         Row: {
+          age: string | null
           avatar_url: string | null
+          bio: string | null
           country_code: string | null
           country_name: string | null
           created_at: string | null
           display_name: string | null
+          interests: string | null
+          location: string | null
           merch_store_connected: boolean | null
           merch_store_url: string | null
           spotify_connected: boolean | null
@@ -813,11 +817,15 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          age?: string | null
           avatar_url?: string | null
+          bio?: string | null
           country_code?: string | null
           country_name?: string | null
           created_at?: string | null
           display_name?: string | null
+          interests?: string | null
+          location?: string | null
           merch_store_connected?: boolean | null
           merch_store_url?: string | null
           spotify_connected?: boolean | null
@@ -825,11 +833,15 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          age?: string | null
           avatar_url?: string | null
+          bio?: string | null
           country_code?: string | null
           country_name?: string | null
           created_at?: string | null
           display_name?: string | null
+          interests?: string | null
+          location?: string | null
           merch_store_connected?: boolean | null
           merch_store_url?: string | null
           spotify_connected?: boolean | null
