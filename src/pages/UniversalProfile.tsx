@@ -575,7 +575,7 @@ const UniversalProfile = () => {
 
                 {/* Bio and Details */}
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  {profile.bio && <p>{profile.bio}</p>}
+                  {profile.bio && <p className="text-center">{profile.bio}</p>}
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
