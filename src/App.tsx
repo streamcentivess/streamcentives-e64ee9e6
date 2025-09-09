@@ -19,6 +19,7 @@ import UniversalProfile from "./pages/UniversalProfile";
 import EditProfile from "./pages/EditProfile";
 import BillingPayments from "./pages/BillingPayments";
 import FanDashboard from "./pages/FanDashboard";
+import FanCampaigns from "./pages/FanCampaigns";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import Campaigns from "./pages/Campaigns";
 import Marketplace from "./pages/Marketplace";
@@ -76,6 +77,11 @@ const App = () => (
             <Route path="/fan-dashboard" element={
               <ProtectedRoute>
                 <FanDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/fan-campaigns" element={
+              <ProtectedRoute>
+                <FanCampaigns />
               </ProtectedRoute>
             } />
             <Route path="/creator-dashboard" element={
