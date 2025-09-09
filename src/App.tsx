@@ -19,6 +19,7 @@ import CreatorDashboard from "./pages/CreatorDashboard";
 import Campaigns from "./pages/Campaigns";
 import Marketplace from "./pages/Marketplace";
 import Leaderboards from "./pages/Leaderboards";
+import ManageRewards from "./pages/ManageRewards";
 import RoleSelection from "./pages/RoleSelection";
 import ProfileSetup from "./pages/ProfileSetup";
 
@@ -81,6 +82,11 @@ const App = () => (
             <Route path="/leaderboards" element={
               <ProtectedRoute>
                 <Leaderboards />
+              </ProtectedRoute>
+            } />
+            <Route path="/manage-rewards" element={
+              <ProtectedRoute>
+                <ManageRewards />
               </ProtectedRoute>
             } />
             

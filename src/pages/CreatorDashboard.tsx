@@ -245,7 +245,7 @@ const CreatorDashboard = () => {
                   <Plus className="h-4 w-4 mr-2" />
                   Create Campaign
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={() => navigate('/manage-rewards')}>
                   <Gift className="h-4 w-4 mr-2" />
                   Manage Rewards
                 </Button>

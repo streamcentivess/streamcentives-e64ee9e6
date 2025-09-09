@@ -1,236 +1,207 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, Gift, Star, ArrowLeft, ShoppingCart, Heart, Share2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, Search, ShoppingCart, Sparkles, Star, Heart, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
 
 interface Reward {
   id: string;
   title: string;
-  description: string;
-  type: 'experience' | 'merchandise' | 'digital' | 'exclusive';
-  xpCost: number;
-  originalPrice?: number;
-  creator: {
-    name: string;
-    avatar: string;
-    verified: boolean;
-  };
-  imageUrl: string;
-  category: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  stock: number;
-  totalClaimed: number;
-  isLimited: boolean;
-  tags: string[];
+  description: string | null;
+  type: string;
+  xp_cost: number | null;
+  cash_price: number | null;
+  currency: string;
+  quantity_available: number;
+  quantity_redeemed: number;
+  image_url: string | null;
+  rarity: string;
+  tags: string[] | null;
+  creator_id: string;
+  created_at: string;
+  profiles: {
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
 }
-
-// Mock data - replace with real API calls
-const mockRewards: Reward[] = [
-  {
-    id: '1',
-    title: 'VIP Meet & Greet Pass',
-    description: 'Exclusive backstage access and personal meet & greet with Luna Rodriguez during her world tour.',
-    type: 'experience',
-    xpCost: 5000,
-    originalPrice: 200,
-    creator: {
-      name: 'Luna Rodriguez',
-      avatar: '/placeholder-artist.jpg',
-      verified: true
-    },
-    imageUrl: '/placeholder-vip.jpg',
-    category: 'Experience',
-    rarity: 'legendary',
-    stock: 5,
-    totalClaimed: 15,
-    isLimited: true,
-    tags: ['vip', 'exclusive', 'meet-greet']
-  },
-  {
-    id: '2',
-    title: 'Limited Edition Vinyl Record',
-    description: 'Signed vinyl record of "Midnight Dreams" album with exclusive artwork and liner notes.',
-    type: 'merchandise',
-    xpCost: 2500,
-    originalPrice: 75,
-    creator: {
-      name: 'Luna Rodriguez',
-      avatar: '/placeholder-artist.jpg',
-      verified: true
-    },
-    imageUrl: '/placeholder-vinyl.jpg',
-    category: 'Merchandise',
-    rarity: 'epic',
-    stock: 50,
-    totalClaimed: 125,
-    isLimited: true,
-    tags: ['vinyl', 'signed', 'collectible']
-  },
-  {
-    id: '3',
-    title: 'Exclusive Digital Wallpaper Pack',
-    description: 'Collection of 10 high-resolution wallpapers featuring exclusive band photography.',
-    type: 'digital',
-    xpCost: 500,
-    creator: {
-      name: 'The Electric Beats',
-      avatar: '/placeholder-band.jpg',
-      verified: true
-    },
-    imageUrl: '/placeholder-wallpaper.jpg',
-    category: 'Digital',
-    rarity: 'common',
-    stock: 999,
-    totalClaimed: 1247,
-    isLimited: false,
-    tags: ['wallpaper', 'digital', 'photography']
-  },
-  {
-    id: '4',
-    title: 'DJ Cosmic Remix Pack',
-    description: 'Unreleased remixes and stems from DJ Cosmic\'s latest tracks for aspiring producers.',
-    type: 'digital',
-    xpCost: 1200,
-    creator: {
-      name: 'DJ Cosmic',
-      avatar: '/placeholder-dj.jpg',
-      verified: true
-    },
-    imageUrl: '/placeholder-remix.jpg',
-    category: 'Digital',
-    rarity: 'rare',
-    stock: 200,
-    totalClaimed: 89,
-    isLimited: true,
-    tags: ['remix', 'stems', 'producer']
-  },
-  {
-    id: '5',
-    title: 'Concert Livestream Access',
-    description: '4K livestream access to Neon Pulse\'s sold-out concert with multi-camera angles.',
-    type: 'experience',
-    xpCost: 800,
-    originalPrice: 25,
-    creator: {
-      name: 'Neon Pulse',
-      avatar: '/placeholder-artist2.jpg',
-      verified: false
-    },
-    imageUrl: '/placeholder-livestream.jpg',
-    category: 'Experience',
-    rarity: 'common',
-    stock: 500,
-    totalClaimed: 1456,
-    isLimited: false,
-    tags: ['livestream', 'concert', '4k']
-  }
-];
 
 const Marketplace = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [rewards, setRewards] = useState<Reward[]>(mockRewards);
-  const [filteredRewards, setFilteredRewards] = useState<Reward[]>(mockRewards);
+  const { toast } = useToast();
+
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [filteredRewards, setFilteredRewards] = useState<Reward[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
-  const [userXP] = useState(3500); // Mock user XP - replace with real data
+  const [userXP] = useState(2500); // This should come from your user profile/state
+
+  useEffect(() => {
+    fetchRewards();
+  }, []);
 
   useEffect(() => {
     filterAndSortRewards();
-  }, [searchTerm, selectedType, selectedRarity, sortBy]);
+  }, [rewards, searchTerm, selectedType, selectedRarity, sortBy]);
+
+  const fetchRewards = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('rewards')
+        .select(`
+          *,
+          profiles!creator_id (
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('is_active', true)
+        .gt('quantity_available', 0)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setRewards((data as any) || []);
+    } catch (error) {
+      console.error('Error fetching rewards:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load marketplace",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filterAndSortRewards = () => {
-    let filtered = rewards;
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(reward => 
+    let filtered = rewards.filter(reward => {
+      const matchesSearch = 
         reward.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reward.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reward.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
+        reward.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reward.profiles?.display_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesType = selectedType === 'all' || reward.type === selectedType;
+      const matchesRarity = selectedRarity === 'all' || reward.rarity === selectedRarity;
+      
+      return matchesSearch && matchesType && matchesRarity;
+    });
 
-    // Filter by type
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(reward => reward.type === selectedType);
-    }
-
-    // Filter by rarity
-    if (selectedRarity !== 'all') {
-      filtered = filtered.filter(reward => reward.rarity === selectedRarity);
-    }
-
-    // Sort rewards
+    // Sort filtered results
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'price_low':
-          return a.xpCost - b.xpCost;
-        case 'price_high':
-          return b.xpCost - a.xpCost;
-        case 'popular':
-          return b.totalClaimed - a.totalClaimed;
+        case 'xp_low':
+          return (a.xp_cost || 0) - (b.xp_cost || 0);
+        case 'xp_high':
+          return (b.xp_cost || 0) - (a.xp_cost || 0);
+        case 'cash_low':
+          return (a.cash_price || 0) - (b.cash_price || 0);
+        case 'cash_high':
+          return (b.cash_price || 0) - (a.cash_price || 0);
+        case 'rarity':
+          const rarityOrder = { legendary: 4, epic: 3, rare: 2, common: 1 };
+          return (rarityOrder[b.rarity as keyof typeof rarityOrder] || 0) - 
+                 (rarityOrder[a.rarity as keyof typeof rarityOrder] || 0);
         case 'newest':
         default:
-          return 0; // Mock - in real app, sort by creation date
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
 
     setFilteredRewards(filtered);
   };
 
-  const redeemReward = async (rewardId: string) => {
-    const reward = rewards.find(r => r.id === rewardId);
-    if (!reward) return;
-
-    if (userXP < reward.xpCost) {
+  const redeemReward = async (reward: Reward, paymentMethod: 'xp' | 'cash') => {
+    if (!user) {
       toast({
-        title: "Insufficient XP",
-        description: `You need ${reward.xpCost - userXP} more XP to redeem this reward.`,
-        variant: "destructive"
+        title: "Authentication Required",
+        description: "Please sign in to redeem rewards",
+        variant: "destructive",
       });
+      navigate('/auth/signin');
       return;
     }
 
-    if (reward.stock <= 0) {
+    // Check availability
+    if (reward.quantity_available <= reward.quantity_redeemed) {
       toast({
         title: "Out of Stock",
-        description: "This reward is currently out of stock.",
-        variant: "destructive"
+        description: "This reward is currently out of stock",
+        variant: "destructive",
       });
       return;
     }
 
-    // Mock redemption logic - replace with real API call
-    toast({
-      title: "Reward Redeemed!",
-      description: `You've successfully redeemed "${reward.title}" for ${reward.xpCost} XP!`,
-    });
+    // Check payment method availability
+    if (paymentMethod === 'xp' && !reward.xp_cost) {
+      toast({
+        title: "Payment Method Unavailable",
+        description: "XP payment not available for this reward",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Update local state
-    setRewards(prev => prev.map(r => 
-      r.id === rewardId 
-        ? { ...r, stock: r.stock - 1, totalClaimed: r.totalClaimed + 1 }
-        : r
-    ));
+    if (paymentMethod === 'cash' && !reward.cash_price) {
+      toast({
+        title: "Payment Method Unavailable", 
+        description: "Cash payment not available for this reward",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check XP balance
+    if (paymentMethod === 'xp' && reward.xp_cost && userXP < reward.xp_cost) {
+      toast({
+        title: "Insufficient XP",
+        description: `You need ${reward.xp_cost} XP but only have ${userXP} XP`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('redeem_reward', {
+        reward_id_param: reward.id,
+        payment_method_param: paymentMethod,
+        xp_spent_param: paymentMethod === 'xp' ? reward.xp_cost : null,
+        amount_paid_param: paymentMethod === 'cash' ? reward.cash_price : null,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: `Successfully redeemed "${reward.title}"!`,
+      });
+
+      // Refresh rewards to update quantities
+      fetchRewards();
+    } catch (error: any) {
+      console.error('Error redeeming reward:', error);
+      toast({
+        title: "Redemption Failed",
+        description: error.message || "Failed to redeem reward",
+        variant: "destructive",
+      });
+    }
   };
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'common': return 'bg-muted/20 text-muted-foreground';
-      case 'rare': return 'bg-blue-500/20 text-blue-500';
-      case 'epic': return 'bg-purple-500/20 text-purple-500';
-      case 'legendary': return 'bg-yellow-500/20 text-yellow-500';
+      case 'legendary': return 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white';
+      case 'epic': return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white';
+      case 'rare': return 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white';
       default: return 'bg-muted/20 text-muted-foreground';
     }
   };
@@ -240,10 +211,18 @@ const Marketplace = () => {
       case 'experience': return '🎫';
       case 'merchandise': return '👕';
       case 'digital': return '💾';
-      case 'exclusive': return '⭐';
+      case 'access': return '⭐';
       default: return '🎁';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -286,7 +265,7 @@ const Marketplace = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search rewards, creators, or categories..."
+              placeholder="Search rewards, creators, or tags..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -303,7 +282,7 @@ const Marketplace = () => {
                 <SelectItem value="experience">Experience</SelectItem>
                 <SelectItem value="merchandise">Merchandise</SelectItem>
                 <SelectItem value="digital">Digital</SelectItem>
-                <SelectItem value="exclusive">Exclusive</SelectItem>
+                <SelectItem value="access">Access</SelectItem>
               </SelectContent>
             </Select>
             
@@ -321,132 +300,151 @@ const Marketplace = () => {
             </Select>
             
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-40">
                 <SelectValue placeholder="Sort By" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="newest">Newest</SelectItem>
-                <SelectItem value="popular">Most Popular</SelectItem>
-                <SelectItem value="price_low">Price: Low to High</SelectItem>
-                <SelectItem value="price_high">Price: High to Low</SelectItem>
+                <SelectItem value="rarity">Rarity</SelectItem>
+                <SelectItem value="xp_low">XP: Low to High</SelectItem>
+                <SelectItem value="xp_high">XP: High to Low</SelectItem>
+                <SelectItem value="cash_low">Price: Low to High</SelectItem>
+                <SelectItem value="cash_high">Price: High to Low</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
         {/* Rewards Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredRewards.map((reward) => (
-            <Card key={reward.id} className="card-modern group hover:scale-105 transition-all duration-300">
-              <CardHeader className="p-0">
-                <div className="aspect-video bg-muted rounded-t-xl relative overflow-hidden">
-                  <img 
-                    src={reward.imageUrl} 
-                    alt={reward.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    onError={(e) => {
-                      e.currentTarget.src = '/placeholder-reward.jpg';
-                    }}
-                  />
-                  <div className="absolute top-2 left-2">
-                    <Badge className={getRarityColor(reward.rarity)}>
-                      {reward.rarity}
-                    </Badge>
-                  </div>
-                  <div className="absolute top-2 right-2">
-                    <span className="text-2xl">{getTypeIcon(reward.type)}</span>
-                  </div>
-                  {reward.isLimited && (
-                    <div className="absolute bottom-2 left-2">
-                      <Badge variant="destructive" className="text-xs">
-                        Limited Edition
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              
-              <CardContent className="p-4 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-                    {reward.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {reward.description}
-                  </p>
-                </div>
-                
-                {/* Creator Info */}
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={reward.creator.avatar} />
-                    <AvatarFallback className="text-xs">{reward.creator.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">
-                      {reward.creator.name}
-                      {reward.creator.verified && (
-                        <span className="ml-1 text-primary">✓</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Price and Stock */}
-                <div className="flex items-center justify-between text-sm">
-                  <div>
-                    <span className="font-bold text-primary">
-                      {reward.xpCost.toLocaleString()} XP
-                    </span>
-                    {reward.originalPrice && (
-                      <span className="text-xs text-muted-foreground ml-1">
-                        (${reward.originalPrice} value)
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {reward.stock > 0 ? `${reward.stock} left` : 'Out of stock'}
-                  </div>
-                </div>
-                
-                {/* Stats */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{reward.totalClaimed} claimed</span>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3" />
-                    <span>{reward.category}</span>
-                  </div>
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <Button 
-                    className="flex-1 text-xs h-8"
-                    onClick={() => redeemReward(reward.id)}
-                    disabled={userXP < reward.xpCost || reward.stock <= 0}
-                  >
-                    <ShoppingCart className="h-3 w-3 mr-1" />
-                    {userXP < reward.xpCost ? 'Need More XP' : reward.stock <= 0 ? 'Out of Stock' : 'Redeem'}
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                    <Heart className="h-3 w-3" />
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                    <Share2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        
-        {filteredRewards.length === 0 && (
+        {filteredRewards.length === 0 ? (
           <div className="text-center py-12">
-            <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No rewards found</h3>
             <p className="text-muted-foreground">
-              Try adjusting your search terms or filters to find more rewards.
+              {rewards.length === 0 ? 
+                'No rewards available in the marketplace yet.' :
+                'Try adjusting your filters to find what you\'re looking for.'
+              }
             </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredRewards.map((reward) => (
+              <Card key={reward.id} className="card-modern group hover:scale-105 transition-all duration-300">
+                <CardHeader className="p-0">
+                  <div className="aspect-video bg-muted rounded-t-xl relative overflow-hidden">
+                    {reward.image_url ? (
+                      <img 
+                        src={reward.image_url} 
+                        alt={reward.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-surface">
+                        <Sparkles className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2">
+                      <Badge className={getRarityColor(reward.rarity)}>
+                        {reward.rarity}
+                      </Badge>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span className="text-2xl">{getTypeIcon(reward.type)}</span>
+                    </div>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-4 space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-sm leading-tight line-clamp-2">
+                      {reward.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {reward.description || 'No description available'}
+                    </p>
+                  </div>
+                  
+                  {/* Creator Info */}
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={reward.profiles?.avatar_url || ''} />
+                      <AvatarFallback className="text-xs">
+                        {reward.profiles?.display_name?.slice(0, 2).toUpperCase() || 'CR'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">
+                        {reward.profiles?.display_name || 'Creator'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Price and Stock */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1">
+                        {reward.xp_cost && (
+                          <span className="text-xs font-bold text-primary">
+                            {reward.xp_cost.toLocaleString()} XP
+                          </span>
+                        )}
+                        {reward.cash_price && (
+                          <span className="text-xs font-bold text-success">
+                            ${reward.cash_price}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground text-right">
+                        <div>{reward.quantity_available - reward.quantity_redeemed} left</div>
+                        <div>of {reward.quantity_available}</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Stats */}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{reward.quantity_redeemed} redeemed</span>
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3" />
+                      <span className="capitalize">{reward.type}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-1">
+                    {reward.xp_cost && (
+                      <Button 
+                        className="flex-1 text-xs h-8"
+                        onClick={() => redeemReward(reward, 'xp')}
+                        disabled={!user || userXP < reward.xp_cost || reward.quantity_available <= reward.quantity_redeemed}
+                      >
+                        <ShoppingCart className="h-3 w-3 mr-1" />
+                        {!user ? 'Sign In' : 
+                         userXP < reward.xp_cost ? 'Need XP' : 
+                         reward.quantity_available <= reward.quantity_redeemed ? 'Out of Stock' : 'Redeem'}
+                      </Button>
+                    )}
+                    {reward.cash_price && (
+                      <Button 
+                        variant="outline"
+                        className="flex-1 text-xs h-8"
+                        onClick={() => redeemReward(reward, 'cash')}
+                        disabled={!user || reward.quantity_available <= reward.quantity_redeemed}
+                      >
+                        Buy ${reward.cash_price}
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                      <Heart className="h-3 w-3" />
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                      <Share2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
       </div>
