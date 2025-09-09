@@ -15,14 +15,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
 
 interface Profile {
-  id: string;
+  id?: string;
   user_id: string;
   username?: string;
   display_name?: string;
   bio?: string;
   avatar_url?: string;
-  spotify_connected: boolean;
-  created_at: string;
+  spotify_connected?: boolean;
+  created_at?: string;
 }
 
 const UniversalProfile = () => {
@@ -39,6 +39,9 @@ const UniversalProfile = () => {
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [searching, setSearching] = useState(false);
   const [userRole, setUserRole] = useState<'fan' | 'creator' | null>(null);
+  const [followStats, setFollowStats] = useState({ followers_count: 0, following_count: 0 });
+  const [showFollowersList, setShowFollowersList] = useState(false);
+  const [followers, setFollowers] = useState<Profile[]>([]);
   
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId');
@@ -47,6 +50,7 @@ const UniversalProfile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchFollowStats();
       // Determine user role from sessionStorage or URL params
       const savedRole = sessionStorage.getItem('selectedRole') as 'fan' | 'creator' | null;
       if (savedRole) {
@@ -108,9 +112,43 @@ const UniversalProfile = () => {
     }
   };
 
+  const fetchFollowStats = async () => {
+    const targetUserId = viewingUserId || user?.id;
+    if (!targetUserId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_follow_stats')
+        .select('followers_count, following_count')
+        .eq('user_id', targetUserId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching follow stats:', error);
+      } else if (data) {
+        setFollowStats(data);
+      }
+    } catch (error) {
+      console.error('Error fetching follow stats:', error);
+    }
+  };
+
   const checkFollowStatus = async () => {
-    // This would check a follows table - for now just mock it
-    setFollowing(false);
+    if (!user || !profile || isOwnProfile) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', user.id)
+        .eq('following_id', profile.user_id)
+        .single();
+
+      setFollowing(!!data);
+    } catch (error) {
+      // No follow relationship exists
+      setFollowing(false);
+    }
   };
 
   const handleFollowToggle = async () => {
@@ -118,12 +156,48 @@ const UniversalProfile = () => {
     
     setFollowLoading(true);
     try {
-      // Mock follow/unfollow logic - you'd implement actual follow system here
-      setFollowing(!following);
-      toast({
-        title: "Success",
-        description: following ? "Unfollowed user" : "Following user"
-      });
+      if (following) {
+        // Unfollow
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', profile.user_id);
+
+        if (error) throw error;
+        
+        setFollowing(false);
+        setFollowStats(prev => ({ 
+          ...prev, 
+          followers_count: Math.max(0, prev.followers_count - 1) 
+        }));
+        
+        toast({
+          title: "Success",
+          description: "Unfollowed user"
+        });
+      } else {
+        // Follow
+        const { error } = await supabase
+          .from('follows')
+          .insert([{
+            follower_id: user.id,
+            following_id: profile.user_id
+          }]);
+
+        if (error) throw error;
+        
+        setFollowing(true);
+        setFollowStats(prev => ({ 
+          ...prev, 
+          followers_count: prev.followers_count + 1 
+        }));
+        
+        toast({
+          title: "Success",
+          description: "Following user"
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -183,6 +257,48 @@ const UniversalProfile = () => {
     navigate(`/universal-profile?userId=${userId}`);
     setSearchQuery('');
     setSearchResults([]);
+  };
+
+  const fetchFollowers = async () => {
+    const targetUserId = viewingUserId || user?.id;
+    if (!targetUserId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('follows')
+        .select(`
+          follower_id,
+          public_profiles!follows_follower_id_fkey (
+            user_id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('following_id', targetUserId);
+
+      if (error) {
+        console.error('Error fetching followers:', error);
+        return;
+      }
+
+      const followersData = data?.map((follow: any) => ({
+        user_id: follow.public_profiles.user_id,
+        username: follow.public_profiles.username,
+        display_name: follow.public_profiles.display_name,
+        avatar_url: follow.public_profiles.avatar_url,
+        spotify_connected: false
+      })) || [];
+
+      setFollowers(followersData);
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+    }
+  };
+
+  const openFollowersList = () => {
+    fetchFollowers();
+    setShowFollowersList(true);
   };
 
   // Remove unused handleMessage function - replaced with MessageCreator component
@@ -577,15 +693,15 @@ const UniversalProfile = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-2xl font-bold">2</div>
                     <div className="text-sm text-muted-foreground">Posts</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">0</div>
+                  <div className="text-center cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors" onClick={openFollowersList}>
+                    <div className="text-2xl font-bold">{followStats.followers_count}</div>
                     <div className="text-sm text-muted-foreground">Followers</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-2xl font-bold">{followStats.following_count}</div>
                     <div className="text-sm text-muted-foreground">Following</div>
                   </div>
                   <div className="text-center">
@@ -681,6 +797,48 @@ const UniversalProfile = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Followers List Modal */}
+        <Dialog open={showFollowersList} onOpenChange={setShowFollowersList}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Followers ({followStats.followers_count})</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {followers.length > 0 ? (
+                followers.map((follower) => (
+                  <div
+                    key={follower.user_id}
+                    onClick={() => {
+                      viewProfile(follower.user_id);
+                      setShowFollowersList(false);
+                    }}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={follower.avatar_url || ''} />
+                      <AvatarFallback>
+                        {follower.display_name?.[0] || follower.username?.[0]?.toUpperCase() || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-medium">
+                        {follower.display_name || follower.username || 'Anonymous User'}
+                      </div>
+                      {follower.username && follower.display_name && (
+                        <div className="text-sm text-muted-foreground">@{follower.username}</div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  No followers yet
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

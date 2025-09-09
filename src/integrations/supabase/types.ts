@@ -172,6 +172,27 @@ export type Database = {
         }
         Relationships: []
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       message_analysis: {
         Row: {
           analyzed_at: string
@@ -679,6 +700,14 @@ export type Database = {
           spotify_connected?: boolean | null
           user_id?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      user_follow_stats: {
+        Row: {
+          followers_count: number | null
+          following_count: number | null
+          user_id: string | null
         }
         Relationships: []
       }
