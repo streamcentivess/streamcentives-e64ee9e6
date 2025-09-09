@@ -42,7 +42,7 @@ const RoleSelection = () => {
           <img 
             src="/lovable-uploads/streamcentivesloveable.PNG" 
             alt="StreamCentives Logo" 
-            className="w-20 h-20 mx-auto rounded-full shadow-lg"
+            className="w-32 h-32 mx-auto rounded-full shadow-lg"
           />
         </div>
         <div className="inline-block p-1 bg-gradient-to-r from-primary to-accent rounded-full mb-6">
