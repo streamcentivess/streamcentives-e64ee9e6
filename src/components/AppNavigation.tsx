@@ -28,7 +28,7 @@ import {
   Mail,
   Rss
 } from 'lucide-react';
-import streamcentivesLogo from '@/assets/streamcentives-logo.png';
+const streamcentivesLogo = '/lovable-uploads/streamcentivesloveable.PNG';
 
 const AppNavigation = () => {
   const { user, signOut } = useAuth();
