@@ -279,33 +279,37 @@ const UniversalProfile = () => {
     if (!targetUserId) return;
 
     try {
-      const { data, error } = await supabase
+      // First get the follow relationships
+      const { data: followsData, error: followsError } = await supabase
         .from('follows')
-        .select(`
-          follower_id,
-          public_profiles!follows_follower_id_fkey (
-            user_id,
-            username,
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('follower_id')
         .eq('following_id', targetUserId);
 
-      if (error) {
-        console.error('Error fetching followers:', error);
+      if (followsError) {
+        console.error('Error fetching follows:', followsError);
         return;
       }
 
-      const followersData = data?.map((follow: any) => ({
-        user_id: follow.public_profiles.user_id,
-        username: follow.public_profiles.username,
-        display_name: follow.public_profiles.display_name,
-        avatar_url: follow.public_profiles.avatar_url,
-        spotify_connected: false
-      })) || [];
+      if (!followsData || followsData.length === 0) {
+        setFollowers([]);
+        return;
+      }
 
-      setFollowers(followersData);
+      // Get follower user IDs
+      const followerIds = followsData.map(f => f.follower_id);
+
+      // Then get the profiles for those followers
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('public_profiles' as any)
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', followerIds);
+
+      if (profilesError) {
+        console.error('Error fetching follower profiles:', profilesError);
+        return;
+      }
+
+      setFollowers((profilesData as any) || []);
     } catch (error) {
       console.error('Error fetching followers:', error);
     }
@@ -316,32 +320,37 @@ const UniversalProfile = () => {
     if (!targetUserId) return;
 
     try {
-      const { data, error } = await supabase
+      // First get the follow relationships  
+      const { data: followsData, error: followsError } = await supabase
         .from('follows')
-        .select(`
-          following_id,
-          public_profiles!follows_following_id_fkey (
-            user_id,
-            username,
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('following_id')
         .eq('follower_id', targetUserId);
 
-      if (error) {
-        console.error('Error fetching following:', error);
+      if (followsError) {
+        console.error('Error fetching follows:', followsError);
         return;
       }
 
-      const followingData = data?.map((follow: any) => ({
-        user_id: follow.public_profiles.user_id,
-        username: follow.public_profiles.username,
-        display_name: follow.public_profiles.display_name,
-        avatar_url: follow.public_profiles.avatar_url,
-        spotify_connected: false
-      })) || [];
+      if (!followsData || followsData.length === 0) {
+        setFollowingUsers([]);
+        return;
+      }
 
+      // Get following user IDs
+      const followingIds = followsData.map(f => f.following_id);
+
+      // Then get the profiles for those users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('public_profiles' as any)
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', followingIds);
+
+      if (profilesError) {
+        console.error('Error fetching following profiles:', profilesError);
+        return;
+      }
+
+      const followingData = (profilesData as any) || [];
       setFollowingUsers(followingData);
       
       // Check follow states for all users in the list
