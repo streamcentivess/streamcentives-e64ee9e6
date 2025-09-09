@@ -9,12 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle } from 'lucide-react';
+import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const CreatorDashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, signInWithSpotify } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -25,6 +25,9 @@ const CreatorDashboard = () => {
     url: '',
     platform: 'shopify'
   });
+  // Leaderboard state
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
   // Mock data - replace with real data from your API
   const totalFans = 2847;
@@ -37,6 +40,54 @@ const CreatorDashboard = () => {
     if (user) {
       fetchProfile();
     }
+  }, [user]);
+  useEffect(() => {
+    if (!user) return;
+    const fetchLeaderboard = async () => {
+      try {
+        setLoadingLeaderboard(true);
+        const { data, error } = await supabase
+          .from('creator_fan_leaderboards')
+          .select('fan_user_id,total_listens,total_xp_earned,rank_position')
+          .eq('creator_user_id', user.id)
+          .order('total_xp_earned', { ascending: false })
+          .limit(10);
+        if (error) throw error;
+        const fanIds = (data || []).map((d: any) => d.fan_user_id);
+        let profilesMap: Record<string, any> = {};
+        if (fanIds.length) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, username, avatar_url')
+            .in('user_id', fanIds);
+          profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
+        }
+        setLeaderboard((data || []).map((d: any) => ({
+          ...d,
+          profile: profilesMap[d.fan_user_id] || null,
+        })));
+      } catch (e) {
+        console.error('Error fetching leaderboard', e);
+      } finally {
+        setLoadingLeaderboard(false);
+      }
+    };
+
+    fetchLeaderboard();
+
+    const channel = supabase
+      .channel(`creator-leaderboard-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'creator_fan_leaderboards' }, (payload) => {
+        const newRow: any = (payload as any).new || {};
+        if (newRow?.creator_user_id === user.id) {
+          fetchLeaderboard();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const fetchProfile = async () => {
@@ -124,6 +175,18 @@ const CreatorDashboard = () => {
         description: "Failed to disconnect merch store",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDisconnectSpotify = async () => {
+    try {
+      await supabase.from('spotify_accounts').delete().eq('user_id', user?.id);
+      await supabase.from('profiles').update({ spotify_connected: false } as any).eq('user_id', user?.id);
+      toast({ title: 'Disconnected', description: 'Spotify has been disconnected.' });
+      fetchProfile();
+    } catch (error) {
+      console.error('Error disconnecting Spotify:', error);
+      toast({ title: 'Error', description: 'Failed to disconnect Spotify', variant: 'destructive' });
     }
   };
 
@@ -310,6 +373,43 @@ const CreatorDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+            {/* Real-time Leaderboard */}
+            <Card className="card-modern">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Creator Leaderboard
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingLeaderboard ? (
+                  <p className="text-sm text-muted-foreground">Loading leaderboard...</p>
+                ) : leaderboard.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No activity yet. As fans listen, they’ll appear here.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {leaderboard.map((entry, index) => (
+                      <div key={entry.fan_user_id} className="leaderboard-item">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
+                            {entry.rank_position ?? index + 1}
+                          </div>
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={entry.profile?.avatar_url || undefined} alt={`${entry.profile?.display_name || entry.profile?.username || 'Fan'} avatar`} />
+                            <AvatarFallback>{(entry.profile?.display_name || entry.profile?.username || 'FN').slice(0,2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{entry.profile?.display_name || entry.profile?.username || entry.fan_user_id.slice(0,8)}</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">{entry.total_xp_earned} XP</p>
+                          <p className="text-xs text-muted-foreground">{entry.total_listens} listens</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Top Contributors */}
             <Card className="card-modern">
@@ -431,6 +531,45 @@ const CreatorDashboard = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Spotify Integration */}
+            <Card className="card-modern">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Music className="h-5 w-5" />
+                  Spotify for Artists
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {profile?.spotify_connected ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-success">Connected</p>
+                        <p className="text-xs text-muted-foreground">Listening events will update your leaderboard in real time</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="outline" size="sm" onClick={() => navigate('/leaderboards')}>
+                        <Trophy className="h-4 w-4 mr-2" />
+                        View Leaderboard
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleDisconnectSpotify} className="text-destructive hover:text-destructive">
+                        Disconnect
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">Connect to enable real-time stream tracking and fan leaderboards.</p>
+                    <Button className="w-full bg-gradient-primary hover:opacity-90" onClick={signInWithSpotify}>
+                      Connect Spotify
+                    </Button>
                   </div>
                 )}
               </CardContent>

@@ -136,6 +136,42 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_fan_leaderboards: {
+        Row: {
+          created_at: string
+          creator_user_id: string
+          fan_user_id: string
+          id: string
+          last_activity_at: string | null
+          rank_position: number | null
+          total_listens: number
+          total_xp_earned: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_user_id: string
+          fan_user_id: string
+          id?: string
+          last_activity_at?: string | null
+          rank_position?: number | null
+          total_listens?: number
+          total_xp_earned?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_user_id?: string
+          fan_user_id?: string
+          id?: string
+          last_activity_at?: string | null
+          rank_position?: number | null
+          total_listens?: number
+          total_xp_earned?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -143,6 +179,10 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          merch_store_connected: boolean | null
+          merch_store_connected_at: string | null
+          merch_store_platform: string | null
+          merch_store_url: string | null
           spotify_connected: boolean | null
           updated_at: string
           user_id: string
@@ -154,6 +194,10 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          merch_store_connected?: boolean | null
+          merch_store_connected_at?: string | null
+          merch_store_platform?: string | null
+          merch_store_url?: string | null
           spotify_connected?: boolean | null
           updated_at?: string
           user_id: string
@@ -165,6 +209,10 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          merch_store_connected?: boolean | null
+          merch_store_connected_at?: string | null
+          merch_store_platform?: string | null
+          merch_store_url?: string | null
           spotify_connected?: boolean | null
           updated_at?: string
           user_id?: string
@@ -306,6 +354,45 @@ export type Database = {
           token_expires_at?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      spotify_listens: {
+        Row: {
+          artist_name: string | null
+          created_at: string
+          creator_user_id: string
+          duration_ms: number | null
+          fan_user_id: string
+          id: string
+          listened_at: string
+          progress_ms: number | null
+          track_id: string
+          track_name: string | null
+        }
+        Insert: {
+          artist_name?: string | null
+          created_at?: string
+          creator_user_id: string
+          duration_ms?: number | null
+          fan_user_id: string
+          id?: string
+          listened_at?: string
+          progress_ms?: number | null
+          track_id: string
+          track_name?: string | null
+        }
+        Update: {
+          artist_name?: string | null
+          created_at?: string
+          creator_user_id?: string
+          duration_ms?: number | null
+          fan_user_id?: string
+          id?: string
+          listened_at?: string
+          progress_ms?: number | null
+          track_id?: string
+          track_name?: string | null
         }
         Relationships: []
       }
