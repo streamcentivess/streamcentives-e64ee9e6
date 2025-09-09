@@ -10,8 +10,10 @@ import { InboxMessage } from '@/components/InboxMessage';
 import CreatorInbox from '@/components/CreatorInbox';
 import MessageSettings from '@/components/MessageSettings';
 import ConversationThread from '@/components/ConversationThread';
-import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings } from 'lucide-react';
+import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings, User, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -35,11 +37,13 @@ interface Message {
 
 const Inbox: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [sentMessages, setSentMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'denied'>('all');
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -159,15 +163,41 @@ const Inbox: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-          <InboxIcon className="w-6 h-6 text-primary" />
+      {/* Header with Search and Profile Button */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+            <InboxIcon className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Message Center</h1>
+            <p className="text-muted-foreground">Manage your messages and messaging settings</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold">Message Center</h1>
-          <p className="text-muted-foreground">Manage your messages and messaging settings</p>
-        </div>
+        <Button
+          variant="outline"
+          onClick={() => navigate('/universal-profile')}
+          className="flex items-center gap-2"
+        >
+          <User className="h-4 w-4" />
+          My Profile
+        </Button>
       </div>
+
+      {/* Global Search Bar */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search messages by user name or content..."
+              value={globalSearchQuery}
+              onChange={(e) => setGlobalSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="inbox" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -195,7 +225,10 @@ const Inbox: React.FC = () => {
               onBack={() => setSelectedConversation(null)}
             />
           ) : (
-            <CreatorInbox onViewConversation={setSelectedConversation} />
+            <CreatorInbox 
+              onViewConversation={setSelectedConversation}
+              searchQuery={globalSearchQuery}
+            />
           )}
         </TabsContent>
 

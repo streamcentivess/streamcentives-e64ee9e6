@@ -31,9 +31,10 @@ interface Message {
 
 interface CreatorInboxProps {
   onViewConversation?: (conversationId: string) => void;
+  searchQuery?: string;
 }
 
-const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation }) => {
+const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQuery = '' }) => {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,6 +93,17 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation }) => {
     setMessages(messagesWithProfiles);
     setIsLoading(false);
   };
+
+  // Filter messages based on search query
+  const filteredMessages = messages.filter(message => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const senderName = message.profiles?.display_name?.toLowerCase() || '';
+    const content = message.content.toLowerCase();
+    
+    return senderName.includes(query) || content.includes(query);
+  });
 
   const handleMessageAction = async (messageId: string, action: 'approved' | 'denied') => {
     try {
@@ -175,11 +187,21 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation }) => {
     );
   }
 
+  if (filteredMessages.length === 0 && searchQuery.trim()) {
+    return (
+      <Card className="p-6">
+        <CardContent className="text-center">
+          <p className="text-muted-foreground">No messages found matching "{searchQuery}"</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Creator Inbox</h2>
       
-      {messages.map((message) => {
+      {filteredMessages.map((message) => {
         const analysis = message.message_analysis[0];
         
         return (
