@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search, Share2 } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search, Share2, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PostsGrid } from '@/components/PostsGrid';
 import { toast } from '@/hooks/use-toast';
@@ -673,6 +673,15 @@ const UniversalProfile = () => {
             </h1>
           </div>
           <div className="flex gap-2">
+            <Button
+              onClick={() => navigate('/inbox')}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Mail className="h-4 w-4" />
+              Inbox
+            </Button>
             <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-primary hover:opacity-90">
