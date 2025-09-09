@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Check, X, AlertTriangle, Clock, Shield } from 'lucide-react';
+import { Check, X, AlertTriangle, Clock, Shield, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Message {
@@ -15,6 +15,7 @@ interface Message {
   status: string;
   created_at: string;
   sender_id: string;
+  conversation_id: string;
   analysis_status: string;
   profiles: {
     display_name: string;
@@ -28,7 +29,11 @@ interface Message {
   }>;
 }
 
-const CreatorInbox: React.FC = () => {
+interface CreatorInboxProps {
+  onViewConversation?: (conversationId: string) => void;
+}
+
+const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation }) => {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +55,7 @@ const CreatorInbox: React.FC = () => {
         status,
         created_at,
         sender_id,
+        conversation_id,
         analysis_status,
         message_analysis(is_appropriate, severity, flags, confidence)
       `)
@@ -214,10 +220,22 @@ const CreatorInbox: React.FC = () => {
                 </div>
               )}
 
-              {message.status === 'pending' && (
-                <>
-                  <Separator />
-                  <div className="flex gap-2 justify-end">
+              <Separator />
+              <div className="flex gap-2 justify-between">
+                {message.status === 'approved' && onViewConversation && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewConversation(message.conversation_id)}
+                    className="flex items-center gap-2"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    View Conversation
+                  </Button>
+                )}
+                
+                {message.status === 'pending' && (
+                  <div className="flex gap-2 ml-auto">
                     <Button
                       variant="outline"
                       size="sm"
@@ -236,8 +254,8 @@ const CreatorInbox: React.FC = () => {
                       Approve
                     </Button>
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </CardContent>
           </Card>
         );

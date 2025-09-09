@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { InboxMessage } from '@/components/InboxMessage';
 import CreatorInbox from '@/components/CreatorInbox';
 import MessageSettings from '@/components/MessageSettings';
+import ConversationThread from '@/components/ConversationThread';
 import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -38,6 +39,7 @@ const Inbox: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'denied'>('all');
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -187,7 +189,14 @@ const Inbox: React.FC = () => {
         </TabsList>
 
         <TabsContent value="inbox" className="mt-6">
-          <CreatorInbox />
+          {selectedConversation ? (
+            <ConversationThread
+              conversationId={selectedConversation}
+              onBack={() => setSelectedConversation(null)}
+            />
+          ) : (
+            <CreatorInbox onViewConversation={setSelectedConversation} />
+          )}
         </TabsContent>
 
         <TabsContent value="sent" className="space-y-4 mt-6">
