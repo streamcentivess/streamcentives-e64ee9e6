@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import AppNavigation from '@/components/AppNavigation';
 import { 
@@ -18,7 +19,9 @@ import {
   Calendar,
   Trophy,
   DollarSign,
-  Users
+  Users,
+  Repeat2,
+  Sparkles
 } from 'lucide-react';
 
 interface Post {
@@ -35,6 +38,9 @@ interface Post {
   } | null;
   likes: number;
   comments: number;
+  is_liked?: boolean;
+  is_reposted?: boolean;
+  repost_count?: number;
   campaign?: {
     id: string;
     title: string;
@@ -47,6 +53,19 @@ interface Post {
     participant_count: number;
     is_joined: boolean;
   };
+}
+
+interface Repost {
+  id: string;
+  post_id: string;
+  user_id: string;
+  created_at: string;
+  posts: Post;
+  profiles: {
+    display_name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
 const Feed = () => {
