@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
+import CommunityUpload from '@/components/CommunityUpload';
 
 interface Profile {
   id?: string;
@@ -661,9 +662,65 @@ const UniversalProfile = () => {
     );
   }
 
+  const [currentView, setCurrentView] = useState<'profile' | 'community'>('profile');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && currentView === 'profile') {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentView('community');
+        setIsTransitioning(false);
+      }, 150);
+    }
+
+    if (isRightSwipe && currentView === 'community') {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentView('profile');
+        setIsTransitioning(false);
+      }, 150);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div 
+      className="min-h-screen bg-background overflow-hidden relative"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Swipe Indicator */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="flex gap-2">
+          <div className={`w-2 h-2 rounded-full transition-all ${currentView === 'profile' ? 'bg-primary' : 'bg-muted'}`} />
+          <div className={`w-2 h-2 rounded-full transition-all ${currentView === 'community' ? 'bg-primary' : 'bg-muted'}`} />
+        </div>
+      </div>
+
+      {/* Profile View */}
+      <div className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+        currentView === 'profile' ? 'translate-x-0' : '-translate-x-full'
+      } ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+        <div className="min-h-screen bg-background p-4">
+          <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -1237,6 +1294,50 @@ const UniversalProfile = () => {
         </Dialog>
       </div>
     </div>
+  </div>
+
+  {/* Community Feed View */}
+  <div className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+    currentView === 'community' ? 'translate-x-0' : 'translate-x-full'
+  } ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Community Header */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <img src="/lovable-uploads/streamcentivesloveable.PNG" alt="Streamcentives Logo" className="w-8 h-8 rounded-full" />
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Community Feed
+            </h1>
+          </div>
+          <Button
+            onClick={() => setCurrentView('profile')}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Users className="h-4 w-4" />
+            Back to Profile
+          </Button>
+        </div>
+
+        {/* Community Upload */}
+        <CommunityUpload onUploadComplete={() => {}} />
+
+        {/* Community Posts */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Community Posts</h2>
+          <div className="grid gap-4">
+            {/* Community posts will be loaded here */}
+            <div className="text-center text-muted-foreground py-8">
+              Swipe right to return to your profile
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   );
 };
 
