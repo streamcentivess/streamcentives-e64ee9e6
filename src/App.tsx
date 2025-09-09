@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import AuthCallback from "./pages/auth/AuthCallback";
+import EmailConfirmation from "./pages/auth/EmailConfirmation";
 import UniversalProfile from "./pages/UniversalProfile";
 import FanDashboard from "./pages/FanDashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/auth/signin" element={<SignIn />} />
             <Route path="/auth/signup" element={<SignUp />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/confirm" element={<EmailConfirmation />} />
             <Route path="/role-selection" element={
               <ProtectedRoute>
                 <RoleSelection />
