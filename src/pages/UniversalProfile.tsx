@@ -472,6 +472,15 @@ const UniversalProfile = () => {
                     <Camera className="h-4 w-4" />
                   </Button>
                 </div>
+                
+                {/* Bio and Details - Moved under avatar */}
+                <div className="space-y-2 text-sm text-muted-foreground text-center mt-4">
+                  {profile.bio && <p>{profile.bio}</p>}
+                  <div className="flex items-center justify-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
               </div>
 
                 {/* Profile Info */}
@@ -570,15 +579,6 @@ const UniversalProfile = () => {
                   <div className="text-center">
                     <div className="text-2xl font-bold text-primary">0</div>
                     <div className="text-sm text-muted-foreground">XP</div>
-                  </div>
-                </div>
-
-                {/* Bio and Details */}
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  {profile.bio && <p className="ml-12">{profile.bio}</p>}
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
 
