@@ -27,6 +27,7 @@ import Leaderboards from "./pages/Leaderboards";
 import ManageRewards from "./pages/ManageRewards";
 import RoleSelection from "./pages/RoleSelection";
 import ProfileSetup from "./pages/ProfileSetup";
+import Feed from "./pages/Feed";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,11 @@ const App = () => (
             <Route path="/inbox" element={
               <ProtectedRoute>
                 <Inbox />
+              </ProtectedRoute>
+            } />
+            <Route path="/feed" element={
+              <ProtectedRoute>
+                <Feed />
               </ProtectedRoute>
             } />
             

@@ -25,7 +25,8 @@ import {
   Music,
   Users,
   BarChart3,
-  Mail
+  Mail,
+  Rss
 } from 'lucide-react';
 import streamcentivesLogo from '@/assets/streamcentives-logo.png';
 
@@ -37,6 +38,7 @@ const AppNavigation = () => {
 
   const navigationItems = [
     { name: 'Home', href: '/universal-profile', icon: Home },
+    { name: 'Feed', href: '/feed', icon: Rss },
     { name: 'Campaigns', href: '/campaigns', icon: Target },
     { name: 'Marketplace', href: '/marketplace', icon: Gift },
     { name: 'Inbox', href: '/inbox', icon: Mail },

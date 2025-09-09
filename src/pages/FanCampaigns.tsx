@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Search, Filter, Target, Users, Calendar, MapPin, Music, Star, Trophy, Clock, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,6 +40,8 @@ interface Campaign {
 const FanCampaigns = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const highlightCampaignId = searchParams.get('highlight');
   
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,6 +112,14 @@ const FanCampaigns = () => {
       }) || [];
 
       setCampaigns(processedCampaigns);
+      
+      // Auto-open campaign dialog if highlighted from feed
+      if (highlightCampaignId) {
+        const highlightedCampaign = processedCampaigns.find(c => c.id === highlightCampaignId);
+        if (highlightedCampaign) {
+          setSelectedCampaign(highlightedCampaign);
+        }
+      }
     } catch (error) {
       console.error('Error fetching campaigns:', error);
       toast({
