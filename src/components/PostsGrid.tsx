@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ShareButton } from './ShareButton';
+import { useNavigate } from 'react-router-dom';
 
 interface Post {
   id: string;
@@ -37,6 +38,7 @@ interface PostsGridProps {
 
 export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -166,6 +168,10 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
     }
   };
 
+  const handleProfileClick = (username: string) => {
+    navigate(`/universal-profile?user=${username}`);
+  };
+
   if (loading) {
     return (
       <div className="grid grid-cols-3 gap-1">
@@ -268,9 +274,10 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
                   <img 
                     src={selectedPost.profiles.avatar_url || '/placeholder.svg'} 
                     alt={selectedPost.profiles.display_name}
-                    className="w-10 h-10 rounded-full"
+                    className="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => handleProfileClick(selectedPost.profiles.username)}
                   />
-                  <div>
+                  <div className="cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleProfileClick(selectedPost.profiles.username)}>
                     <h3 className="font-semibold">{selectedPost.profiles.display_name}</h3>
                     <p className="text-sm text-muted-foreground">@{selectedPost.profiles.username}</p>
                   </div>
@@ -310,11 +317,17 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
                       <img 
                         src={comment.profiles.avatar_url || '/placeholder.svg'} 
                         alt={comment.profiles.display_name}
-                        className="w-8 h-8 rounded-full flex-shrink-0"
+                        className="w-8 h-8 rounded-full flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => handleProfileClick(comment.profiles.username)}
                       />
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <span className="font-semibold text-sm">{comment.profiles.display_name}</span>
+                          <span 
+                            className="font-semibold text-sm cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => handleProfileClick(comment.profiles.username)}
+                          >
+                            {comment.profiles.display_name}
+                          </span>
                         </div>
                         <p className="text-sm">{comment.content}</p>
                       </div>
