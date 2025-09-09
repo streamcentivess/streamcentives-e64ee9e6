@@ -59,19 +59,23 @@ const ProfileSetup = () => {
     
     try {
       console.log('Attempting to save profile...');
-      // Create or update profile
+      // Create or update profile using user_id as conflict target
       const { data, error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          username: profileData.username,
-          display_name: profileData.display_name,
-          bio: profileData.bio,
-          age: profileData.age,
-          location: profileData.location,
-          interests: profileData.interests,
-        })
-        .select();
+        .upsert(
+          {
+            user_id: user.id,
+            username: profileData.username,
+            display_name: profileData.display_name,
+            bio: profileData.bio,
+            age: profileData.age,
+            location: profileData.location,
+            interests: profileData.interests,
+          },
+          { onConflict: 'user_id' }
+        )
+        .select()
+        .maybeSingle();
       
       console.log('Supabase response:', { data, error });
       
