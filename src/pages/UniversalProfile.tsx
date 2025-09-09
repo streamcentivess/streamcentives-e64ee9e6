@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
 
@@ -33,6 +34,9 @@ const UniversalProfile = () => {
   const [uploading, setUploading] = useState(false);
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
+  const [searching, setSearching] = useState(false);
   
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId');
@@ -101,6 +105,56 @@ const UniversalProfile = () => {
     } finally {
       setFollowLoading(false);
     }
+  };
+
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .neq('user_id', user?.id) // Exclude current user
+        .limit(10);
+
+      if (error) {
+        console.error('Search error:', error);
+        toast({
+          title: "Search Error",
+          description: "Failed to search users",
+          variant: "destructive"
+        });
+      } else {
+        setSearchResults(data || []);
+      }
+    } catch (error) {
+      console.error('Unexpected search error:', error);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      searchUsers(query);
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
+  };
+
+  const viewProfile = (userId: string) => {
+    navigate(`/universal-profile?userId=${userId}`);
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
   // Remove unused handleMessage function - replaced with MessageCreator component
@@ -301,6 +355,77 @@ const UniversalProfile = () => {
             </Button>
           </div>
         </div>
+
+        {/* Search Section */}
+        <Card className="card-modern">
+          <CardContent className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search for users and creators..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="pl-10"
+              />
+              {searching && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                </div>
+              )}
+            </div>
+            
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
+                {searchResults.map((result) => (
+                  <div
+                    key={result.user_id}
+                    onClick={() => viewProfile(result.user_id)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={result.avatar_url || ''} />
+                      <AvatarFallback>
+                        {result.display_name?.[0] || result.username?.[0]?.toUpperCase() || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-medium">
+                        {result.display_name || result.username || 'Anonymous User'}
+                      </div>
+                      {result.username && result.display_name && (
+                        <div className="text-sm text-muted-foreground">@{result.username}</div>
+                      )}
+                      {result.bio && (
+                        <div className="text-sm text-muted-foreground truncate">
+                          {result.bio}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {result.spotify_connected && (
+                        <Badge variant="outline" className="text-xs">
+                          <Music className="h-3 w-3 mr-1" />
+                          Creator
+                        </Badge>
+                      )}
+                      <Badge variant="secondary" className="text-xs">
+                        <Users className="h-3 w-3 mr-1" />
+                        Fan
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {searchQuery && searchResults.length === 0 && !searching && (
+              <div className="mt-4 text-center text-muted-foreground py-4">
+                No users found matching "{searchQuery}"
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Profile Card */}
         <Card className="card-modern">
