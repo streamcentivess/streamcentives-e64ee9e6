@@ -68,18 +68,18 @@ const CreatorInbox: React.FC = () => {
     }
 
     // Fetch sender profiles separately
-    const messagesWithProfiles = await Promise.all(
-      (data || []).map(async (message) => {
+    const messagesWithProfiles: Message[] = await Promise.all(
+      (data || []).map(async (message: any) => {
         const { data: profile } = await supabase
-          .from('profiles')
+          .from('public_profiles' as any)
           .select('display_name, avatar_url')
           .eq('user_id', message.sender_id)
-          .single();
+          .maybeSingle();
 
         return {
           ...message,
-          profiles: profile || { display_name: 'Anonymous', avatar_url: null }
-        };
+          profiles: (profile as any) || { display_name: 'Anonymous', avatar_url: null }
+        } as Message;
       })
     );
 

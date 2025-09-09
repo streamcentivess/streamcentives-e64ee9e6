@@ -70,11 +70,22 @@ const UniversalProfile = () => {
     if (!targetUserId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .single();
+      let profileRes: any;
+      if (isOwnProfile) {
+        profileRes = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', targetUserId)
+          .maybeSingle();
+      } else {
+        profileRes = await supabase
+          .from('public_profiles' as any)
+          .select('*')
+          .eq('user_id', targetUserId)
+          .maybeSingle();
+      }
+
+      const { data, error } = profileRes;
 
       if (error) {
         console.error('Error fetching profile:', error);

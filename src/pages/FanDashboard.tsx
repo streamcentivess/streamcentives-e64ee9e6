@@ -137,15 +137,16 @@ const FanDashboard = () => {
 
         if (topArtistIds.length > 0) {
           const { data: artistProfiles } = await supabase
-            .from('profiles')
+            .from('public_profiles' as any)
             .select('user_id, display_name, username, avatar_url')
             .in('user_id', topArtistIds);
 
+          const artistProfilesSafe = (artistProfiles as any[]) || [];
           const artistsWithData = topArtistIds.map(artistId => {
-            const profile = artistProfiles?.find(p => p.user_id === artistId);
+            const profile = artistProfilesSafe.find((p: any) => p.user_id === artistId) || {};
             const stats = artistGroups[artistId];
             return {
-              ...profile,
+              ...(profile as any),
               xp: stats.xp,
               streams: stats.streams
             };

@@ -59,10 +59,10 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
 
       // Fetch user profile
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
+        .from('public_profiles' as any)
         .select('display_name, username, avatar_url')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
 
@@ -86,10 +86,10 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
           const commentsWithProfiles = await Promise.all(
             (comments || []).map(async (comment) => {
               const { data: commentProfile } = await supabase
-                .from('profiles')
+                .from('public_profiles' as any)
                 .select('display_name, username, avatar_url')
                 .eq('user_id', comment.user_id)
-                .single();
+                .maybeSingle();
 
               return {
                 ...comment,
@@ -98,17 +98,19 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
             })
           );
 
+          const profileSafe = (profileData as any) || { display_name: 'Unknown', username: 'unknown', avatar_url: '' };
+
           return {
             ...post,
             content_type: post.content_type as 'image' | 'video',
-            profiles: profileData,
+            profiles: profileSafe,
             post_likes: likes || [],
-            post_comments: commentsWithProfiles
+            post_comments: commentsWithProfiles as any
           };
         })
       );
 
-      setPosts(postsWithData);
+      setPosts(postsWithData as unknown as Post[]);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast.error('Failed to load posts');

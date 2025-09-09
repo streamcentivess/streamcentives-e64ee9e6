@@ -63,7 +63,7 @@ const CreatorDashboard = () => {
         let profilesMap: Record<string, any> = {};
         if (fanIds.length) {
           const { data: profiles } = await supabase
-            .from('profiles')
+            .from('public_profiles' as any)
             .select('user_id, display_name, username, avatar_url')
             .in('user_id', fanIds);
           profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
