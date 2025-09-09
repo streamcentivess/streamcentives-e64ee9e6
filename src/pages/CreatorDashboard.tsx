@@ -29,16 +29,22 @@ const CreatorDashboard = () => {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
-  // Mock data - replace with real data from your API
-  const totalFans = 2847;
-  const totalXPDistributed = 45650;
-  const activeCampaigns = 8;
-  const totalRevenue = 1234.56;
-  const conversionRate = 12.5;
+  // Real data based on actual user activity - will be 0 until they engage
+  const [metrics, setMetrics] = useState({
+    totalFans: 0,
+    totalXPDistributed: 0,
+    activeCampaigns: 0,
+    totalRevenue: 0,
+    conversionRate: 0,
+    newFansThisWeek: 0,
+    streamsGenerated: 0,
+    socialShares: 0
+  });
 
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchMetrics();
     }
   }, [user]);
   useEffect(() => {
@@ -102,6 +108,60 @@ const CreatorDashboard = () => {
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  const fetchMetrics = async () => {
+    if (!user) return;
+    
+    try {
+      // Get real metrics from database
+      const [fansData, campaignsData, xpData, revenueData] = await Promise.all([
+        // Count followers (when follow system is implemented)
+        supabase.from('creator_fan_leaderboards')
+          .select('fan_user_id', { count: 'exact', head: true })
+          .eq('creator_user_id', user.id),
+        
+        // Count active campaigns
+        supabase.from('campaigns')
+          .select('*', { count: 'exact', head: true })
+          .eq('creator_id', user.id)
+          .eq('status', 'active'),
+        
+        // Sum XP distributed
+        supabase.from('creator_fan_leaderboards')
+          .select('total_xp_earned')
+          .eq('creator_user_id', user.id),
+        
+        // Revenue from campaigns (when implemented)
+        supabase.from('campaigns')
+          .select('cash_reward')
+          .eq('creator_id', user.id)
+          .eq('status', 'completed')
+      ]);
+
+      const totalFans = fansData.count || 0;
+      const activeCampaigns = campaignsData.count || 0;
+      
+      const totalXPDistributed = xpData.data?.reduce((sum, entry) => 
+        sum + (entry.total_xp_earned || 0), 0) || 0;
+      
+      const totalRevenue = revenueData.data?.reduce((sum, entry) => 
+        sum + (entry.cash_reward || 0), 0) || 0;
+
+      setMetrics({
+        totalFans,
+        totalXPDistributed,
+        activeCampaigns,
+        totalRevenue,
+        conversionRate: totalFans > 0 ? ((activeCampaigns / totalFans) * 100) : 0,
+        newFansThisWeek: 0, // Calculate from recent data
+        streamsGenerated: 0, // From spotify_listens table
+        socialShares: 0 // From future social sharing tracking
+      });
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+      // Keep metrics at 0 if there's an error
     }
   };
 
@@ -222,7 +282,7 @@ const CreatorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Fans</p>
-                  <p className="text-2xl font-bold">{totalFans.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{metrics.totalFans.toLocaleString()}</p>
                 </div>
                 <Users className="h-8 w-8 text-primary" />
               </div>
@@ -234,7 +294,7 @@ const CreatorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">XP Distributed</p>
-                  <p className="text-2xl font-bold">{totalXPDistributed.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{metrics.totalXPDistributed.toLocaleString()}</p>
                 </div>
                 <div className="xp-orb"></div>
               </div>
@@ -246,7 +306,7 @@ const CreatorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Active Campaigns</p>
-                  <p className="text-2xl font-bold">{activeCampaigns}</p>
+                  <p className="text-2xl font-bold">{metrics.activeCampaigns}</p>
                 </div>
                 <Target className="h-8 w-8 text-primary" />
               </div>
@@ -258,7 +318,7 @@ const CreatorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Revenue</p>
-                  <p className="text-2xl font-bold">${totalRevenue}</p>
+                  <p className="text-2xl font-bold">${metrics.totalRevenue.toFixed(2)}</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-success" />
               </div>
@@ -270,7 +330,7 @@ const CreatorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Conversion</p>
-                  <p className="text-2xl font-bold">{conversionRate}%</p>
+                  <p className="text-2xl font-bold">{metrics.conversionRate.toFixed(1)}%</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-success" />
               </div>
@@ -295,56 +355,38 @@ const CreatorDashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Sample Campaign */}
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-surface border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-                        <Music className="h-5 w-5 text-white" />
+                {metrics.activeCampaigns === 0 ? (
+                  <div className="text-center py-12">
+                    <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">No Active Campaigns</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create your first campaign to start engaging with fans and earning revenue
+                    </p>
+                    <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Campaign
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Sample Campaign - This should be replaced with real campaigns */}
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-surface border">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+                          <Music className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Stream "New Album" Campaign</p>
+                          <p className="text-sm text-muted-foreground">647 participants • 4 days left</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">Stream "New Album" Campaign</p>
-                        <p className="text-sm text-muted-foreground">647 participants • 4 days left</p>
+                      <div className="text-right">
+                        <Badge className="bg-success/20 text-success">Active</Badge>
+                        <p className="text-sm text-muted-foreground mt-1">12.4k XP distributed</p>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge className="bg-success/20 text-success">Active</Badge>
-                      <p className="text-sm text-muted-foreground mt-1">12.4k XP distributed</p>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-surface border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-accent flex items-center justify-center">
-                        <Users className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Social Media Share Challenge</p>
-                        <p className="text-sm text-muted-foreground">234 participants • 7 days left</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge className="bg-success/20 text-success">Active</Badge>
-                      <p className="text-sm text-muted-foreground mt-1">5.8k XP distributed</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-surface border opacity-60">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Gift className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Merchandise Promotion</p>
-                        <p className="text-sm text-muted-foreground">0 participants • Draft</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant="secondary">Draft</Badge>
-                      <p className="text-sm text-muted-foreground mt-1">Not started</p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -359,15 +401,15 @@ const CreatorDashboard = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 rounded-lg bg-surface">
-                    <div className="stat-number">847</div>
+                    <div className="stat-number">{metrics.newFansThisWeek}</div>
                     <p className="text-sm text-muted-foreground">New Fans This Week</p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-surface">
-                    <div className="stat-number">23.4k</div>
+                    <div className="stat-number">{metrics.streamsGenerated.toLocaleString()}</div>
                     <p className="text-sm text-muted-foreground">Streams Generated</p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-surface">
-                    <div className="stat-number">156</div>
+                    <div className="stat-number">{metrics.socialShares}</div>
                     <p className="text-sm text-muted-foreground">Social Shares</p>
                   </div>
                 </div>
