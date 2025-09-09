@@ -300,7 +300,7 @@ const BillingPayments = () => {
           <CardContent>
             <div className="space-y-3">
               {[
-                { type: 'credit', amount: 89.99, description: 'Collectible Sale - Rare Music NFT', date: '2024-01-15' },
+                { type: 'credit', amount: 89.99, description: 'Collectible Sale - Rare Music Collectible', date: '2024-01-15' },
                 { type: 'credit', amount: 25.00, description: 'Data Rev Share - December 2023', date: '2024-01-01' },
                 { type: 'debit', amount: 19.99, description: 'Merch Purchase - Limited Edition T-Shirt', date: '2023-12-28' },
                 { type: 'credit', amount: 150.00, description: 'Campaign Completion Bonus', date: '2023-12-25' }
