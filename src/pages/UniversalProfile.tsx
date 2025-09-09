@@ -56,6 +56,8 @@ const UniversalProfile = () => {
     if (user) {
       fetchProfile();
       fetchFollowStats();
+      // Clear follow states when switching profiles
+      setUserFollowStates({});
       // Determine user role from sessionStorage or URL params
       const savedRole = sessionStorage.getItem('selectedRole') as 'fan' | 'creator' | null;
       if (savedRole) {
@@ -182,6 +184,8 @@ const UniversalProfile = () => {
         if (error) throw error;
         
         setFollowing(false);
+        // Update userFollowStates if this user is in the current list
+        setUserFollowStates(prev => ({ ...prev, [profile.user_id]: false }));
         // Refresh follow stats from server to get accurate count
         fetchFollowStats();
         
@@ -201,6 +205,8 @@ const UniversalProfile = () => {
         if (error) throw error;
         
         setFollowing(true);
+        // Update userFollowStates if this user is in the current list
+        setUserFollowStates(prev => ({ ...prev, [profile.user_id]: true }));
         // Refresh follow stats from server to get accurate count
         fetchFollowStats();
         
@@ -390,6 +396,8 @@ const UniversalProfile = () => {
     setListType('following');
     fetchFollowing();
     setShowFollowersList(true);
+    // Clear and refresh follow states for the following list
+    setUserFollowStates({});
   };
 
   const handleUserFollowToggle = async (targetUserId: string) => {
@@ -409,6 +417,13 @@ const UniversalProfile = () => {
         if (error) throw error;
         
         setUserFollowStates(prev => ({ ...prev, [targetUserId]: false }));
+        // Update main following state if we're currently viewing this user's profile
+        if (profile?.user_id === targetUserId) {
+          setFollowing(false);
+        }
+        // Refresh follow stats
+        fetchFollowStats();
+        
         toast({
           title: "Success",
           description: "Unfollowed user"
@@ -425,6 +440,13 @@ const UniversalProfile = () => {
         if (error) throw error;
         
         setUserFollowStates(prev => ({ ...prev, [targetUserId]: true }));
+        // Update main following state if we're currently viewing this user's profile
+        if (profile?.user_id === targetUserId) {
+          setFollowing(true);
+        }
+        // Refresh follow stats
+        fetchFollowStats();
+        
         toast({
           title: "Success",
           description: "Following user"
@@ -443,6 +465,8 @@ const UniversalProfile = () => {
     setListType('followers');
     await fetchFollowers();
     setShowFollowersList(true);
+    // Clear and refresh follow states for the followers list
+    setUserFollowStates({});
   };
 
   // Check follow states when followers data changes
