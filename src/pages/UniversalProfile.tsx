@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search, Share2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PostsGrid } from '@/components/PostsGrid';
 import { toast } from '@/hooks/use-toast';
@@ -881,14 +881,14 @@ const UniversalProfile = () => {
           
           <TabsContent value="campaigns" className="mt-6">
             <Card className="card-modern">
-              <CardContent className="p-6 text-center">
-                <div className="text-muted-foreground">
-                  <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <CardContent className="p-6">
+                <div className="text-center mb-6">
+                  <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50 text-muted-foreground" />
                   {isOwnProfile ? (
                     // Show different content based on user's role
                     userRole === 'creator' ? (
                       <div className="space-y-4">
-                        <p>No campaigns created yet. Start building your community with your first campaign!</p>
+                        <p className="text-muted-foreground">No campaigns created yet. Start building your community with your first campaign!</p>
                         <Button 
                           onClick={() => navigate('/campaigns')}
                           className="bg-gradient-primary hover:opacity-90"
@@ -898,7 +898,7 @@ const UniversalProfile = () => {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <p>No campaigns joined yet. Discover and join campaigns to start earning XP!</p>
+                        <p className="text-muted-foreground">No campaigns joined yet. Discover and join campaigns to start earning XP!</p>
                         <Button 
                           onClick={() => navigate('/fan-campaigns')}
                           className="bg-gradient-primary hover:opacity-90"
@@ -909,8 +909,47 @@ const UniversalProfile = () => {
                     )
                   ) : (
                     // Viewing someone else's profile - show generic message
-                    <p>No public campaign activity to display.</p>
+                    <p className="text-muted-foreground">No public campaign activity to display.</p>
                   )}
+                </div>
+
+                {/* Share & Earn Section */}
+                <div className="border-t pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Share Campaigns & Earn XP</h3>
+                    <Share2 className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-muted/20 rounded-lg">
+                      <h4 className="font-medium mb-2">Share on Streamcentives</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Repost campaigns to your feed and earn XP when others engage
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-primary">+10 XP per share</span>
+                        <Button size="sm" variant="outline">
+                          <Share2 className="h-3 w-3 mr-1" />
+                          Share
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-muted/20 rounded-lg">
+                      <h4 className="font-medium mb-2">Share Off-Platform</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Share campaigns on social media to attract new users
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-primary">+20 XP per share</span>
+                        <Button size="sm" variant="outline">
+                          <Share2 className="h-3 w-3 mr-1" />
+                          Share
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-4 text-center">
+                    Earn XP once per campaign per day. Only fans can earn XP from sharing creator content.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -918,10 +957,49 @@ const UniversalProfile = () => {
           
           <TabsContent value="rewards" className="mt-6">
             <Card className="card-modern">
-              <CardContent className="p-6 text-center">
-                <div className="text-muted-foreground">
-                  <Gift className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No rewards yet. Earn XP to unlock amazing rewards!</p>
+              <CardContent className="p-6">
+                <div className="text-center mb-6">
+                  <Gift className="h-12 w-12 mx-auto mb-2 opacity-50 text-muted-foreground" />
+                  <p className="text-muted-foreground">No rewards yet. Earn XP to unlock amazing rewards!</p>
+                </div>
+
+                {/* Share & Earn Section */}
+                <div className="border-t pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Share Rewards & Earn XP</h3>
+                    <Share2 className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-muted/20 rounded-lg">
+                      <h4 className="font-medium mb-2">Share on Streamcentives</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Show off exclusive rewards and inspire others to engage
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-primary">+5 XP per share</span>
+                        <Button size="sm" variant="outline">
+                          <Share2 className="h-3 w-3 mr-1" />
+                          Share
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-muted/20 rounded-lg">
+                      <h4 className="font-medium mb-2">Share Off-Platform</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Showcase rewards on social media to attract new fans
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-primary">+15 XP per share</span>
+                        <Button size="sm" variant="outline">
+                          <Share2 className="h-3 w-3 mr-1" />
+                          Share
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-4 text-center">
+                    Earn XP once per reward per day. Only fans can earn XP from sharing creator content.
+                  </p>
                 </div>
               </CardContent>
             </Card>

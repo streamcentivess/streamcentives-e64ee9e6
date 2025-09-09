@@ -67,6 +67,39 @@ export type Database = {
           },
         ]
       }
+      campaign_share_settings: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          creator_id: string
+          id: string
+          is_shareable: boolean
+          off_platform_xp: number
+          on_platform_xp: number
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_shareable?: boolean
+          off_platform_xp?: number
+          on_platform_xp?: number
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_shareable?: boolean
+          off_platform_xp?: number
+          on_platform_xp?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
           cash_reward: number | null
@@ -360,6 +393,75 @@ export type Database = {
         }
         Relationships: []
       }
+      post_share_settings: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          is_shareable: boolean
+          off_platform_xp: number
+          on_platform_xp: number
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_shareable?: boolean
+          off_platform_xp?: number
+          on_platform_xp?: number
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_shareable?: boolean
+          off_platform_xp?: number
+          on_platform_xp?: number
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      post_shares: {
+        Row: {
+          created_at: string
+          creator_id: string
+          fan_id: string
+          id: string
+          platform: string | null
+          post_id: string
+          share_date: string
+          share_type: string
+          xp_earned: number
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          fan_id: string
+          id?: string
+          platform?: string | null
+          post_id: string
+          share_date?: string
+          share_type: string
+          xp_earned?: number
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          fan_id?: string
+          id?: string
+          platform?: string | null
+          post_id?: string
+          share_date?: string
+          share_type?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           caption: string | null
@@ -499,6 +601,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reward_share_settings: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          is_shareable: boolean
+          off_platform_xp: number
+          on_platform_xp: number
+          reward_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_shareable?: boolean
+          off_platform_xp?: number
+          on_platform_xp?: number
+          reward_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_shareable?: boolean
+          off_platform_xp?: number
+          on_platform_xp?: number
+          reward_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       rewards: {
         Row: {
@@ -722,6 +857,14 @@ export type Database = {
           total_cash_distributed: number
           total_xp_distributed: number
         }[]
+      }
+      handle_post_share: {
+        Args: {
+          platform_param?: string
+          post_id_param: string
+          share_type_param: string
+        }
+        Returns: Json
       }
       redeem_reward: {
         Args: {

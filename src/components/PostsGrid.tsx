@@ -3,10 +3,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Heart, MessageCircle, Play, Plus } from 'lucide-react';
+import { Heart, MessageCircle, Play, Plus, Share2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { ShareButton } from './ShareButton';
 
 interface Post {
   id: string;
@@ -293,6 +294,13 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
                     <MessageCircle className="h-5 w-5" />
                     <span className="ml-1">{selectedPost.post_comments.length}</span>
                   </Button>
+                  <ShareButton
+                    postId={selectedPost.id}
+                    postUrl={`${window.location.origin}/post/${selectedPost.id}`}
+                    postCaption={selectedPost.caption}
+                    creatorName={selectedPost.profiles.display_name}
+                    isOwnPost={selectedPost.user_id === user?.id}
+                  />
                 </div>
 
                 {/* Comments */}
