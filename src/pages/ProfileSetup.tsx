@@ -58,7 +58,9 @@ const ProfileSetup = () => {
           username: profileData.username,
           display_name: profileData.display_name,
           bio: profileData.bio,
-          // Store additional data in a metadata field if needed
+          age: profileData.age,
+          location: profileData.location,
+          interests: profileData.interests,
         });
       
       if (error) {

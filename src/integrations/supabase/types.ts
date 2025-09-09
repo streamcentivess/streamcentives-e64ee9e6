@@ -293,11 +293,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
           display_name: string | null
           id: string
+          interests: string | null
+          location: string | null
           merch_store_connected: boolean | null
           merch_store_connected_at: string | null
           merch_store_platform: string | null
@@ -308,11 +311,14 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          age?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          interests?: string | null
+          location?: string | null
           merch_store_connected?: boolean | null
           merch_store_connected_at?: string | null
           merch_store_platform?: string | null
@@ -323,11 +329,14 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          age?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          interests?: string | null
+          location?: string | null
           merch_store_connected?: boolean | null
           merch_store_connected_at?: string | null
           merch_store_platform?: string | null
