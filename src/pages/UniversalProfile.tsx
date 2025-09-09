@@ -50,7 +50,7 @@ const UniversalProfile = () => {
   
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId');
-  const viewingUsername = searchParams.get('username');
+  const viewingUsername = searchParams.get('username') || searchParams.get('user');
   // If username is provided, assume viewing someone else's profile until resolved
   const isOwnProfile = viewingUsername ? false : (!viewingUserId || viewingUserId === user?.id);
 
