@@ -12,7 +12,7 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signInWithEmail, signInWithSpotify, signInWithGoogle, signInWithFacebook, user } = useAuth();
+  const { signInWithEmail, signInWithSpotify, signInWithGoogle, signInWithFacebook, signInWithApple, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -93,6 +93,17 @@ const SignIn = () => {
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
               Continue with Facebook
+            </Button>
+
+            <Button
+              onClick={signInWithApple}
+              className="w-full bg-black hover:bg-gray-800 text-white"
+              size="lg"
+            >
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.017 0C8.396 0 8.025.019 8.016.032c-.326.235-2.417 1.742-2.417 5.43 0 4.089 3.593 4.538 3.707 4.564.043-.035 1.017-.4 2.41-.4 1.393 0 2.367.365 2.41.4.114-.026 3.707-.475 3.707-4.564 0-3.688-2.091-5.195-2.417-5.43C15.992.019 15.621 0 12.017 0zm2.78 22.5c-1.524-.402-2.551-1.463-2.551-3.5v-7.5c0-2.037 1.027-3.098 2.551-3.5.152-.04.3-.04.452 0 1.524.402 2.551 1.463 2.551 3.5v7.5c0 2.037-1.027 3.098-2.551 3.5-.152.04-.3.04-.452 0z"/>
+              </svg>
+              Continue with Apple
             </Button>
           </div>
 
