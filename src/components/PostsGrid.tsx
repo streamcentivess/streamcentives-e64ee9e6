@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Heart, MessageCircle, Play, Plus, Share2 } from 'lucide-react';
+import { Heart, MessageCircle, Play, Plus, Share2, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -169,6 +169,28 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
     }
   };
 
+  const deletePost = async (postId: string) => {
+    if (!user) return;
+    
+    const confirmDelete = window.confirm('Are you sure you want to delete this post?');
+    if (!confirmDelete) return;
+
+    try {
+      await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id);
+      
+      setSelectedPost(null);
+      fetchPosts();
+      toast.success('Post deleted successfully');
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast.error('Failed to delete post');
+    }
+  };
+
   const handleProfileClick = (username: string) => {
     navigate(`/universal-profile?user=${username}`);
   };
@@ -309,6 +331,16 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
                     creatorName={selectedPost.profiles.display_name}
                     isOwnPost={selectedPost.user_id === user?.id}
                   />
+                  {selectedPost.user_id === user?.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deletePost(selectedPost.id)}
+                      className="p-2 text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  )}
                 </div>
 
                 {/* Comments */}
