@@ -1,23 +1,179 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trophy, Star, Gift, Target, Music, Users, Calendar, TrendingUp } from 'lucide-react';
+import { Trophy, Star, Gift, Target, Music, Users, Calendar, TrendingUp, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  // Mock data - replace with real data from your API
-  const xpBalance = 1250;
+  // Real data state - starts at 0 until engagement
+  const [metrics, setMetrics] = useState({
+    xpBalance: 0,
+    totalXPEarned: 0,
+    currentRank: null as number | null,
+    completedCampaigns: 0,
+    activeCampaigns: 0,
+    totalStreams: 0,
+    achievements: [] as any[]
+  });
+  const [loading, setLoading] = useState(true);
+  const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [topArtists, setTopArtists] = useState<any[]>([]);
+
+  // Tier system
   const nextTierXP = 2000;
-  const currentRank = 47;
-  const totalFans = 1234;
-  const completedCampaigns = 12;
-  const activeQuests = 3;
+  const currentTier = metrics.xpBalance < 1000 ? 'Bronze' : metrics.xpBalance < 2000 ? 'Silver' : 'Gold';
+  const nextTier = metrics.xpBalance < 1000 ? 'Silver' : metrics.xpBalance < 2000 ? 'Gold' : 'Platinum';
+
+  useEffect(() => {
+    if (user) {
+      fetchFanMetrics();
+    }
+  }, [user]);
+
+  const fetchFanMetrics = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Get XP balance
+      const { data: xpData } = await supabase
+        .from('user_xp_balances')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      // Get campaign participation
+      const { data: campaignData } = await supabase
+        .from('campaign_participants')
+        .select('*, campaigns(*)')
+        .eq('user_id', user.id);
+
+      // Get streaming activity
+      const { data: streamData } = await supabase
+        .from('spotify_listens')
+        .select('*, creator_user_id')
+        .eq('fan_user_id', user.id);
+
+      // Calculate metrics
+      const xpBalance = xpData?.current_xp || 0;
+      const totalXPEarned = xpData?.total_earned_xp || 0;
+      const completedCampaigns = campaignData?.filter(c => c.status === 'completed').length || 0;
+      const activeCampaigns = campaignData?.filter(c => c.status === 'active').length || 0;
+      const totalStreams = streamData?.length || 0;
+
+      // Get rank (simplified - would need more complex query for real ranking)
+      let currentRank = null;
+      if (totalXPEarned > 0) {
+        const { count } = await supabase
+          .from('user_xp_balances')
+          .select('*', { count: 'exact', head: true })
+          .gt('total_earned_xp', totalXPEarned);
+        currentRank = (count || 0) + 1;
+      }
+
+      setMetrics({
+        xpBalance,
+        totalXPEarned,
+        currentRank,
+        completedCampaigns,
+        activeCampaigns,
+        totalStreams,
+        achievements: [] // Will be populated when achievement system is implemented
+      });
+
+      // Set active campaigns
+      const activeUserCampaigns = campaignData?.filter(c => c.campaigns?.status === 'active') || [];
+      setActiveCampaigns(activeUserCampaigns);
+
+      // Set recent activity based on actual data
+      const activities = [];
+      if (streamData && streamData.length > 0) {
+        const recentStream = streamData[streamData.length - 1];
+        activities.push({
+          type: 'stream',
+          message: `Streamed ${recentStream.track_name || 'a track'}`,
+          xp: 10,
+          timestamp: recentStream.listened_at
+        });
+      }
+      
+      const recentCampaign = campaignData?.find(c => c.status === 'active');
+      if (recentCampaign) {
+        activities.push({
+          type: 'campaign',
+          message: `Joined "${recentCampaign.campaigns?.title}" campaign`,
+          timestamp: recentCampaign.joined_at
+        });
+      }
+
+      setRecentActivity(activities);
+
+      // Get top artists from streaming data
+      if (streamData && streamData.length > 0) {
+        const artistGroups = streamData.reduce((acc, stream) => {
+          const artistId = stream.creator_user_id;
+          if (!acc[artistId]) {
+            acc[artistId] = { artistId, streams: 0, xp: 0 };
+          }
+          acc[artistId].streams++;
+          acc[artistId].xp += 10; // Assume 10 XP per stream
+          return acc;
+        }, {} as Record<string, any>);
+
+        const topArtistIds = Object.values(artistGroups)
+          .sort((a: any, b: any) => b.xp - a.xp)
+          .slice(0, 3)
+          .map((a: any) => a.artistId);
+
+        if (topArtistIds.length > 0) {
+          const { data: artistProfiles } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, username, avatar_url')
+            .in('user_id', topArtistIds);
+
+          const artistsWithData = topArtistIds.map(artistId => {
+            const profile = artistProfiles?.find(p => p.user_id === artistId);
+            const stats = artistGroups[artistId];
+            return {
+              ...profile,
+              xp: stats.xp,
+              streams: stats.streams
+            };
+          });
+          
+          setTopArtists(artistsWithData);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error fetching fan metrics:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -47,7 +203,7 @@ const FanDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total XP</p>
-                  <p className="text-2xl font-bold text-primary">{xpBalance.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-primary">{metrics.xpBalance.toLocaleString()}</p>
                 </div>
                 <div className="xp-orb"></div>
               </div>
@@ -59,7 +215,9 @@ const FanDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Global Rank</p>
-                  <p className="text-2xl font-bold">#{currentRank}</p>
+                  <p className="text-2xl font-bold">
+                    {metrics.currentRank ? `#${metrics.currentRank}` : '--'}
+                  </p>
                 </div>
                 <Trophy className="h-8 w-8 text-primary" />
               </div>
@@ -71,7 +229,7 @@ const FanDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Campaigns</p>
-                  <p className="text-2xl font-bold">{completedCampaigns}</p>
+                  <p className="text-2xl font-bold">{metrics.completedCampaigns}</p>
                 </div>
                 <Target className="h-8 w-8 text-primary" />
               </div>
@@ -83,7 +241,7 @@ const FanDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Active Quests</p>
-                  <p className="text-2xl font-bold">{activeQuests}</p>
+                  <p className="text-2xl font-bold">{metrics.activeCampaigns}</p>
                 </div>
                 <Star className="h-8 w-8 text-primary" />
               </div>
@@ -99,20 +257,34 @@ const FanDashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Progress to Silver Tier
+                  Progress to {nextTier} Tier
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{xpBalance} XP</span>
-                    <span>{nextTierXP} XP</span>
+                {metrics.xpBalance === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="xp-orb mb-4 mx-auto opacity-50"></div>
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">Start Your Journey</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Earn your first XP by streaming music, joining campaigns, and engaging with creators
+                    </p>
+                    <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Browse Campaigns
+                    </Button>
                   </div>
-                  <Progress value={(xpBalance / nextTierXP) * 100} className="h-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {nextTierXP - xpBalance} XP until Silver Tier
-                  </p>
-                </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>{metrics.xpBalance} XP</span>
+                      <span>{nextTierXP} XP</span>
+                    </div>
+                    <Progress value={(metrics.xpBalance / nextTierXP) * 100} className="h-2" />
+                    <p className="text-sm text-muted-foreground">
+                      {nextTierXP - metrics.xpBalance} XP until {nextTier} Tier
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -125,46 +297,53 @@ const FanDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Sample Campaign */}
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-surface border">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src="/placeholder-artist.jpg" />
-                        <AvatarFallback>AR</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">Stream "New Song" 10 times</p>
-                        <p className="text-sm text-muted-foreground">By Artist Name</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge className="bg-primary/20 text-primary">+500 XP</Badge>
-                      <p className="text-sm text-muted-foreground mt-1">7/10 streams</p>
-                    </div>
+                {activeCampaigns.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">No Active Campaigns</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Join campaigns to earn XP, unlock rewards, and support your favorite creators
+                    </p>
+                    <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Browse Available Campaigns
+                    </Button>
                   </div>
-
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-surface border">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src="/placeholder-artist2.jpg" />
-                        <AvatarFallback>MU</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">Share album on social media</p>
-                        <p className="text-sm text-muted-foreground">By Music Artist</p>
+                ) : (
+                  <div className="space-y-4">
+                    {activeCampaigns.map((campaign, index) => (
+                      <div key={campaign.id || index} className="flex items-center justify-between p-4 rounded-lg bg-surface border">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>
+                              {campaign.campaigns?.title?.slice(0, 2).toUpperCase() || 'CA'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{campaign.campaigns?.title || 'Campaign'}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {campaign.progress || 0}% complete
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge className="bg-primary/20 text-primary">
+                            +{campaign.campaigns?.xp_reward || 0} XP
+                          </Badge>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {campaign.status}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge className="bg-primary/20 text-primary">+250 XP</Badge>
-                      <p className="text-sm text-muted-foreground mt-1">Pending</p>
-                    </div>
+                    ))}
+                    <Button 
+                      className="w-full bg-gradient-primary hover:opacity-90"
+                      onClick={() => navigate('/campaigns')}
+                    >
+                      View All Campaigns
+                    </Button>
                   </div>
-
-                  <Button className="w-full bg-gradient-primary hover:opacity-90">
-                    View All Campaigns
-                  </Button>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -177,29 +356,31 @@ const FanDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-primary rounded-full"></div>
-                      <span className="text-sm">Earned 100 XP from streaming</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">2 min ago</span>
+                {recentActivity.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-sm text-muted-foreground">
+                      No recent activity. Start engaging to see your activity here!
+                    </p>
                   </div>
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-success rounded-full"></div>
-                      <span className="text-sm">Completed "Daily Listener" quest</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">1 hour ago</span>
+                ) : (
+                  <div className="space-y-3">
+                    {recentActivity.map((activity, index) => (
+                      <div key={index} className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            activity.type === 'stream' ? 'bg-primary' : 
+                            activity.type === 'campaign' ? 'bg-success' : 'bg-brand-accent'
+                          }`}></div>
+                          <span className="text-sm">{activity.message}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(activity.timestamp).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-brand-accent rounded-full"></div>
-                      <span className="text-sm">Joined new campaign</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">3 hours ago</span>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -236,35 +417,33 @@ const FanDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>AR</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">Artist Name</span>
-                    </div>
-                    <span className="text-sm text-primary">450 XP</span>
+                {topArtists.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-sm text-muted-foreground">
+                      Start streaming music to see your top supported artists here!
+                    </p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>MU</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">Music Artist</span>
-                    </div>
-                    <span className="text-sm text-primary">320 XP</span>
+                ) : (
+                  <div className="space-y-3">
+                    {topArtists.map((artist, index) => (
+                      <div key={artist.user_id || index} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={artist.avatar_url} />
+                            <AvatarFallback>
+                              {(artist.display_name || artist.username || 'AR').slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm font-medium">
+                            {artist.display_name || artist.username || 'Unknown Artist'}
+                          </span>
+                        </div>
+                        <span className="text-sm text-primary">{artist.xp} XP</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>SO</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">Singer One</span>
-                    </div>
-                    <span className="text-sm text-primary">280 XP</span>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -277,26 +456,25 @@ const FanDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-success/20 text-success">
-                      <Star className="h-3 w-3 mr-1" />
-                      First Campaign
-                    </Badge>
+                {metrics.achievements.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-sm text-muted-foreground">
+                      Complete activities to unlock achievements!
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-brand-accent/20 text-brand-accent">
-                      <Music className="h-3 w-3 mr-1" />
-                      Stream Master
-                    </Badge>
+                ) : (
+                  <div className="space-y-3">
+                    {metrics.achievements.map((achievement, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-success/20 text-success">
+                          <Star className="h-3 w-3 mr-1" />
+                          {achievement.name}
+                        </Badge>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-brand-secondary/20 text-brand-secondary">
-                      <Users className="h-3 w-3 mr-1" />
-                      Social Butterfly
-                    </Badge>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>
