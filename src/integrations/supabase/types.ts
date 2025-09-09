@@ -172,6 +172,81 @@ export type Database = {
         }
         Relationships: []
       }
+      message_costs: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          is_accepting_messages: boolean
+          updated_at: string
+          xp_cost: number
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_accepting_messages?: boolean
+          updated_at?: string
+          xp_cost?: number
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_accepting_messages?: boolean
+          updated_at?: string
+          xp_cost?: number
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          approved_at: string | null
+          content: string
+          created_at: string
+          denied_at: string | null
+          flagged_content: boolean
+          flagged_reason: string | null
+          id: string
+          recipient_id: string
+          sender_id: string
+          sentiment_score: number | null
+          status: string
+          updated_at: string
+          xp_cost: number
+        }
+        Insert: {
+          approved_at?: string | null
+          content: string
+          created_at?: string
+          denied_at?: string | null
+          flagged_content?: boolean
+          flagged_reason?: string | null
+          id?: string
+          recipient_id: string
+          sender_id: string
+          sentiment_score?: number | null
+          status?: string
+          updated_at?: string
+          xp_cost?: number
+        }
+        Update: {
+          approved_at?: string | null
+          content?: string
+          created_at?: string
+          denied_at?: string | null
+          flagged_content?: boolean
+          flagged_reason?: string | null
+          id?: string
+          recipient_id?: string
+          sender_id?: string
+          sentiment_score?: number | null
+          status?: string
+          updated_at?: string
+          xp_cost?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -396,6 +471,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_xp_balances: {
+        Row: {
+          created_at: string
+          current_xp: number
+          id: string
+          total_earned_xp: number
+          total_spent_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_xp?: number
+          id?: string
+          total_earned_xp?: number
+          total_spent_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_xp?: number
+          id?: string
+          total_earned_xp?: number
+          total_spent_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -419,6 +524,18 @@ export type Database = {
           xp_spent_param?: number
         }
         Returns: string
+      }
+      send_message_with_xp: {
+        Args: {
+          content_param: string
+          recipient_id_param: string
+          xp_cost_param: number
+        }
+        Returns: string
+      }
+      update_message_status: {
+        Args: { message_id_param: string; new_status_param: string }
+        Returns: boolean
       }
     }
     Enums: {
