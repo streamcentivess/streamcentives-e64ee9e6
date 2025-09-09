@@ -37,6 +37,7 @@ const UniversalProfile = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [searching, setSearching] = useState(false);
+  const [userRole, setUserRole] = useState<'fan' | 'creator' | null>(null);
   
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId');
@@ -45,6 +46,21 @@ const UniversalProfile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      // Determine user role from sessionStorage or URL params
+      const savedRole = sessionStorage.getItem('selectedRole') as 'fan' | 'creator' | null;
+      if (savedRole) {
+        setUserRole(savedRole);
+      } else {
+        // Try to infer role from current path or default to fan
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('creator')) {
+          setUserRole('creator');
+        } else if (currentPath.includes('fan')) {
+          setUserRole('fan');
+        } else {
+          setUserRole('fan'); // Default to fan
+        }
+      }
     }
   }, [user]);
 
@@ -605,7 +621,33 @@ const UniversalProfile = () => {
               <CardContent className="p-6 text-center">
                 <div className="text-muted-foreground">
                   <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No campaigns yet. Join some campaigns to start earning XP!</p>
+                  {isOwnProfile ? (
+                    // Show different content based on user's role
+                    userRole === 'creator' ? (
+                      <div className="space-y-4">
+                        <p>No campaigns created yet. Start building your community with your first campaign!</p>
+                        <Button 
+                          onClick={() => navigate('/campaigns')}
+                          className="bg-gradient-primary hover:opacity-90"
+                        >
+                          Create Campaign
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <p>No campaigns joined yet. Discover and join campaigns to start earning XP!</p>
+                        <Button 
+                          onClick={() => navigate('/fan-campaigns')}
+                          className="bg-gradient-primary hover:opacity-90"
+                        >
+                          Join Campaigns
+                        </Button>
+                      </div>
+                    )
+                  ) : (
+                    // Viewing someone else's profile - show generic message
+                    <p>No public campaign activity to display.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
