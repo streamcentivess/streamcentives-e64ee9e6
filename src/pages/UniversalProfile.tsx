@@ -592,7 +592,7 @@ const UniversalProfile = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img src="/lovable-uploads/streamcentivesloveable.PNG" alt="Streamcentives Logo" className="w-8 h-8 rounded-full" />
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Streamcentives
             </h1>
           </div>
