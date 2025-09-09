@@ -75,25 +75,47 @@ const Feed = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [reposts, setReposts] = useState<Repost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [activeTab, setActiveTab] = useState('community');
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [hasMoreReposts, setHasMoreReposts] = useState(true);
+  const [page, setPage] = useState(0);
+  const [repostPage, setRepostPage] = useState(0);
+  const POSTS_PER_PAGE = 5;
 
   useEffect(() => {
     if (user) {
-      fetchPosts();
+      fetchPosts(0, true);
     }
   }, [user]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (pageNum: number = 0, reset: boolean = false) => {
     try {
-      setLoading(true);
+      if (reset) {
+        setLoading(true);
+        setPosts([]);
+        setPage(0);
+      } else {
+        setLoadingMore(true);
+      }
 
-      // Fetch posts
+      // Fetch posts with pagination
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(pageNum * POSTS_PER_PAGE, (pageNum + 1) * POSTS_PER_PAGE - 1);
 
       if (postsError) throw postsError;
+
+      // Check if we have more posts
+      const hasMore = postsData.length === POSTS_PER_PAGE;
+      setHasMorePosts(hasMore);
+      
+      if (postsData.length === 0 && pageNum === 0) {
+        setPosts([]);
+        return;
+      }
 
       // Fetch profiles for all post authors
       const userIds = [...new Set(postsData.map(post => post.user_id))];
@@ -203,7 +225,14 @@ const Feed = () => {
         })
       );
 
-      setPosts(postsWithCampaigns);
+      // Update posts state
+      if (reset) {
+        setPosts(postsWithCampaigns);
+        setPage(0);
+      } else {
+        setPosts(prev => [...prev, ...postsWithCampaigns]);
+        setPage(pageNum);
+      }
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
@@ -213,6 +242,7 @@ const Feed = () => {
       });
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -363,7 +393,7 @@ const Feed = () => {
       
       // Refresh reposts if on fan love tab
       if (activeTab === 'fanlove') {
-        fetchReposts();
+        fetchReposts(0, true);
       }
     } catch (error) {
       console.error('Error reposting:', error);
@@ -375,20 +405,34 @@ const Feed = () => {
     }
   };
 
-  const fetchReposts = async () => {
+  const fetchReposts = async (pageNum: number = 0, reset: boolean = false) => {
     if (!user) return;
 
     try {
-      // First get reposts
+      if (reset) {
+        setLoadingMore(false);
+        setReposts([]);
+        setRepostPage(0);
+      } else {
+        setLoadingMore(true);
+      }
+
+      // First get reposts with pagination
       const { data: repostsData, error: repostsError } = await supabase
         .from('reposts')
         .select('id, user_id, post_id, created_at')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(pageNum * POSTS_PER_PAGE, (pageNum + 1) * POSTS_PER_PAGE - 1);
 
       if (repostsError) throw repostsError;
 
+      // Check if we have more reposts
+      const hasMore = repostsData.length === POSTS_PER_PAGE;
+      setHasMoreReposts(hasMore);
+
       if (!repostsData || repostsData.length === 0) {
-        setReposts([]);
+        if (reset) setReposts([]);
+        setLoadingMore(false);
         return;
       }
 
@@ -452,7 +496,14 @@ const Feed = () => {
         })
       );
 
-      setReposts(repostsWithData.filter(Boolean) as Repost[]);
+      // Update reposts state
+      if (reset) {
+        setReposts(repostsWithData.filter(Boolean) as Repost[]);
+        setRepostPage(0);
+      } else {
+        setReposts(prev => [...prev, ...(repostsWithData.filter(Boolean) as Repost[])]);
+        setRepostPage(pageNum);
+      }
     } catch (error) {
       console.error('Error fetching reposts:', error);
       toast({
@@ -460,17 +511,49 @@ const Feed = () => {
         description: "Failed to load Fan Love content",
         variant: "destructive"
       });
+    } finally {
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
     if (user) {
-      fetchPosts();
-      if (activeTab === 'fanlove') {
-        fetchReposts();
+      // Reset and fetch initial data when tab changes
+      if (activeTab === 'community') {
+        setPosts([]);
+        setPage(0);
+        setHasMorePosts(true);
+        fetchPosts(0, true);
+      } else {
+        setReposts([]);
+        setRepostPage(0);
+        setHasMoreReposts(true);
+        fetchReposts(0, true);
       }
     }
   }, [user, activeTab]);
+
+  // Infinite scroll logic
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loadingMore || !hasMorePosts && !hasMoreReposts) return;
+      
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
+      
+      if (scrollTop + clientHeight >= scrollHeight - 1000) { // Load more when 1000px from bottom
+        if (activeTab === 'community' && hasMorePosts) {
+          fetchPosts(page + 1, false);
+        } else if (activeTab === 'fanlove' && hasMoreReposts) {
+          fetchReposts(repostPage + 1, false);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadingMore, hasMorePosts, hasMoreReposts, activeTab, page, repostPage]);
 
   if (loading) {
     return (
@@ -711,6 +794,14 @@ const Feed = () => {
                 </Card>
               ))
             )}
+            
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                <p className="text-sm text-muted-foreground">Loading more amazing content...</p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="fanlove" className="space-y-6">
@@ -806,6 +897,14 @@ const Feed = () => {
                   </CardContent>
                 </Card>
               ))
+            )}
+            
+            {/* Loading more indicator for reposts */}
+            {loadingMore && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mx-auto mb-2"></div>
+                <p className="text-sm text-muted-foreground">Loading more fan love...</p>
+              </div>
             )}
           </TabsContent>
         </Tabs>
