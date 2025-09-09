@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import MessageCreator from '@/components/MessageCreator';
 
 interface Profile {
   id: string;
@@ -102,14 +103,7 @@ const UniversalProfile = () => {
     }
   };
 
-  const handleMessage = () => {
-    if (!profile) return;
-    // Navigate to direct message - you'd implement actual DM system
-    toast({
-      title: "Feature Coming Soon",
-      description: "Direct messaging will be available soon!"
-    });
-  };
+  // Remove unused handleMessage function - replaced with MessageCreator component
 
   const handleRoleSelection = (role: 'fan' | 'creator') => {
     setRoleModalOpen(false);
@@ -395,13 +389,25 @@ const UniversalProfile = () => {
                             </>
                           )}
                         </Button>
-                        <Button
-                          onClick={handleMessage}
-                          variant="outline"
-                        >
-                          <MessageCircle className="h-4 w-4 mr-2" />
-                          Message
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              Message
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Send Message</DialogTitle>
+                            </DialogHeader>
+                            <MessageCreator
+                              recipientId={profile.user_id}
+                              recipientName={profile.display_name || 'User'}
+                            />
+                          </DialogContent>
+                        </Dialog>
                       </>
                     )}
                   </div>

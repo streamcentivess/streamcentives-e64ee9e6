@@ -8,6 +8,8 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import PitchDeck from "./pages/PitchDeck";
 import Team from "./pages/Team";
+import Website from "./pages/Website";
+import Inbox from "./pages/Inbox";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
@@ -99,6 +101,11 @@ const App = () => (
             <Route path="/manage-rewards" element={
               <ProtectedRoute>
                 <ManageRewards />
+              </ProtectedRoute>
+            } />
+            <Route path="/inbox" element={
+              <ProtectedRoute>
+                <Inbox />
               </ProtectedRoute>
             } />
             

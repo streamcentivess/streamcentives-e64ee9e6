@@ -1,0 +1,218 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Send, Coins } from 'lucide-react';
+
+interface MessageCreatorProps {
+  recipientId: string;
+  recipientName: string;
+  onMessageSent?: () => void;
+}
+
+interface MessageCost {
+  xp_cost: number;
+  is_accepting_messages: boolean;
+}
+
+interface XPBalance {
+  current_xp: number;
+}
+
+const MessageCreator: React.FC<MessageCreatorProps> = ({
+  recipientId,
+  recipientName,
+  onMessageSent
+}) => {
+  const { toast } = useToast();
+  const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [messageCost, setMessageCost] = useState<MessageCost | null>(null);
+  const [userXP, setUserXP] = useState<number>(0);
+  const [hasPendingMessage, setHasPendingMessage] = useState(false);
+
+  useEffect(() => {
+    fetchMessageCost();
+    fetchUserXP();
+    checkPendingMessage();
+  }, [recipientId]);
+
+  const fetchMessageCost = async () => {
+    const { data, error } = await supabase
+      .from('message_costs')
+      .select('xp_cost, is_accepting_messages')
+      .eq('creator_id', recipientId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching message cost:', error);
+      // Default cost if not set
+      setMessageCost({ xp_cost: 100, is_accepting_messages: true });
+    } else {
+      setMessageCost(data);
+    }
+  };
+
+  const fetchUserXP = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('user_xp_balances')
+      .select('current_xp')
+      .eq('user_id', user.id)
+      .single();
+
+    if (data) {
+      setUserXP(data.current_xp);
+    }
+  };
+
+  const checkPendingMessage = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select('id')
+      .eq('sender_id', user.id)
+      .eq('recipient_id', recipientId)
+      .eq('status', 'pending')
+      .single();
+
+    setHasPendingMessage(!!data);
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim() || !messageCost) return;
+
+    if (userXP < messageCost.xp_cost) {
+      toast({
+        title: "Insufficient XP",
+        description: `You need ${messageCost.xp_cost} XP to send this message, but you only have ${userXP} XP.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.rpc('send_message_with_xp', {
+        recipient_id_param: recipientId,
+        content_param: message.trim(),
+        xp_cost_param: messageCost.xp_cost
+      });
+
+      if (error) throw error;
+
+      // Trigger AI analysis
+      const messageId = data;
+      await supabase.functions.invoke('analyze-message-sentiment', {
+        body: { message: message.trim(), messageId }
+      });
+
+      toast({
+        title: "Message sent!",
+        description: `Your message has been sent to ${recipientName}. It will be reviewed before delivery.`,
+      });
+
+      setMessage('');
+      setHasPendingMessage(true);
+      fetchUserXP(); // Refresh XP balance
+      onMessageSent?.();
+
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Failed to send message",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!messageCost) {
+    return <div className="p-4">Loading...</div>;
+  }
+
+  if (!messageCost.is_accepting_messages) {
+    return (
+      <Card className="p-4">
+        <CardContent className="text-center">
+          <p className="text-muted-foreground">
+            {recipientName} is not currently accepting messages.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (hasPendingMessage) {
+    return (
+      <Card className="p-4">
+        <CardContent className="text-center">
+          <p className="text-muted-foreground mb-2">
+            You have a pending message with {recipientName}.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Please wait for them to respond before sending another message.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-4">
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold">Send Message to {recipientName}</h3>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Coins className="h-3 w-3" />
+              Cost: {messageCost.xp_cost} XP
+            </Badge>
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Coins className="h-3 w-3" />
+              Your XP: {userXP}
+            </Badge>
+          </div>
+        </div>
+
+        <Textarea
+          placeholder="Write your message here..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          maxLength={500}
+          rows={4}
+        />
+
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {message.length}/500 characters
+          </p>
+          <Button
+            onClick={handleSendMessage}
+            disabled={!message.trim() || isLoading || userXP < messageCost.xp_cost}
+            className="flex items-center gap-2"
+          >
+            <Send className="h-4 w-4" />
+            {isLoading ? 'Sending...' : `Send (${messageCost.xp_cost} XP)`}
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Your message will be reviewed by AI for content moderation before being delivered.
+        </p>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default MessageCreator;
