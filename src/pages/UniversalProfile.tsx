@@ -144,10 +144,10 @@ const UniversalProfile = () => {
     setSearching(true);
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%,email.ilike.%${query}%`)
-        .neq('user_id', user?.id) // Exclude current user
+        .from('public_profiles' as any)
+        .select('user_id, username, display_name, avatar_url, spotify_connected')
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .neq('user_id', user?.id || '')
         .limit(10);
 
       if (error) {
@@ -158,7 +158,7 @@ const UniversalProfile = () => {
           variant: "destructive"
         });
       } else {
-        setSearchResults(data || []);
+        setSearchResults((data as any) || []);
       }
     } catch (error) {
       console.error('Unexpected search error:', error);
