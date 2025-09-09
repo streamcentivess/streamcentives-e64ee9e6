@@ -182,10 +182,8 @@ const UniversalProfile = () => {
         if (error) throw error;
         
         setFollowing(false);
-        setFollowStats(prev => ({ 
-          ...prev, 
-          followers_count: Math.max(0, prev.followers_count - 1) 
-        }));
+        // Refresh follow stats from server to get accurate count
+        fetchFollowStats();
         
         toast({
           title: "Success",
@@ -203,10 +201,8 @@ const UniversalProfile = () => {
         if (error) throw error;
         
         setFollowing(true);
-        setFollowStats(prev => ({ 
-          ...prev, 
-          followers_count: prev.followers_count + 1 
-        }));
+        // Refresh follow stats from server to get accurate count
+        fetchFollowStats();
         
         toast({
           title: "Success",
