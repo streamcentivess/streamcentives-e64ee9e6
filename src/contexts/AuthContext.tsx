@@ -73,27 +73,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithSpotify = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'spotify',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: 'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private'
-        }
+          scopes:
+            'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private',
+          skipBrowserRedirect: true,
+        },
       });
 
       if (error) {
         toast({
-          title: "Authentication Error",
+          title: 'Authentication Error',
           description: error.message,
-          variant: "destructive"
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const url = data?.url;
+      if (url) {
+        // Break out of the builder iframe to avoid "refused to connect"
+        const targetWindow = window.top ?? window;
+        targetWindow.location.href = url;
+      } else {
+        toast({
+          title: 'Authentication Error',
+          description: 'Could not start Spotify sign-in flow.',
+          variant: 'destructive',
         });
       }
     } catch (error) {
       console.error('Spotify auth error:', error);
       toast({
-        title: "Authentication Error",
-        description: "Failed to connect with Spotify",
-        variant: "destructive"
+        title: 'Authentication Error',
+        description: 'Failed to connect with Spotify',
+        variant: 'destructive',
       });
     }
   };
