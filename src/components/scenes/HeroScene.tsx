@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-const logoImage = "/lovable-uploads/streamcentives-logo-round.png";
+import logoImage from "@/assets/streamcentives-logo.png";
 
 const HeroScene = () => {
   const [isVisible, setIsVisible] = useState(false);

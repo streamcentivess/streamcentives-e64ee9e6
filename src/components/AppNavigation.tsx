@@ -26,7 +26,7 @@ import {
   Users,
   BarChart3
 } from 'lucide-react';
-const streamcentivesLogo = "/lovable-uploads/streamcentives-logo-round.png";
+import streamcentivesLogo from '@/assets/streamcentives-logo.png';
 
 const AppNavigation = () => {
   const { user, signOut } = useAuth();
