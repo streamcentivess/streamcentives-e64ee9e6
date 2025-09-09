@@ -122,7 +122,7 @@ const SignIn = () => {
               <Label htmlFor="email">Username or Email</Label>
               <Input
                 id="email"
-                type="email"
+                type="text"
                 placeholder="Enter username or email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

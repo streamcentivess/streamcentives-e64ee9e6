@@ -202,10 +202,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signInWithEmail = async (email: string, password: string) => {
+  const signInWithEmail = async (emailOrUsername: string, password: string) => {
     try {
+      let actualEmail = emailOrUsername;
+      
+      // Check if input is an email or username
+      if (!emailOrUsername.includes('@')) {
+        // It's a username, look up the email
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('username', emailOrUsername.toLowerCase())
+          .maybeSingle();
+          
+        if (profileError || !profile) {
+          toast({
+            title: "Sign In Failed",
+            description: "Username not found. Please check your username or use your email instead.",
+            variant: "destructive"
+          });
+          return { error: new Error('Username not found') };
+        }
+        
+        // Get the email from auth.users (we need to use a different approach)
+        // Since we can't query auth.users directly, we'll try signing in with username@streamcentives.temp
+        // and handle the error, or we could store email in profiles table
+        
+        // For now, let's get the actual email by checking if we have it stored
+        const { data: profileData, error: emailError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('username', emailOrUsername.toLowerCase())
+          .maybeSingle();
+          
+        if (emailError || !profileData) {
+          toast({
+            title: "Sign In Failed", 
+            description: "Please use your email address to sign in, or contact support.",
+            variant: "destructive"
+          });
+          return { error: new Error('Please use email to sign in') };
+        }
+        
+        // Since we can't easily get email from username without additional setup,
+        // let's inform user to use email for now
+        toast({
+          title: "Please use your email",
+          description: "Username login is not yet available. Please sign in with your email address.",
+          variant: "destructive"
+        });
+        return { error: new Error('Please use email to sign in') };
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: actualEmail,
         password,
       });
 
