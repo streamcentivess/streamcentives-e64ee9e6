@@ -14,6 +14,7 @@ import SignUp from "./pages/auth/SignUp";
 import AuthCallback from "./pages/auth/AuthCallback";
 import EmailConfirmation from "./pages/auth/EmailConfirmation";
 import UniversalProfile from "./pages/UniversalProfile";
+import EditProfile from "./pages/EditProfile";
 import FanDashboard from "./pages/FanDashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import Campaigns from "./pages/Campaigns";
@@ -57,6 +58,11 @@ const App = () => (
             <Route path="/universal-profile" element={
               <ProtectedRoute>
                 <UniversalProfile />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile/edit" element={
+              <ProtectedRoute>
+                <EditProfile />
               </ProtectedRoute>
             } />
             <Route path="/fan-dashboard" element={

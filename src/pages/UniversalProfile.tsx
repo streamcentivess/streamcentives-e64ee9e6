@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface Profile {
   id: string;
@@ -25,10 +25,17 @@ interface Profile {
 const UniversalProfile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  
+  // Check if viewing own profile or another user's profile
+  const viewingUserId = searchParams.get('userId');
+  const isOwnProfile = !viewingUserId || viewingUserId === user?.id;
 
   useEffect(() => {
     if (user) {
@@ -37,13 +44,14 @@ const UniversalProfile = () => {
   }, [user]);
 
   const fetchProfile = async () => {
-    if (!user) return;
+    const targetUserId = viewingUserId || user?.id;
+    if (!targetUserId) return;
 
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', targetUserId)
         .single();
 
       if (error) {
@@ -55,12 +63,52 @@ const UniversalProfile = () => {
         });
       } else {
         setProfile(data);
+        // Check if current user is following this profile (if not own profile)
+        if (!isOwnProfile && user) {
+          checkFollowStatus();
+        }
       }
     } catch (error) {
       console.error('Unexpected error:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const checkFollowStatus = async () => {
+    // This would check a follows table - for now just mock it
+    setFollowing(false);
+  };
+
+  const handleFollowToggle = async () => {
+    if (!user || !profile || isOwnProfile) return;
+    
+    setFollowLoading(true);
+    try {
+      // Mock follow/unfollow logic - you'd implement actual follow system here
+      setFollowing(!following);
+      toast({
+        title: "Success",
+        description: following ? "Unfollowed user" : "Following user"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleMessage = () => {
+    if (!profile) return;
+    // Navigate to direct message - you'd implement actual DM system
+    toast({
+      title: "Feature Coming Soon",
+      description: "Direct messaging will be available soon!"
+    });
   };
 
   const handleRoleSelection = (role: 'fan' | 'creator') => {
@@ -291,31 +339,72 @@ const UniversalProfile = () => {
                 </div>
               </div>
 
-              {/* Profile Info */}
-              <div className="flex-1">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
-                  <div>
-                    <h2 className="text-2xl font-bold">
-                      {profile.display_name || 'New User'}
-                    </h2>
-                    {profile.username && (
-                      <p className="text-muted-foreground">@{profile.username}</p>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mt-2 md:mt-0">
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <Star className="h-3 w-3" />
-                      Bronze Tier
-                    </Badge>
-                    {profile.spotify_connected && (
-                      <Badge className="bg-[#1db954] hover:bg-[#1ed760] text-white">
-                        <Music className="h-3 w-3 mr-1" />
-                        Spotify Connected
+                {/* Profile Info */}
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+                    <div>
+                      <h2 className="text-2xl font-bold">
+                        {profile.display_name || 'New User'}
+                      </h2>
+                      {profile.username && (
+                        <p className="text-muted-foreground">@{profile.username}</p>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-2 md:mt-0">
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Star className="h-3 w-3" />
+                        Bronze Tier
                       </Badge>
+                      {profile.spotify_connected && (
+                        <Badge className="bg-[#1db954] hover:bg-[#1ed760] text-white">
+                          <Music className="h-3 w-3 mr-1" />
+                          Spotify Connected
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 mb-4">
+                    {isOwnProfile ? (
+                      <Button 
+                        onClick={() => navigate('/profile/edit')}
+                        className="bg-gradient-primary hover:opacity-90"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          onClick={handleFollowToggle}
+                          disabled={followLoading}
+                          variant={following ? "outline" : "default"}
+                          className={following ? "" : "bg-gradient-primary hover:opacity-90"}
+                        >
+                          {following ? (
+                            <>
+                              <UserMinus className="h-4 w-4 mr-2" />
+                              Unfollow
+                            </>
+                          ) : (
+                            <>
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Follow
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={handleMessage}
+                          variant="outline"
+                        >
+                          <MessageCircle className="h-4 w-4 mr-2" />
+                          Message
+                        </Button>
+                      </>
                     )}
                   </div>
-                </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
