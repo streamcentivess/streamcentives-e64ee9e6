@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Separator } from '@/components/ui/separator';
-import streamcentivesLogo from '@/assets/streamcentives-logo.png';
+const streamcentivesLogo = "/lovable-uploads/streamcentives-logo-round.png";
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -46,7 +46,7 @@ const SignUp = () => {
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <img 
-              src="/lovable-uploads/fc5c3f3a-25a8-47b8-a886-bbbfd21758e9.png" 
+              src={streamcentivesLogo} 
               alt="Streamcentives" 
               className="h-16 w-16 rounded-full object-cover"
             />
