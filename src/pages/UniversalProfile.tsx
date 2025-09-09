@@ -28,6 +28,7 @@ const UniversalProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -86,6 +87,53 @@ const UniversalProfile = () => {
         description: error.message,
         variant: "destructive"
       });
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      // Upload file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: urlData.publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Update local profile state
+      setProfile(prev => prev ? { ...prev, avatar_url: urlData.publicUrl } : null);
+
+      toast({
+        title: "Success",
+        description: "Avatar updated successfully!"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -225,9 +273,18 @@ const UniversalProfile = () => {
                       {profile.display_name?.[0] || user?.email?.[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                    id="avatar-upload"
+                  />
                   <Button
                     size="sm"
                     className="absolute bottom-0 right-0 rounded-full h-8 w-8 p-0"
+                    onClick={() => document.getElementById('avatar-upload')?.click()}
+                    disabled={uploading}
                   >
                     <Camera className="h-4 w-4" />
                   </Button>
