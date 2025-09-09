@@ -390,7 +390,7 @@ const UniversalProfile = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search for users and creators..."
+                placeholder="Search for users and creators or brands..."
                 value={searchQuery}
                 onChange={handleSearchChange}
                 className="pl-10"
