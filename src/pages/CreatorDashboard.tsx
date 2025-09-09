@@ -1,14 +1,30 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const CreatorDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // State for merch store
+  const [profile, setProfile] = useState<any>(null);
+  const [showMerchDialog, setShowMerchDialog] = useState(false);
+  const [merchStoreData, setMerchStoreData] = useState({
+    url: '',
+    platform: 'shopify'
+  });
 
   // Mock data - replace with real data from your API
   const totalFans = 2847;
@@ -16,6 +32,100 @@ const CreatorDashboard = () => {
   const activeCampaigns = 8;
   const totalRevenue = 1234.56;
   const conversionRate = 12.5;
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const handleConnectMerchStore = async () => {
+    try {
+      const updateData = {
+        merch_store_url: merchStoreData.url,
+        merch_store_platform: merchStoreData.platform,
+        merch_store_connected: true,
+        merch_store_connected_at: new Date().toISOString()
+      };
+
+      if (profile) {
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData as any)
+          .eq('user_id', user?.id);
+        
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .insert([{
+            user_id: user?.id,
+            ...updateData
+          } as any]);
+        
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Merch store connected successfully",
+      });
+
+      setShowMerchDialog(false);
+      fetchProfile();
+    } catch (error) {
+      console.error('Error connecting merch store:', error);
+      toast({
+        title: "Error",
+        description: "Failed to connect merch store",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDisconnectMerchStore = async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          merch_store_connected: false,
+          merch_store_url: null,
+          merch_store_platform: null,
+        } as any)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Merch store disconnected",
+      });
+
+      fetchProfile();
+    } catch (error) {
+      console.error('Error disconnecting merch store:', error);
+      toast({
+        title: "Error",
+        description: "Failed to disconnect merch store",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -235,6 +345,97 @@ const CreatorDashboard = () => {
 
           {/* Right Column */}
           <div className="space-y-6">
+            {/* Merch Store Integration */}
+            <Card className="card-modern">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  Merch Store
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {profile?.merch_store_connected ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-success">Connected</p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {profile.merch_store_platform} Store
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => window.open(profile.merch_store_url, '_blank')}
+                      className="w-full"
+                    >
+                      <Link className="h-4 w-4 mr-2" />
+                      View Store
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleDisconnectMerchStore}
+                      className="w-full text-destructive hover:text-destructive"
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Connect your merch store to create merchandise campaigns
+                    </p>
+                    <Dialog open={showMerchDialog} onOpenChange={setShowMerchDialog}>
+                      <DialogTrigger asChild>
+                        <Button className="w-full bg-gradient-primary hover:opacity-90">
+                          <Store className="h-4 w-4 mr-2" />
+                          Connect Store
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Connect Merch Store</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="platform">Platform</Label>
+                            <Select 
+                              value={merchStoreData.platform} 
+                              onValueChange={(value) => setMerchStoreData(prev => ({ ...prev, platform: value }))}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="shopify">Shopify</SelectItem>
+                                <SelectItem value="woocommerce">WooCommerce</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="url">Store URL</Label>
+                            <Input
+                              id="url"
+                              value={merchStoreData.url}
+                              onChange={(e) => setMerchStoreData(prev => ({ ...prev, url: e.target.value }))}
+                              placeholder="https://your-store.com"
+                            />
+                          </div>
+                          <Button onClick={handleConnectMerchStore} className="w-full">
+                            Connect Store
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Quick Actions */}
             <Card className="card-modern">
               <CardHeader>

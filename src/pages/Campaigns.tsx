@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Search, Calendar, Users, Trophy, DollarSign, Edit, Trash2, Play, Pause, BarChart3, Target, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, Search, Calendar, Users, Trophy, DollarSign, Edit, Trash2, Play, Pause, BarChart3, Target, Eye, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Campaign {
@@ -86,6 +86,9 @@ const Campaigns = () => {
     max_participants: '',
     image_url: '',
     tags: '',
+    merch_product_name: '',
+    merch_product_url: '',
+    merch_discount_code: '',
   });
 
   useEffect(() => {
@@ -222,6 +225,9 @@ const Campaigns = () => {
       max_participants: '',
       image_url: '',
       tags: '',
+      merch_product_name: '',
+      merch_product_url: '',
+      merch_discount_code: '',
     });
     setShowCreateForm(false);
     setEditingCampaign(null);
@@ -303,6 +309,9 @@ const Campaigns = () => {
       max_participants: campaign.max_participants?.toString() || '',
       image_url: campaign.image_url || '',
       tags: campaign.tags?.join(', ') || '',
+      merch_product_name: '',
+      merch_product_url: '',
+      merch_discount_code: '',
     });
     setEditingCampaign(campaign);
     setShowCreateForm(true);
@@ -738,6 +747,52 @@ const Campaigns = () => {
                         placeholder="e.g., music, challenge, weekly"
                       />
                     </div>
+
+                    {/* Merchandise Campaign Fields */}
+                    {formData.type === 'merchandise' && (
+                      <div className="col-span-2 space-y-4 p-4 border border-primary/20 rounded-lg bg-primary/5">
+                        <h4 className="font-medium text-primary flex items-center gap-2">
+                          <Gift className="h-4 w-4" />
+                          Merchandise Details
+                        </h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="merch_product_name">Product Name</Label>
+                            <Input
+                              id="merch_product_name"
+                              value={formData.merch_product_name}
+                              onChange={(e) => handleInputChange('merch_product_name', e.target.value)}
+                              placeholder="e.g., Limited Edition T-Shirt"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="merch_product_url">Product URL</Label>
+                            <Input
+                              id="merch_product_url"
+                              value={formData.merch_product_url}
+                              onChange={(e) => handleInputChange('merch_product_url', e.target.value)}
+                              placeholder="https://your-store.com/product"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="merch_discount_code">Discount Code (Optional)</Label>
+                          <Input
+                            id="merch_discount_code"
+                            value={formData.merch_discount_code}
+                            onChange={(e) => handleInputChange('merch_discount_code', e.target.value)}
+                            placeholder="e.g., FAN20 for 20% off"
+                          />
+                        </div>
+                        
+                        <p className="text-xs text-muted-foreground">
+                          Link this campaign to specific merchandise in your connected store to track sales and reward fans for purchases.
+                        </p>
+                      </div>
+                    )}
 
                     <div className="flex gap-2 pt-4">
                       <Button type="submit" className="bg-gradient-primary hover:opacity-90">
