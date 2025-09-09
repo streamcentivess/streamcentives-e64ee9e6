@@ -45,14 +45,17 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
       .from('message_costs')
       .select('xp_cost, is_accepting_messages')
       .eq('creator_id', recipientId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching message cost:', error);
       // Default cost if not set
       setMessageCost({ xp_cost: 100, is_accepting_messages: true });
-    } else {
+    } else if (data) {
       setMessageCost(data);
+    } else {
+      // No message cost record exists, create default
+      setMessageCost({ xp_cost: 100, is_accepting_messages: true });
     }
   };
 
@@ -64,10 +67,12 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
       .from('user_xp_balances')
       .select('current_xp')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (data) {
       setUserXP(data.current_xp);
+    } else {
+      setUserXP(0);
     }
   };
 
@@ -81,7 +86,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
       .eq('sender_id', user.id)
       .eq('recipient_id', recipientId)
       .eq('status', 'pending')
-      .single();
+      .maybeSingle();
 
     setHasPendingMessage(!!data);
   };
