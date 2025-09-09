@@ -14,6 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaign_participants: {
+        Row: {
+          campaign_id: string
+          cash_earned: number | null
+          completion_date: string | null
+          created_at: string
+          id: string
+          joined_at: string
+          notes: string | null
+          progress: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          campaign_id: string
+          cash_earned?: number | null
+          completion_date?: string | null
+          created_at?: string
+          id?: string
+          joined_at?: string
+          notes?: string | null
+          progress?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          campaign_id?: string
+          cash_earned?: number | null
+          completion_date?: string | null
+          created_at?: string
+          id?: string
+          joined_at?: string
+          notes?: string | null
+          progress?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_participants_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          cash_reward: number | null
+          created_at: string
+          creator_id: string
+          current_progress: number | null
+          description: string | null
+          end_date: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean | null
+          max_participants: number | null
+          requirements: string | null
+          start_date: string
+          status: string
+          tags: string[] | null
+          target_metric: string | null
+          target_value: number | null
+          title: string
+          type: string
+          updated_at: string
+          xp_reward: number
+        }
+        Insert: {
+          cash_reward?: number | null
+          created_at?: string
+          creator_id: string
+          current_progress?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          max_participants?: number | null
+          requirements?: string | null
+          start_date: string
+          status?: string
+          tags?: string[] | null
+          target_metric?: string | null
+          target_value?: number | null
+          title: string
+          type: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Update: {
+          cash_reward?: number | null
+          created_at?: string
+          creator_id?: string
+          current_progress?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          max_participants?: number | null
+          requirements?: string | null
+          start_date?: string
+          status?: string
+          tags?: string[] | null
+          target_metric?: string | null
+          target_value?: number | null
+          title?: string
+          type?: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -192,6 +314,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_campaign_stats: {
+        Args: { campaign_id_param: string }
+        Returns: {
+          average_progress: number
+          completed_count: number
+          participant_count: number
+          total_cash_distributed: number
+          total_xp_distributed: number
+        }[]
+      }
       redeem_reward: {
         Args: {
           amount_paid_param?: number
