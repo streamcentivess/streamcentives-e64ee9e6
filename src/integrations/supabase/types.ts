@@ -50,6 +50,107 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_redemptions: {
+        Row: {
+          amount_paid: number | null
+          created_at: string
+          id: string
+          payment_method: string
+          reward_id: string
+          status: string
+          updated_at: string
+          user_id: string
+          xp_spent: number | null
+        }
+        Insert: {
+          amount_paid?: number | null
+          created_at?: string
+          id?: string
+          payment_method: string
+          reward_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          xp_spent?: number | null
+        }
+        Update: {
+          amount_paid?: number | null
+          created_at?: string
+          id?: string
+          payment_method?: string
+          reward_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          xp_spent?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          cash_price: number | null
+          created_at: string
+          creator_id: string
+          currency: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          quantity_available: number
+          quantity_redeemed: number
+          rarity: string
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+          xp_cost: number | null
+        }
+        Insert: {
+          cash_price?: number | null
+          created_at?: string
+          creator_id: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          quantity_available?: number
+          quantity_redeemed?: number
+          rarity?: string
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string
+          xp_cost?: number | null
+        }
+        Update: {
+          cash_price?: number | null
+          created_at?: string
+          creator_id?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          quantity_available?: number
+          quantity_redeemed?: number
+          rarity?: string
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+          xp_cost?: number | null
+        }
+        Relationships: []
+      }
       spotify_accounts: {
         Row: {
           access_token: string
@@ -91,7 +192,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      redeem_reward: {
+        Args: {
+          amount_paid_param?: number
+          payment_method_param: string
+          reward_id_param: string
+          xp_spent_param?: number
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
