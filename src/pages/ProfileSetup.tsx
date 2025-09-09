@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { WelcomeModal } from '@/components/WelcomeModal';
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<'fan' | 'creator' | 'sponsor' | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   
   const [profileData, setProfileData] = useState({
     username: '',
@@ -89,35 +91,31 @@ const ProfileSetup = () => {
         return;
       }
 
-      console.log('Profile saved successfully, navigating...');
+      // Award 250 XP to new users
+      console.log('Awarding welcome XP...');
+      const { error: xpError } = await supabase
+        .from('user_xp_balances')
+        .upsert(
+          {
+            user_id: user.id,
+            current_xp: 250,
+            total_earned_xp: 250,
+          },
+          { onConflict: 'user_id' }
+        );
+
+      if (xpError) {
+        console.error('XP error:', xpError);
+        // Don't prevent profile creation if XP fails
+      }
+
+      console.log('Profile saved successfully, showing welcome modal...');
       
       // Clear the selected role from storage
       sessionStorage.removeItem('selectedRole');
       
-      // Redirect based on role
-      switch (selectedRole) {
-        case 'fan':
-          console.log('Redirecting to fan dashboard');
-          navigate('/fan-dashboard');
-          break;
-        case 'creator':
-          console.log('Redirecting to creator dashboard');
-          navigate('/creator-dashboard');
-          break;
-        case 'sponsor':
-          console.log('Redirecting to creator dashboard (sponsor)');
-          // For now, redirect to creator dashboard as sponsor dashboard doesn't exist yet
-          navigate('/creator-dashboard');
-          break;
-        default:
-          console.log('Redirecting to universal profile');
-          navigate('/universal-profile');
-      }
-      
-      toast({
-        title: "Profile Created!",
-        description: "Welcome to Streamcentives!",
-      });
+      // Show welcome modal first
+      setShowWelcomeModal(true);
       
     } catch (error) {
       console.error('Profile setup error:', error);
@@ -129,6 +127,35 @@ const ProfileSetup = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleWelcomeModalClose = () => {
+    setShowWelcomeModal(false);
+    
+    // Redirect based on role after closing welcome modal
+    switch (selectedRole) {
+      case 'fan':
+        console.log('Redirecting to fan dashboard');
+        navigate('/fan-dashboard');
+        break;
+      case 'creator':
+        console.log('Redirecting to creator dashboard');
+        navigate('/creator-dashboard');
+        break;
+      case 'sponsor':
+        console.log('Redirecting to creator dashboard (sponsor)');
+        // For now, redirect to creator dashboard as sponsor dashboard doesn't exist yet
+        navigate('/creator-dashboard');
+        break;
+      default:
+        console.log('Redirecting to universal profile');
+        navigate('/universal-profile');
+    }
+    
+    toast({
+      title: "Profile Created!",
+      description: "Welcome to Streamcentives!",
+    });
   };
 
   if (!selectedRole) {
@@ -284,6 +311,7 @@ const ProfileSetup = () => {
           </form>
         </CardContent>
       </Card>
+      <WelcomeModal isOpen={showWelcomeModal} onClose={handleWelcomeModalClose} />
     </div>
   );
 };
