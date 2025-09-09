@@ -389,7 +389,11 @@ const CreatorDashboard = () => {
                 ) : (
                   <div className="space-y-4">
                     {leaderboard.map((entry, index) => (
-                      <div key={entry.fan_user_id} className="leaderboard-item">
+                      <div 
+                        key={entry.fan_user_id} 
+                        className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
+                        onClick={() => navigate(`/universal-profile?userId=${entry.fan_user_id}`)}
+                      >
                         <div className="flex items-center gap-3">
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
                             {entry.rank_position ?? index + 1}
@@ -422,7 +426,11 @@ const CreatorDashboard = () => {
               <CardContent>
                 <div className="space-y-4">
                   {['SuperFan23', 'MusicLover99', 'StreamKing', 'FanGirl47', 'MelodyMaster'].map((fan, index) => (
-                    <div key={fan} className="leaderboard-item">
+                    <div 
+                      key={fan} 
+                      className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
+                      onClick={() => navigate('/universal-profile')}
+                    >
                       <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
                           {index + 1}
