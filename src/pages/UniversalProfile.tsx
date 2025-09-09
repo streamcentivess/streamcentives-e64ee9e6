@@ -45,6 +45,8 @@ const UniversalProfile = () => {
   const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
   const [listType, setListType] = useState<'followers' | 'following'>('followers');
   const [userFollowStates, setUserFollowStates] = useState<Record<string, boolean>>({});
+  const [postCount, setPostCount] = useState(0);
+  const [xpBalance, setXpBalance] = useState(0);
   
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId');
@@ -121,6 +123,9 @@ const UniversalProfile = () => {
         if (!isOwnProfile && user) {
           checkFollowStatus();
         }
+        // Fetch post count and XP balance for this profile
+        fetchPostCount();
+        fetchXpBalance();
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -147,6 +152,45 @@ const UniversalProfile = () => {
       }
     } catch (error) {
       console.error('Error fetching follow stats:', error);
+    }
+  };
+
+  const fetchPostCount = async () => {
+    if (!profile?.user_id) return;
+    
+    try {
+      const { count, error } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.user_id);
+
+      if (error) {
+        console.error('Error fetching post count:', error);
+      } else {
+        setPostCount(count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching post count:', error);
+    }
+  };
+
+  const fetchXpBalance = async () => {
+    if (!profile?.user_id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_xp_balances')
+        .select('current_xp')
+        .eq('user_id', profile.user_id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching XP balance:', error);
+      } else {
+        setXpBalance(data?.current_xp || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching XP balance:', error);
     }
   };
 
@@ -482,6 +526,14 @@ const UniversalProfile = () => {
       checkMultipleFollowStates(followingUsers);
     }
   }, [followingUsers, isOwnProfile, user, listType]);
+
+  // Fetch post count and XP when profile changes
+  useEffect(() => {
+    if (profile?.user_id) {
+      fetchPostCount();
+      fetchXpBalance();
+    }
+  }, [profile?.user_id]);
 
   // Remove unused handleMessage function - replaced with MessageCreator component
 
@@ -875,10 +927,10 @@ const UniversalProfile = () => {
                     )}
                   </div>
 
-                {/* Stats */}
+                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold">2</div>
+                    <div className="text-2xl font-bold">{postCount}</div>
                     <div className="text-sm text-muted-foreground">Posts</div>
                   </div>
                   <div className="text-center cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors" onClick={openFollowersList}>
@@ -890,7 +942,7 @@ const UniversalProfile = () => {
                     <div className="text-sm text-muted-foreground">Following</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">0</div>
+                    <div className="text-2xl font-bold text-primary">{xpBalance}</div>
                     <div className="text-sm text-muted-foreground">XP</div>
                   </div>
                 </div>
