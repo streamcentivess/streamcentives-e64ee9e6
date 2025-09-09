@@ -275,7 +275,7 @@ const UniversalProfile = () => {
   };
 
   const fetchFollowers = async () => {
-    const targetUserId = viewingUserId || user?.id;
+    const targetUserId = profile?.user_id || viewingUserId || user?.id;
     if (!targetUserId) return;
 
     try {
@@ -312,7 +312,7 @@ const UniversalProfile = () => {
   };
 
   const fetchFollowing = async () => {
-    const targetUserId = viewingUserId || user?.id;
+    const targetUserId = profile?.user_id || viewingUserId || user?.id;
     if (!targetUserId) return;
 
     try {
