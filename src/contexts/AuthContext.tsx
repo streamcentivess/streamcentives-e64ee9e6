@@ -206,49 +206,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithEmail = async (emailOrUsername: string, password: string) => {
     try {
-      let actualEmail = emailOrUsername;
-      
-      // Check if input is an email or username
-      if (!emailOrUsername.includes('@')) {
-        // It's a username, look up the email
+      const input = emailOrUsername.trim();
+      if (!input) {
+        const err = new Error('Please enter your username or email');
+        toast({
+          title: 'Sign In Failed',
+          description: err.message,
+          variant: 'destructive',
+        });
+        return { error: err };
+      }
+
+      let actualEmail = input;
+
+      // If it's not an email, treat it as a username and look up the email
+      if (!input.includes('@')) {
+        const normalized = input.toLowerCase();
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('email')
-          .eq('username', emailOrUsername.toLowerCase())
+          .select('email, username')
+          .ilike('username', normalized)
           .maybeSingle();
-          
+
         if (profileError) {
           console.error('Profile lookup error:', profileError);
           toast({
-            title: "Sign In Failed",
-            description: "Error looking up username. Please try again.",
-            variant: "destructive"
+            title: 'Sign In Failed',
+            description: 'Error looking up username. Please try again.',
+            variant: 'destructive',
           });
           return { error: profileError };
         }
-        
-        if (!profile || !profile.email) {
+
+        if (!profile?.email) {
           toast({
-            title: "Username Not Found",
-            description: "This username doesn't exist. Please check your username or use your email address.",
-            variant: "destructive"
+            title: 'Username Not Found',
+            description:
+              "We couldn't find that username. Please check it or try signing in with your email.",
+            variant: 'destructive',
           });
           return { error: new Error('Username not found') };
         }
-        
+
         actualEmail = profile.email;
       }
 
       const { error } = await supabase.auth.signInWithPassword({
-        email: actualEmail,
+        email: actualEmail.trim(),
         password,
       });
 
       if (error) {
         toast({
-          title: "Sign In Failed",
+          title: 'Sign In Failed',
           description: error.message,
-          variant: "destructive"
+          variant: 'destructive',
         });
       }
 
@@ -258,7 +270,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error };
     }
   };
-
   const signUpWithEmail = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signUp({
