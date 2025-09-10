@@ -350,6 +350,37 @@ const Feed = () => {
     }
   };
 
+  const handleShare = async (post: Post) => {
+    const shareUrl = `${window.location.origin}/post/${post.id}`;
+    const shareText = `Check out this post by ${post.profiles?.display_name || post.profiles?.username || 'a creator'}!`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareText,
+          url: shareUrl,
+        });
+      } catch (error) {
+        // User cancelled sharing
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link Copied!",
+          description: "Share link copied to clipboard",
+        });
+      } catch (error) {
+        toast({
+          title: "Unable to Copy",
+          description: "Please copy the link manually",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   const handleRepost = async (postId: string) => {
     if (!user) return;
 
@@ -366,8 +397,8 @@ const Feed = () => {
           .eq('user_id', user.id);
 
         toast({
-          title: "Repost Removed",
-          description: "Removed from Fan Love",
+          title: "Removed from Fan Love",
+          description: "Post removed from your Fan Love collection",
         });
       } else {
         // Add repost
@@ -380,7 +411,7 @@ const Feed = () => {
 
         toast({
           title: "Added to Fan Love! ✨",
-          description: "Spreading the love in the community",
+          description: "Post saved to your Fan Love collection",
         });
       }
 
@@ -784,12 +815,19 @@ const Feed = () => {
                             post.is_reposted ? 'text-purple-500 bg-purple-50' : ''
                           }`}
                           onClick={() => handleRepost(post.id)}
+                          title="Add to Fan Love"
                         >
                           <Repeat2 className={`h-5 w-5 ${post.is_reposted ? 'fill-current' : ''}`} />
                           {post.repost_count || 0}
                         </Button>
                       </div>
-                      <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary transition-all rounded-full">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="hover:bg-primary/10 hover:text-primary transition-all rounded-full"
+                        onClick={() => handleShare(post)}
+                        title="Share post"
+                      >
                         <Share2 className="h-5 w-5" />
                       </Button>
                     </div>
