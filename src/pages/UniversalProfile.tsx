@@ -341,9 +341,82 @@ const UniversalProfile = () => {
     }
   };
 
-  // Handle adding a supporter with confirmation
-  const handleAddSupporter = (profile: Profile) => {
-    setConfirmAddSupporter({ show: true, profile });
+  // Check if users are mutually following each other
+  const checkMutualFollow = async (userId1: string, userId2: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('follows')
+        .select('follower_id, following_id')
+        .or(`and(follower_id.eq.${userId1},following_id.eq.${userId2}),and(follower_id.eq.${userId2},following_id.eq.${userId1})`);
+
+      if (error) {
+        console.error('Error checking mutual follow:', error);
+        return false;
+      }
+
+      // Check if both follow relationships exist
+      const user1FollowsUser2 = data?.some(row => row.follower_id === userId1 && row.following_id === userId2);
+      const user2FollowsUser1 = data?.some(row => row.follower_id === userId2 && row.following_id === userId1);
+      
+      return user1FollowsUser2 && user2FollowsUser1;
+    } catch (error) {
+      console.error('Error checking mutual follow:', error);
+      return false;
+    }
+  };
+
+  // Check if user is a creator with 5k+ followers
+  const isCreatorWith5kFollowers = async (userId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('user_follow_stats')
+        .select('followers_count')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking follower count:', error);
+        return false;
+      }
+
+      return (data?.followers_count || 0) >= 5000;
+    } catch (error) {
+      console.error('Error checking follower count:', error);
+      return false;
+    }
+  };
+
+  // Handle adding a supporter with restrictions
+  const handleAddSupporter = async (profile: Profile) => {
+    if (!user) return;
+
+    try {
+      // Check if user is a creator with 5k+ followers
+      const isCreator5k = await isCreatorWith5kFollowers(user.id);
+      
+      if (!isCreator5k) {
+        // Check if users mutually follow each other
+        const areMutualFollows = await checkMutualFollow(user.id, profile.user_id);
+        
+        if (!areMutualFollows) {
+          toast({
+            title: "Cannot Add Supporter",
+            description: "You can only add people you mutually follow as supporters. Creators with 5k+ followers can add anyone.",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+
+      setConfirmAddSupporter({ show: true, profile });
+    } catch (error) {
+      console.error('Error in handleAddSupporter:', error);
+      toast({
+        title: "Error",
+        description: "Failed to check eligibility. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Confirm adding supporter
