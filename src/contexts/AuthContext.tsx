@@ -300,7 +300,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) {
+      
+      // Clear local state regardless of API response
+      setSession(null);
+      setUser(null);
+      
+      // Only show error if it's not a session_not_found error
+      if (error && error.message !== "Session from session_id claim in JWT does not exist") {
         toast({
           title: "Sign Out Failed",
           description: error.message,
@@ -314,6 +320,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('Sign out error:', error);
+      // Always clear local state on error
+      setSession(null);
+      setUser(null);
+      
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account.",
+      });
     }
   };
 
