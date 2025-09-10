@@ -186,7 +186,7 @@ const Website = () => {
                   Team
                 </Button>
               </Link>
-              <Button className="order-3" onClick={() => document.getElementById('signup')?.scrollIntoView({
+              <Button className="order-3 bg-blue-400 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:shadow-[0_0_30px_rgba(96,165,250,0.8)] transition-all duration-300" onClick={() => document.getElementById('signup')?.scrollIntoView({
               behavior: 'smooth'
             })}>
                 Get Started
