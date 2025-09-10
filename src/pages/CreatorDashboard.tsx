@@ -631,7 +631,7 @@ const CreatorDashboard = () => {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full bg-gradient-primary hover:opacity-90">
+                <Button className="w-full bg-gradient-primary hover:opacity-90" onClick={() => navigate('/campaigns?create=true')}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Campaign
                 </Button>

@@ -97,6 +97,16 @@ const Campaigns = () => {
     }
   }, [user]);
 
+  // Check URL parameter to auto-show create form
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('create') === 'true') {
+      setShowCreateForm(true);
+      // Clean up URL parameter
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
   useEffect(() => {
     filterCampaigns();
   }, [campaigns, searchTerm, selectedType, selectedStatus, dateFilter, activeTab]);
