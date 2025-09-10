@@ -504,10 +504,10 @@ const Website = () => {
                         <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-4 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
                           <feature.icon className="w-6 h-6 text-brand-primary" />
                         </div>
-                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                        <CardTitle className="text-xl text-center">{feature.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-base">
+                        <CardDescription className="text-base text-white">
                           {feature.description}
                         </CardDescription>
                       </CardContent>
@@ -526,10 +526,10 @@ const Website = () => {
                         <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
                           <feature.icon className="w-6 h-6 text-brand-accent" />
                         </div>
-                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                        <CardTitle className="text-xl text-center">{feature.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription className="text-base">
+                        <CardDescription className="text-base text-white">
                           {feature.description}
                         </CardDescription>
                       </CardContent>
@@ -557,10 +557,10 @@ const Website = () => {
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
                           <feature.icon className="w-5 h-5 text-brand-primary" />
                         </div>
-                        <CardTitle className="text-lg">{feature.title}</CardTitle>
+                        <CardTitle className="text-lg text-center">{feature.title}</CardTitle>
                       </CardHeader>
                       <CardContent className="pt-0">
-                        <CardDescription className="text-sm">
+                        <CardDescription className="text-sm text-white">
                           {feature.description}
                         </CardDescription>
                       </CardContent>
