@@ -261,7 +261,7 @@ const Website = () => {
               <span className="block">
                 <span className="text-white">Where </span>
                 <span className="text-foreground">Fans and Creators</span>
-                <span className="text-brand-primary"> Team Up!</span>
+                <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent"> Team Up!</span>
               </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
