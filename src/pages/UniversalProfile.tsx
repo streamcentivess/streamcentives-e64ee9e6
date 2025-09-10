@@ -587,7 +587,7 @@ const UniversalProfile = () => {
       </div>;
   }
   return <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="w-full max-w-4xl mx-auto space-y-6 px-2 sm:px-4">
         {/* Header */}
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-shrink">
@@ -616,11 +616,11 @@ const UniversalProfile = () => {
                   <span className="sm:hidden">Switch</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl">
+              <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Choose Your Dashboard</DialogTitle>
                 </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 p-2 sm:p-0">
                   <Card className="cursor-pointer hover:border-primary transition-colors group" onClick={() => handleRoleSelection('fan')}>
                     <CardHeader className="text-center">
                       <div className="mx-auto mb-4 p-4 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 group-hover:from-primary/30 group-hover:to-secondary/30">
