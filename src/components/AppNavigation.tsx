@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -35,6 +36,7 @@ const AppNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const unreadCount = useUnreadMessages();
 
   const navigationItems = [
     { name: 'Home', href: '/universal-profile', icon: Home },
@@ -78,7 +80,7 @@ const AppNavigation = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`relative flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive(item.href)
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -86,6 +88,14 @@ const AppNavigation = () => {
                 >
                   <item.icon className="h-4 w-4 mr-2" />
                   {item.name}
+                  {item.name === 'Inbox' && unreadCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="ml-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
                 </Link>
               ))}
             </div>
@@ -184,7 +194,7 @@ const AppNavigation = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`relative flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive(item.href)
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -193,6 +203,14 @@ const AppNavigation = () => {
                 >
                   <item.icon className="h-4 w-4 mr-2" />
                   {item.name}
+                  {item.name === 'Inbox' && unreadCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="ml-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
                 </Link>
               ))}
               
