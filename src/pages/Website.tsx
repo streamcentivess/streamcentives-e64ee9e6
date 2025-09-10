@@ -359,7 +359,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <BarChart3 className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-lg text-blue-400 font-exo">Climb the Leaderboards</CardTitle>
+                      <CardTitle className="text-lg text-white font-exo">Climb the Leaderboards</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-sm text-stone-100 font-exo">
@@ -373,7 +373,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <Users className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-lg text-blue-400 font-exo">Team Up in Challenges</CardTitle>
+                      <CardTitle className="text-lg text-white font-exo">Team Up in Challenges</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-sm text-stone-100 font-exo">
@@ -387,7 +387,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <Star className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-lg text-blue-400 font-exo">Showcase Your Status</CardTitle>
+                      <CardTitle className="text-lg text-white font-exo">Showcase Your Status</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-sm text-stone-100 font-exo">
@@ -401,7 +401,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <Globe className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-lg text-blue-400 font-exo">Join an Inner Circle</CardTitle>
+                      <CardTitle className="text-lg text-white font-exo">Join an Inner Circle</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-sm text-stone-100 font-exo">
