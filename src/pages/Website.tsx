@@ -351,7 +351,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
                         <BarChart3 className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-lg">Climb the Leaderboards</CardTitle>
+                      <CardTitle className="text-lg text-blue-400 font-exo">Climb the Leaderboards</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-sm">
