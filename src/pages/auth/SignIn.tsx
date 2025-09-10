@@ -71,7 +71,7 @@ const SignIn = () => {
           <div className="space-y-3">
             <Button
               onClick={signInWithSpotify}
-              className="w-full bg-sky-400 hover:bg-sky-500 text-white font-medium"
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-medium"
               size="lg"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
