@@ -33,29 +33,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthProvider useEffect triggered');
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_IN' && session?.user) {
           // Check if user has a profile, create one if not
           setTimeout(async () => {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .maybeSingle();
-            
-            if (!profile) {
-              await supabase.from('profiles').insert({
-                user_id: session.user.id,
-                display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-                avatar_url: session.user.user_metadata?.avatar_url,
-                email: session.user.email,
-                username: session.user.email?.split('@')[0]?.toLowerCase(),
-              });
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              
+              if (!profile) {
+                await supabase.from('profiles').insert({
+                  user_id: session.user.id,
+                  display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+                  avatar_url: session.user.user_metadata?.avatar_url,
+                  email: session.user.email,
+                  username: session.user.email?.split('@')[0]?.toLowerCase(),
+                });
+              }
+            } catch (error) {
+              console.error('Error handling profile creation:', error);
             }
           }, 0);
         }
@@ -65,7 +71,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('Initial session check:', session?.user?.id, error);
+      if (error) {
+        console.error('Session error:', error);
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -283,9 +293,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
       });
 
       if (error) {
+        console.error('Sign up error:', error);
         toast({
           title: "Sign Up Failed", 
           description: error.message,
@@ -307,17 +321,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (email: string) => {
     try {
+      console.log('Password reset initiated for:', email);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       });
 
       if (error) {
+        console.error('Reset password error:', error);
         toast({
           title: "Reset Failed",
           description: error.message,
           variant: "destructive"
         });
       } else {
+        console.log('Reset password email sent successfully');
         toast({
           title: "Reset Link Sent",
           description: "Check your email for a password reset link.",
@@ -333,27 +350,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
+      console.log('Sign out initiated');
       const { error } = await supabase.auth.signOut();
       
       // Clear local state regardless of API response
       setSession(null);
       setUser(null);
       
-      // Only show error if it's not a session_not_found error
-      if (error && error.message !== "Session from session_id claim in JWT does not exist") {
-        toast({
-          title: "Sign Out Failed",
-          description: error.message,
-          variant: "destructive"
-        });
+      if (error) {
+        console.error('Sign out error:', error);
+        // Only show error if it's not a session_not_found error
+        if (error.message !== "Session from session_id claim in JWT does not exist") {
+          toast({
+            title: "Sign Out Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          console.log('Session already expired, clearing local state');
+          toast({
+            title: "Signed out successfully",
+            description: "You have been signed out of your account.",
+          });
+        }
       } else {
+        console.log('Sign out successful');
         toast({
           title: "Signed out successfully",
           description: "You have been signed out of your account.",
         });
       }
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('Unexpected sign out error:', error);
       // Always clear local state on error
       setSession(null);
       setUser(null);
