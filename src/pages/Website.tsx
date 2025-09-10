@@ -227,7 +227,7 @@ const Website = () => {
                 </Button>
               </Link>
               <VideoModal>
-                <Button variant="outline" size="lg" className="text-lg px-8">
+                <Button variant="outline" size="lg" className="text-lg px-8 hover:bg-sky-400 hover:text-white hover:border-sky-400">
                   <Play className="mr-2 w-5 h-5" />
                   Marketing Videos
                 </Button>
