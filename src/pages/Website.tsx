@@ -547,7 +547,7 @@ const Website = () => {
               </div>
 
               {/* Premium AI Features */}
-              <div className="bg-gradient-to-r from-brand-primary/5 via-brand-accent/5 to-brand-primary/5 rounded-2xl p-8">
+              <div className="bg-gradient-to-br from-blue-500/20 via-background to-blue-700/20 rounded-2xl p-8">
                 <div className="text-center mb-8">
                   <Badge variant="outline" className="mb-4 text-white bg-blue-400 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.5)]">
                     Premium AI Tools
