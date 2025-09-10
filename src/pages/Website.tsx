@@ -288,7 +288,11 @@ const Website = () => {
 
               {/* Earn & Own */}
               <div>
-                <h4 className="text-xl font-semibold mb-6 text-center">Earn & Own</h4>
+                <div className="text-center mb-6">
+                  <Badge variant="outline" className="text-white bg-blue-400 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.5)]">
+                    Earn & Own
+                  </Badge>
+                </div>
                 <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
                   Your fandom has real-world value. We give you the tools to earn and control your digital assets.
                 </p>
