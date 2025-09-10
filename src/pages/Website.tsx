@@ -289,7 +289,7 @@ const Website = () => {
               {/* Earn & Own */}
               <div>
                 <div className="text-center mb-6">
-                  <Badge variant="outline" className="text-white bg-blue-400 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.5)]">
+                <Badge variant="outline" className="text-xl text-white bg-blue-400 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.5)] px-4 py-2">
                     Earn & Own
                   </Badge>
                 </div>
