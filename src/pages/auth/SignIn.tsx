@@ -12,7 +12,8 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signInWithEmail, signInWithSpotify, signInWithGoogle, signInWithFacebook, signInWithApple, user } = useAuth();
+  const [resetLoading, setResetLoading] = useState(false);
+  const { signInWithEmail, signInWithSpotify, signInWithGoogle, signInWithFacebook, signInWithApple, resetPassword, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,6 +33,16 @@ const SignIn = () => {
     }
     
     setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      return;
+    }
+    
+    setResetLoading(true);
+    await resetPassword(email);
+    setResetLoading(false);
   };
 
   return (
@@ -145,6 +156,18 @@ const SignIn = () => {
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
+            
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="link"
+                className="text-sm text-muted-foreground hover:text-primary p-0 h-auto"
+                onClick={handleForgotPassword}
+                disabled={!email.trim() || resetLoading}
+              >
+                {resetLoading ? 'Sending...' : 'Forgot your password?'}
+              </Button>
+            </div>
           </form>
 
           <div className="text-center text-sm">
