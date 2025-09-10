@@ -589,26 +589,27 @@ const UniversalProfile = () => {
   return <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <img src="/lovable-uploads/streamcentivesloveable.PNG" alt="Streamcentives Logo" className="w-8 h-8 rounded-full" />
-            <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <div className="flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-shrink">
+            <img src="/lovable-uploads/streamcentivesloveable.PNG" alt="Streamcentives Logo" className="w-6 h-6 rounded-full flex-shrink-0" />
+            <h1 className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
               Streamcentives
             </h1>
           </div>
-          <div className="flex gap-2">
-            {!isOwnProfile && <Button onClick={() => navigate('/universal-profile')} variant="outline" size="sm" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                My Profile
+          <div className="flex gap-1 flex-shrink-0">
+            {!isOwnProfile && <Button onClick={() => navigate('/universal-profile')} variant="outline" size="sm" className="flex items-center gap-1 px-2 text-xs">
+                <Users className="h-3 w-3" />
+                <span className="hidden sm:inline">My Profile</span>
               </Button>}
-            <Button onClick={() => navigate('/inbox')} variant="outline" size="sm" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              Inbox
+            <Button onClick={() => navigate('/inbox')} variant="outline" size="sm" className="flex items-center gap-1 px-2 text-xs">
+              <Mail className="h-3 w-3" />
+              <span className="hidden sm:inline">Inbox</span>
             </Button>
             <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-primary hover:opacity-90">
-                  Switch Dashboard
+                <Button size="sm" className="bg-gradient-primary hover:opacity-90 px-2 text-xs">
+                  <span className="hidden sm:inline">Switch Dashboard</span>
+                  <span className="sm:hidden">Switch</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl">
