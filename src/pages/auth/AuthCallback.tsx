@@ -57,14 +57,20 @@ const AuthCallback = () => {
           }
 
           // Check if user already has a complete profile
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('username, display_name')
+            .select('username, display_name, user_id')
             .eq('user_id', data.session.user.id)
-            .single();
+            .maybeSingle();
 
-          if (profile?.username) {
-            // User has a complete profile, redirect to universal profile
+          // If there's an error fetching profile or no profile exists, treat as new user
+          if (profileError) {
+            console.error('Profile fetch error:', profileError);
+          }
+
+          // Check if profile exists and has username (complete profile)
+          if (profile && (profile.username || profile.display_name)) {
+            // Existing user with profile, redirect to universal profile
             toast({
               title: "Welcome back!",
               description: "You have been signed in successfully.",
