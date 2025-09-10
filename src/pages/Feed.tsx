@@ -354,17 +354,101 @@ const Feed = () => {
     const shareUrl = `${window.location.origin}/post/${post.id}`;
     const shareText = `Check out this post by ${post.profiles?.display_name || post.profiles?.username || 'a creator'}!`;
     
-    if (navigator.share) {
+    // Create sharing options
+    const shareOptions = [
+      {
+        name: 'Twitter',
+        url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+        icon: '🐦'
+      },
+      {
+        name: 'Facebook',
+        url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+        icon: '📘'
+      },
+      {
+        name: 'WhatsApp',
+        url: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`,
+        icon: '💬'
+      },
+      {
+        name: 'Telegram',
+        url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+        icon: '✈️'
+      },
+      {
+        name: 'LinkedIn',
+        url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+        icon: '💼'
+      }
+    ];
+
+    // Try native sharing first on mobile
+    if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
       try {
         await navigator.share({
           title: shareText,
           url: shareUrl,
         });
+        return;
       } catch (error) {
-        // User cancelled sharing
+        // Fall through to custom options
       }
-    } else {
-      // Fallback: copy to clipboard
+    }
+
+    // Show custom sharing options
+    const choice = await new Promise<string | null>((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+      modal.onclick = (e) => {
+        if (e.target === modal) resolve(null);
+      };
+
+      modal.innerHTML = `
+        <div class="bg-background rounded-xl p-6 max-w-sm w-full border shadow-xl">
+          <h3 class="font-bold text-lg mb-4 text-center">Share Post</h3>
+          <div class="space-y-2">
+            ${shareOptions.map(option => `
+              <button 
+                data-option="${option.name}" 
+                class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors border"
+              >
+                <span class="text-xl">${option.icon}</span>
+                <span class="font-medium">Share on ${option.name}</span>
+              </button>
+            `).join('')}
+            <button 
+              data-option="copy" 
+              class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors border"
+            >
+              <span class="text-xl">📋</span>
+              <span class="font-medium">Copy Link</span>
+            </button>
+          </div>
+          <button 
+            data-option="cancel" 
+            class="w-full mt-4 p-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+      
+      modal.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const option = target.closest('[data-option]')?.getAttribute('data-option');
+        if (option) {
+          document.body.removeChild(modal);
+          resolve(option);
+        }
+      });
+    });
+
+    if (!choice || choice === 'cancel') return;
+
+    if (choice === 'copy') {
       try {
         await navigator.clipboard.writeText(shareUrl);
         toast({
@@ -377,6 +461,11 @@ const Feed = () => {
           description: "Please copy the link manually",
           variant: "destructive"
         });
+      }
+    } else {
+      const selectedOption = shareOptions.find(opt => opt.name === choice);
+      if (selectedOption) {
+        window.open(selectedOption.url, '_blank', 'noopener,noreferrer');
       }
     }
   };
