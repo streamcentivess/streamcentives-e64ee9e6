@@ -25,7 +25,8 @@ import {
   DollarSign,
   Users,
   Repeat2,
-  Sparkles
+  Sparkles,
+  UserPlus
 } from 'lucide-react';
 
 interface Post {
@@ -894,12 +895,15 @@ const Feed = () => {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <p 
-                          className="font-bold cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
-                        >
-                          {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p 
+                            className="font-bold cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+                          >
+                            {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
+                          </p>
+                          <UserPlus className="w-4 h-4 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {new Date(post.created_at).toLocaleDateString()}
                         </p>
