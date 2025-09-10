@@ -1236,13 +1236,13 @@ const UniversalProfile = () => {
           <TabsContent value="supporters" className="mt-6">
             <Card className="card-modern">
               <CardContent className="p-6">
-                {isOwnProfile ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Heart className="h-5 w-5 text-red-500" />
-                        My Top Supporters
-                      </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Heart className="h-5 w-5 text-red-500" />
+                      {isOwnProfile ? 'My Top Supporters' : `${profile?.display_name || profile?.username || 'User'}'s Supporters`}
+                    </h3>
+                    {isOwnProfile && (
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">
@@ -1322,48 +1322,51 @@ const UniversalProfile = () => {
                           </div>
                         </DialogContent>
                       </Dialog>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Showcase your most supportive fans and friends. This feature shows your top followers based on engagement.
-                    </p>
-                    
-                    {/* Top Supporters Grid */}
-                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-                      {supporters.slice(0, 12).map((supporter) => (
-                        <div key={supporter.user_id} className="text-center">
-                          <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75" onClick={() => viewProfile(supporter.user_id)}>
-                            <AvatarImage src={supporter.avatar_url || ''} />
-                            <AvatarFallback className="text-xs">
-                              {supporter.display_name?.[0] || supporter.username?.[0]?.toUpperCase() || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <p className="text-xs text-muted-foreground mt-1 truncate">
-                            {supporter.display_name?.split(' ')[0] || supporter.username || 'User'}
-                          </p>
-                        </div>
-                      ))}
-                      {supporters.length === 0 && (
-                        <div className="col-span-full text-center py-8">
-                          <Heart className="h-12 w-12 mx-auto mb-2 opacity-30 text-muted-foreground" />
-                          <p className="text-muted-foreground">No supporters yet. Add people to your supporters list!</p>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {supporters.length > 12 && (
-                      <div className="text-center">
-                        <Button variant="outline" size="sm">
-                          View All {supporters.length} Supporters
-                        </Button>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {isOwnProfile 
+                      ? "Showcase your most supportive fans and friends. This feature shows your top supporters."
+                      : "These are the people this user has chosen to highlight as their top supporters."
+                    }
+                  </p>
+                  
+                  {/* Top Supporters Grid */}
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                    {supporters.slice(0, 12).map((supporter) => (
+                      <div key={supporter.user_id} className="text-center">
+                        <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75" onClick={() => viewProfile(supporter.user_id)}>
+                          <AvatarImage src={supporter.avatar_url || ''} />
+                          <AvatarFallback className="text-xs">
+                            {supporter.display_name?.[0] || supporter.username?.[0]?.toUpperCase() || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">
+                          {supporter.display_name?.split(' ')[0] || supporter.username || 'User'}
+                        </p>
+                      </div>
+                    ))}
+                    {supporters.length === 0 && (
+                      <div className="col-span-full text-center py-8">
+                        <Heart className="h-12 w-12 mx-auto mb-2 opacity-30 text-muted-foreground" />
+                        <p className="text-muted-foreground">
+                          {isOwnProfile 
+                            ? "No supporters yet. Add people to your supporters list!" 
+                            : "This user hasn't added any supporters yet."
+                          }
+                        </p>
                       </div>
                     )}
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Heart className="h-12 w-12 mx-auto mb-2 opacity-30 text-muted-foreground" />
-                    <p className="text-muted-foreground">This user's supporters list is private.</p>
-                  </div>
-                )}
+                  
+                  {supporters.length > 12 && (
+                    <div className="text-center">
+                      <Button variant="outline" size="sm">
+                        View All {supporters.length} Supporters
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
