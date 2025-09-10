@@ -623,7 +623,7 @@ const Website = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-3 mb-4 md:mb-0">
-              <img src={logoUrl} alt="Streamcentives" className="w-8 h-8" />
+              <img src={logoUrl} alt="Streamcentives" className="w-8 h-8 rounded-full" />
               <span className="text-xl font-bold">Streamcentives</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
