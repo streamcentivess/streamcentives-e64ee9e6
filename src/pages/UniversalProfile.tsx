@@ -748,12 +748,12 @@ const UniversalProfile = () => {
 
         {/* Profile Card */}
         <Card className="card-modern">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-6">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6">
               {/* Avatar Section */}
               <div className="flex-shrink-0 text-center">
                 <div className="relative">
-                  <Avatar className="h-32 w-32 mx-auto">
+                  <Avatar className="h-20 w-20 md:h-32 md:w-32 mx-auto">
                     <AvatarImage src={profile.avatar_url || ''} />
                     <AvatarFallback className="text-2xl">
                       {profile.display_name?.[0] || user?.email?.[0]?.toUpperCase()}
@@ -766,7 +766,7 @@ const UniversalProfile = () => {
                 </div>
                 
                 {/* Bio and Details - Moved under avatar */}
-                <div className="space-y-2 text-sm text-muted-foreground text-center mt-4">
+                <div className="space-y-1 md:space-y-2 text-sm text-muted-foreground text-center mt-2 md:mt-4">
                   {profile.bio && <p>{profile.bio}</p>}
                   <div className="flex items-center justify-center gap-1">
                     <Calendar className="h-4 w-4" />
