@@ -57,7 +57,7 @@ const SignIn = () => {
             />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent">
               Welcome Back
             </CardTitle>
             <CardDescription className="text-muted-foreground">
