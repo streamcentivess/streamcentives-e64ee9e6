@@ -571,7 +571,7 @@ const Website = () => {
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl lg:text-5xl font-bold mb-6">
               Unlock Your
-              <span className="block text-brand-primary">First Reward?</span>
+              <span className="block bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">First Reward?</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
               Join thousands of creators and fans who are building the future of fandom together on Streamcentives.
