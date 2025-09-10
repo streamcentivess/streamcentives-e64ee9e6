@@ -407,7 +407,7 @@ const Website = () => {
               {/* Influence & Access */}
               <div className="bg-gradient-to-br from-blue-500/20 via-background to-blue-700/20 rounded-2xl p-8">
                 <div className="text-center mb-8">
-                  <Badge variant="outline" className="mb-4 text-brand-primary border-brand-primary">
+                  <Badge variant="outline" className="mb-4 text-white bg-blue-400 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.5)]">
                     Influence & Access
                   </Badge>
                   <h4 className="text-xl font-semibold mb-4">Go Beyond Passive Listening</h4>
