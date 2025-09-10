@@ -357,6 +357,12 @@ const Feed = () => {
     // Create sharing options
     const shareOptions = [
       {
+        name: 'StreamCentives DM',
+        url: '',
+        icon: '💌',
+        internal: true
+      },
+      {
         name: 'Twitter',
         url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
         icon: '🐦'
@@ -447,6 +453,13 @@ const Feed = () => {
     });
 
     if (!choice || choice === 'cancel') return;
+
+    if (choice === 'StreamCentives DM') {
+      // Navigate to inbox with pre-filled message content
+      const messageContent = `${shareText}\n\n${shareUrl}`;
+      navigate(`/inbox?share=true&content=${encodeURIComponent(messageContent)}&postId=${post.id}`);
+      return;
+    }
 
     if (choice === 'copy') {
       try {
