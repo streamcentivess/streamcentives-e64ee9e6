@@ -426,7 +426,7 @@ const Website = () => {
                 <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
                   <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                     <CardHeader className="pb-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all">
+                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all mx-auto">
                         <Shield className="w-5 h-5 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Gain Exclusive Access</CardTitle>
@@ -440,7 +440,7 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                     <CardHeader className="pb-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all">
+                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all mx-auto">
                         <Target className="w-5 h-5 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Influence Creative Decisions</CardTitle>
@@ -454,7 +454,7 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                     <CardHeader className="pb-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all">
+                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all mx-auto">
                         <Brain className="w-5 h-5 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">AI-Powered Personalization</CardTitle>
@@ -468,7 +468,7 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                     <CardHeader className="pb-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all">
+                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all mx-auto">
                         <Smartphone className="w-5 h-5 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Real-World Experiences</CardTitle>
