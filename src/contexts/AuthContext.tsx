@@ -76,12 +76,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithSpotify = async () => {
     try {
+      // Detect if user is on mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'spotify',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
           scopes: 'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private',
-          skipBrowserRedirect: true,
+          skipBrowserRedirect: isMobile ? false : true, // Use direct redirect on mobile, popup on desktop
         },
       });
 
@@ -94,29 +97,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      const url = data?.url;
-      if (url) {
-        // Open OAuth flow in a popup window to bypass iframe restrictions
-        const popup = window.open(
-          url,
-          'spotify-auth',
-          'width=500,height=600,scrollbars=yes,resizable=yes'
-        );
-        
-        if (!popup) {
+      // Only handle popup flow for desktop
+      if (!isMobile) {
+        const url = data?.url;
+        if (url) {
+          // Open OAuth flow in a popup window to bypass iframe restrictions
+          const popup = window.open(
+            url,
+            'spotify-auth',
+            'width=500,height=600,scrollbars=yes,resizable=yes'
+          );
+          
+          if (!popup) {
+            toast({
+              title: 'Popup Blocked',
+              description: 'Please allow popups for authentication to work.',
+              variant: 'destructive',
+            });
+          }
+        } else {
           toast({
-            title: 'Popup Blocked',
-            description: 'Please allow popups for authentication to work.',
+            title: 'Authentication Error',
+            description: 'Could not start Spotify sign-in flow.',
             variant: 'destructive',
           });
         }
-      } else {
-        toast({
-          title: 'Authentication Error',
-          description: 'Could not start Spotify sign-in flow.',
-          variant: 'destructive',
-        });
       }
+      // For mobile, the browser will handle the redirect automatically
     } catch (error) {
       console.error('Spotify auth error:', error);
       toast({
