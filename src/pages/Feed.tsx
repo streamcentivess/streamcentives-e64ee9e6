@@ -424,10 +424,8 @@ const Feed = () => {
         } : p
       ));
       
-      // Refresh reposts if on fan love tab
-      if (activeTab === 'fanlove') {
-        fetchReposts(0, true);
-      }
+      // Always refresh reposts data so it appears in Fan Love
+      fetchReposts(0, true);
     } catch (error) {
       console.error('Error reposting:', error);
       toast({
