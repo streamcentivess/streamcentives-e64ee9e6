@@ -153,7 +153,7 @@ const SignUp = () => {
             
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-sky-500 hover:bg-sky-600 text-white shadow-[0_0_20px_rgba(14,165,233,0.4)] hover:shadow-[0_0_30px_rgba(14,165,233,0.6)] transition-all duration-300" 
               size="lg" 
               disabled={loading || password !== confirmPassword}
             >
