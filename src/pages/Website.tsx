@@ -271,7 +271,7 @@ const Website = () => {
           </div>
           
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full mx-auto grid-cols-2 mb-12">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-12">
               <TabsTrigger value="general">For Fans</TabsTrigger>
               <TabsTrigger value="creators">For Creators</TabsTrigger>
             </TabsList>
