@@ -487,15 +487,71 @@ const Feed = () => {
     }
   };
 
-  const handleUserSelect = (selectedUser: any) => {
-    if (!sharePostData) return;
+  const handleUserSelect = async (selectedUser: any) => {
+    if (!sharePostData || !user) return;
     
-    const messageContent = `${sharePostData.shareText}\n\n${sharePostData.shareUrl}`;
-    setShowUserSearch(false);
-    setSharePostData(null);
-    
-    // Navigate to inbox with recipient and pre-filled content
-    navigate(`/inbox?recipient=${selectedUser.user_id}&content=${encodeURIComponent(messageContent)}&postId=${sharePostData.post.id}`);
+    try {
+      // Check mutual follow relationship
+      const [userFollowsRecipient, recipientFollowsUser] = await Promise.all([
+        supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', user.id)
+          .eq('following_id', selectedUser.user_id)
+          .single(),
+        supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', selectedUser.user_id)
+          .eq('following_id', user.id)
+          .single()
+      ]);
+
+      // Determine XP cost - free if either follows the other
+      const isFollowing = !!userFollowsRecipient.data || !!recipientFollowsUser.data;
+      const xpCost = isFollowing ? 0 : 100;
+
+      const messageContent = `${sharePostData.shareText}\n\n${sharePostData.shareUrl}`;
+
+      // Send message directly using the database function
+      const { data: messageId, error } = await supabase.rpc('send_message_with_xp', {
+        recipient_id_param: selectedUser.user_id,
+        content_param: messageContent,
+        xp_cost_param: xpCost
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setShowUserSearch(false);
+      setSharePostData(null);
+
+      // Show success message
+      toast({
+        title: isFollowing ? "Message Sent! 💌" : "Message Sent for 100 XP! 💌",
+        description: isFollowing 
+          ? `Sent to ${selectedUser.display_name || selectedUser.username} for free (mutual follow)`
+          : `Sent to ${selectedUser.display_name || selectedUser.username} for 100 XP`,
+      });
+
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      
+      // Handle specific error cases
+      let errorMessage = "Failed to send message";
+      if (error.message?.includes('Insufficient XP')) {
+        errorMessage = "Insufficient XP balance. You need 100 XP to send this message.";
+      } else if (error.message?.includes('pending message')) {
+        errorMessage = "You already have a pending message with this creator. Please wait for them to respond.";
+      }
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleRepost = async (postId: string) => {
