@@ -108,6 +108,7 @@ const Website = () => {
     title: "Real-time Analytics",
     description: "Track engagement metrics and optimize your content strategy"
   }];
+
   const aiFeatures = [{
     icon: Bot,
     title: "AI Campaign Builder",
@@ -121,6 +122,7 @@ const Website = () => {
     title: "AI Shoutout Generator",
     description: "Make every fan feel seen. Instantly create personalized and energetic shoutouts that build stronger connections with your community."
   }];
+
   const aiAdvantages = [{
     icon: Target,
     title: "Smart Campaign Design",
@@ -134,6 +136,7 @@ const Website = () => {
     title: "Advanced Insights",
     description: "Go beyond simple metrics with AI-powered sentiment analysis and content moderation to keep your community safe and positive."
   }];
+
   const premiumAiFeatures = [{
     icon: MessageCircle,
     title: "Sentiment Analysis",
@@ -183,7 +186,7 @@ const Website = () => {
                   Team
                 </Button>
               </Link>
-              <Button className="order-3" onClick={() => document.getElementById('signup')?.scrollIntoView({
+              <Button className="order-3 bg-blue-400 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:shadow-[0_0_30px_rgba(96,165,250,0.8)] transition-all duration-300" onClick={() => document.getElementById('signup')?.scrollIntoView({
               behavior: 'smooth'
             })}>
                 Get Started
@@ -195,30 +198,30 @@ const Website = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/20 via-background to-brand-accent/20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-background to-blue-700/20" />
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex justify-center mb-8">
               <img src={logoUrl} alt="Streamcentives" className="w-[300px] h-[300px] rounded-full animate-pulse" />
             </div>
             <div className="relative">
-              <Badge variant="outline" className="mb-6 text-2xl px-6 py-3 bg-transparent border-transparent font-orbitron font-bold">
+              <Badge variant="outline" className="mb-6 text-2xl px-6 py-3 bg-transparent border-transparent font-exo font-bold">
                 Streamcentives
               </Badge>
             </div>
-            <h1 className="text-4xl lg:text-7xl font-bold mb-6">
-              <span className="text-white">Unlock</span> <span className="text-white">Your</span>
+            <h1 className="text-4xl lg:text-7xl font-bold mb-6 font-exo">
+              <span className="text-white">The Bridge Between</span>
               <span className="block">
-                <span className="text-fuchsia-500">Fan</span> <span className="text-fuchsia-500">Economy.</span>
+                <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Fans And Creators.</span>
               </span>
             </h1>
             <div className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto space-y-3">
-              <p>• <strong>For Fans:</strong> Turn your streams and shares into points, climb the leaderboards, and unlock exclusive rewards.</p>
-              <p>• <strong>For Creators:</strong> Transform your audience into an active community, gain powerful insights, and create new revenue streams.</p>
+              <p className="text-white">• <strong>For Fans:</strong> Turn your streams and shares into points, climb the leaderboards, and unlock exclusive rewards.</p>
+              <p className="text-white">• <strong>For Creators:</strong> Transform your audience into an active community, gain powerful insights, and create new revenue streams.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/auth/signup">
-                <Button size="lg" className="text-lg px-8">
+                <Button size="lg" className="text-lg px-8 bg-blue-400 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:shadow-[0_0_30px_rgba(96,165,250,0.8)] transition-all duration-300">
                   Start Free Trial
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
@@ -239,10 +242,10 @@ const Website = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => <div key={index} className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-brand-primary mb-2">
+                <div className="text-3xl lg:text-4xl font-bold text-blue-300 mb-2 font-exo">
                   {stat.value}
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-white">
                   {stat.label}
                 </div>
               </div>)}
@@ -258,10 +261,10 @@ const Website = () => {
               <span className="block">
                 <span className="text-white">Where </span>
                 <span className="text-foreground">Fans and Creators</span>
-                <span className="text-brand-primary"> Team Up!</span>
+                <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent"> Team Up!</span>
               </span>
             </h2>
-            <p className="text-xl max-w-2xl mx-auto text-stone-50">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Our platform uses gamification and AI to help creators grow their community, 
               while giving fans the rewards and recognition they deserve for their support.
             </p>
@@ -269,16 +272,16 @@ const Website = () => {
           
           <Tabs defaultValue="general" className="w-full">
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-12">
-              <TabsTrigger value="general" className="text-stone-50 bg-transparent">For Fans</TabsTrigger>
-              <TabsTrigger value="creators" className="text-stone-50 bg-transparent">For Creators</TabsTrigger>
+              <TabsTrigger value="general">For Fans</TabsTrigger>
+              <TabsTrigger value="creators">For Creators</TabsTrigger>
             </TabsList>
             
             <TabsContent value="general" className="space-y-12">
               <div className="text-center mb-8">
-                <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-white">
-                  The Ultimate Fan Experience on <span className="text-stone-50">The Ultimate Fan Experience on</span>
+                <h3 className="text-2xl lg:text-3xl font-bold mb-4">
+                  <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">The Ultimate Fan Experience on</span> <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Streamcentives</span>
                 </h3>
-                <p className="text-lg max-w-3xl mx-auto text-stone-50 font-normal">
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
                   As a fan, your support is valuable. For the first time, every action you take to champion your favorite creators, athletes, artists is recognized, rewarded, and turned into an unforgettable experience.
                 </p>
               </div>
@@ -477,7 +480,7 @@ const Website = () => {
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-lime-400 drop-shadow-[0_0_10px_rgba(163,230,53,0.8)]">
                   Supercharge <span className="text-white">Your Creative Journey</span>
                 </h3>
-                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                <p className="text-lg text-stone-100 max-w-3xl mx-auto">
                   Our suite of intelligent tools is designed to help you connect with your fans, 
                   streamline your content creation, and turn engagement into real growth and revenue.
                 </p>
@@ -487,7 +490,8 @@ const Website = () => {
               <div>
                 <h4 className="text-xl font-semibold mb-6 text-center">Your AI-Powered Toolkit</h4>
                 <div className="grid lg:grid-cols-3 gap-8">
-                  {aiFeatures.map((feature, index) => <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-brand-primary/20">
+                  {aiFeatures.map((feature, index) => (
+                    <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-brand-primary/20">
                       <CardHeader>
                         <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-4 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
                           <feature.icon className="w-6 h-6 text-brand-primary" />
@@ -499,7 +503,8 @@ const Website = () => {
                           {feature.description}
                         </CardDescription>
                       </CardContent>
-                    </Card>)}
+                    </Card>
+                  ))}
                 </div>
               </div>
 
@@ -507,7 +512,8 @@ const Website = () => {
               <div>
                 <h4 className="text-xl font-semibold mb-6 text-center">The Streamcentives AI Advantage</h4>
                 <div className="grid lg:grid-cols-3 gap-8">
-                  {aiAdvantages.map((feature, index) => <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                  {aiAdvantages.map((feature, index) => (
+                    <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                       <CardHeader>
                         <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
                           <feature.icon className="w-6 h-6 text-brand-accent" />
@@ -519,7 +525,8 @@ const Website = () => {
                           {feature.description}
                         </CardDescription>
                       </CardContent>
-                    </Card>)}
+                    </Card>
+                  ))}
                 </div>
               </div>
 
@@ -536,7 +543,8 @@ const Website = () => {
                   </p>
                 </div>
                 <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
-                  {premiumAiFeatures.map((feature, index) => <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
+                  {premiumAiFeatures.map((feature, index) => (
+                    <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                       <CardHeader className="pb-3">
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
                           <feature.icon className="w-5 h-5 text-brand-primary" />
@@ -548,7 +556,8 @@ const Website = () => {
                           {feature.description}
                         </CardDescription>
                       </CardContent>
-                    </Card>)}
+                    </Card>
+                  ))}
                 </div>
               </div>
             </TabsContent>
