@@ -629,24 +629,24 @@ const UniversalProfile = () => {
                       <CardTitle>Fan Dashboard</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3 mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          <span className="text-sm">Earn XP for streams and engagement</span>
-                        </div>
-                        <div className="flex items-center gap-3 px-0 mx-0">
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          <span className="text-sm">Join campaigns and challenges</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          <span className="text-sm px-0">Redeem exclusive rewards</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          <span className="text-sm">Compete on leaderboards</span>
-                        </div>
-                      </div>
+                       <div className="space-y-3 mb-4">
+                         <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 bg-primary rounded-full"></div>
+                           <span className="text-sm">Earn XP for streams and engagement</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 bg-primary rounded-full"></div>
+                           <span className="text-sm">Join campaigns and challenges</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 bg-primary rounded-full"></div>
+                           <span className="text-sm">Redeem exclusive rewards</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 bg-primary rounded-full"></div>
+                           <span className="text-sm">Compete on leaderboards</span>
+                         </div>
+                       </div>
                       <Button className="w-full bg-gradient-primary hover:opacity-90">
                         <Users className="h-4 w-4 mr-2" />
                         Enter Fan Dashboard
@@ -662,24 +662,24 @@ const UniversalProfile = () => {
                       <CardTitle>Creator Dashboard</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3 mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-secondary rounded-full my-0 py-[16px] mx-[77px]"></div>
-                          <span className="text-sm">Create AI-powered campaigns</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-secondary rounded-full"></div>
-                          <span className="text-sm">Engage and reward fans</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-secondary rounded-full"></div>
-                          <span className="text-sm">Access detailed analytics</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-secondary rounded-full"></div>
-                          <span className="text-sm">Generate revenue streams</span>
-                        </div>
-                      </div>
+                       <div className="space-y-3 mb-4">
+                         <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 bg-primary rounded-full"></div>
+                           <span className="text-sm">Create AI-powered campaigns</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 bg-primary rounded-full"></div>
+                           <span className="text-sm">Engage and reward fans</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 bg-primary rounded-full"></div>
+                           <span className="text-sm">Access detailed analytics</span>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <div className="w-2 h-2 bg-primary rounded-full"></div>
+                           <span className="text-sm">Generate revenue streams</span>
+                         </div>
+                       </div>
                       <Button className="w-full bg-gradient-accent hover:opacity-90">
                         <Music className="h-4 w-4 mr-2" />
                         Enter Creator Dashboard
