@@ -480,7 +480,7 @@ const Website = () => {
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-lime-400 drop-shadow-[0_0_10px_rgba(163,230,53,0.8)]">
                   Supercharge <span className="text-white">Your Creative Journey</span>
                 </h3>
-                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                <p className="text-lg text-stone-100 max-w-3xl mx-auto">
                   Our suite of intelligent tools is designed to help you connect with your fans, 
                   streamline your content creation, and turn engagement into real growth and revenue.
                 </p>
