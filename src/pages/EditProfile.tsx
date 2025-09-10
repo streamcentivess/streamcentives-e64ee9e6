@@ -210,23 +210,65 @@ const EditProfile = () => {
 
     setSaving(true);
     try {
+      // Ensure we have a valid auth session
+      let { data: sessionData } = await supabase.auth.getSession();
+
+      if (!sessionData.session) {
+        // Try to refresh session once
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        sessionData = refreshed;
+      }
+
+      if (!sessionData.session) {
+        // No active session – fall back to secure email reset flow
+        const emailToUse = formData.email || user?.email;
+        if (!emailToUse) throw new Error('No email available for password reset');
+
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(emailToUse, {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        });
+
+        if (resetError) throw resetError;
+
+        toast({
+          title: "Check your email",
+          description: "We sent a secure link to set your password.",
+        });
+        setShowPasswordForm(false);
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        return;
+      }
+
+      // We have a session – attempt direct password update
       const { error } = await supabase.auth.updateUser({
-        password: passwordForm.newPassword
+        password: passwordForm.newPassword,
       });
 
-      if (error) throw error;
+      if (error) {
+        // If session-related error, fall back to email flow
+        if (error.message?.toLowerCase().includes('session') || error.message?.toLowerCase().includes('auth')) {
+          const emailToUse = formData.email || user?.email;
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(emailToUse!, {
+            redirectTo: `${window.location.origin}/auth/callback`,
+          });
+          if (resetError) throw resetError;
+          toast({
+            title: "Verify via email",
+            description: "We sent you a secure link to finish setting your password.",
+          });
+          setShowPasswordForm(false);
+          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Success",
-        description: isOAuthUser ? "Password set successfully! You can now sign in with your username/email and password." : "Password updated successfully!"
+        description: isOAuthUser ? "Password set successfully! You can now sign in with your username/email and password." : "Password updated successfully!",
       });
-      
       setShowPasswordForm(false);
-      setPasswordForm({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error: any) {
       toast({
         title: "Password Update Failed",
