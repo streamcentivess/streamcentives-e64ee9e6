@@ -279,7 +279,7 @@ const Website = () => {
             <TabsContent value="general" className="space-y-12">
               <div className="text-center mb-8">
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4">
-                  <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">The Ultimate Fan Experience on</span> <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Streamcentives</span>
+                  <span className="text-stone-100">The Ultimate Fan Experience on</span> <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Streamcentives</span>
                 </h3>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
                   As a fan, your support is valuable. For the first time, every action you take to champion your favorite creators, athletes, artists is recognized, rewarded, and turned into an unforgettable experience.
