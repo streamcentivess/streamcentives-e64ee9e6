@@ -264,7 +264,7 @@ const Website = () => {
                 <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent"> Team Up!</span>
               </span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-white max-w-2xl mx-auto">
               Our platform uses gamification and AI to help creators grow their community, 
               while giving fans the rewards and recognition they deserve for their support.
             </p>
