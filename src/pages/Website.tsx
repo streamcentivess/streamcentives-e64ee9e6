@@ -198,7 +198,7 @@ const Website = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/20 via-background to-brand-accent/20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-background to-blue-700/20" />
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex justify-center mb-8">
