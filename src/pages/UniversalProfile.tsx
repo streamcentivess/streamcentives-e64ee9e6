@@ -844,7 +844,7 @@ const UniversalProfile = () => {
                     <div className="text-sm text-muted-foreground">Following</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{xpBalance}</div>
+                    <div className="text-2xl font-bold text-yellow-500">{xpBalance}</div>
                     <div className="text-sm text-muted-foreground">XP</div>
                   </div>
                 </div>
