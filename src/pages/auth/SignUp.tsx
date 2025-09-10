@@ -52,7 +52,7 @@ const SignUp = () => {
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-sky-700 bg-clip-text text-transparent">
               Join Streamcentives
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
+            <CardDescription className="text-white">
               Create your account and start earning XP
             </CardDescription>
           </div>
