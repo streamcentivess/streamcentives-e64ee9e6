@@ -760,7 +760,7 @@ const UniversalProfile = () => {
                     </AvatarFallback>
                   </Avatar>
                   <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" id="avatar-upload" />
-                  <Button size="sm" className="absolute bottom-0 right-0 rounded-full h-8 w-8 p-0" onClick={() => document.getElementById('avatar-upload')?.click()} disabled={uploading}>
+                  <Button size="sm" className="absolute bottom-0 right-0 rounded-full h-8 w-8 p-0 bg-transparent border-transparent hover:bg-white/10" onClick={() => document.getElementById('avatar-upload')?.click()} disabled={uploading}>
                     <Camera className="h-4 w-4" />
                   </Button>
                 </div>
