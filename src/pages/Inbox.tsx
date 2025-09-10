@@ -10,9 +10,10 @@ import { InboxMessage } from '@/components/InboxMessage';
 import CreatorInbox from '@/components/CreatorInbox';
 import MessageSettings from '@/components/MessageSettings';
 import ConversationThread from '@/components/ConversationThread';
-import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings, User, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings, User, ArrowLeft, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface Message {
@@ -66,7 +67,7 @@ const Inbox: React.FC = () => {
           filter: `sender_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Message update:', payload);
+          console.log('Sent message update:', payload);
           fetchSentMessages();
         }
       )
@@ -129,6 +130,39 @@ const Inbox: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', user?.id);
+
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
+
+      // Immediately update the local state
+      setSentMessages(prevMessages => 
+        prevMessages.filter(msg => msg.id !== messageId)
+      );
+
+      toast({
+        title: "Message deleted",
+        description: "The message has been deleted successfully.",
+      });
+
+    } catch (error: any) {
+      console.error('Error deleting message:', error);
+      toast({
+        title: "Error", 
+        description: error.message || "Failed to delete message.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -306,6 +340,35 @@ const Inbox: React.FC = () => {
                     <Badge variant="outline" className="flex items-center gap-1">
                       {message.xp_cost} XP
                     </Badge>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-2 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Message</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this message to {(message as any).recipient_profile?.display_name || 'Unknown User'}? 
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteMessage(message.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete Message
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardHeader>
                 <CardContent>
