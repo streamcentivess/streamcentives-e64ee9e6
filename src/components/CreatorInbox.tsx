@@ -179,15 +179,21 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
         .from('messages')
         .delete()
         .eq('recipient_id', user.id)
-        .eq(conversationId.includes('-') ? 'conversation_id' : 'sender_id', conversationId);
+        .eq('conversation_id', conversationId);
 
       if (error) throw error;
+
+      // Immediately update the local state to remove the conversation
+      setConversations(prevConversations => 
+        prevConversations.filter(conv => conv.conversation_id !== conversationId)
+      );
 
       toast({
         title: "Conversation deleted",
         description: "The conversation has been deleted successfully.",
       });
 
+      // Also refetch to ensure consistency
       fetchConversations();
     } catch (error: any) {
       console.error('Error deleting conversation:', error);
