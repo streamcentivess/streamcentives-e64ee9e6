@@ -496,7 +496,11 @@ const Website = () => {
 
               {/* AI Toolkit */}
               <div>
-                <h4 className="text-xl font-semibold mb-6 text-center">Your AI-Powered Toolkit</h4>
+                <div className="text-center mb-6">
+                  <Badge variant="outline" className="text-xl font-semibold text-white bg-blue-400 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.5)] px-4 py-2">
+                    Your AI-Powered Toolkit
+                  </Badge>
+                </div>
                 <div className="grid lg:grid-cols-3 gap-8">
                   {aiFeatures.map((feature, index) => (
                     <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-brand-primary/20">
