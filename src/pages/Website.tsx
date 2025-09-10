@@ -350,7 +350,7 @@ const Website = () => {
                     Compete & Connect
                   </Badge>
                 </div>
-                <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+                <p className="text-center text-stone-100 font-exo mb-8 max-w-2xl mx-auto">
                   Turn your passion into a game and connect with a global community of fans and creators.
                 </p>
                 <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -362,7 +362,7 @@ const Website = () => {
                       <CardTitle className="text-lg text-blue-400 font-exo">Climb the Leaderboards</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-sm">
+                      <CardDescription className="text-sm text-stone-100 font-exo">
                         Compete in real-time leaderboards for your favorite artists. See how your support stacks up against other fans and earn the ultimate bragging rights.
                       </CardDescription>
                     </CardContent>
@@ -373,10 +373,10 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
                         <Users className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-lg">Team Up in Challenges</CardTitle>
+                      <CardTitle className="text-lg text-blue-400 font-exo">Team Up in Challenges</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-sm">
+                      <CardDescription className="text-sm text-stone-100 font-exo">
                         Join forces with friends online or in real life to complete collaborative campaigns and unlock group rewards.
                       </CardDescription>
                     </CardContent>
@@ -387,10 +387,10 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
                         <Star className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-lg">Showcase Your Status</CardTitle>
+                      <CardTitle className="text-lg text-blue-400 font-exo">Showcase Your Status</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-sm">
+                      <CardDescription className="text-sm text-stone-100 font-exo">
                         Your profile features a dedicated "Flex Tab" to display all the badges, collectibles, and rewards you've earned, showcasing your dedication and status as a top fan.
                       </CardDescription>
                     </CardContent>
@@ -401,10 +401,10 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
                         <Globe className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-lg">Join an Inner Circle</CardTitle>
+                      <CardTitle className="text-lg text-blue-400 font-exo">Join an Inner Circle</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-sm">
+                      <CardDescription className="text-sm text-stone-100 font-exo">
                         Be part of a dedicated community where you can connect with other super-fans and interact more directly with the artists you love.
                       </CardDescription>
                     </CardContent>
