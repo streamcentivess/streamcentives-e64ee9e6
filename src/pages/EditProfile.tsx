@@ -40,7 +40,8 @@ const EditProfile = () => {
   const [formData, setFormData] = useState({
     display_name: '',
     username: '',
-    bio: ''
+    bio: '',
+    email: ''
   });
 
   useEffect(() => {
@@ -74,7 +75,8 @@ const EditProfile = () => {
         setFormData({
           display_name: data.display_name || '',
           username: data.username || '',
-          bio: data.bio || ''
+          bio: data.bio || '',
+          email: user.email || ''
         });
       }
     } catch (error) {
@@ -96,21 +98,39 @@ const EditProfile = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      // Update profile data
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           display_name: formData.display_name,
           username: formData.username,
-          bio: formData.bio
+          bio: formData.bio,
+          email: formData.email
         })
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      toast({
-        title: "Success",
-        description: "Profile updated successfully!"
-      });
+      // Update email in auth if it changed
+      if (formData.email !== user.email) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: formData.email
+        });
+
+        if (emailError) {
+          throw new Error(`Profile updated but email change failed: ${emailError.message}`);
+        }
+
+        toast({
+          title: "Email Verification Required",
+          description: "Profile saved! Check your new email address to confirm the change."
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Profile updated successfully!"
+        });
+      }
       
       navigate('/universal-profile');
     } catch (error: any) {
@@ -311,10 +331,14 @@ const EditProfile = () => {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                value={user?.email || ''}
-                disabled
-                className="bg-muted"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="Enter your email address"
               />
+              <p className="text-xs text-muted-foreground">
+                This email will be used for account recovery and can be used to sign in
+              </p>
             </div>
           </CardContent>
         </Card>
