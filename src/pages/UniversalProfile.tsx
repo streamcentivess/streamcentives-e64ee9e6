@@ -53,6 +53,11 @@ const UniversalProfile = () => {
   const [postCount, setPostCount] = useState(0);
   const [xpBalance, setXpBalance] = useState(0);
   const [supporters, setSupporters] = useState<Profile[]>([]);
+  const [supporterStates, setSupporterStates] = useState<Record<string, boolean>>({});
+  const [confirmAddSupporter, setConfirmAddSupporter] = useState<{
+    show: boolean;
+    profile: Profile | null;
+  }>({ show: false, profile: null });
   const unreadCount = useUnreadMessages();
 
   // Check if viewing own profile or another user's profile
@@ -266,6 +271,161 @@ const UniversalProfile = () => {
       setFollowLoading(false);
     }
   };
+
+  // Fetch supporters for current profile
+  const fetchSupporters = async () => {
+    const targetUserId = profile?.user_id || viewingUserId || user?.id;
+    if (!targetUserId) return;
+    
+    try {
+      // First get supporter IDs
+      const { data: supporterIds, error: supporterError } = await supabase
+        .from('user_supporters')
+        .select('supporter_id')
+        .eq('user_id', targetUserId)
+        .order('created_at', { ascending: false });
+
+      if (supporterError) {
+        console.error('Error fetching supporter IDs:', supporterError);
+        return;
+      }
+
+      if (!supporterIds || supporterIds.length === 0) {
+        setSupporters([]);
+        return;
+      }
+
+      // Then get profile data for those supporters
+      const ids = supporterIds.map(item => item.supporter_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url, bio, location, interests')
+        .in('user_id', ids);
+
+      if (profileError) {
+        console.error('Error fetching supporter profiles:', profileError);
+        return;
+      }
+
+      setSupporters(profiles || []);
+    } catch (error) {
+      console.error('Error fetching supporters:', error);
+    }
+  };
+
+  // Check supporter states for search results
+  const checkSupporterStates = async (profiles: Profile[]) => {
+    if (!user || !isOwnProfile) return;
+    
+    try {
+      const userIds = profiles.map(p => p.user_id);
+      const { data, error } = await supabase
+        .from('user_supporters')
+        .select('supporter_id')
+        .eq('user_id', user.id)
+        .in('supporter_id', userIds);
+
+      if (error) {
+        console.error('Error checking supporter states:', error);
+        return;
+      }
+
+      const supporterIds = new Set(data?.map(item => item.supporter_id) || []);
+      const states: Record<string, boolean> = {};
+      profiles.forEach(profile => {
+        states[profile.user_id] = supporterIds.has(profile.user_id);
+      });
+      setSupporterStates(states);
+    } catch (error) {
+      console.error('Error checking supporter states:', error);
+    }
+  };
+
+  // Handle adding a supporter with confirmation
+  const handleAddSupporter = (profile: Profile) => {
+    setConfirmAddSupporter({ show: true, profile });
+  };
+
+  // Confirm adding supporter
+  const confirmAddSupporterAction = async () => {
+    const { profile } = confirmAddSupporter;
+    if (!profile || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_supporters')
+        .insert([{
+          user_id: user.id,
+          supporter_id: profile.user_id
+        }]);
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          toast({
+            title: "Already Added",
+            description: "This person is already in your supporters list",
+            variant: "destructive"
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        // Update local state
+        setSupporters(prev => [profile, ...prev]);
+        setSupporterStates(prev => ({
+          ...prev,
+          [profile.user_id]: true
+        }));
+        
+        toast({
+          title: "Success",
+          description: `${profile.display_name || profile.username} added to your supporters!`
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setConfirmAddSupporter({ show: false, profile: null });
+    }
+  };
+
+  // Remove supporter
+  const removeSupporterAction = async (supporterId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_supporters')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('supporter_id', supporterId);
+
+      if (error) throw error;
+
+      // Update local state
+      setSupporters(prev => prev.filter(s => s.user_id !== supporterId));
+      setSupporterStates(prev => ({
+        ...prev,
+        [supporterId]: false
+      }));
+
+      toast({
+        title: "Removed",
+        description: "Supporter removed from your list"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   const searchUsers = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -285,7 +445,11 @@ const UniversalProfile = () => {
           variant: "destructive"
         });
       } else {
-        setSearchResults(data as any || []);
+        setSearchResults((data || []) as unknown as Profile[]);
+        // Check supporter states for search results
+        if (data && data.length > 0) {
+          checkSupporterStates((data || []) as unknown as Profile[]);
+        }
       }
     } catch (error) {
       console.error('Unexpected search error:', error);
@@ -496,6 +660,7 @@ const UniversalProfile = () => {
     if (profile?.user_id) {
       fetchPostCount();
       fetchXpBalance();
+      fetchSupporters();
     }
   }, [profile?.user_id]);
 
@@ -1005,10 +1170,85 @@ const UniversalProfile = () => {
                         <Heart className="h-5 w-5 text-red-500" />
                         My Top Supporters
                       </h3>
-                      <Button size="sm" variant="outline" onClick={openFollowersList}>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Manage
-                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Manage
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Manage Supporters</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            {/* Search Bar */}
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                placeholder="Search users to add as supporters..."
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                className="pl-10"
+                              />
+                              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            </div>
+                            
+                            {/* Search Results */}
+                            {searching && (
+                              <div className="text-center py-4">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                              </div>
+                            )}
+                            
+                            {searchResults.length > 0 && (
+                              <div className="space-y-2 max-h-60 overflow-y-auto">
+                                <p className="text-sm text-muted-foreground mb-2">Search Results:</p>
+                                {searchResults.map(profile => (
+                                  <div key={profile.user_id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                                    <Avatar className="h-10 w-10">
+                                      <AvatarImage src={profile.avatar_url || ''} />
+                                      <AvatarFallback>
+                                        {profile.display_name?.[0] || profile.username?.[0]?.toUpperCase() || '?'}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                      <div className="font-medium">
+                                        {profile.display_name || profile.username || 'Anonymous User'}
+                                      </div>
+                                      {profile.username && profile.display_name && <div className="text-sm text-muted-foreground">@{profile.username}</div>}
+                                    </div>
+                                    <Button 
+                                      size="sm" 
+                                      variant={supporterStates[profile.user_id] ? "outline" : "default"}
+                                      onClick={() => supporterStates[profile.user_id] ? removeSupporterAction(profile.user_id) : handleAddSupporter(profile)}
+                                      className={supporterStates[profile.user_id] ? "" : "bg-gradient-primary hover:opacity-90"}
+                                    >
+                                      {supporterStates[profile.user_id] ? (
+                                        <>
+                                          <UserMinus className="h-3 w-3 mr-1" />
+                                          Remove
+                                        </>
+                                      ) : (
+                                        <>
+                                          <UserPlus className="h-3 w-3 mr-1" />
+                                          Add
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {searchQuery && !searching && searchResults.length === 0 && (
+                              <div className="text-center text-muted-foreground py-4">
+                                No users found matching your search.
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Showcase your most supportive fans and friends. This feature shows your top followers based on engagement.
@@ -1097,6 +1337,28 @@ const UniversalProfile = () => {
                   </div>) : <div className="text-center text-muted-foreground py-8">
                   {listType === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
                 </div>}
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Add Supporter Confirmation Dialog */}
+        <Dialog open={confirmAddSupporter.show} onOpenChange={(open) => setConfirmAddSupporter({ show: open, profile: null })}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Add Supporter</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-center">
+                Are you sure you want to add <strong>{confirmAddSupporter.profile?.display_name || confirmAddSupporter.profile?.username}</strong> to your supporters list?
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={() => setConfirmAddSupporter({ show: false, profile: null })}>
+                  No
+                </Button>
+                <Button onClick={confirmAddSupporterAction} className="bg-gradient-primary hover:opacity-90">
+                  Yes
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

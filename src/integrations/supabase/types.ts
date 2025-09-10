@@ -808,6 +808,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_supporters: {
+        Row: {
+          created_at: string
+          id: string
+          supporter_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          supporter_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          supporter_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_xp_balances: {
         Row: {
           created_at: string
