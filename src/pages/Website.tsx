@@ -210,9 +210,9 @@ const Website = () => {
               </Badge>
             </div>
             <h1 className="text-4xl lg:text-7xl font-bold mb-6 font-exo">
-              <span className="text-white">The bridge between</span>
+              <span className="text-white">The Bridge Between</span>
               <span className="block">
-                <span className="text-fuchsia-500">fans and creators.</span>
+                <span className="text-fuchsia-500">Fans And Creators.</span>
               </span>
             </h1>
             <div className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto space-y-3">
