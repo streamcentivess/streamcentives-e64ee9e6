@@ -195,7 +195,7 @@ const RoleSelection = () => {
         <div className="w-full max-w-md mt-12 relative z-10">
           <button
             onClick={() => handleRoleSelection(selectedRole)}
-            className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-lg"
+            className="w-full bg-gradient-to-r from-sky-400 to-sky-500 hover:from-sky-500 hover:to-sky-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-lg"
           >
             Start as {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}
             <svg className="w-5 h-5 ml-2 inline" fill="currentColor" viewBox="0 0 20 20">

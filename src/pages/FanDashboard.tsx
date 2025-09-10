@@ -269,7 +269,7 @@ const FanDashboard = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                       Earn your first XP by streaming music, joining campaigns, and engaging with creators
                     </p>
-        <Button onClick={() => navigate('/fan-campaigns')} className="bg-gradient-primary hover:opacity-90">
+        <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
                       <Plus className="h-4 w-4 mr-2" />
                       Browse Campaigns
                     </Button>
@@ -305,7 +305,7 @@ const FanDashboard = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                       Join campaigns to earn XP, unlock rewards, and support your favorite creators
                     </p>
-                    <Button onClick={() => navigate('/fan-campaigns')} className="bg-gradient-primary hover:opacity-90">
+                    <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
                       <Plus className="h-4 w-4 mr-2" />
                       Browse Available Campaigns
                     </Button>
@@ -337,10 +337,10 @@ const FanDashboard = () => {
                         </div>
                       </div>
                     ))}
-                  <Button 
-                    className="w-full bg-gradient-primary hover:opacity-90"
-                    onClick={() => navigate('/fan-campaigns')}
-                  >
+                   <Button 
+                     className="w-full bg-sky-400 hover:bg-sky-500 text-white"
+                     onClick={() => navigate('/fan-campaigns')}
+                   >
                     View All Campaigns
                   </Button>
                   </div>

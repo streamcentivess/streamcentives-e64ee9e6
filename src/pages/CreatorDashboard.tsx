@@ -362,7 +362,7 @@ const CreatorDashboard = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                       Create your first campaign to start engaging with fans and earning revenue
                     </p>
-                    <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
+                   <Button onClick={() => navigate('/campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
                       <Plus className="h-4 w-4 mr-2" />
                       Create Your First Campaign
                     </Button>

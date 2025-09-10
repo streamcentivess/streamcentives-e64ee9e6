@@ -71,7 +71,7 @@ const SignIn = () => {
           <div className="space-y-3">
             <Button
               onClick={signInWithSpotify}
-              className="w-full bg-[#1db954] hover:bg-[#1ed760] text-white font-medium"
+              className="w-full bg-sky-400 hover:bg-sky-500 text-white font-medium"
               size="lg"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
@@ -97,7 +97,7 @@ const SignIn = () => {
             
             <Button
               onClick={signInWithFacebook}
-              className="w-full bg-[#1877f2] hover:bg-[#166fe5] text-white"
+              className="w-full bg-sky-500 hover:bg-sky-600 text-white"
               size="lg"
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -108,7 +108,7 @@ const SignIn = () => {
 
             <Button
               onClick={signInWithApple}
-              className="w-full bg-black hover:bg-gray-800 text-white"
+              className="w-full bg-gray-800 hover:bg-gray-700 text-white"
               size="lg"
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">

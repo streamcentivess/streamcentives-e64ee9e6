@@ -17,13 +17,13 @@
     --surface-elevated: 220 15% 16%;
 
     /* Brand Colors */
-    --brand-primary: 280 100% 65%;
-    --brand-secondary: 200 100% 60%;
-    --brand-accent: 320 80% 70%;
-    --brand-glow: 280 100% 75%;
+    --brand-primary: 200 100% 70%;
+    --brand-secondary: 210 100% 75%;
+    --brand-accent: 190 100% 65%;
+    --brand-glow: 200 100% 80%;
 
     /* Interactive Elements */
-    --primary: 280 100% 65%;
+    --primary: 200 100% 70%;
     --primary-foreground: 210 40% 98%;
     --secondary: 220 15% 20%;
     --secondary-foreground: 210 40% 98%;
@@ -35,7 +35,7 @@
     --popover-foreground: 210 40% 98%;
     --muted: 220 15% 20%;
     --muted-foreground: 215 20% 65%;
-    --accent: 280 100% 65%;
+    --accent: 200 100% 70%;
     --accent-foreground: 210 40% 98%;
 
     /* Status Colors */
@@ -47,16 +47,16 @@
     /* Borders & Inputs */
     --border: 220 15% 20%;
     --input: 220 15% 16%;
-    --ring: 280 100% 65%;
+    --ring: 200 100% 70%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(280 100% 65%) 0%, hsl(320 80% 70%) 50%, hsl(200 100% 60%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(220 25% 8%) 0%, hsl(280 30% 15%) 50%, hsl(220 25% 8%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(280 100% 75% / 0.3) 0%, transparent 70%);
+    --gradient-primary: linear-gradient(135deg, hsl(200 100% 70%) 0%, hsl(190 100% 65%) 50%, hsl(210 100% 75%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(220 25% 8%) 0%, hsl(200 30% 15%) 50%, hsl(220 25% 8%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(200 100% 80% / 0.3) 0%, transparent 70%);
     --gradient-surface: linear-gradient(135deg, hsl(220 20% 12%) 0%, hsl(220 15% 16%) 100%);
 
     /* Shadows & Effects */
-    --shadow-glow: 0 0 40px hsl(280 100% 65% / 0.3);
+    --shadow-glow: 0 0 40px hsl(200 100% 70% / 0.3);
     --shadow-card: 0 8px 32px hsl(220 25% 5% / 0.4);
     --shadow-elevated: 0 16px 64px hsl(220 25% 5% / 0.6);
 
