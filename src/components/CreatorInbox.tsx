@@ -5,7 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Check, X, AlertTriangle, Clock, Shield, MessageCircle } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Check, X, AlertTriangle, Clock, Shield, MessageCircle, Trash2, User } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Message {
@@ -29,6 +31,18 @@ interface Message {
   }>;
 }
 
+interface Conversation {
+  conversation_id: string;
+  sender_id: string;
+  latest_message: Message;
+  message_count: number;
+  unread_count: number;
+  profiles: {
+    display_name: string;
+    avatar_url: string | null;
+  } | null;
+}
+
 interface CreatorInboxProps {
   onViewConversation?: (conversationId: string) => void;
   searchQuery?: string;
@@ -36,18 +50,45 @@ interface CreatorInboxProps {
 
 const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQuery = '' }) => {
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchMessages();
+    fetchConversations();
+    setupRealtimeSubscription();
   }, []);
 
-  const fetchMessages = async () => {
+  const setupRealtimeSubscription = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data, error } = await supabase
+    const channel = supabase
+      .channel('creator-inbox-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`
+        },
+        () => {
+          fetchConversations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const fetchConversations = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Get all messages for the user
+    const { data: messages, error } = await supabase
       .from('messages')
       .select(`
         id,
@@ -74,81 +115,114 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
       return;
     }
 
-    // Fetch sender profiles separately
-    const messagesWithProfiles: Message[] = await Promise.all(
-      (data || []).map(async (message: any) => {
+    // Group messages by conversation_id or sender_id if no conversation_id
+    const conversationMap = new Map<string, Message[]>();
+    
+    (messages || []).forEach((message: any) => {
+      const key = message.conversation_id || message.sender_id;
+      if (!conversationMap.has(key)) {
+        conversationMap.set(key, []);
+      }
+      conversationMap.get(key)!.push(message);
+    });
+
+    // Create conversation objects with profiles
+    const conversationsWithProfiles: Conversation[] = await Promise.all(
+      Array.from(conversationMap.entries()).map(async ([key, msgs]) => {
+        const latestMessage = msgs[0]; // First message is latest due to ordering
+        const senderId = latestMessage.sender_id;
+        
         const { data: profile } = await supabase
           .from('public_profiles' as any)
           .select('display_name, avatar_url')
-          .eq('user_id', message.sender_id)
+          .eq('user_id', senderId)
           .maybeSingle();
 
+        const unreadCount = msgs.filter(m => m.status === 'pending').length;
+
         return {
-          ...message,
+          conversation_id: key,
+          sender_id: senderId,
+          latest_message: {
+            ...latestMessage,
+            profiles: (profile as any) || { display_name: 'Anonymous', avatar_url: null }
+          } as Message,
+          message_count: msgs.length,
+          unread_count: unreadCount,
           profiles: (profile as any) || { display_name: 'Anonymous', avatar_url: null }
-        } as Message;
+        };
       })
     );
 
-    setMessages(messagesWithProfiles);
+    setConversations(conversationsWithProfiles);
     setIsLoading(false);
   };
 
-  // Filter messages based on search query
-  const filteredMessages = messages.filter(message => {
+  // Filter conversations based on search query
+  const filteredConversations = conversations.filter(conversation => {
     if (!searchQuery.trim()) return true;
     
     const query = searchQuery.toLowerCase();
-    const senderName = message.profiles?.display_name?.toLowerCase() || '';
-    const content = message.content.toLowerCase();
+    const senderName = conversation.profiles?.display_name?.toLowerCase() || '';
+    const content = conversation.latest_message.content.toLowerCase();
     
     return senderName.includes(query) || content.includes(query);
   });
 
-  const handleMessageAction = async (messageId: string, action: 'approved' | 'denied') => {
+  const handleDeleteConversation = async (conversationId: string) => {
     try {
-      const { error } = await supabase.rpc('update_message_status', {
-        message_id_param: messageId,
-        new_status_param: action
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Delete all messages in the conversation where user is recipient
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('recipient_id', user.id)
+        .eq(conversationId.includes('-') ? 'conversation_id' : 'sender_id', conversationId);
 
       if (error) throw error;
 
       toast({
-        title: `Message ${action}`,
-        description: `The message has been ${action}.`,
+        title: "Conversation deleted",
+        description: "The conversation has been deleted successfully.",
       });
 
-      fetchMessages(); // Refresh messages
+      fetchConversations();
     } catch (error: any) {
-      console.error('Error updating message:', error);
+      console.error('Error deleting conversation:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update message.",
+        title: "Error", 
+        description: error.message || "Failed to delete conversation.",
         variant: "destructive",
       });
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          Pending Review
-        </Badge>;
+  const getStatusBadge = (unreadCount: number, latestStatus: string) => {
+    if (unreadCount > 0) {
+      return <Badge variant="destructive" className="flex items-center gap-1">
+        <Clock className="h-3 w-3" />
+        {unreadCount} New
+      </Badge>;
+    }
+    
+    switch (latestStatus) {
       case 'approved':
         return <Badge variant="default" className="flex items-center gap-1 bg-green-500">
           <Check className="h-3 w-3" />
-          Approved
+          Active
         </Badge>;
       case 'denied':
         return <Badge variant="destructive" className="flex items-center gap-1">
           <X className="h-3 w-3" />
-          Denied
+          Closed
         </Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">
+          <Clock className="h-3 w-3" />
+          Pending
+        </Badge>;
     }
   };
 
@@ -174,24 +248,26 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
   };
 
   if (isLoading) {
-    return <div className="p-4">Loading messages...</div>;
+    return <div className="p-4">Loading conversations...</div>;
   }
 
-  if (messages.length === 0) {
+  if (conversations.length === 0) {
     return (
       <Card className="p-6">
         <CardContent className="text-center">
-          <p className="text-muted-foreground">No messages yet.</p>
+          <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium mb-2">No conversations yet</h3>
+          <p className="text-muted-foreground">Messages from your fans will appear here.</p>
         </CardContent>
       </Card>
     );
   }
 
-  if (filteredMessages.length === 0 && searchQuery.trim()) {
+  if (filteredConversations.length === 0 && searchQuery.trim()) {
     return (
       <Card className="p-6">
         <CardContent className="text-center">
-          <p className="text-muted-foreground">No messages found matching "{searchQuery}"</p>
+          <p className="text-muted-foreground">No conversations found matching "{searchQuery}"</p>
         </CardContent>
       </Card>
     );
@@ -201,30 +277,45 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Creator Inbox</h2>
       
-      {filteredMessages.map((message) => {
-        const analysis = message.message_analysis[0];
+      {filteredConversations.map((conversation) => {
+        const latestMessage = conversation.latest_message;
+        const analysis = latestMessage.message_analysis[0];
         
         return (
-          <Card key={message.id} className="w-full">
+          <Card key={conversation.conversation_id} className="w-full hover:bg-muted/20 transition-colors">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">
-                  From: {message.profiles?.display_name || 'Anonymous'}
-                </CardTitle>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={conversation.profiles?.avatar_url || undefined} />
+                    <AvatarFallback>
+                      <User className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <CardTitle className="text-lg">
+                      {conversation.profiles?.display_name || 'Anonymous'}
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      {conversation.message_count} message{conversation.message_count !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
                 <div className="flex items-center gap-2">
-                  {getStatusBadge(message.status)}
-                  {getModerationBadge(analysis)}
+                  {getStatusBadge(conversation.unread_count, latestMessage.status)}
+                  {analysis && getModerationBadge(analysis)}
                 </div>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>{format(new Date(message.created_at), 'MMM dd, yyyy at HH:mm')}</span>
-                <Badge variant="outline">{message.xp_cost} XP</Badge>
+                <span>{format(new Date(latestMessage.created_at), 'MMM dd, yyyy at HH:mm')}</span>
+                <Badge variant="outline">{latestMessage.xp_cost} XP</Badge>
               </div>
             </CardHeader>
 
             <CardContent className="space-y-4">
               <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p className="text-sm font-medium mb-1">Latest message:</p>
+                <p className="text-sm line-clamp-2">{latestMessage.content}</p>
               </div>
 
               {analysis && !analysis.is_appropriate && (
@@ -244,39 +335,48 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
 
               <Separator />
               <div className="flex gap-2 justify-between">
-                {message.status === 'approved' && onViewConversation && (
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onViewConversation(message.conversation_id)}
+                    onClick={() => onViewConversation && onViewConversation(conversation.conversation_id)}
                     className="flex items-center gap-2"
                   >
                     <MessageCircle className="h-4 w-4" />
                     View Conversation
                   </Button>
-                )}
+                </div>
                 
-                {message.status === 'pending' && (
-                  <div className="flex gap-2 ml-auto">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleMessageAction(message.id, 'denied')}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 text-destructive hover:text-destructive"
                     >
-                      <X className="h-4 w-4" />
-                      Deny
+                      <Trash2 className="h-4 w-4" />
+                      Delete
                     </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => handleMessageAction(message.id, 'approved')}
-                      className="flex items-center gap-2"
-                    >
-                      <Check className="h-4 w-4" />
-                      Approve
-                    </Button>
-                  </div>
-                )}
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this conversation with {conversation.profiles?.display_name || 'Anonymous'}? 
+                        This will permanently remove all {conversation.message_count} message{conversation.message_count !== 1 ? 's' : ''} and cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDeleteConversation(conversation.conversation_id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete Conversation
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
