@@ -31,6 +31,7 @@ const EditProfile = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [isOAuthUser, setIsOAuthUser] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -45,6 +46,9 @@ const EditProfile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      // Check if user signed up via OAuth (no password set)
+      const signUpMethod = user.app_metadata?.provider;
+      setIsOAuthUser(signUpMethod === 'spotify' || signUpMethod === 'google' || signUpMethod === 'facebook' || signUpMethod === 'apple');
     }
   }, [user]);
 
@@ -194,7 +198,7 @@ const EditProfile = () => {
 
       toast({
         title: "Success",
-        description: "Password updated successfully!"
+        description: isOAuthUser ? "Password set successfully! You can now sign in with your username/email and password." : "Password updated successfully!"
       });
       
       setShowPasswordForm(false);
@@ -339,47 +343,60 @@ const EditProfile = () => {
               onClick={() => setShowPasswordForm(!showPasswordForm)}
             >
               <Lock className="h-4 w-4 mr-2" />
-              Change Password
+              {isOAuthUser ? 'Set Password' : 'Change Password'}
             </Button>
 
             {/* Password Change Form */}
             {showPasswordForm && (
               <Card className="border-dashed">
                 <CardContent className="p-6">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-lg">
+                      {isOAuthUser ? 'Set Password for Your Account' : 'Change Password'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {isOAuthUser 
+                        ? 'Set a password so you can sign in with your username/email and password'
+                        : 'Update your current password'
+                      }
+                    </p>
+                  </div>
                   <form onSubmit={handlePasswordChange} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
-                      <Input
-                        id="currentPassword"
-                        type="password"
-                        value={passwordForm.currentPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                        placeholder="Enter current password"
-                        required
-                      />
-                    </div>
+                    {!isOAuthUser && (
+                      <div className="space-y-2">
+                        <Label htmlFor="currentPassword">Current Password</Label>
+                        <Input
+                          id="currentPassword"
+                          type="password"
+                          value={passwordForm.currentPassword}
+                          onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                          placeholder="Enter current password"
+                          required
+                        />
+                      </div>
+                    )}
                     
                     <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
+                      <Label htmlFor="newPassword">{isOAuthUser ? 'Password' : 'New Password'}</Label>
                       <Input
                         id="newPassword"
                         type="password"
                         value={passwordForm.newPassword}
                         onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                        placeholder="Enter new password (min 6 characters)"
+                        placeholder={isOAuthUser ? "Create a password (min 6 characters)" : "Enter new password (min 6 characters)"}
                         minLength={6}
                         required
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
                       <Input
                         id="confirmPassword"
                         type="password"
                         value={passwordForm.confirmPassword}
                         onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        placeholder="Confirm new password"
+                        placeholder="Confirm password"
                         required
                       />
                       {passwordForm.newPassword && passwordForm.confirmPassword && 
@@ -394,7 +411,7 @@ const EditProfile = () => {
                         disabled={saving || passwordForm.newPassword !== passwordForm.confirmPassword}
                         className="bg-gradient-primary hover:opacity-90"
                       >
-                        {saving ? 'Updating...' : 'Update Password'}
+                        {saving ? 'Setting...' : (isOAuthUser ? 'Set Password' : 'Update Password')}
                       </Button>
                       <Button 
                         type="button" 
