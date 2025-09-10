@@ -245,7 +245,7 @@ const Website = () => {
                 <div className="text-3xl lg:text-4xl font-bold text-blue-300 mb-2 font-exo">
                   {stat.value}
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-white">
                   {stat.label}
                 </div>
               </div>)}
