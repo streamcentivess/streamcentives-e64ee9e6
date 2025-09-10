@@ -54,6 +54,59 @@ const FanCampaigns = () => {
     fetchCampaigns();
   }, [user]);
 
+  // Real-time subscription for new campaigns
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('campaigns-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'campaigns',
+          filter: `status=eq.active`
+        },
+        (payload) => {
+          console.log('New campaign created:', payload);
+          // Refresh campaigns when a new one is created
+          fetchCampaigns();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'campaigns'
+        },
+        (payload) => {
+          console.log('Campaign updated:', payload);
+          // Refresh campaigns when one is updated
+          fetchCampaigns();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'campaign_participants'
+        },
+        (payload) => {
+          console.log('New campaign participant:', payload);
+          // Refresh campaigns when someone joins to update participant counts
+          fetchCampaigns();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const fetchCampaigns = async () => {
     if (!user) return;
     

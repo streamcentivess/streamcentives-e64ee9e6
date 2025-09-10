@@ -50,6 +50,57 @@ const Marketplace = () => {
     fetchRewards();
   }, []);
 
+  // Real-time subscription for new rewards
+  useEffect(() => {
+    const channel = supabase
+      .channel('rewards-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'rewards',
+          filter: `is_active=eq.true`
+        },
+        (payload) => {
+          console.log('New reward created:', payload);
+          // Refresh rewards when a new one is created
+          fetchRewards();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'rewards'
+        },
+        (payload) => {
+          console.log('Reward updated:', payload);
+          // Refresh rewards when one is updated (like quantity changes)
+          fetchRewards();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'reward_redemptions'
+        },
+        (payload) => {
+          console.log('Reward redeemed:', payload);
+          // Refresh rewards when someone redeems to update quantities
+          fetchRewards();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   useEffect(() => {
     filterAndSortRewards();
   }, [rewards, searchTerm, selectedType, selectedRarity, sortBy]);
