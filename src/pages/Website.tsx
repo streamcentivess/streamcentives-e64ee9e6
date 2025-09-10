@@ -553,7 +553,7 @@ const Website = () => {
                     Premium AI Tools
                   </Badge>
                   <h4 className="text-xl font-semibold mb-4">Advanced AI Tools</h4>
-                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                  <p className="text-stone-100 max-w-2xl mx-auto">
                     Leverage the full power of Claude 4 Sonnet + O3 with advanced features including 
                     sentiment analysis, content moderation, batch processing, and real-time streaming.
                   </p>
