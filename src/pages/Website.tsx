@@ -501,8 +501,8 @@ const Website = () => {
                   {aiFeatures.map((feature, index) => (
                     <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-brand-primary/20">
                       <CardHeader>
-                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-4 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
-                          <feature.icon className="w-6 h-6 text-brand-primary" />
+                        <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
+                          <feature.icon className="w-6 h-6 text-blue-400" />
                         </div>
                         <CardTitle className="text-xl text-center">{feature.title}</CardTitle>
                       </CardHeader>
@@ -523,8 +523,8 @@ const Website = () => {
                   {aiAdvantages.map((feature, index) => (
                     <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                       <CardHeader>
-                        <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                          <feature.icon className="w-6 h-6 text-brand-accent" />
+                        <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
+                          <feature.icon className="w-6 h-6 text-blue-400" />
                         </div>
                         <CardTitle className="text-xl text-center">{feature.title}</CardTitle>
                       </CardHeader>
@@ -554,8 +554,8 @@ const Website = () => {
                   {premiumAiFeatures.map((feature, index) => (
                     <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                       <CardHeader className="pb-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
-                          <feature.icon className="w-5 h-5 text-brand-primary" />
+                        <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center mb-3 group-hover:bg-blue-400/20 transition-all mx-auto">
+                          <feature.icon className="w-5 h-5 text-blue-400" />
                         </div>
                         <CardTitle className="text-lg text-center">{feature.title}</CardTitle>
                       </CardHeader>
