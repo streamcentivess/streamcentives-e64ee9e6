@@ -309,8 +309,8 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
-                        <CheckCircle className="w-6 h-6 text-brand-primary" />
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                        <CheckCircle className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-xl">Unlock <span className="text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]">Exclusive Rewards</span></CardTitle>
                     </CardHeader>
@@ -323,8 +323,8 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-brand-primary/10 flex items-center justify-center mb-4 group-hover:bg-brand-primary/20 transition-colors">
-                        <TrendingUp className="w-6 h-6 text-brand-primary" />
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                        <TrendingUp className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-xl">
                         <span className="text-lime-500 drop-shadow-[0_0_8px_rgba(132,204,22,0.8)]">Monetize</span> <span className="text-white">Your Fandom</span>
@@ -348,8 +348,8 @@ const Website = () => {
                 <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                        <BarChart3 className="w-6 h-6 text-brand-accent" />
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                        <BarChart3 className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Climb the Leaderboards</CardTitle>
                     </CardHeader>
@@ -362,8 +362,8 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                        <Users className="w-6 h-6 text-brand-accent" />
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                        <Users className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Team Up in Challenges</CardTitle>
                     </CardHeader>
@@ -376,8 +376,8 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                        <Star className="w-6 h-6 text-brand-accent" />
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                        <Star className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Showcase Your Status</CardTitle>
                     </CardHeader>
@@ -390,8 +390,8 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-brand-accent/10 flex items-center justify-center mb-4 group-hover:bg-brand-accent/20 transition-colors">
-                        <Globe className="w-6 h-6 text-brand-accent" />
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                        <Globe className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Join an Inner Circle</CardTitle>
                     </CardHeader>
@@ -418,8 +418,8 @@ const Website = () => {
                 <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
                   <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                     <CardHeader className="pb-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
-                        <Shield className="w-5 h-5 text-brand-primary" />
+                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all">
+                        <Shield className="w-5 h-5 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Gain Exclusive Access</CardTitle>
                     </CardHeader>
@@ -432,8 +432,8 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                     <CardHeader className="pb-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
-                        <Target className="w-5 h-5 text-brand-primary" />
+                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all">
+                        <Target className="w-5 h-5 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Influence Creative Decisions</CardTitle>
                     </CardHeader>
@@ -446,8 +446,8 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                     <CardHeader className="pb-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
-                        <Brain className="w-5 h-5 text-brand-primary" />
+                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all">
+                        <Brain className="w-5 h-5 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">AI-Powered Personalization</CardTitle>
                     </CardHeader>
@@ -460,8 +460,8 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-background/50 backdrop-blur">
                     <CardHeader className="pb-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 flex items-center justify-center mb-3 group-hover:from-brand-primary/30 group-hover:to-brand-accent/30 transition-all">
-                        <Smartphone className="w-5 h-5 text-brand-primary" />
+                      <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center mb-3 group-hover:bg-blue-400/30 transition-all">
+                        <Smartphone className="w-5 h-5 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg">Real-World Experiences</CardTitle>
                     </CardHeader>
