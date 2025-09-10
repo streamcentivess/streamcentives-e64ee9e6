@@ -411,7 +411,7 @@ const Website = () => {
                     Influence & Access
                   </Badge>
                   <h4 className="text-xl font-semibold mb-4">Go Beyond Passive Listening</h4>
-                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                  <p className="text-stone-100 max-w-2xl mx-auto">
                     Become an active participant in your favorite artist's journey with exclusive access and real influence.
                   </p>
                 </div>
