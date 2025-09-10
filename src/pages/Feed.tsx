@@ -655,13 +655,12 @@ const Feed = () => {
                           <video 
                             controls 
                             className="w-full max-h-96 object-contain"
-                            poster={post.content_url}
+                            preload="metadata"
+                            playsInline
                           >
                             <source src={post.content_url} type={post.content_type} />
+                            Your browser does not support the video tag.
                           </video>
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <Play className="h-16 w-16 text-white/80 drop-shadow-lg" />
-                          </div>
                         </div>
                       ) : (
                         <img 
@@ -872,8 +871,11 @@ const Feed = () => {
                         <video 
                           controls 
                           className="w-full max-h-96 object-contain rounded-xl"
+                          preload="metadata"
+                          playsInline
                         >
                           <source src={repost.posts.content_url} type={repost.posts.content_type} />
+                          Your browser does not support the video tag.
                         </video>
                       ) : (
                         <img 
