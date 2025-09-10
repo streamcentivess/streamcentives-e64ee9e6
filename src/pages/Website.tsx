@@ -566,7 +566,7 @@ const Website = () => {
       </section>
 
       {/* CTA Section */}
-      <section id="signup" className="py-24 bg-gradient-to-r from-brand-primary/10 via-brand-accent/5 to-brand-primary/10">
+      <section id="signup" className="py-24 bg-gradient-to-br from-blue-500/20 via-background to-blue-700/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl lg:text-5xl font-bold mb-6">
