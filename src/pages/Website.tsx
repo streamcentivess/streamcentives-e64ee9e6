@@ -212,7 +212,7 @@ const Website = () => {
             <h1 className="text-4xl lg:text-7xl font-bold mb-6 font-exo">
               <span className="text-white">The Bridge Between</span>
               <span className="block">
-                <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">Fans And Creators.</span>
+                <span className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(96,165,250,0.8)]">Fans And Creators.</span>
               </span>
             </h1>
             <div className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto space-y-3">
