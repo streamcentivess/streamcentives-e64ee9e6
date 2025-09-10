@@ -153,7 +153,7 @@ const SignIn = () => {
               />
             </div>
             
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+            <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 text-white" size="lg" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
             
