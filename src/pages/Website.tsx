@@ -305,7 +305,7 @@ const Website = () => {
                       <CardTitle className="text-xl text-center">Earn <span className="text-yellow-500">X<span className="drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]">P</span></span> for Everything</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-base">
+                      <CardDescription className="text-base text-white">
                         Get rewarded with experience points (XP) for the things you already do—streaming music, buying merch, sharing content, and engaging with campaigns.
                       </CardDescription>
                     </CardContent>
@@ -319,7 +319,7 @@ const Website = () => {
                       <CardTitle className="text-xl text-center">Unlock <span className="text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]">Exclusive Rewards</span></CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-base">
+                      <CardDescription className="text-base text-white">
                         Use your XP to redeem a rich variety of rewards, from digital collectibles and exclusive content to limited-edition physical merchandise.
                       </CardDescription>
                     </CardContent>
@@ -335,7 +335,7 @@ const Website = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-base">
+                      <CardDescription className="text-base text-white">
                         Opt-in to sell or trade your earned rewards with other fans in the marketplace. You can also choose to share your anonymized data with trusted partners and receive a share of the revenue.
                       </CardDescription>
                     </CardContent>
