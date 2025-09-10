@@ -49,7 +49,7 @@ const SignUp = () => {
             />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-sky-700 bg-clip-text text-transparent">
               Join Streamcentives
             </CardTitle>
             <CardDescription className="text-muted-foreground">
