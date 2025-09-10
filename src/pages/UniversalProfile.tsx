@@ -53,10 +53,14 @@ const UniversalProfile = () => {
   const [xpBalance, setXpBalance] = useState(0);
 
   // Check if viewing own profile or another user's profile
-  const viewingUserId = searchParams.get('userId');
-  const viewingUsername = searchParams.get('username') || searchParams.get('user');
-  // If username is provided, assume viewing someone else's profile until resolved
-  const isOwnProfile = viewingUsername ? false : !viewingUserId || viewingUserId === user?.id;
+  const viewingUserId = searchParams.get('userId') || searchParams.get('user');
+  const viewingUsername = searchParams.get('username');
+  // If we have a user parameter, check if it's a UUID (user ID) or username
+  const userParam = searchParams.get('user');
+  const isUUID = userParam && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userParam);
+  const finalUserId = isUUID ? userParam : viewingUserId;
+  const finalUsername = !isUUID && userParam ? userParam : viewingUsername;
+  const isOwnProfile = !finalUserId && !finalUsername || finalUserId === user?.id;
   useEffect(() => {
     if (user) {
       fetchProfile();
@@ -79,7 +83,7 @@ const UniversalProfile = () => {
         }
       }
     }
-  }, [user, viewingUserId, viewingUsername]);
+  }, [user, finalUserId, finalUsername]);
 
   // Set up real-time XP balance updates
   useEffect(() => {
@@ -100,16 +104,14 @@ const UniversalProfile = () => {
     };
   }, [profile?.user_id]);
   const fetchProfile = async () => {
-    const targetUserId = viewingUsername ? null : viewingUserId || user?.id;
-    if (!targetUserId && !viewingUsername) return;
+    const targetUserId = finalUsername ? null : finalUserId || user?.id;
+    if (!targetUserId && !finalUsername) return;
     try {
       let profileRes: any;
-      if (viewingUsername) {
-        profileRes = await supabase.from('public_profiles' as any).select('*').eq('username', viewingUsername).maybeSingle();
-      } else if (isOwnProfile) {
-        profileRes = await supabase.from('profiles').select('*').eq('user_id', targetUserId as string).maybeSingle();
+      if (finalUsername) {
+        profileRes = await supabase.from('profiles').select('*').eq('username', finalUsername).maybeSingle();
       } else {
-        profileRes = await supabase.from('public_profiles' as any).select('*').eq('user_id', targetUserId as string).maybeSingle();
+        profileRes = await supabase.from('profiles').select('*').eq('user_id', targetUserId as string).maybeSingle();
       }
       const {
         data,
@@ -125,7 +127,7 @@ const UniversalProfile = () => {
       } else {
         setProfile(data);
         // If loaded by username, fetch follow stats now that we have user_id
-        if (viewingUsername) {
+        if (finalUsername) {
           fetchFollowStats();
         }
         // Check if current user is following this profile (if not own profile)
