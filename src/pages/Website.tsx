@@ -341,7 +341,11 @@ const Website = () => {
 
               {/* Compete & Connect */}
               <div>
-                <h4 className="text-xl font-semibold mb-6 text-center">Compete & Connect</h4>
+                <div className="text-center mb-6">
+                  <Badge variant="outline" className="text-white bg-blue-400 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.5)]">
+                    Compete & Connect
+                  </Badge>
+                </div>
                 <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
                   Turn your passion into a game and connect with a global community of fans and creators.
                 </p>
