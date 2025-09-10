@@ -356,7 +356,7 @@ const Website = () => {
                 <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-6">
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <BarChart3 className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg text-blue-400 font-exo">Climb the Leaderboards</CardTitle>
@@ -370,7 +370,7 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <Users className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg text-blue-400 font-exo">Team Up in Challenges</CardTitle>
@@ -384,7 +384,7 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <Star className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg text-blue-400 font-exo">Showcase Your Status</CardTitle>
@@ -398,7 +398,7 @@ const Website = () => {
                   
                   <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <Globe className="w-6 h-6 text-blue-400" />
                       </div>
                       <CardTitle className="text-lg text-blue-400 font-exo">Join an Inner Circle</CardTitle>
