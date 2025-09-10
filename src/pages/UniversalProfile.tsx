@@ -1256,7 +1256,7 @@ const UniversalProfile = () => {
                     
                     {/* Top Supporters Grid */}
                     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-                      {followers.slice(0, 12).map((supporter) => (
+                      {supporters.slice(0, 12).map((supporter) => (
                         <div key={supporter.user_id} className="text-center">
                           <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75" onClick={() => viewProfile(supporter.user_id)}>
                             <AvatarImage src={supporter.avatar_url || ''} />
@@ -1269,18 +1269,18 @@ const UniversalProfile = () => {
                           </p>
                         </div>
                       ))}
-                      {followers.length === 0 && (
+                      {supporters.length === 0 && (
                         <div className="col-span-full text-center py-8">
                           <Heart className="h-12 w-12 mx-auto mb-2 opacity-30 text-muted-foreground" />
-                          <p className="text-muted-foreground">No supporters yet. Share your profile to gain followers!</p>
+                          <p className="text-muted-foreground">No supporters yet. Add people to your supporters list!</p>
                         </div>
                       )}
                     </div>
                     
-                    {followers.length > 12 && (
+                    {supporters.length > 12 && (
                       <div className="text-center">
-                        <Button variant="outline" size="sm" onClick={openFollowersList}>
-                          View All {followStats.followers_count} Supporters
+                        <Button variant="outline" size="sm">
+                          View All {supporters.length} Supporters
                         </Button>
                       </div>
                     )}
