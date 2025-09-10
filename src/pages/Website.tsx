@@ -205,11 +205,11 @@ const Website = () => {
               <img src={logoUrl} alt="Streamcentives" className="w-[300px] h-[300px] rounded-full animate-pulse" />
             </div>
             <div className="relative">
-              <Badge variant="outline" className="mb-6 text-2xl px-6 py-3 bg-transparent border-transparent font-space font-bold">
+              <Badge variant="outline" className="mb-6 text-2xl px-6 py-3 bg-transparent border-transparent font-exo font-bold">
                 Streamcentives
               </Badge>
             </div>
-            <h1 className="text-4xl lg:text-7xl font-bold mb-6 font-space">
+            <h1 className="text-4xl lg:text-7xl font-bold mb-6 font-exo">
               <span className="text-white">Unlock</span> <span className="text-white">Your</span>
               <span className="block">
                 <span className="text-fuchsia-500">Fan</span> <span className="text-fuchsia-500">Economy.</span>
