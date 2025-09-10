@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search, Share2, Mail } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search, Share2, Mail, Heart } from 'lucide-react';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { supabase } from '@/integrations/supabase/client';
 import { PostsGrid } from '@/components/PostsGrid';
 import { toast } from '@/hooks/use-toast';
@@ -51,6 +52,8 @@ const UniversalProfile = () => {
   const [userFollowStates, setUserFollowStates] = useState<Record<string, boolean>>({});
   const [postCount, setPostCount] = useState(0);
   const [xpBalance, setXpBalance] = useState(0);
+  const [supporters, setSupporters] = useState<Profile[]>([]);
+  const unreadCount = useUnreadMessages();
 
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId') || searchParams.get('user');
@@ -590,26 +593,28 @@ const UniversalProfile = () => {
   }
   return <div className="min-h-screen bg-background p-4">
       <div className="w-full max-w-4xl mx-auto space-y-6 px-2 sm:px-4">
-        {/* Header */}
-        <div className="flex justify-between items-center gap-2">
-          <div className="flex items-center gap-2 min-w-0 flex-shrink">
-            <img src="/lovable-uploads/streamcentivesloveable.PNG" alt="Streamcentives Logo" className="w-6 h-6 rounded-full flex-shrink-0" />
-            <h1 className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+        {/* Header - Instagram Style */}
+        <div className="flex justify-between items-center gap-2 py-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <img src="/lovable-uploads/streamcentivesloveable.PNG" alt="Streamcentives Logo" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex-shrink-0" />
+            <h1 className="text-base sm:text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
               Streamcentives
             </h1>
           </div>
           <div className="flex gap-1 flex-shrink-0">
-            <Button onClick={() => navigate('/feed')} variant="outline" size="sm" className="flex items-center gap-1 px-2 text-xs">
-              <Search className="h-3 w-3" />
-              <span className="hidden sm:inline">Explore</span>
+            <Button onClick={() => navigate('/feed')} variant="ghost" size="sm" className="p-2">
+              <Search className="h-5 w-5" />
             </Button>
-            {!isOwnProfile && <Button onClick={() => navigate('/universal-profile')} variant="outline" size="sm" className="flex items-center gap-1 px-2 text-xs">
-                <Users className="h-3 w-3" />
-                <span className="hidden sm:inline">My Profile</span>
+            {!isOwnProfile && <Button onClick={() => navigate('/universal-profile')} variant="ghost" size="sm" className="p-2">
+                <Users className="h-5 w-5" />
               </Button>}
-            <Button onClick={() => navigate('/inbox')} variant="outline" size="sm" className="flex items-center gap-1 px-2 text-xs">
-              <Mail className="h-3 w-3" />
-              <span className="hidden sm:inline">Inbox</span>
+            <Button onClick={() => navigate('/inbox')} variant="ghost" size="sm" className="relative p-2">
+              <Mail className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </div>
+              )}
             </Button>
             <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
               <DialogTrigger asChild>
@@ -698,12 +703,12 @@ const UniversalProfile = () => {
           </div>
         </div>
 
-        {/* Search Section */}
+        {/* Search Section - Mobile Optimized */}
         <Card className="card-modern">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Search for users and creators or brands..." value={searchQuery} onChange={handleSearchChange} className="pl-10" />
+              <Input placeholder="Search for users and creators..." value={searchQuery} onChange={handleSearchChange} className="pl-10 h-10 text-sm" />
               {searching && <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                 </div>}
@@ -746,115 +751,119 @@ const UniversalProfile = () => {
           </CardContent>
         </Card>
 
-        {/* Profile Card */}
+        {/* Profile Card - Instagram Style */}
         <Card className="card-modern">
-          <CardContent className="p-4 md:p-6">
-            <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-              {/* Avatar Section */}
-              <div className="flex-shrink-0 text-center">
-                <div className="relative">
-                  <Avatar className="h-20 w-20 md:h-32 md:w-32 mx-auto">
-                    <AvatarImage src={profile.avatar_url || ''} />
-                    <AvatarFallback className="text-2xl">
-                      {profile.display_name?.[0] || user?.email?.[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" id="avatar-upload" />
-                  <Button size="sm" className="absolute bottom-0 right-0 rounded-full h-8 w-8 p-0 bg-transparent border-transparent hover:bg-white/10" onClick={() => document.getElementById('avatar-upload')?.click()} disabled={uploading}>
-                    <Camera className="h-4 w-4" />
-                  </Button>
+          <CardContent className="p-4">
+            {/* Profile Header Row */}
+            <div className="flex items-center gap-4 mb-4">
+              {/* Avatar */}
+              <div className="relative">
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
+                  <AvatarImage src={profile.avatar_url || ''} />
+                  <AvatarFallback className="text-xl">
+                    {profile.display_name?.[0] || user?.email?.[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {isOwnProfile && (
+                  <>
+                    <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" id="avatar-upload" />
+                    <Button size="sm" className="absolute -bottom-1 -right-1 rounded-full h-6 w-6 p-0 bg-primary hover:bg-primary/90" onClick={() => document.getElementById('avatar-upload')?.click()} disabled={uploading}>
+                      <Camera className="h-3 w-3" />
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              {/* Stats - Instagram Layout */}
+              <div className="flex-1 grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-lg sm:text-xl font-bold">{postCount}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Posts</div>
                 </div>
-                
-                {/* Bio and Details - Moved under avatar */}
-                <div className="space-y-1 md:space-y-2 text-sm text-muted-foreground text-center mt-2 md:mt-4">
-                  {profile.bio && <p>{profile.bio}</p>}
-                  <div className="flex items-center justify-center gap-1">
-                    <Calendar className="h-4 w-4" />
+                <div className="cursor-pointer hover:opacity-75" onClick={openFollowersList}>
+                  <div className="text-lg sm:text-xl font-bold">{followStats.followers_count}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Followers</div>
+                </div>
+                <div className="cursor-pointer hover:opacity-75" onClick={openFollowingList}>
+                  <div className="text-lg sm:text-xl font-bold">{followStats.following_count}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Following</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Info */}
+            <div className="space-y-3">
+              <div>
+                <h2 className="text-lg font-bold">
+                  {profile.display_name || 'New User'}
+                </h2>
+                {profile.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}
+              </div>
+              
+              {/* Bio and Details */}
+              <div className="space-y-2">
+                {profile.bio && <p className="text-sm">{profile.bio}</p>}
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
                     <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3 w-3 text-yellow-500" />
+                    <span className="text-yellow-500 font-medium">{xpBalance} XP</span>
+                  </div>
                 </div>
               </div>
 
-                {/* Profile Info */}
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
-                    <div>
-                      <h2 className="text-2xl font-bold">
-                        {profile.display_name || 'New User'}
-                      </h2>
-                      {profile.username && <p className="text-muted-foreground">@{profile.username}</p>}
-                    </div>
-                    
-                    <div className="flex items-center gap-2 mt-2 md:mt-0">
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Star className="h-3 w-3" />
-                        Bronze Tier
-                      </Badge>
-                      {profile.spotify_connected && <Badge className="bg-[#1db954] hover:bg-[#1ed760] text-white">
-                          <Music className="h-3 w-3 mr-1" />
-                          Spotify Connected
-                        </Badge>}
-                    </div>
-                  </div>
+              {/* Badges */}
+              <div className="flex gap-2 flex-wrap">
+                <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                  <Star className="h-3 w-3" />
+                  Bronze Tier
+                </Badge>
+                {profile.spotify_connected && <Badge className="bg-[#1db954] hover:bg-[#1ed760] text-white text-xs">
+                    <Music className="h-3 w-3 mr-1" />
+                    Spotify Connected
+                  </Badge>}
+              </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 mb-4">
-                    {isOwnProfile ? <Button onClick={() => navigate('/profile/edit')} className="bg-gradient-primary hover:opacity-90">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Edit Profile
-                      </Button> : <>
-                        <Button onClick={handleFollowToggle} disabled={followLoading} variant={following ? "outline" : "default"} className={following ? "" : "bg-gradient-primary hover:opacity-90"}>
-                          {following ? <>
-                              <UserMinus className="h-4 w-4 mr-2" />
-                              Unfollow
-                            </> : <>
-                              <UserPlus className="h-4 w-4 mr-2" />
-                              Follow
-                            </>}
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                {isOwnProfile ? <Button onClick={() => navigate('/profile/edit')} className="flex-1 bg-gradient-primary hover:opacity-90">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button> : <>
+                    <Button onClick={handleFollowToggle} disabled={followLoading} variant={following ? "outline" : "default"} className={`flex-1 ${following ? "" : "bg-gradient-primary hover:opacity-90"}`}>
+                      {following ? <>
+                          <UserMinus className="h-4 w-4 mr-2" />
+                          Unfollow
+                        </> : <>
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Follow
+                        </>}
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="flex-1">
+                          <MessageCircle className="h-4 w-4 mr-2" />
+                          Message
                         </Button>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline">
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                              Message
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>Send Message</DialogTitle>
-                            </DialogHeader>
-                            <MessageCreator recipientId={profile.user_id} recipientName={profile.display_name || 'User'} />
-                          </DialogContent>
-                        </Dialog>
-                      </>}
-                  </div>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Send Message</DialogTitle>
+                        </DialogHeader>
+                        <MessageCreator recipientId={profile.user_id} recipientName={profile.display_name || 'User'} />
+                      </DialogContent>
+                    </Dialog>
+                  </>}
+              </div>
 
-                 {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{postCount}</div>
-                    <div className="text-sm text-muted-foreground">Posts</div>
-                  </div>
-                  <div className="text-center cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors" onClick={openFollowersList}>
-                    <div className="text-2xl font-bold">{followStats.followers_count}</div>
-                    <div className="text-sm text-muted-foreground">Followers</div>
-                  </div>
-                  <div className="text-center cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors" onClick={openFollowingList}>
-                    <div className="text-2xl font-bold">{followStats.following_count}</div>
-                    <div className="text-sm text-muted-foreground">Following</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-500">{xpBalance}</div>
-                    <div className="text-sm text-muted-foreground">XP</div>
-                  </div>
-                </div>
-
-                {/* Connect Spotify Button */}
-                {!profile.spotify_connected && <Button onClick={connectSpotify} className="mt-4 bg-[#1db954] hover:bg-[#1ed760] text-white">
-                    <Music className="h-4 w-4 mr-2" />
+              {/* Connect Spotify Button */}
+              {!profile.spotify_connected && isOwnProfile && <Button onClick={connectSpotify} className="w-full mt-3 bg-[#1db954] hover:bg-[#1ed760] text-white">
+                  <Music className="h-4 w-4 mr-2" />
                     Connect Spotify
                   </Button>}
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -863,9 +872,9 @@ const UniversalProfile = () => {
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="campaigns">Campaigns</TabsTrigger> 
             <TabsTrigger value="rewards">Rewards</TabsTrigger>
-            <TabsTrigger value="stats">Stats</TabsTrigger>
+            <TabsTrigger value="supporters">My Supporters</TabsTrigger>
           </TabsList>
           
           <TabsContent value="posts" className="mt-6">
@@ -986,13 +995,62 @@ const UniversalProfile = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="stats" className="mt-6">
+          <TabsContent value="supporters" className="mt-6">
             <Card className="card-modern">
-              <CardContent className="p-6 text-center">
-                <div className="text-muted-foreground">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Statistics will appear here as you engage with the platform.</p>
-                </div>
+              <CardContent className="p-6">
+                {isOwnProfile ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Heart className="h-5 w-5 text-red-500" />
+                        My Top Supporters
+                      </h3>
+                      <Button size="sm" variant="outline" onClick={openFollowersList}>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Manage
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Showcase your most supportive fans and friends. This feature shows your top followers based on engagement.
+                    </p>
+                    
+                    {/* Top Supporters Grid */}
+                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                      {followers.slice(0, 12).map((supporter) => (
+                        <div key={supporter.user_id} className="text-center">
+                          <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75" onClick={() => viewProfile(supporter.user_id)}>
+                            <AvatarImage src={supporter.avatar_url || ''} />
+                            <AvatarFallback className="text-xs">
+                              {supporter.display_name?.[0] || supporter.username?.[0]?.toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="text-xs text-muted-foreground mt-1 truncate">
+                            {supporter.display_name?.split(' ')[0] || supporter.username || 'User'}
+                          </p>
+                        </div>
+                      ))}
+                      {followers.length === 0 && (
+                        <div className="col-span-full text-center py-8">
+                          <Heart className="h-12 w-12 mx-auto mb-2 opacity-30 text-muted-foreground" />
+                          <p className="text-muted-foreground">No supporters yet. Share your profile to gain followers!</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {followers.length > 12 && (
+                      <div className="text-center">
+                        <Button variant="outline" size="sm" onClick={openFollowersList}>
+                          View All {followStats.followers_count} Supporters
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Heart className="h-12 w-12 mx-auto mb-2 opacity-30 text-muted-foreground" />
+                    <p className="text-muted-foreground">This user's supporters list is private.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
