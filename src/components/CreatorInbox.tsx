@@ -72,7 +72,9 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
           table: 'messages',
           filter: `recipient_id=eq.${user.id}`
         },
-        () => {
+        (payload) => {
+          console.log('Realtime message change:', payload);
+          // Immediately refetch conversations on any change
           fetchConversations();
         }
       )
@@ -174,6 +176,8 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      console.log('Deleting conversation:', conversationId);
+
       // Delete all messages in the conversation where user is recipient
       const { error } = await supabase
         .from('messages')
@@ -181,20 +185,25 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
         .eq('recipient_id', user.id)
         .eq('conversation_id', conversationId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
 
-      // Immediately update the local state to remove the conversation
-      setConversations(prevConversations => 
-        prevConversations.filter(conv => conv.conversation_id !== conversationId)
-      );
+      console.log('Delete successful, updating UI');
+
+      // Immediately update the local state
+      setConversations(prevConversations => {
+        const filtered = prevConversations.filter(conv => conv.conversation_id !== conversationId);
+        console.log('Filtered conversations:', filtered.length, 'from', prevConversations.length);
+        return filtered;
+      });
 
       toast({
         title: "Conversation deleted",
         description: "The conversation has been deleted successfully.",
       });
 
-      // Also refetch to ensure consistency
-      fetchConversations();
     } catch (error: any) {
       console.error('Error deleting conversation:', error);
       toast({
