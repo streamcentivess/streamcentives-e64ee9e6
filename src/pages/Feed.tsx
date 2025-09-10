@@ -13,6 +13,7 @@ import AppNavigation from '@/components/AppNavigation';
 import CommunityUpload from '@/components/CommunityUpload';
 import UserProfileSearch from '@/components/UserProfileSearch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { 
   Heart, 
   MessageCircle, 
@@ -86,6 +87,8 @@ const Feed = () => {
   const [repostPage, setRepostPage] = useState(0);
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [sharePostData, setSharePostData] = useState<{ post: Post; shareText: string; shareUrl: string } | null>(null);
+  const [showCommentInput, setShowCommentInput] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState('');
   const POSTS_PER_PAGE = 5;
 
   useEffect(() => {
@@ -349,6 +352,61 @@ const Feed = () => {
       toast({
         title: "Error",
         description: "Failed to like post",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleComment = async (postId: string) => {
+    if (!user) return;
+
+    if (showCommentInput === postId) {
+      // Hide comment input if already showing for this post
+      setShowCommentInput(null);
+      setNewComment('');
+    } else {
+      // Show comment input for this post
+      setShowCommentInput(postId);
+      setNewComment('');
+    }
+  };
+
+  const submitComment = async (postId: string) => {
+    if (!user || !newComment.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('post_comments')
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          content: newComment.trim()
+        });
+
+      if (error) throw error;
+
+      // Update comment count in UI
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? { ...post, comments: post.comments + 1 }
+            : post
+        )
+      );
+
+      setNewComment('');
+      setShowCommentInput(null);
+
+      toast({
+        title: "Success",
+        description: "Comment added successfully"
+      });
+
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add comment",
         variant: "destructive"
       });
     }
@@ -974,7 +1032,10 @@ const Feed = () => {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="flex items-center gap-2 hover:bg-blue-50 hover:text-blue-500 transition-all rounded-full"
+                          className={`flex items-center gap-2 hover:bg-blue-50 hover:text-blue-500 transition-all rounded-full ${
+                            showCommentInput === post.id ? 'text-blue-500 bg-blue-50' : ''
+                          }`}
+                          onClick={() => handleComment(post.id)}
                         >
                           <MessageCircle className="h-5 w-5" />
                           {post.comments}
@@ -1002,6 +1063,33 @@ const Feed = () => {
                         <Share2 className="h-5 w-5" />
                       </Button>
                     </div>
+
+                    {/* Comment Input */}
+                    {showCommentInput === post.id && (
+                      <div className="pt-3 border-t">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Write a comment..."
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                submitComment(post.id);
+                              }
+                            }}
+                            className="flex-1"
+                          />
+                          <Button 
+                            size="sm" 
+                            onClick={() => submitComment(post.id)}
+                            disabled={!newComment.trim()}
+                          >
+                            Post
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))
