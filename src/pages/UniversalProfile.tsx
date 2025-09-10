@@ -597,6 +597,10 @@ const UniversalProfile = () => {
             </h1>
           </div>
           <div className="flex gap-1 flex-shrink-0">
+            <Button onClick={() => navigate('/feed')} variant="outline" size="sm" className="flex items-center gap-1 px-2 text-xs">
+              <Search className="h-3 w-3" />
+              <span className="hidden sm:inline">Explore</span>
+            </Button>
             {!isOwnProfile && <Button onClick={() => navigate('/universal-profile')} variant="outline" size="sm" className="flex items-center gap-1 px-2 text-xs">
                 <Users className="h-3 w-3" />
                 <span className="hidden sm:inline">My Profile</span>
