@@ -302,7 +302,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <Zap className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-xl">Earn <span className="text-yellow-500">X<span className="drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]">P</span></span> for Everything</CardTitle>
+                      <CardTitle className="text-xl text-center">Earn <span className="text-yellow-500">X<span className="drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]">P</span></span> for Everything</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base">
@@ -316,7 +316,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <CheckCircle className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-xl">Unlock <span className="text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]">Exclusive Rewards</span></CardTitle>
+                      <CardTitle className="text-xl text-center">Unlock <span className="text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]">Exclusive Rewards</span></CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base">
@@ -330,7 +330,7 @@ const Website = () => {
                       <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center mb-4 group-hover:bg-blue-400/20 transition-colors mx-auto">
                         <TrendingUp className="w-6 h-6 text-blue-400" />
                       </div>
-                      <CardTitle className="text-xl">
+                      <CardTitle className="text-xl text-center">
                         <span className="text-lime-500 drop-shadow-[0_0_8px_rgba(132,204,22,0.8)]">Monetize</span> <span className="text-white">Your Fandom</span>
                       </CardTitle>
                     </CardHeader>
