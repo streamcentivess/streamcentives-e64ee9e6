@@ -208,7 +208,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId,
               <div className={`flex-1 max-w-[70%] ${isOwnMessage ? 'text-right' : 'text-left'}`}>
                 <Card className={`${isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                   <CardContent className="p-3">
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                     <div className="flex items-center gap-2 mt-2 text-xs opacity-70">
                       <span>{format(new Date(message.created_at), 'HH:mm')}</span>
                       {message.xp_cost > 0 && (
