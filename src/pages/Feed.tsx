@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import AppNavigation from '@/components/AppNavigation';
 import CommunityUpload from '@/components/CommunityUpload';
+import UserProfileSearch from '@/components/UserProfileSearch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Heart, 
   MessageCircle, 
@@ -82,6 +84,8 @@ const Feed = () => {
   const [hasMoreReposts, setHasMoreReposts] = useState(true);
   const [page, setPage] = useState(0);
   const [repostPage, setRepostPage] = useState(0);
+  const [showUserSearch, setShowUserSearch] = useState(false);
+  const [sharePostData, setSharePostData] = useState<{ post: Post; shareText: string; shareUrl: string } | null>(null);
   const POSTS_PER_PAGE = 5;
 
   useEffect(() => {
@@ -455,9 +459,9 @@ const Feed = () => {
     if (!choice || choice === 'cancel') return;
 
     if (choice === 'StreamCentives DM') {
-      // Navigate to inbox with pre-filled message content
-      const messageContent = `${shareText}\n\n${shareUrl}`;
-      navigate(`/inbox?share=true&content=${encodeURIComponent(messageContent)}&postId=${post.id}`);
+      // Show user search modal
+      setSharePostData({ post, shareText, shareUrl });
+      setShowUserSearch(true);
       return;
     }
 
@@ -481,6 +485,17 @@ const Feed = () => {
         window.open(selectedOption.url, '_blank', 'noopener,noreferrer');
       }
     }
+  };
+
+  const handleUserSelect = (selectedUser: any) => {
+    if (!sharePostData) return;
+    
+    const messageContent = `${sharePostData.shareText}\n\n${sharePostData.shareUrl}`;
+    setShowUserSearch(false);
+    setSharePostData(null);
+    
+    // Navigate to inbox with recipient and pre-filled content
+    navigate(`/inbox?recipient=${selectedUser.user_id}&content=${encodeURIComponent(messageContent)}&postId=${sharePostData.post.id}`);
   };
 
   const handleRepost = async (postId: string) => {
@@ -1053,6 +1068,23 @@ const Feed = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* User Search Modal */}
+      <Dialog open={showUserSearch} onOpenChange={setShowUserSearch}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              💌 Send to StreamCentives DM
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <UserProfileSearch 
+              onProfileSelect={handleUserSelect}
+              className="max-h-[60vh] overflow-y-auto"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
