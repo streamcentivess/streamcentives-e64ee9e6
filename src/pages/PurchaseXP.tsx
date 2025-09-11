@@ -79,7 +79,7 @@ export default function PurchaseXP() {
               Power Up with <span className="text-cyan-400">XP</span>
             </h1>
             <p className="text-blue-200 text-xl max-w-2xl mx-auto">
-              Elevate your StreamCents experience. Purchase XP to message creators, elevate your exclusive rewards, and level up your fan journey.
+              Elevate your Streamcentive experience. Purchase XP to message creators, elevate your exclusive rewards, and level up your fan journey.
             </p>
           </div>
         </div>
