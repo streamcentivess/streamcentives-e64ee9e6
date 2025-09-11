@@ -297,7 +297,10 @@ export type Database = {
           image_url: string | null
           is_featured: boolean | null
           max_participants: number | null
+          required_listen_duration_seconds: number | null
           requirements: string | null
+          spotify_artist_id: string | null
+          spotify_artist_url: string | null
           start_date: string
           status: string
           tags: string[] | null
@@ -319,7 +322,10 @@ export type Database = {
           image_url?: string | null
           is_featured?: boolean | null
           max_participants?: number | null
+          required_listen_duration_seconds?: number | null
           requirements?: string | null
+          spotify_artist_id?: string | null
+          spotify_artist_url?: string | null
           start_date: string
           status?: string
           tags?: string[] | null
@@ -341,7 +347,10 @@ export type Database = {
           image_url?: string | null
           is_featured?: boolean | null
           max_participants?: number | null
+          required_listen_duration_seconds?: number | null
           requirements?: string | null
+          spotify_artist_id?: string | null
+          spotify_artist_url?: string | null
           start_date?: string
           status?: string
           tags?: string[] | null

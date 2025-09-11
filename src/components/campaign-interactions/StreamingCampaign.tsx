@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Music, ExternalLink, Check, Headphones } from 'lucide-react';
+import { Music, ExternalLink, Check, Headphones, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -14,6 +14,8 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
   const [completed, setCompleted] = useState(false);
   const [spotifyAccount, setSpotifyAccount] = useState<any>(null);
   const [streamed, setStreamed] = useState(false);
+  const [listenProgress, setListenProgress] = useState(0);
+  const [isTracking, setIsTracking] = useState(false);
 
   useEffect(() => {
     // Check if user has Spotify connected
@@ -70,14 +72,66 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
   };
 
   const openSpotify = () => {
-    // For now, open Spotify web player - in the future, this could use the Spotify API
-    // to open a specific track/album/playlist from the creator
-    window.open('https://open.spotify.com/search/' + encodeURIComponent(campaign.title), '_blank');
+    const spotifyUrl = campaign.spotify_artist_url || 
+      `https://open.spotify.com/search/${encodeURIComponent(campaign.title)}`;
     
-    // Auto-complete after a delay (simulating listening time)
-    setTimeout(() => {
-      setStreamed(true);
-    }, 3000);
+    // Open Spotify in new tab with return URL
+    const returnUrl = `${window.location.origin}/fan-campaigns?campaign=${campaign.id}`;
+    const fullUrl = `${spotifyUrl}${spotifyUrl.includes('?') ? '&' : '?'}utm_source=streamcentives&return=${encodeURIComponent(returnUrl)}`;
+    
+    window.open(fullUrl, '_blank');
+    
+    // Start tracking when user opens Spotify
+    setIsTracking(true);
+    startListenTracking();
+  };
+
+  const startListenTracking = () => {
+    // Simulate listening progress for now
+    // In a real implementation, this would integrate with Spotify Web API
+    const duration = (campaign.required_listen_duration_seconds || 30) * 1000;
+    const interval = 100; // Update every 100ms
+    
+    let elapsed = 0;
+    const tracker = setInterval(() => {
+      elapsed += interval;
+      const progress = Math.min(100, (elapsed / duration) * 100);
+      setListenProgress(progress);
+      
+      if (progress >= 100) {
+        clearInterval(tracker);
+        setStreamed(true);
+        setIsTracking(false);
+        
+        // Record the listen
+        recordListen();
+      }
+    }, interval);
+  };
+
+  const recordListen = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user?.user) return;
+
+      // Call the record-listen function
+      const { error } = await supabase.functions.invoke('record-listen', {
+        body: {
+          creator_user_id: campaign.creator_id,
+          track_id: campaign.spotify_artist_id || 'unknown',
+          track_name: campaign.title,
+          artist_name: 'Creator',
+          duration_ms: (campaign.required_listen_duration_seconds || 30) * 1000,
+          progress_ms: (campaign.required_listen_duration_seconds || 30) * 1000,
+        }
+      });
+
+      if (error) {
+        console.error('Error recording listen:', error);
+      }
+    } catch (error) {
+      console.error('Error in recordListen:', error);
+    }
   };
 
   if (completed) {
@@ -124,30 +178,65 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
             </div>
           )}
 
+          {isTracking && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Listening Progress</span>
+                <span>{Math.round(listenProgress)}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div 
+                  className="bg-green-600 h-2 rounded-full transition-all duration-100"
+                  style={{ width: `${listenProgress}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Keep the music playing to complete the campaign
+              </p>
+            </div>
+          )}
+
           <div className="space-y-3">
             <Button 
               onClick={openSpotify}
               className="w-full bg-green-600 hover:bg-green-700 text-white"
+              disabled={isTracking}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              Stream on Spotify
+              {campaign.spotify_artist_url ? "Visit Artist on Spotify" : "Search on Spotify"}
             </Button>
 
-            {streamed && (
+            {streamed && !isTracking && (
               <Button 
                 onClick={handleStreamComplete}
                 className="w-full"
                 variant="outline"
               >
                 <Headphones className="h-4 w-4 mr-2" />
-                I've Finished Listening - Complete Campaign
+                Complete Campaign - Earn {campaign.xp_reward} XP
               </Button>
             )}
           </div>
 
           <div className="text-center text-xs text-muted-foreground">
-            Play the creator's music for at least 30 seconds to qualify
+            Play the creator's music for at least {campaign.required_listen_duration_seconds || 30} seconds to qualify
           </div>
+          
+          {campaign.spotify_artist_url && (
+            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+              <p className="text-xs text-muted-foreground mb-1">Creator's Spotify:</p>
+              <a 
+                href={campaign.spotify_artist_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+              >
+                <Music className="h-3 w-3" />
+                Visit Official Artist Page
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

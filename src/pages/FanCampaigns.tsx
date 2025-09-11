@@ -113,6 +113,29 @@ const FanCampaigns = () => {
     };
   }, [user]);
 
+  // Check for return from Spotify
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const campaignId = urlParams.get('campaign');
+    
+    if (campaignId && campaigns.length > 0) {
+      // Remove the parameter from URL
+      window.history.replaceState({}, '', '/fan-campaigns');
+      
+      // Show welcome back message
+      toast({
+        title: "Welcome back from Spotify!",
+        description: "Complete your streaming campaign to earn XP",
+      });
+      
+      // Auto-open the campaign details
+      const campaign = campaigns.find(c => c.id === campaignId);
+      if (campaign) {
+        setSelectedCampaign(campaign);
+      }
+    }
+  }, [campaigns]);
+
   const fetchCampaigns = async () => {
     if (!user) return;
     
