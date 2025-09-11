@@ -57,6 +57,7 @@ const Marketplace = () => {
 
   const fetchRewards = async () => {
     try {
+      console.log('Fetching rewards...');
       const { data, error } = await supabase
         .from('rewards')
         .select(`
@@ -69,7 +70,14 @@ const Marketplace = () => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('Supabase response:', { data, error });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Setting rewards:', data);
       setRewards((data as any) || []);
     } catch (error) {
       console.error('Error fetching rewards:', error);
