@@ -40,31 +40,92 @@ export default function SettingsTab() {
     }
   }, [user]);
 
+  const fetchPurchaseHistory = async () => {
+    if (!user) return;
+    
+    const { data: purchaseData, error: purchaseError } = await supabase
+      .from('xp_purchases')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('purchase_date', { ascending: false });
+
+    if (purchaseError) {
+      console.error('Error fetching purchases:', purchaseError);
+    } else {
+      setPurchases(purchaseData || []);
+    }
+  };
+
+  const fetchXPBalance = async () => {
+    if (!user) return;
+    
+    const { data: xpData, error: xpError } = await supabase
+      .from('user_xp_balances')
+      .select('current_xp, total_earned_xp, total_spent_xp')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (xpError && xpError.code !== 'PGRST116') {
+      console.error('Error fetching XP balance:', xpError);
+    } else {
+      setXpBalance(xpData || { current_xp: 0, total_earned_xp: 0, total_spent_xp: 0 });
+    }
+  };
+
+  // Set up real-time updates for XP balance and purchases
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    // XP balance real-time updates
+    const xpChannel = supabase
+      .channel('xp-balance-updates-settings')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_xp_balances',
+        filter: `user_id=eq.${user.id}`
+      }, (payload: any) => {
+        console.log('Settings XP balance updated:', payload);
+        if (payload.new) {
+          setXpBalance({
+            current_xp: payload.new.current_xp || 0,
+            total_earned_xp: payload.new.total_earned_xp || 0,
+            total_spent_xp: payload.new.total_spent_xp || 0
+          });
+        }
+      })
+      .subscribe();
+
+    // Purchase history real-time updates
+    const purchaseChannel = supabase
+      .channel('purchase-updates-settings')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'xp_purchases',
+        filter: `user_id=eq.${user.id}`
+      }, (payload: any) => {
+        console.log('Settings purchase history updated:', payload);
+        // Refresh purchase data when new purchases are made
+        fetchPurchaseHistory();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(xpChannel);
+      supabase.removeChannel(purchaseChannel);
+    };
+  }, [user?.id]);
+
   const fetchUserData = async () => {
     if (!user) return;
     
     setLoading(true);
     try {
-      // Fetch purchase history
-      const { data: purchaseData, error: purchaseError } = await supabase
-        .from('xp_purchases')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('purchase_date', { ascending: false });
-
-      if (purchaseError) throw purchaseError;
-
-      // Fetch XP balance
-      const { data: xpData, error: xpError } = await supabase
-        .from('user_xp_balances')
-        .select('current_xp, total_earned_xp, total_spent_xp')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (xpError && xpError.code !== 'PGRST116') throw xpError;
-
-      setPurchases(purchaseData || []);
-      setXpBalance(xpData || { current_xp: 0, total_earned_xp: 0, total_spent_xp: 0 });
+      await Promise.all([
+        fetchPurchaseHistory(),
+        fetchXPBalance()
+      ]);
     } catch (error: any) {
       console.error('Error fetching user data:', error);
       toast({
@@ -148,7 +209,23 @@ export default function SettingsTab() {
                   <p className="text-sm text-muted-foreground">Total Spent</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{formatCurrency(getTotalSpent())}</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <p className="text-2xl font-bold text-blue-600">{formatCurrency(getTotalSpent())}</p>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-6 w-6 p-0 hover:bg-blue-100"
+                      onClick={() => {
+                        fetchUserData();
+                        toast({
+                          title: "Refreshed",
+                          description: "Purchase data updated",
+                        });
+                      }}
+                    >
+                      <Receipt className="h-3 w-3 text-blue-600" />
+                    </Button>
+                  </div>
                   <p className="text-sm text-muted-foreground">Total Purchased</p>
                 </div>
               </div>
