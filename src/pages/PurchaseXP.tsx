@@ -1,9 +1,51 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Zap } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+// Custom XP Coin component
+const XPCoin = ({ className }: { className?: string }) => (
+  <div className={`relative inline-flex items-center justify-center ${className}`}>
+    <svg
+      viewBox="0 0 32 32"
+      className="w-full h-full"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Outer gold ring */}
+      <circle
+        cx="16"
+        cy="16"
+        r="15"
+        stroke="#FFD700"
+        strokeWidth="2"
+        fill="#FFC107"
+        className="drop-shadow-lg"
+      />
+      {/* Inner coin body */}
+      <circle
+        cx="16"
+        cy="16"
+        r="12"
+        fill="#FFEB3B"
+        stroke="#FFD700"
+        strokeWidth="1"
+      />
+      {/* XP text */}
+      <text
+        x="16"
+        y="20"
+        textAnchor="middle"
+        className="text-[10px] font-bold fill-amber-800"
+        fontFamily="Arial, sans-serif"
+      >
+        XP
+      </text>
+    </svg>
+  </div>
+);
 
 const XP_PACKAGES = [
   {
@@ -104,7 +146,7 @@ export default function PurchaseXP() {
                     <div className="relative w-20 h-20">
                       <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400/20 to-blue-500/20 border border-cyan-400/30"></div>
                       <div className="absolute inset-2 rounded-full bg-gradient-to-br from-cyan-400/40 to-blue-500/40 flex items-center justify-center">
-                        <Zap className="h-8 w-8 text-cyan-300" />
+                        <XPCoin className="h-8 w-8" />
                       </div>
                     </div>
                   </div>
@@ -133,7 +175,7 @@ export default function PurchaseXP() {
                     </>
                   ) : (
                     <>
-                      <Zap className="mr-2 h-5 w-5" />
+                      <XPCoin className="h-5 w-5" />
                       Get {pkg.xp.toLocaleString()} XP
                     </>
                   )}
@@ -159,7 +201,7 @@ export default function PurchaseXP() {
             <div className="group">
               <div className="relative mb-6">
                 <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Zap className="h-8 w-8 text-cyan-300" />
+                  <XPCoin className="h-8 w-8" />
                 </div>
                 <div className="absolute inset-0 bg-cyan-400/10 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
@@ -169,7 +211,7 @@ export default function PurchaseXP() {
             <div className="group">
               <div className="relative mb-6">
                 <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Zap className="h-8 w-8 text-cyan-300" />
+                  <XPCoin className="h-8 w-8" />
                 </div>
                 <div className="absolute inset-0 bg-cyan-400/10 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
@@ -179,7 +221,7 @@ export default function PurchaseXP() {
             <div className="group">
               <div className="relative mb-6">
                 <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-cyan-400/20 to-blue-500/20 border border-cyan-400/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Zap className="h-8 w-8 text-cyan-300" />
+                  <XPCoin className="h-8 w-8" />
                 </div>
                 <div className="absolute inset-0 bg-cyan-400/10 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
