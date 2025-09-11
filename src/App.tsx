@@ -32,7 +32,7 @@ import PurchaseXP from "./pages/PurchaseXP";
 import XPPurchaseSuccess from "./pages/XPPurchaseSuccess";
 import TermsConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-
+import AwardXP from "./pages/AwardXP";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -48,6 +48,7 @@ const App = () => (
             <Route path="/team" element={<Team />} />
             <Route path="/purchase-xp" element={<PurchaseXP />} />
             <Route path="/xp-purchase-success" element={<XPPurchaseSuccess />} />
+            <Route path="/award-xp" element={<ProtectedRoute><AwardXP /></ProtectedRoute>} />
             <Route path="/terms-conditions" element={<TermsConditions />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             
