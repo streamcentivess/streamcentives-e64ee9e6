@@ -370,11 +370,7 @@ const UniversalProfile = () => {
             cash_reward,
             end_date,
             image_url,
-            creator_id,
-            profiles!campaigns_creator_id_fkey (
-              display_name,
-              avatar_url
-            )
+            creator_id
           )
         `)
         .eq('user_id', targetUserId)
@@ -1236,21 +1232,30 @@ const UniversalProfile = () => {
                 />
                 
                 {/* Create/Join Campaign CTA */}
-                {joinedCampaigns.length === 0 && isOwnProfile && (
+                {joinedCampaigns.length === 0 && (
                   <div className="mt-6 pt-6 border-t">
                     <div className="text-center space-y-4">
-                      {userRole === 'creator' ? (
-                        <div className="space-y-4">
-                          <p className="text-muted-foreground">No campaigns created yet. Start building your community with your first campaign!</p>
-                          <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
-                            Create Campaign
-                          </Button>
-                        </div>
+                      {isOwnProfile ? (
+                        userRole === 'creator' ? (
+                          <div className="space-y-4">
+                            <p className="text-muted-foreground">No campaigns created yet. Start building your community with your first campaign!</p>
+                            <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
+                              Create Campaign
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <p className="text-muted-foreground">No campaigns joined yet. Discover and join campaigns to start earning XP!</p>
+                            <Button onClick={() => navigate('/fan-campaigns')} className="bg-gradient-primary hover:opacity-90">
+                              Join Campaigns
+                            </Button>
+                          </div>
+                        )
                       ) : (
                         <div className="space-y-4">
-                          <p className="text-muted-foreground">No campaigns joined yet. Discover and join campaigns to start earning XP!</p>
+                          <p className="text-muted-foreground">This user hasn't joined any campaigns yet.</p>
                           <Button onClick={() => navigate('/fan-campaigns')} className="bg-gradient-primary hover:opacity-90">
-                            Join Campaigns
+                            Discover Campaigns
                           </Button>
                         </div>
                       )}

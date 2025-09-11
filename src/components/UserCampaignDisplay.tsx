@@ -18,10 +18,7 @@ interface Campaign {
   cash_reward: number | null;
   end_date: string | null;
   image_url: string | null;
-  profiles: {
-    display_name: string;
-    avatar_url: string | null;
-  } | null;
+  creator_id: string;
 }
 
 interface CampaignParticipant {
@@ -51,6 +48,14 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
           <p className="text-muted-foreground">
             {isOwnProfile ? "You haven't joined any campaigns yet" : "This user hasn't joined any campaigns yet"}
           </p>
+          {!isOwnProfile && (
+            <Button
+              onClick={() => navigate('/fan-campaigns')}
+              className="mt-4 bg-gradient-primary hover:opacity-90"
+            >
+              Discover Campaigns
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -64,6 +69,23 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
       toast({
         title: "Sign in required",
         description: "Please sign in to join campaigns",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if user has already joined this campaign
+    const { data: existingParticipation } = await supabase
+      .from('campaign_participants')
+      .select('id')
+      .eq('campaign_id', campaignId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existingParticipation) {
+      toast({
+        title: "Already joined",
+        description: "You're already participating in this campaign!",
         variant: "destructive"
       });
       return;
@@ -156,6 +178,11 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
                             <Zap className="h-3 w-3" />
                             {participation.campaigns.xp_reward} XP earned
                           </span>
+                          {participation.campaigns.cash_reward && (
+                            <span className="text-xs text-muted-foreground">
+                              ${participation.campaigns.cash_reward} cash reward
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
