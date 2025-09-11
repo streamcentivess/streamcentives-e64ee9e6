@@ -748,7 +748,6 @@ const CreatorDashboard = () => {
       />
       
       {/* Content Assistant Modal */}
-      {/* Content Assistant Modal */}
       {showContentAssistant && (
         <ContentAssistant 
           profile={profile}
