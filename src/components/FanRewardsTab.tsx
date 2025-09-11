@@ -59,7 +59,7 @@ const FanRewardsTab = () => {
   useOptimizedRealtime({
     table: 'user_xp_balances',
     filter: user?.id ? `user_id=eq.${user.id}` : undefined,
-    onUpdate: () => loadUserXP(),
+    onUpdate: () => fetchRewardsData(),
     debounceMs: 200,
     enabled: !!user?.id,
   });
