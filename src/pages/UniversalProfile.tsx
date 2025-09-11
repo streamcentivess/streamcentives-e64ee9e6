@@ -16,7 +16,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
-import { useGestures } from '@/hooks/useGestures';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { HeartAnimation } from '@/components/ui/heart-animation';
 import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
