@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_tool_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          monthly_price_cents: number
+          plan_type: string
+          status: string | null
+          stripe_subscription_id: string | null
+          tool_name: string
+          updated_at: string
+          usage_count: number | null
+          usage_limit: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          monthly_price_cents: number
+          plan_type: string
+          status?: string | null
+          stripe_subscription_id?: string | null
+          tool_name: string
+          updated_at?: string
+          usage_count?: number | null
+          usage_limit?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          monthly_price_cents?: number
+          plan_type?: string
+          status?: string | null
+          stripe_subscription_id?: string | null
+          tool_name?: string
+          updated_at?: string
+          usage_count?: number | null
+          usage_limit?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       campaign_assets: {
         Row: {
           asset_data: Json
@@ -363,6 +405,45 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_earnings: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          creator_id: string
+          earnings_type: string
+          id: string
+          payout_method: string | null
+          payout_reference: string | null
+          payout_status: string | null
+          source_transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          creator_id: string
+          earnings_type: string
+          id?: string
+          payout_method?: string | null
+          payout_reference?: string | null
+          payout_status?: string | null
+          source_transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          creator_id?: string
+          earnings_type?: string
+          id?: string
+          payout_method?: string | null
+          payout_reference?: string | null
+          payout_status?: string | null
+          source_transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       creator_fan_leaderboards: {
         Row: {
           created_at: string
@@ -419,6 +500,62 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      marketplace_listings: {
+        Row: {
+          asking_price_cents: number
+          asking_price_xp: number | null
+          buyer_id: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_sold: boolean | null
+          reward_redemption_id: string
+          seller_id: string
+          sold_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          asking_price_cents: number
+          asking_price_xp?: number | null
+          buyer_id?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_sold?: boolean | null
+          reward_redemption_id: string
+          seller_id: string
+          sold_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asking_price_cents?: number
+          asking_price_xp?: number | null
+          buyer_id?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_sold?: boolean | null
+          reward_redemption_id?: string
+          seller_id?: string
+          sold_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_reward_redemption_id_fkey"
+            columns: ["reward_redemption_id"]
+            isOneToOne: false
+            referencedRelation: "reward_redemptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_analysis: {
         Row: {
@@ -816,6 +953,122 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      revenue_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          percentage: number
+          setting_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          percentage: number
+          setting_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          percentage?: number
+          setting_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      revenue_transactions: {
+        Row: {
+          amount_total_cents: number
+          created_at: string
+          creator_id: string | null
+          currency: string | null
+          id: string
+          net_amount_cents: number
+          status: string | null
+          streamcentives_fee_cents: number
+          stripe_session_id: string | null
+          transaction_type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_total_cents: number
+          created_at?: string
+          creator_id?: string | null
+          currency?: string | null
+          id?: string
+          net_amount_cents: number
+          status?: string | null
+          streamcentives_fee_cents: number
+          stripe_session_id?: string | null
+          transaction_type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_total_cents?: number
+          created_at?: string
+          creator_id?: string | null
+          currency?: string | null
+          id?: string
+          net_amount_cents?: number
+          status?: string | null
+          streamcentives_fee_cents?: number
+          stripe_session_id?: string | null
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      reward_redemption_codes: {
+        Row: {
+          created_at: string
+          id: string
+          is_redeemed: boolean | null
+          location_redeemed: string | null
+          redeemed_at: string | null
+          redeemed_by: string | null
+          redemption_code: string
+          redemption_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_redeemed?: boolean | null
+          location_redeemed?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          redemption_code: string
+          redemption_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_redeemed?: boolean | null
+          location_redeemed?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          redemption_code?: string
+          redemption_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemption_codes_redemption_id_fkey"
+            columns: ["redemption_id"]
+            isOneToOne: false
+            referencedRelation: "reward_redemptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reward_redemptions: {
         Row: {
@@ -1260,6 +1513,10 @@ export type Database = {
         Args: { campaign_id_param: string; interaction_data_param?: Json }
         Returns: Json
       }
+      generate_redemption_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_campaign_stats: {
         Args: { campaign_id_param: string }
         Returns: {
@@ -1304,6 +1561,14 @@ export type Database = {
       handle_xp_purchase: {
         Args: { user_id_param: string; xp_amount_param: number }
         Returns: undefined
+      }
+      purchase_reward_with_revenue_sharing: {
+        Args: {
+          payment_method_param: string
+          reward_id_param: string
+          total_amount_cents_param: number
+        }
+        Returns: Json
       }
       redeem_reward: {
         Args: {
