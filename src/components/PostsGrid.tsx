@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ShareButton } from './ShareButton';
+import { UniversalShareButton } from './UniversalShareButton';
 import { useNavigate } from 'react-router-dom';
 import CrossPostToggle from './CrossPostToggle';
 
@@ -324,12 +325,15 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
                     <MessageCircle className="h-5 w-5" />
                     <span className="ml-1">{selectedPost.post_comments.length}</span>
                   </Button>
-                  <ShareButton
-                    postId={selectedPost.id}
-                    postUrl={`${window.location.origin}/post/${selectedPost.id}`}
-                    postCaption={selectedPost.caption}
+                  <UniversalShareButton
+                    type="post"
+                    itemId={selectedPost.id}
+                    title={selectedPost.caption || 'Post'}
+                    description={selectedPost.caption}
                     creatorName={selectedPost.profiles.display_name}
-                    isOwnPost={selectedPost.user_id === user?.id}
+                    isOwnContent={selectedPost.user_id === user?.id}
+                    customUrl={`${window.location.origin}/post/${selectedPost.id}`}
+                    imageUrl={selectedPost.content_url}
                   />
                   {selectedPost.user_id === user?.id && (
                     <Button

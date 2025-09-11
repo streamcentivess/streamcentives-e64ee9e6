@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
+import { UniversalShareButton } from '@/components/UniversalShareButton';
 interface Profile {
   id?: string;
   user_id: string;
@@ -1153,26 +1154,32 @@ const UniversalProfile = () => {
                       <p className="text-sm text-muted-foreground mb-3">
                         Repost campaigns to your feed and earn XP when others engage
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-primary">+10 XP per share</span>
-                        <Button size="sm" variant="outline">
-                          <Share2 className="h-3 w-3 mr-1" />
-                          Share
-                        </Button>
-                      </div>
+                       <div className="flex items-center justify-between">
+                         <span className="text-sm font-medium text-primary">+10 XP per share</span>
+                         <UniversalShareButton
+                           type="profile"
+                           itemId={profile?.user_id}
+                           title={`${profile?.display_name || profile?.username || 'Creator'}'s Profile`}
+                           description={`Check out ${profile?.display_name || profile?.username || 'this creator'} on Streamcentives!`}
+                           creatorName={profile?.display_name || profile?.username}
+                           isOwnContent={user?.id === profile?.user_id}
+                         />
+                       </div>
                     </div>
                     <div className="p-4 bg-muted/20 rounded-lg">
                       <h4 className="font-medium mb-2">Share Off-Platform</h4>
                       <p className="text-sm text-muted-foreground mb-3">
                         Share campaigns on social media to attract new users
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-primary">+20 XP per share</span>
-                        <Button size="sm" variant="outline">
-                          <Share2 className="h-3 w-3 mr-1" />
-                          Share
-                        </Button>
-                      </div>
+                       <div className="flex items-center justify-between">
+                         <span className="text-sm font-medium text-primary">+20 XP per share</span>
+                         <UniversalShareButton
+                           type="campaign"
+                           title="Streamcentives Campaigns"
+                           description="Discover amazing campaigns and earn rewards on Streamcentives!"
+                           creatorName={profile?.display_name || profile?.username}
+                         />
+                       </div>
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-4 text-center">
@@ -1204,11 +1211,13 @@ const UniversalProfile = () => {
                         Show off exclusive rewards and inspire others to engage
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-primary">+5 XP per share</span>
-                        <Button size="sm" variant="outline">
-                          <Share2 className="h-3 w-3 mr-1" />
-                          Share
-                        </Button>
+                         <span className="text-sm font-medium text-primary">+5 XP per share</span>
+                         <UniversalShareButton
+                           type="reward"
+                           title="Streamcentives Rewards"
+                           description="Check out these amazing rewards on Streamcentives!"
+                           creatorName={profile?.display_name || profile?.username}
+                         />
                       </div>
                     </div>
                     <div className="p-4 bg-muted/20 rounded-lg">
@@ -1217,11 +1226,13 @@ const UniversalProfile = () => {
                         Showcase rewards on social media to attract new fans
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-primary">+15 XP per share</span>
-                        <Button size="sm" variant="outline">
-                          <Share2 className="h-3 w-3 mr-1" />
-                          Share
-                        </Button>
+                         <span className="text-sm font-medium text-primary">+15 XP per share</span>
+                         <UniversalShareButton
+                           type="reward"
+                           title="Streamcentives Rewards"
+                           description="Discover exclusive rewards and earn them through engagement!"
+                           creatorName={profile?.display_name || profile?.username}
+                         />
                       </div>
                     </div>
                   </div>
