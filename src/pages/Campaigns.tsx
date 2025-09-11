@@ -736,13 +736,22 @@ const Campaigns = () => {
             Create and manage your fan engagement campaigns
           </p>
         </div>
-        <Button 
-          onClick={() => setShowCreateForm(true)}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Create Campaign
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/creator-dashboard')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Creator Dashboard
+          </Button>
+          <Button 
+            onClick={() => setShowCreateForm(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Create Campaign
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filter Bar */}
