@@ -70,7 +70,7 @@ export default function PurchaseXP() {
                 <img 
                   src="/lovable-uploads/696807ab-f28f-43f5-9bf2-0e5f252915af.png" 
                   alt="StreamCents XP" 
-                  className="w-64 h-64 object-contain drop-shadow-2xl"
+                  className="w-64 h-64 object-contain drop-shadow-2xl rounded-3xl"
                 />
                 <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full animate-pulse"></div>
               </div>
