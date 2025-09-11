@@ -54,7 +54,7 @@ interface Participant {
     display_name: string | null;
     username: string | null;
     avatar_url: string | null;
-  };
+  } | null;
 }
 
 const Campaigns = () => {
@@ -480,16 +480,26 @@ const Campaigns = () => {
     try {
       const { data, error } = await supabase
         .from('campaign_participants')
-        .select(`
-          *,
-          profiles(display_name, username, avatar_url)
-        `)
+        .select('*')
         .eq('campaign_id', campaignId)
         .order('joined_at', { ascending: false });
 
       if (error) throw error;
       
-      setParticipants(prev => ({ ...prev, [campaignId]: data as Participant[] || [] }));
+      // Transform the data to match our Participant interface without profiles for now
+      const validParticipants = (data || []).map(item => ({
+        id: item.id,
+        user_id: item.user_id,
+        joined_at: item.joined_at,
+        progress: item.progress,
+        xp_earned: item.xp_earned,
+        cash_earned: item.cash_earned,
+        status: item.status,
+        completion_date: item.completion_date,
+        profiles: null // Will be fetched separately if needed
+      })) as Participant[];
+      
+      setParticipants(prev => ({ ...prev, [campaignId]: validParticipants }));
     } catch (error) {
       console.error('Error fetching participants:', error);
       toast({
