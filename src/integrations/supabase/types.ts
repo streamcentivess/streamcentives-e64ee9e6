@@ -1150,6 +1150,7 @@ export type Database = {
       rewards: {
         Row: {
           cash_price: number | null
+          cover_photo_url: string | null
           created_at: string
           creator_id: string
           currency: string | null
@@ -1168,6 +1169,7 @@ export type Database = {
         }
         Insert: {
           cash_price?: number | null
+          cover_photo_url?: string | null
           created_at?: string
           creator_id: string
           currency?: string | null
@@ -1186,6 +1188,7 @@ export type Database = {
         }
         Update: {
           cash_price?: number | null
+          cover_photo_url?: string | null
           created_at?: string
           creator_id?: string
           currency?: string | null

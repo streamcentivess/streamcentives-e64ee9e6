@@ -23,7 +23,7 @@ interface Reward {
   quantity_available: number;
   quantity_redeemed: number;
   image_url: string | null;
-  cover_photo_url: string | null;
+  cover_photo_url?: string | null;
   rarity: string;
   tags: string[] | null;
   is_active: boolean;
@@ -66,7 +66,7 @@ const ManageRewards = () => {
     try {
       const { data, error } = await supabase
         .from('rewards')
-        .select('*')
+        .select('*, cover_photo_url')
         .eq('creator_id', user?.id)
         .order('created_at', { ascending: false });
 
@@ -592,10 +592,10 @@ const ManageRewards = () => {
           {rewards.map((reward) => (
             <Card key={reward.id} className="card-modern">
               <CardContent className="p-4">
-                {reward.image_url && (
+                {(reward.cover_photo_url || reward.image_url) && (
                   <div className="aspect-video bg-surface rounded-lg mb-4 overflow-hidden">
                     <img
-                      src={reward.image_url}
+                      src={reward.cover_photo_url || reward.image_url}
                       alt={reward.title}
                       className="w-full h-full object-cover"
                     />
