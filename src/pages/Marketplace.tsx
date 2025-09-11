@@ -67,7 +67,6 @@ const Marketplace = () => {
           )
         `)
         .eq('is_active', true)
-        .gt('quantity_available', 0)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
