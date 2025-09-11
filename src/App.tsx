@@ -28,6 +28,8 @@ import ManageRewards from "./pages/ManageRewards";
 import RoleSelection from "./pages/RoleSelection";
 import ProfileSetup from "./pages/ProfileSetup";
 import Feed from "./pages/Feed";
+import PurchaseXP from "./pages/PurchaseXP";
+import XPPurchaseSuccess from "./pages/XPPurchaseSuccess";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/pitch" element={<PitchDeck />} />
             <Route path="/team" element={<Team />} />
+            <Route path="/purchase-xp" element={<PurchaseXP />} />
+            <Route path="/xp-purchase-success" element={<XPPurchaseSuccess />} />
             
             {/* Auth Routes */}
             <Route path="/auth/signin" element={<SignIn />} />
