@@ -1289,26 +1289,88 @@ const UniversalProfile = () => {
               {/* Search Results */}
               {searchResults.length > 0 && <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
                 {searchResults.map(result => {
-                  const gestureHandlers = useGestures({
-                    onDoubleTap: () => handleDoubleTapFollow(result.user_id),
-                    onSwipeRight: () => handleSwipeFollow(result.user_id),
-                    onSwipeLeft: () => handleSwipeDismiss(result.user_id),
-                    onLongPress: () => {
+                  // Create gesture handlers for each result without using hooks
+                  const handleTouchStart = (e: React.TouchEvent) => {
+                    const touch = e.touches[0];
+                    const touchData = {
+                      startX: touch.clientX,
+                      startY: touch.clientY,
+                      startTime: Date.now(),
+                      userId: result.user_id
+                    };
+                    
+                    // Store touch data on the element
+                    (e.currentTarget as any)._touchData = touchData;
+                    
+                    // Long press timer
+                    const longPressTimer = setTimeout(() => {
                       triggerHaptic('heavy');
                       setContextMenu({
                         isVisible: true,
-                        position: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+                        position: { x: touch.clientX, y: touch.clientY },
                         userId: result.user_id,
                       });
-                    },
-                  });
+                    }, 500);
+                    
+                    (e.currentTarget as any)._longPressTimer = longPressTimer;
+                  };
+
+                  const handleTouchMove = (e: React.TouchEvent) => {
+                    // Cancel long press on move
+                    const timer = (e.currentTarget as any)._longPressTimer;
+                    if (timer) {
+                      clearTimeout(timer);
+                      (e.currentTarget as any)._longPressTimer = null;
+                    }
+                  };
+
+                  const handleTouchEnd = (e: React.TouchEvent) => {
+                    const timer = (e.currentTarget as any)._longPressTimer;
+                    if (timer) {
+                      clearTimeout(timer);
+                      (e.currentTarget as any)._longPressTimer = null;
+                    }
+
+                    const touchData = (e.currentTarget as any)._touchData;
+                    if (!touchData) return;
+
+                    const touch = e.changedTouches[0];
+                    const deltaX = touch.clientX - touchData.startX;
+                    const deltaY = touch.clientY - touchData.startY;
+                    const deltaTime = Date.now() - touchData.startTime;
+                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                    // Check for swipe gestures
+                    if (distance > 50 && deltaTime < 300 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                      if (deltaX > 0) {
+                        // Swipe right - follow
+                        handleSwipeFollow(result.user_id);
+                      } else {
+                        // Swipe left - dismiss
+                        handleSwipeDismiss(result.user_id);
+                      }
+                      return;
+                    }
+
+                    // Check for double tap
+                    const lastTap = (e.currentTarget as any)._lastTap || 0;
+                    const now = Date.now();
+                    if (now - lastTap < 300 && distance < 50) {
+                      handleDoubleTapFollow(result.user_id);
+                      (e.currentTarget as any)._lastTap = 0;
+                    } else {
+                      (e.currentTarget as any)._lastTap = now;
+                    }
+                  };
 
                   return (
                     <div
                       key={result.user_id}
                       className="relative flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-muted cursor-pointer transition-all duration-200 select-none"
                       onClick={() => viewProfile(result.user_id)}
-                      {...gestureHandlers}
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
                     >
                       {/* Heart Animation */}
                       <HeartAnimation 
@@ -1375,7 +1437,32 @@ const UniversalProfile = () => {
               <div className="relative">
                 <div 
                   className={`transform transition-transform duration-300 ${isZoomed ? 'scale-150 z-10' : 'scale-100'}`}
-                  {...useGestures({ onPinchZoom: handlePinchZoom })}
+                  onTouchStart={(e) => {
+                    if (e.touches.length === 2) {
+                      const touch1 = e.touches[0];
+                      const touch2 = e.touches[1];
+                      const distance = Math.sqrt(
+                        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+                        Math.pow(touch2.clientY - touch1.clientY, 2)
+                      );
+                      (e.currentTarget as any)._initialPinchDistance = distance;
+                    }
+                  }}
+                  onTouchMove={(e) => {
+                    if (e.touches.length === 2 && (e.currentTarget as any)._initialPinchDistance) {
+                      const touch1 = e.touches[0];
+                      const touch2 = e.touches[1];
+                      const distance = Math.sqrt(
+                        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+                        Math.pow(touch2.clientY - touch1.clientY, 2)
+                      );
+                      const scale = distance / (e.currentTarget as any)._initialPinchDistance;
+                      handlePinchZoom(scale);
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    (e.currentTarget as any)._initialPinchDistance = null;
+                  }}
                 >
                   <Avatar className="h-20 w-20 sm:h-24 sm:w-24 cursor-pointer select-none">
                     <AvatarImage src={profile.avatar_url || ''} />
