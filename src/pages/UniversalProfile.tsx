@@ -76,6 +76,10 @@ const UniversalProfile = () => {
       fetchProfile();
       fetchFollowStats();
       fetchJoinedCampaigns();
+      // Force refresh XP balance if on own profile
+      if (isOwnProfile) {
+        setTimeout(() => fetchXpBalance(), 1000);
+      }
       // Clear follow states when switching profiles
       setUserFollowStates({});
       // Determine user role from sessionStorage or URL params
@@ -220,6 +224,7 @@ const UniversalProfile = () => {
       if (error) {
         console.error('Error fetching XP balance:', error);
       } else {
+        console.log('Fetched XP balance:', data?.current_xp);
         setXpBalance(data?.current_xp || 0);
       }
     } catch (error) {
@@ -1113,6 +1118,22 @@ const UniversalProfile = () => {
                   <div className="flex items-center gap-1">
                     <Star className="h-3 w-3 text-yellow-500" />
                     <span className="text-yellow-500 font-medium">{xpBalance} XP</span>
+                    {isOwnProfile && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-4 w-4 p-0 ml-1 hover:bg-yellow-100"
+                        onClick={() => {
+                          fetchXpBalance();
+                          toast({
+                            title: "Refreshed",
+                            description: "XP balance updated",
+                          });
+                        }}
+                      >
+                        <BarChart3 className="h-3 w-3 text-yellow-500" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
