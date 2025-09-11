@@ -39,11 +39,20 @@ interface ContentAssistantProps {
 
 interface GeneratedContent {
   id: string;
-  type: 'image' | 'text' | 'video_idea';
+  type: 'image' | 'text' | 'video_idea' | 'video_script' | 'document' | 'audio_script' | 'carousel';
   title: string;
   content: string;
   imageUrl?: string;
   downloadUrl?: string;
+  fileUrl?: string;
+  fileFormat?: string;
+  actualFile?: boolean;
+  carouselSlides?: Array<{
+    id: string;
+    title: string;
+    content: string;
+    imagePrompt: string;
+  }>;
   metadata?: any;
   created_at: string;
 }
@@ -203,7 +212,33 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
 
   const downloadContent = async (content: GeneratedContent) => {
     try {
-      if (content.imageUrl) {
+      if (content.downloadUrl || content.fileUrl) {
+        // Download actual file
+        const fileUrl = content.downloadUrl || content.fileUrl || '';
+        const response = await fetch(fileUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Determine file extension from fileFormat or type
+        let extension = 'txt';
+        if (content.fileFormat) {
+          extension = content.fileFormat;
+        } else if (content.type === 'image') {
+          extension = 'jpg';
+        } else if (content.type === 'video_script') {
+          extension = 'txt';
+        } else if (content.type === 'document') {
+          extension = 'txt';
+        }
+        
+        a.download = `${content.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else if (content.imageUrl) {
         // Download image
         const response = await fetch(content.imageUrl);
         const blob = await response.blob();
@@ -336,15 +371,18 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                     <CardTitle className="text-sm">Content Generation</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium">Content Prompt</label>
-                      <Textarea
-                        placeholder="Describe what type of content you want to create..."
-                        value={contentPrompt}
-                        onChange={(e) => setContentPrompt(e.target.value)}
-                        className="min-h-[100px]"
-                      />
-                    </div>
+                     <div>
+                       <label className="text-sm font-medium">Content Prompt</label>
+                       <Textarea
+                         placeholder="Describe what type of content you want to create (e.g., 'Create an image of a sunset', 'Generate a video script about cooking', 'Make a document explaining social media tips')..."
+                         value={contentPrompt}
+                         onChange={(e) => setContentPrompt(e.target.value)}
+                         className="min-h-[100px]"
+                       />
+                       <p className="text-xs text-muted-foreground mt-1">
+                         Specify the file format you want: images, videos, documents, carousels, etc.
+                       </p>
+                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -460,7 +498,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                         </div>
                       )}
                       
-                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                         <div className="space-y-3 max-h-60 overflow-y-auto">
                         {previewContent.map((content) => (
                           <div key={content.id} className="p-3 border rounded-lg">
                             {content.imageUrl && (
@@ -474,9 +512,21 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                             <p className="text-xs text-muted-foreground line-clamp-2">
                               {content.content}
                             </p>
-                            <Badge variant="outline" className="mt-2">
-                              {content.type}
-                            </Badge>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="outline">
+                                {content.type}
+                              </Badge>
+                              {content.fileFormat && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {content.fileFormat.toUpperCase()}
+                                </Badge>
+                              )}
+                              {(content.downloadUrl || content.fileUrl) && (
+                                <Badge variant="default" className="text-xs">
+                                  File Ready
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -591,18 +641,33 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {generatedContent.map((content) => (
                     <Card key={content.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        {content.imageUrl && (
-                          <img
-                            src={content.imageUrl}
-                            alt={content.title}
-                            className="w-full h-32 object-cover rounded mb-3"
-                          />
-                        )}
-                        <h3 className="font-semibold text-sm mb-2">{content.title}</h3>
-                        <p className="text-xs text-muted-foreground mb-3 line-clamp-3">
-                          {content.content}
-                        </p>
+                       <CardContent className="p-4">
+                         {content.imageUrl && (
+                           <img
+                             src={content.imageUrl}
+                             alt={content.title}
+                             className="w-full h-32 object-cover rounded mb-3"
+                           />
+                         )}
+                         <div className="flex items-center gap-2 mb-2">
+                           <Badge variant="outline">
+                             {content.type}
+                           </Badge>
+                           {content.fileFormat && (
+                             <Badge variant="secondary" className="text-xs">
+                               {content.fileFormat.toUpperCase()}
+                             </Badge>
+                           )}
+                           {(content.downloadUrl || content.fileUrl) && (
+                             <Badge variant="default" className="text-xs">
+                               ✓ File
+                             </Badge>
+                           )}
+                         </div>
+                         <h3 className="font-semibold text-sm mb-2">{content.title}</h3>
+                         <p className="text-xs text-muted-foreground mb-3 line-clamp-3">
+                           {content.content}
+                         </p>
                          <div className="flex items-center gap-2 flex-wrap">
                            <Button
                              size="sm"

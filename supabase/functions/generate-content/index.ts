@@ -7,6 +7,98 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to detect requested file format from prompt
+function detectRequestedFormat(prompt: string): string[] {
+  const formats = [];
+  const lowercasePrompt = prompt.toLowerCase();
+  
+  if (lowercasePrompt.includes('image') || lowercasePrompt.includes('picture') || lowercasePrompt.includes('photo') || lowercasePrompt.includes('graphic')) {
+    formats.push('image');
+  }
+  if (lowercasePrompt.includes('video') || lowercasePrompt.includes('clip') || lowercasePrompt.includes('reel') || lowercasePrompt.includes('tiktok')) {
+    formats.push('video');
+  }
+  if (lowercasePrompt.includes('document') || lowercasePrompt.includes('pdf') || lowercasePrompt.includes('doc') || lowercasePrompt.includes('text file')) {
+    formats.push('document');
+  }
+  if (lowercasePrompt.includes('audio') || lowercasePrompt.includes('sound') || lowercasePrompt.includes('voice') || lowercasePrompt.includes('podcast')) {
+    formats.push('audio');
+  }
+  if (lowercasePrompt.includes('carousel') || lowercasePrompt.includes('slides') || lowercasePrompt.includes('multiple images')) {
+    formats.push('carousel');
+  }
+  
+  // Default to mixed content if no specific format detected
+  return formats.length > 0 ? formats : ['mixed'];
+}
+
+// Helper function to generate actual image files
+async function generateImageFile(prompt: string, supabase: any): Promise<string | null> {
+  try {
+    // Use Supabase to call image generation (assuming you have an image gen service)
+    const response = await fetch('https://api.flux.ai/v1/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('FLUX_API_KEY') || 'demo-key'}`
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        width: 1024,
+        height: 1024,
+        steps: 20
+      })
+    });
+
+    if (!response.ok) return null;
+    
+    const imageBlob = await response.blob();
+    const fileName = `generated-images/${crypto.randomUUID()}.png`;
+    
+    const { data, error } = await supabase.storage
+      .from('posts')
+      .upload(fileName, imageBlob, {
+        contentType: 'image/png'
+      });
+    
+    if (error) return null;
+    
+    const { data: urlData } = supabase.storage
+      .from('posts')
+      .getPublicUrl(fileName);
+      
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Error generating image:', error);
+    return null;
+  }
+}
+
+// Helper function to create document files
+async function generateDocumentFile(content: string, title: string, supabase: any): Promise<string | null> {
+  try {
+    const fileName = `generated-documents/${crypto.randomUUID()}.txt`;
+    const fileContent = `${title}\n\n${content}`;
+    
+    const { data, error } = await supabase.storage
+      .from('posts')
+      .upload(fileName, new Blob([fileContent], { type: 'text/plain' }), {
+        contentType: 'text/plain'
+      });
+    
+    if (error) return null;
+    
+    const { data: urlData } = supabase.storage
+      .from('posts')
+      .getPublicUrl(fileName);
+      
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Error generating document:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,13 +114,22 @@ serve(async (req) => {
       generationType = 'mixed' 
     } = await req.json();
 
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     if (!geminiApiKey) {
       throw new Error('Gemini API key not configured');
     }
 
+    // Detect requested file formats from prompt
+    const requestedFormats = detectRequestedFormat(prompt);
+    console.log('Detected formats:', requestedFormats);
+
     // Generate content ideas based on profile and prompt
-    const systemPrompt = `You are an AI content assistant specializing in creating viral social media content. Generate engaging, platform-optimized content based on user profiles and goals.
+    const systemPrompt = `You are an AI content assistant specializing in creating viral social media content and generating actual files in requested formats. Generate engaging, platform-optimized content based on user profiles and goals.
 
 Profile Context:
 - Username: ${profileData.username || 'creator'}
@@ -38,25 +139,31 @@ Profile Context:
 
 Target Audience: ${targetAudience || 'General'}
 Content Goal: ${contentGoal || 'Engagement'}
+Requested Formats: ${requestedFormats.join(', ')}
 
-Generate diverse content including:
-1. Social media post ideas with captions
-2. Image concepts for AI generation
-3. Video content ideas 
-4. Trending hashtag suggestions
-5. Engagement strategies
+Generate content that matches the requested formats:
+${requestedFormats.includes('image') ? '- Create detailed image prompts for AI generation' : ''}
+${requestedFormats.includes('video') ? '- Provide complete video scripts and storyboards' : ''}
+${requestedFormats.includes('document') ? '- Generate structured document content' : ''}
+${requestedFormats.includes('audio') ? '- Create detailed audio scripts and concepts' : ''}
+${requestedFormats.includes('carousel') ? '- Design multi-slide carousel content' : ''}
 
 Format response as JSON array with objects containing:
-- type: "text_post", "image_concept", "video_idea", "story_idea"
+- type: "image", "video_script", "document", "audio_script", "carousel", "text_post"
 - title: Brief title
-- content: Detailed content/description
+- content: Detailed content/description/script
+- fileFormat: Specific format (jpg, mp4, pdf, mp3, etc.)
 - hashtags: Relevant hashtags array
 - engagement_tip: Strategy for maximizing engagement
-- viral_potential: 1-10 score with reasoning`;
+- viral_potential: 1-10 score with reasoning
+- actualFile: Whether this should generate an actual file (true/false)`;
 
-    const userPrompt = `Create viral content for: "${prompt}"
+    const userPrompt = `Create content in the requested formats for: "${prompt}"
+    
+    Requested formats: ${requestedFormats.join(', ')}
     
     Consider these factors:
+    - Generate actual file content, not just descriptions
     - Current trends and viral formats
     - Platform-specific optimization (Instagram, TikTok, Twitter)
     - Audience engagement patterns
@@ -65,7 +172,7 @@ Format response as JSON array with objects containing:
     
     ${referenceImages.length > 0 ? `Reference images provided: ${referenceImages.length} images to analyze for style/theme inspiration.` : ''}
     
-    Generate 6-8 diverse content pieces optimized for maximum virality and engagement.`;
+    Generate 4-6 content pieces that can be turned into actual files, optimized for maximum virality and engagement.`;
 
     // Call Gemini for content generation with fallback & retries
     const requestText = `${systemPrompt}\n\nUser Request: ${userPrompt}`;
@@ -121,17 +228,57 @@ Format response as JSON array with objects containing:
     // Last-resort local fallback to ensure UI doesn't break
     if (!Array.isArray(contentIdeas) || contentIdeas.length === 0) {
       const baseHashtags = ['#viral', '#trend', '#content', '#engage'];
-      contentIdeas = Array.from({ length: 6 }).map((_, i) => ({
-        type: i % 3 === 0 ? 'text_post' : i % 3 === 1 ? 'image_concept' : 'video_idea',
-        title: `Idea ${i + 1}: ${prompt?.slice(0, 30) || 'Content'}`,
-        content: `Create a post about "${prompt}" tailored to ${targetAudience || 'your audience'} with the goal to ${contentGoal || 'increase engagement'}. Include a clear CTA.`,
-        hashtags: baseHashtags,
-        engagement_tip: 'Ask a question and respond to comments within 30 minutes.',
-        viral_potential: 7
-      }));
+      contentIdeas = requestedFormats.flatMap(format => {
+        switch(format) {
+          case 'image':
+            return [{
+              type: 'image',
+              title: `AI Generated Image: ${prompt?.slice(0, 30) || 'Content'}`,
+              content: `Create a high-quality, engaging social media image about "${prompt}". Professional photography style, vibrant colors, eye-catching composition.`,
+              fileFormat: 'jpg',
+              hashtags: baseHashtags,
+              engagement_tip: 'Post during peak hours and ask for opinions in comments.',
+              viral_potential: 8,
+              actualFile: true
+            }];
+          case 'video':
+            return [{
+              type: 'video_script',
+              title: `Video Script: ${prompt?.slice(0, 30) || 'Content'}`,
+              content: `HOOK (0-3s): Start with an attention-grabbing statement about "${prompt}"\nMAIN CONTENT (3-25s): Detailed explanation or demonstration\nCALL TO ACTION (25-30s): Ask viewers to engage`,
+              fileFormat: 'txt',
+              hashtags: [...baseHashtags, '#video', '#reel'],
+              engagement_tip: 'Use trending audio and add captions.',
+              viral_potential: 9,
+              actualFile: true
+            }];
+          case 'document':
+            return [{
+              type: 'document',
+              title: `Content Guide: ${prompt?.slice(0, 30) || 'Content'}`,
+              content: `# ${prompt}\n\nThis comprehensive guide covers everything about ${prompt}.\n\n## Key Points\n- Detailed information\n- Actionable tips\n- Best practices\n\n## Conclusion\nImplement these strategies to achieve your goals.`,
+              fileFormat: 'txt',
+              hashtags: baseHashtags,
+              engagement_tip: 'Share snippets as carousel posts.',
+              viral_potential: 7,
+              actualFile: true
+            }];
+          default:
+            return [{
+              type: 'text_post',
+              title: `Social Post: ${prompt?.slice(0, 30) || 'Content'}`,
+              content: `Create engaging content about "${prompt}" tailored to ${targetAudience || 'your audience'} with the goal to ${contentGoal || 'increase engagement'}. Include a clear CTA.`,
+              fileFormat: 'txt',
+              hashtags: baseHashtags,
+              engagement_tip: 'Ask a question and respond to comments within 30 minutes.',
+              viral_potential: 7,
+              actualFile: false
+            }];
+        }
+      });
     }
 
-    // Generate images for image concepts using DALL-E
+    // Generate actual files for content that requires them
     const generatedContent = [];
 
     for (const idea of contentIdeas) {
@@ -141,8 +288,45 @@ Format response as JSON array with objects containing:
         created_at: new Date().toISOString()
       };
 
-      // For image concepts, provide detailed description for manual creation or external tools
-      if (idea.type === 'image_concept') {
+      // Generate actual files based on type and actualFile flag
+      if (idea.actualFile) {
+        switch (idea.type) {
+          case 'image':
+            const imageUrl = await generateImageFile(idea.content, supabase);
+            if (imageUrl) {
+              generatedItem.imageUrl = imageUrl;
+              generatedItem.downloadUrl = imageUrl;
+            } else {
+              // Fallback to image prompt for manual generation
+              generatedItem.imagePrompt = `Create a high-quality image: ${idea.content}`;
+            }
+            break;
+            
+          case 'video_script':
+          case 'document':
+          case 'audio_script':
+            const documentUrl = await generateDocumentFile(idea.content, idea.title, supabase);
+            if (documentUrl) {
+              generatedItem.downloadUrl = documentUrl;
+              generatedItem.fileUrl = documentUrl;
+            }
+            break;
+            
+          case 'carousel':
+            // For carousel, generate multiple image prompts
+            const slides = idea.content.split('\n\n').filter(slide => slide.trim());
+            generatedItem.carouselSlides = slides.map((slide, index) => ({
+              id: crypto.randomUUID(),
+              title: `Slide ${index + 1}`,
+              content: slide,
+              imagePrompt: `Create slide ${index + 1} for carousel: ${slide}`
+            }));
+            break;
+        }
+      }
+
+      // For image concepts without actual file generation, provide detailed prompts
+      if (idea.type === 'image' && !idea.actualFile) {
         generatedItem.imagePrompt = `Create a high-quality, engaging social media image: ${idea.content}. Style should be modern, eye-catching, and optimized for social media platforms. Professional photography quality, vibrant colors, good composition.`;
         generatedItem.imageDescription = idea.content;
       }
