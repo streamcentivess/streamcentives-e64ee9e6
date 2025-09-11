@@ -175,7 +175,7 @@ export default function PurchaseXP() {
                     </>
                   ) : (
                     <>
-                      <XPCoin className="h-5 w-5" />
+                      <XPCoin className="mr-2 h-5 w-5" />
                       Get {pkg.xp.toLocaleString()} XP
                     </>
                   )}
