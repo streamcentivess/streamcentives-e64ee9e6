@@ -1573,23 +1573,14 @@ const UniversalProfile = () => {
                           Remove Follower
                         </Button>
                       ) : (
+                        // For following list, always show unfollow since we're following everyone in this list
                         <Button
                           size="sm"
-                          variant={userFollowStates[person.user_id] ? 'outline' : 'default'}
+                          variant="outline"
                           onClick={() => handleUserFollowToggle(person.user_id)}
-                          className={userFollowStates[person.user_id] ? '' : 'bg-gradient-primary hover:opacity-90'}
                         >
-                          {userFollowStates[person.user_id] ? (
-                            <>
-                              <UserMinus className="h-3 w-3 mr-1" />
-                              Unfollow
-                            </>
-                          ) : (
-                            <>
-                              <UserPlus className="h-3 w-3 mr-1" />
-                              Follow
-                            </>
-                          )}
+                          <UserMinus className="h-3 w-3 mr-1" />
+                          Unfollow
                         </Button>
                       )
                     )}
