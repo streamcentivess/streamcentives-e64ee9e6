@@ -1543,15 +1543,15 @@ const UniversalProfile = () => {
                       {person.username && person.display_name && <div className="text-sm text-muted-foreground">@{person.username}</div>}
                     </div>
                     {/* Follow/Unfollow button - only show if viewing from own profile and not the person's own entry */}
-                    {isOwnProfile && person.user_id !== user?.id && <Button size="sm" variant={userFollowStates[person.user_id] ? "outline" : "default"} onClick={() => handleUserFollowToggle(person.user_id)} className={userFollowStates[person.user_id] ? "" : "bg-gradient-primary hover:opacity-90"}>
-                        {userFollowStates[person.user_id] ? <>
-                            <UserMinus className="h-3 w-3 mr-1" />
-                            Unfollow
-                          </> : <>
-                            <UserPlus className="h-3 w-3 mr-1" />
-                            Follow
-                          </>}
-                      </Button>}
+                     {isOwnProfile && person.user_id !== user?.id && <Button size="sm" variant={userFollowStates[person.user_id] ? "outline" : "default"} onClick={() => handleUserFollowToggle(person.user_id)} className={userFollowStates[person.user_id] ? "" : "bg-gradient-primary hover:opacity-90"}>
+                         {userFollowStates[person.user_id] ? <>
+                             <UserMinus className="h-3 w-3 mr-1" />
+                             {listType === 'followers' ? 'Remove Follower' : 'Unfollow'}
+                           </> : <>
+                             <UserPlus className="h-3 w-3 mr-1" />
+                             Follow
+                           </>}
+                       </Button>}
                   </div>) : <div className="text-center text-muted-foreground py-8">
                   {listType === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
                 </div>}
