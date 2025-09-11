@@ -113,6 +113,80 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_executions: {
+        Row: {
+          automation_rule_id: string
+          error_message: string | null
+          executed_at: string
+          execution_results: Json
+          id: string
+          status: string
+          trigger_data: Json
+        }
+        Insert: {
+          automation_rule_id: string
+          error_message?: string | null
+          executed_at?: string
+          execution_results?: Json
+          id?: string
+          status?: string
+          trigger_data: Json
+        }
+        Update: {
+          automation_rule_id?: string
+          error_message?: string | null
+          executed_at?: string
+          execution_results?: Json
+          id?: string
+          status?: string
+          trigger_data?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_executions_automation_rule_id_fkey"
+            columns: ["automation_rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          rule_name: string
+          trigger_event: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          rule_name: string
+          trigger_event: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          rule_name?: string
+          trigger_event?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       campaign_assets: {
         Row: {
           asset_data: Json
@@ -870,6 +944,45 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          discord_webhook_url: string | null
+          email_enabled: boolean
+          id: string
+          phone_number: string | null
+          push_enabled: boolean
+          slack_webhook_url: string | null
+          sms_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discord_webhook_url?: string | null
+          email_enabled?: boolean
+          id?: string
+          phone_number?: string | null
+          push_enabled?: boolean
+          slack_webhook_url?: string | null
+          sms_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discord_webhook_url?: string | null
+          email_enabled?: boolean
+          id?: string
+          phone_number?: string | null
+          push_enabled?: boolean
+          slack_webhook_url?: string | null
+          sms_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       poll_votes: {
         Row: {
           campaign_id: string
@@ -1447,6 +1560,93 @@ export type Database = {
         }
         Relationships: []
       }
+      social_media_credentials: {
+        Row: {
+          access_token: string | null
+          access_token_secret: string | null
+          api_key: string | null
+          api_secret: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          instagram_user_id: string | null
+          is_active: boolean
+          page_id: string | null
+          platform: string
+          refresh_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          access_token_secret?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          instagram_user_id?: string | null
+          is_active?: boolean
+          page_id?: string | null
+          platform: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          access_token_secret?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          instagram_user_id?: string | null
+          is_active?: boolean
+          page_id?: string | null
+          platform?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_media_posts: {
+        Row: {
+          content: string
+          created_at: string
+          engagement_metrics: Json | null
+          id: string
+          platform: string
+          post_id: string
+          post_url: string | null
+          posted_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          engagement_metrics?: Json | null
+          id?: string
+          platform: string
+          post_id: string
+          post_url?: string | null
+          posted_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          engagement_metrics?: Json | null
+          id?: string
+          platform?: string
+          post_id?: string
+          post_url?: string | null
+          posted_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       spotify_accounts: {
         Row: {
           access_token: string
@@ -1606,6 +1806,80 @@ export type Database = {
           total_spent_xp?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_deliveries: {
+        Row: {
+          delivered_at: string
+          error_message: string | null
+          event_type: string
+          id: string
+          payload: Json
+          response_body: string | null
+          response_status: number | null
+          webhook_subscription_id: string
+        }
+        Insert: {
+          delivered_at?: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          response_status?: number | null
+          webhook_subscription_id: string
+        }
+        Update: {
+          delivered_at?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          response_status?: number | null
+          webhook_subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_webhook_subscription_id_fkey"
+            columns: ["webhook_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_subscriptions: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          is_active: boolean
+          secret_key: string
+          updated_at: string
+          user_id: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          is_active?: boolean
+          secret_key?: string
+          updated_at?: string
+          user_id: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          is_active?: boolean
+          secret_key?: string
+          updated_at?: string
+          user_id?: string
+          webhook_url?: string
         }
         Relationships: []
       }
