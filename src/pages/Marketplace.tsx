@@ -58,33 +58,44 @@ const Marketplace = () => {
   const fetchRewards = async () => {
     try {
       console.log('Fetching rewards...');
-      const { data, error } = await supabase
+      // Step 1: fetch rewards only (no nested relation to avoid FK/RLS issues)
+      const { data: rewardsData, error: rewardsError } = await supabase
         .from('rewards')
-        .select(`
-          *,
-          profiles:creator_id (
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('id,title,description,type,xp_cost,cash_price,currency,quantity_available,quantity_redeemed,image_url,rarity,tags,creator_id,created_at')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      console.log('Supabase response:', { data, error });
+      console.log('Rewards response:', { rewardsData, rewardsError });
+      if (rewardsError) throw rewardsError;
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      // Step 2: fetch creator profiles in a separate query
+      const creatorIds = Array.from(new Set((rewardsData || []).map(r => r.creator_id).filter(Boolean)));
+      let profileMap = new Map<string, { display_name: string | null; avatar_url: string | null }>();
+
+      if (creatorIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id,display_name,avatar_url')
+          .in('user_id', creatorIds);
+
+        console.log('Profiles response:', { profilesData, profilesError });
+        if (!profilesError && profilesData) {
+          profileMap = new Map(profilesData.map(p => [p.user_id, { display_name: p.display_name, avatar_url: p.avatar_url }]));
+        }
       }
-      
-      console.log('Setting rewards:', data);
-      setRewards((data as any) || []);
+
+      const enriched = (rewardsData || []).map((r: any) => ({
+        ...r,
+        profiles: profileMap.get(r.creator_id) || null,
+      }));
+
+      setRewards(enriched as any);
     } catch (error) {
       console.error('Error fetching rewards:', error);
       toast({
-        title: "Error",
-        description: "Failed to load marketplace",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load marketplace',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
