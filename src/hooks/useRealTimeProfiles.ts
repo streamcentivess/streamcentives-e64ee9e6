@@ -8,14 +8,11 @@ export interface PublicProfile {
   display_name: string;
   avatar_url?: string;
   bio?: string;
-  location?: string;
-  interests?: string;
-  age?: string;
   country_name?: string;
   spotify_connected?: boolean;
   merch_store_connected?: boolean;
-  merch_store_url?: string;
   created_at: string;
+  // Removed sensitive fields: location, interests, age, merch_store_url
 }
 
 export const useRealTimeProfiles = () => {
@@ -24,17 +21,18 @@ export const useRealTimeProfiles = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Load initial profiles
+  // Load initial profiles - now uses the secure approach
   const loadProfiles = async () => {
     try {
       setLoading(true);
       setError(null);
       
+      // Query profiles table directly, RLS will filter appropriately
       const { data, error: fetchError } = await supabase
-        .from('public_profiles')
-        .select('*')
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
         .neq('user_id', user?.id || '')
-        .order('created_at', { ascending: false }) as any;
+        .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
       setProfiles((data || []) as PublicProfile[]);
@@ -57,12 +55,13 @@ export const useRealTimeProfiles = () => {
         return;
       }
 
+      // Search only in safe public fields
       const { data, error: searchError } = await supabase
-        .from('public_profiles')
-        .select('*')
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
         .neq('user_id', user?.id || '')
-        .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,interests.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`)
-        .order('created_at', { ascending: false }) as any;
+        .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%`)
+        .order('created_at', { ascending: false });
 
       if (searchError) throw searchError;
       setProfiles((data || []) as PublicProfile[]);
@@ -78,10 +77,10 @@ export const useRealTimeProfiles = () => {
   const getProfile = async (userId: string): Promise<PublicProfile | null> => {
     try {
       const { data, error: fetchError } = await supabase
-        .from('public_profiles')
-        .select('*')
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
         .eq('user_id', userId)
-        .single() as any;
+        .single();
 
       if (fetchError) {
         if (fetchError.code === 'PGRST116') {

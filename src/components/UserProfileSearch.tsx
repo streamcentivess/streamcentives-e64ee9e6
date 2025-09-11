@@ -13,14 +13,11 @@ interface PublicProfile {
   display_name: string;
   avatar_url?: string;
   bio?: string;
-  location?: string;
-  interests?: string;
-  age?: string;
   country_name?: string;
   spotify_connected?: boolean;
   merch_store_connected?: boolean;
-  merch_store_url?: string;
   created_at: string;
+  // Removed sensitive fields: location, interests, age, merch_store_url
 }
 
 interface UserProfileSearchProps {
@@ -83,8 +80,8 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('public_profiles')
-        .select('*')
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
         .neq('user_id', user?.id || '') // Exclude current user
         .order('created_at', { ascending: false })
         .limit(20);
@@ -102,10 +99,10 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('public_profiles')
-        .select('*')
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
         .neq('user_id', user?.id || '') // Exclude current user
-        .or(`username.ilike.%${term}%,display_name.ilike.%${term}%,bio.ilike.%${term}%,interests.ilike.%${term}%,location.ilike.%${term}%`)
+        .or(`username.ilike.%${term}%,display_name.ilike.%${term}%,bio.ilike.%${term}%`)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -130,7 +127,7 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
-          placeholder="Search users by name, username, interests..."
+          placeholder="Search users by name, username, bio..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
@@ -174,15 +171,10 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
                   )}
 
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {profile.location && (
+                    {profile.country_name && (
                       <Badge variant="secondary" className="text-xs">
                         <MapPin className="h-3 w-3 mr-1" />
-                        {profile.location}
-                      </Badge>
-                    )}
-                    {profile.age && (
-                      <Badge variant="secondary" className="text-xs">
-                        Age {profile.age}
+                        {profile.country_name}
                       </Badge>
                     )}
                     {profile.spotify_connected && (
@@ -198,12 +190,6 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
                       </Badge>
                     )}
                   </div>
-
-                  {profile.interests && (
-                    <p className="text-xs text-muted-foreground">
-                      Interests: {profile.interests}
-                    </p>
-                  )}
                 </div>
               </div>
             </CardContent>
