@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
+import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 interface Profile {
   id?: string;
   user_id: string;
@@ -369,7 +370,8 @@ const UniversalProfile = () => {
             cash_reward,
             end_date,
             image_url,
-            profiles (
+            creator_id,
+            profiles!campaigns_creator_id_fkey (
               display_name,
               avatar_url
             )
@@ -1227,69 +1229,32 @@ const UniversalProfile = () => {
           <TabsContent value="campaigns" className="mt-6">
             <Card className="card-modern">
               <CardContent className="p-6">
-                {isOwnProfile && userRole === 'fan' && joinedCampaigns.length > 0 ? (
-                  // Show joined campaigns for fans
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold mb-4">My Joined Campaigns</h3>
-                    <div className="grid gap-4">
-                      {joinedCampaigns.map((participation) => {
-                        const campaign = participation.campaigns;
-                        return (
-                          <Card key={participation.campaign_id} className="p-4 border border-border/50 hover:border-border transition-colors">
-                            <div className="flex items-center gap-4">
-                              {campaign.image_url && (
-                                <img
-                                  src={campaign.image_url}
-                                  alt={campaign.title}
-                                  className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                                />
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-2">
-                                  <h4 className="font-medium text-foreground truncate">{campaign.title}</h4>
-                                  <Badge variant={participation.status === 'completed' ? 'default' : 'secondary'}>
-                                    {participation.status}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{campaign.description}</p>
-                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                  <span className="flex items-center gap-1">
-                                    <Trophy className="h-3 w-3" />
-                                    {campaign.xp_reward} XP
-                                  </span>
-                                  {campaign.cash_reward && (
-                                    <span className="flex items-center gap-1">
-                                      <DollarSign className="h-3 w-3" />
-                                      ${campaign.cash_reward}
-                                    </span>
-                                  )}
-                                  <span>Progress: {participation.progress || 0}%</span>
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center mb-6">
-                    <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50 text-muted-foreground" />
-                    {isOwnProfile ?
-                  // Show different content based on user's role
-                  userRole === 'creator' ? <div className="space-y-4">
+                <UserCampaignDisplay 
+                  campaigns={joinedCampaigns} 
+                  userId={profile?.user_id || user?.id || ''} 
+                  isOwnProfile={isOwnProfile} 
+                />
+                
+                {/* Create/Join Campaign CTA */}
+                {joinedCampaigns.length === 0 && isOwnProfile && (
+                  <div className="mt-6 pt-6 border-t">
+                    <div className="text-center space-y-4">
+                      {userRole === 'creator' ? (
+                        <div className="space-y-4">
                           <p className="text-muted-foreground">No campaigns created yet. Start building your community with your first campaign!</p>
                           <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
                             Create Campaign
                           </Button>
-                        </div> : <div className="space-y-4">
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
                           <p className="text-muted-foreground">No campaigns joined yet. Discover and join campaigns to start earning XP!</p>
                           <Button onClick={() => navigate('/fan-campaigns')} className="bg-gradient-primary hover:opacity-90">
                             Join Campaigns
                           </Button>
-                        </div> :
-                  // Viewing someone else's profile - show generic message
-                  <p className="text-muted-foreground">No public campaign activity to display.</p>}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
