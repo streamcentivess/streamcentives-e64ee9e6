@@ -112,21 +112,26 @@ const FanCampaigns = () => {
     
     setLoading(true);
     try {
-      // Get all active campaigns with creator profiles
+      // Get all active campaigns
       const { data: campaignData, error } = await supabase
         .from('campaigns')
-        .select(`
-          *,
-          profiles:creator_id (
-            display_name,
-            username,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Get creator profiles for these campaigns
+      let creatorProfiles: any[] = [];
+      if (campaignData && campaignData.length > 0) {
+        const creatorIds = [...new Set(campaignData.map(c => c.creator_id))];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, username, avatar_url')
+          .in('user_id', creatorIds);
+        
+        creatorProfiles = profiles || [];
+      }
 
       // Get participation counts and user's join status
       const campaignIds = campaignData?.map(c => c.id) || [];
@@ -155,10 +160,11 @@ const FanCampaigns = () => {
       const processedCampaigns = campaignData?.map(campaign => {
         const participantCount = participationData.filter(p => p.campaign_id === campaign.id).length;
         const isJoined = userParticipation.some(p => p.campaign_id === campaign.id);
+        const creatorProfile = creatorProfiles.find(p => p.user_id === campaign.creator_id);
         
         return {
           ...campaign,
-          creator_profile: campaign.profiles as any,
+          creator_profile: creatorProfile,
           participant_count: participantCount,
           is_joined: isJoined
         };
