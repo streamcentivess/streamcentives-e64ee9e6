@@ -15,34 +15,83 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, targetAudience, userId } = await req.json();
+    const { prompt, targetAudience, kpiGoal, targetMetric, timeframe, images = [], userId } = await req.json();
 
     console.log('Generating AI campaign for user:', userId);
     console.log('Prompt:', prompt);
     console.log('Target audience:', targetAudience);
+    console.log('KPI Goal:', kpiGoal);
+    console.log('Target Metric:', targetMetric);
+    console.log('Timeframe:', timeframe);
+    console.log('Images provided:', images.length);
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
 
-    const systemPrompt = `You are an expert music campaign strategist. Create engaging fan engagement campaigns for music creators.
+    const systemPrompt = `You are an expert KPI-driven music campaign strategist and growth hacker. Create data-driven fan engagement campaigns that deliver measurable results.
+
+CRITICAL: You must analyze the provided KPI goal and create a campaign specifically designed to achieve it with concrete, trackable metrics.
 
 Generate a JSON response with this exact structure:
 {
-  "title": "Creative campaign title (max 60 chars)",
-  "description": "Detailed campaign description (2-3 sentences)",
+  "title": "Results-focused campaign title (max 60 chars)",
+  "description": "Strategic campaign description explaining the growth mechanism (2-3 sentences)",
   "type": "streaming|sharing|merchandise|voting|upload",
-  "xpReward": number (50-500),
-  "cashReward": number (0-100, optional),
-  "targetValue": number (realistic goal),
-  "targetMetric": "streams|shares|purchases|votes|uploads",
-  "requirements": "Clear participation instructions",
-  "endDate": "ISO date string (1-4 weeks from now)"
+  "xpReward": number (50-500, scaled to incentivize the KPI goal),
+  "cashReward": number (0-100, optional bonus for top performers),
+  "targetValue": number (realistic but ambitious goal based on provided target metric),
+  "targetMetric": "streams|shares|purchases|votes|uploads|followers|engagement",
+  "requirements": "Clear step-by-step participation instructions that drive the KPI",
+  "endDate": "ISO date string (based on provided timeframe)",
+  "strategy": "Growth strategy explaining how this campaign drives the specific KPI",
+  "kpiBreakdown": {
+    "dailyTarget": "number per day to reach goal",
+    "participantImpact": "expected contribution per participant",
+    "scalingFactors": "key elements that multiply results"
+  }
 }
 
-Make campaigns exciting, achievable, and tailored to the target audience. Focus on community building and fan engagement.`;
+Focus on:
+- ROI-driven reward structures
+- Viral mechanisms and network effects
+- Clear conversion funnels
+- Measurable engagement tactics
+- Scalable growth strategies`;
 
-    const userPrompt = `Campaign idea: ${prompt}\nTarget audience: ${targetAudience}\n\nGenerate an exciting campaign that this audience would love to participate in.`;
+    // Build contextual prompt with all provided information
+    let userPrompt = `
+KPI GOAL: ${kpiGoal}
+TARGET METRIC: ${targetMetric || 'Not specified - suggest appropriate metrics'}
+TIMEFRAME: ${timeframe}
+CAMPAIGN STRATEGY: ${prompt}
+TARGET AUDIENCE: ${targetAudience}
+
+${images.length > 0 ? `REFERENCE IMAGES PROVIDED: ${images.length} images uploaded for context and visual inspiration.` : ''}
+
+Create a KPI-driven campaign that specifically targets "${kpiGoal}" with measurable outcomes. The campaign must include:
+
+1. Clear conversion mechanics that drive the target KPI
+2. Scalable engagement strategies
+3. Data-driven reward structures
+4. Viral growth components
+5. Specific tactics that convert participation into KPI achievement
+
+Make it results-focused, measurable, and designed for maximum ROI on creator investment.`;
+
+    // Prepare messages array
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ];
+
+    // If images are provided, add them to the conversation for context
+    if (images.length > 0) {
+      messages.push({
+        role: 'user',
+        content: `I've provided ${images.length} reference image(s) to give you visual context for the campaign. Use these to inform the campaign strategy, visual elements, and audience targeting.`
+      });
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -52,12 +101,9 @@ Make campaigns exciting, achievable, and tailored to the target audience. Focus 
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.8,
-        max_tokens: 800,
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1200,
       }),
     });
 
