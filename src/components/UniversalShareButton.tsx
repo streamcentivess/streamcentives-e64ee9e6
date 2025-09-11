@@ -11,6 +11,7 @@ import { Share2, Copy, Twitter, Facebook, MessageCircle, Coins, Instagram, Mail,
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { UserProfileSearch } from '@/components/UserProfileSearch';
 
 interface UniversalShareButtonProps {
   type: 'post' | 'profile' | 'reward' | 'campaign';
@@ -38,6 +39,7 @@ export const UniversalShareButton: React.FC<UniversalShareButtonProps> = ({
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [messageContent, setMessageContent] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{id: string; username: string; display_name: string} | null>(null);
 
   // Generate the shareable URL
   const getShareableUrl = () => {
@@ -168,17 +170,34 @@ export const UniversalShareButton: React.FC<UniversalShareButtonProps> = ({
       return;
     }
 
+    if (!selectedUser) {
+      toast.error('Please select a user to send the message to');
+      return;
+    }
+
     setSendingMessage(true);
     try {
-      // This would need to be implemented with a user selector
-      // For now, we'll just copy the content to clipboard with the link
+      // Send the message with the shared link
       const fullMessage = `${messageContent}\n\nCheck this out: ${shareUrl}`;
-      await navigator.clipboard.writeText(fullMessage);
-      toast.success('Message with link copied to clipboard!');
+      
+      const { data: messageId, error } = await supabase.rpc('send_message_with_xp', {
+        recipient_id_param: selectedUser.id,
+        content_param: fullMessage,
+        xp_cost_param: 100 // Default XP cost
+      });
+
+      if (error) throw error;
+
+      toast.success(`Message sent to ${selectedUser.display_name || selectedUser.username}!`);
       setMessageDialogOpen(false);
       setMessageContent('');
-    } catch (error) {
-      toast.error('Failed to prepare message');
+      setSelectedUser(null);
+      
+      // Award XP for sharing via message
+      await handleShare('streamcentives');
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast.error(error.message || 'Failed to send message');
     } finally {
       setSendingMessage(false);
     }
@@ -232,21 +251,56 @@ export const UniversalShareButton: React.FC<UniversalShareButtonProps> = ({
                       <DialogTitle>Send Private Message</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        Add a personal message to share with the link:
-                      </p>
-                      <Textarea
-                        placeholder="Add your message here..."
-                        value={messageContent}
-                        onChange={(e) => setMessageContent(e.target.value)}
-                        className="min-h-[100px]"
-                      />
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Select User:</label>
+                        {selectedUser ? (
+                          <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{selectedUser.display_name}</p>
+                              <p className="text-xs text-muted-foreground">@{selectedUser.username}</p>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setSelectedUser(null)}
+                            >
+                              Change
+                            </Button>
+                          </div>
+                        ) : (
+                          <UserProfileSearch
+                            onProfileSelect={(profile) => setSelectedUser({
+                              id: profile.user_id,
+                              username: profile.username,
+                              display_name: profile.display_name
+                            })}
+                          />
+                        )}
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Message:</label>
+                        <Textarea
+                          placeholder="Add your message here..."
+                          value={messageContent}
+                          onChange={(e) => setMessageContent(e.target.value)}
+                          className="min-h-[100px]"
+                        />
+                      </div>
+                      
                       <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setMessageDialogOpen(false)}>
+                        <Button variant="outline" onClick={() => {
+                          setMessageDialogOpen(false);
+                          setSelectedUser(null);
+                          setMessageContent('');
+                        }}>
                           Cancel
                         </Button>
-                        <Button onClick={sendPrivateMessage} disabled={sendingMessage}>
-                          {sendingMessage ? 'Preparing...' : 'Copy Message & Link'}
+                        <Button 
+                          onClick={sendPrivateMessage} 
+                          disabled={sendingMessage || !selectedUser || !messageContent.trim()}
+                        >
+                          {sendingMessage ? 'Sending...' : 'Send Message'}
                         </Button>
                       </div>
                     </div>
