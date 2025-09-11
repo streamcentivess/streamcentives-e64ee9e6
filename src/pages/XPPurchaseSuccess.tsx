@@ -36,6 +36,11 @@ export default function XPPurchaseSuccess() {
             title: "Purchase Successful!",
             description: `${data.xp_added} XP has been added to your account`,
           });
+          
+          // Refresh the page after a short delay to update XP balance
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
         } else {
           throw new Error(data?.error || "Failed to verify purchase");
         }

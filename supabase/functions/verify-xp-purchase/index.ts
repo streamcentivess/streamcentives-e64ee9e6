@@ -61,6 +61,24 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Record the purchase in purchase history
+    const { error: purchaseError } = await supabaseService
+      .from("xp_purchases")
+      .insert({
+        user_id: userId,
+        stripe_session_id: sessionId,
+        amount_paid_cents: session.amount_total || 0,
+        xp_amount: xpAmount,
+        currency: session.currency || 'usd',
+        stripe_price_id: priceId,
+        purchase_date: new Date().toISOString()
+      });
+
+    if (purchaseError) {
+      console.error('Failed to record purchase history:', purchaseError);
+      // Continue with XP award even if purchase history fails
+    }
+
     // Add XP to user's balance
     const { error } = await supabaseService
       .from("user_xp_balances")

@@ -1053,6 +1053,42 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_purchases: {
+        Row: {
+          amount_paid_cents: number
+          created_at: string
+          currency: string
+          id: string
+          purchase_date: string
+          stripe_price_id: string
+          stripe_session_id: string
+          user_id: string
+          xp_amount: number
+        }
+        Insert: {
+          amount_paid_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          purchase_date?: string
+          stripe_price_id: string
+          stripe_session_id: string
+          user_id: string
+          xp_amount: number
+        }
+        Update: {
+          amount_paid_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          purchase_date?: string
+          stripe_price_id?: string
+          stripe_session_id?: string
+          user_id?: string
+          xp_amount?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       conversation_participants: {

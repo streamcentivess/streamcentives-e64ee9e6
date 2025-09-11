@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
+import SettingsTab from '@/components/SettingsTab';
 
 interface Profile {
   id: string;
@@ -385,27 +386,31 @@ const EditProfile = () => {
           </CardContent>
         </Card>
 
-        {/* Account Settings */}
+        {/* Account Settings with Tabs */}
         <Card className="card-modern">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Account Settings
+              Settings
             </CardTitle>
             <CardDescription>
-              Manage your account preferences and legal information
+              Manage your account, view purchases, and update preferences
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => navigate('/billing-payments')}
-            >
-              <CreditCard className="h-4 w-4 mr-2" />
-              Billing & Payments
-            </Button>
+          <CardContent className="p-0">
+            <SettingsTab />
+          </CardContent>
+        </Card>
 
+        {/* Password Management Section */}
+        <Card className="card-modern">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Password Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <Button
               variant="outline"
               className="w-full justify-start"
@@ -415,140 +420,88 @@ const EditProfile = () => {
               {isOAuthUser ? 'Set Password' : 'Change Password'}
             </Button>
 
-            {/* Password Change Form */}
-            {showPasswordForm && (
-              <Card className="border-dashed">
-                <CardContent className="p-6">
-                  <div className="mb-4">
-                    <h3 className="font-semibold text-lg">
-                      {isOAuthUser ? 'Set Password for Your Account' : 'Change Password'}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {isOAuthUser 
-                        ? 'Set a password so you can sign in with your username/email and password'
-                        : 'Update your current password'
-                      }
-                    </p>
+          {/* Password Change Form */}
+          {showPasswordForm && (
+            <Card className="border-dashed mt-4">
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-lg">
+                    {isOAuthUser ? 'Set Password for Your Account' : 'Change Password'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {isOAuthUser 
+                      ? 'Set a password so you can sign in with your username/email and password'
+                      : 'Update your current password'
+                    }
+                  </p>
+                </div>
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  {!isOAuthUser && (
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <Input
+                        id="currentPassword"
+                        type="password"
+                        value={passwordForm.currentPassword}
+                        onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                        placeholder="Enter current password"
+                        required
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">{isOAuthUser ? 'Password' : 'New Password'}</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                      placeholder={isOAuthUser ? "Create a password (min 6 characters)" : "Enter new password (min 6 characters)"}
+                      minLength={6}
+                      required
+                    />
                   </div>
-                  <form onSubmit={handlePasswordChange} className="space-y-4">
-                    {!isOAuthUser && (
-                      <div className="space-y-2">
-                        <Label htmlFor="currentPassword">Current Password</Label>
-                        <Input
-                          id="currentPassword"
-                          type="password"
-                          value={passwordForm.currentPassword}
-                          onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                          placeholder="Enter current password"
-                          required
-                        />
-                      </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      placeholder="Confirm password"
+                      required
+                    />
+                    {passwordForm.newPassword && passwordForm.confirmPassword && 
+                     passwordForm.newPassword !== passwordForm.confirmPassword && (
+                      <p className="text-sm text-destructive">Passwords do not match</p>
                     )}
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">{isOAuthUser ? 'Password' : 'New Password'}</Label>
-                      <Input
-                        id="newPassword"
-                        type="password"
-                        value={passwordForm.newPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                        placeholder={isOAuthUser ? "Create a password (min 6 characters)" : "Enter new password (min 6 characters)"}
-                        minLength={6}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        placeholder="Confirm password"
-                        required
-                      />
-                      {passwordForm.newPassword && passwordForm.confirmPassword && 
-                       passwordForm.newPassword !== passwordForm.confirmPassword && (
-                        <p className="text-sm text-destructive">Passwords do not match</p>
-                      )}
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button 
-                        type="submit" 
-                        disabled={saving || passwordForm.newPassword !== passwordForm.confirmPassword}
-                        className="bg-gradient-primary hover:opacity-90"
-                      >
-                        {saving ? 'Setting...' : (isOAuthUser ? 'Set Password' : 'Update Password')}
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => {
-                          setShowPasswordForm(false);
-                          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            )}
-
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => toast({ title: "Coming Soon", description: "Notification Preferences coming soon!" })}
-            >
-              <Bell className="h-4 w-4 mr-2" />
-              Notification Preferences
-            </Button>
-
-            <div className="border-t pt-4">
-              <p className="text-sm font-medium mb-3 text-muted-foreground">Legal Information</p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/terms-conditions')}
-                >
-                  Terms & Conditions
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/privacy-policy')}
-                >
-                  Privacy Policy
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
-
-            <Button
-              variant="outline"
-              className="w-full justify-start text-destructive hover:text-destructive"
-              onClick={signOut}
-            >
-              Log Out
-            </Button>
-
-            <Button
-              variant="outline"
-              className="w-full justify-start text-destructive hover:text-destructive"
-              onClick={() => toast({ 
-                title: "Account Deletion", 
-                description: "Contact support to delete your account.",
-                variant: "destructive"
-              })}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Account
-            </Button>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      type="submit" 
+                      disabled={saving || passwordForm.newPassword !== passwordForm.confirmPassword}
+                      className="bg-gradient-primary hover:opacity-90"
+                    >
+                      {saving ? 'Setting...' : (isOAuthUser ? 'Set Password' : 'Update Password')}
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowPasswordForm(false);
+                        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
           </CardContent>
         </Card>
 
