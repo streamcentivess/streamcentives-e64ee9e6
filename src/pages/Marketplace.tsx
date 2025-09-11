@@ -111,7 +111,7 @@ const Marketplace = () => {
         .from('rewards')
         .select(`
           *,
-          profiles!creator_id (
+          profiles:creator_id (
             display_name,
             avatar_url
           )
