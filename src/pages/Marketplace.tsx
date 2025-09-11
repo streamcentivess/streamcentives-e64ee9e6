@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useOptimizedRealtime } from '@/hooks/useOptimizedRealtime';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,57 +51,6 @@ const Marketplace = () => {
     fetchRewards();
   }, []);
 
-  // Real-time subscription for new rewards
-  useEffect(() => {
-    const channel = supabase
-      .channel('rewards-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'rewards',
-          filter: `is_active=eq.true`
-        },
-        (payload) => {
-          console.log('New reward created:', payload);
-          // Refresh rewards when a new one is created
-          fetchRewards();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'rewards'
-        },
-        (payload) => {
-          console.log('Reward updated:', payload);
-          // Refresh rewards when one is updated (like quantity changes)
-          fetchRewards();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'reward_redemptions'
-        },
-        (payload) => {
-          console.log('Reward redeemed:', payload);
-          // Refresh rewards when someone redeems to update quantities
-          fetchRewards();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
   useEffect(() => {
     filterAndSortRewards();
   }, [rewards, searchTerm, selectedType, selectedRarity, sortBy]);
@@ -133,6 +83,22 @@ const Marketplace = () => {
       setLoading(false);
     }
   };
+
+  // Optimized real-time subscription for rewards
+  useOptimizedRealtime({
+    table: 'rewards',
+    event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+    onUpdate: fetchRewards,
+    debounceMs: 300
+  });
+
+  // Real-time subscription for reward redemptions
+  useOptimizedRealtime({
+    table: 'reward_redemptions',
+    event: 'INSERT',
+    onUpdate: fetchRewards,
+    debounceMs: 300
+  });
 
   const filterAndSortRewards = () => {
     let filtered = rewards.filter(reward => {
