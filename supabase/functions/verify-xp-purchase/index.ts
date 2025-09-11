@@ -79,24 +79,15 @@ serve(async (req) => {
       // Continue with XP award even if purchase history fails
     }
 
-    // Add XP to user's balance
-    const { error } = await supabaseService
-      .from("user_xp_balances")
-      .upsert({
-        user_id: userId,
-        current_xp: xpAmount,
-        total_earned_xp: xpAmount,
-      }, {
-        onConflict: 'user_id',
-        ignoreDuplicates: false
-      });
+    // Add XP to user's balance using the function that properly handles addition
+    const { error } = await supabaseService.rpc('handle_xp_purchase', {
+      user_id_param: userId,
+      xp_amount_param: xpAmount
+    });
 
     if (error) {
-      // If upsert failed, try to update existing record
-      await supabaseService.rpc('handle_xp_purchase', {
-        user_id_param: userId,
-        xp_amount_param: xpAmount
-      });
+      console.error('Failed to add XP to user balance:', error);
+      throw new Error('Failed to add XP to user balance');
     }
 
     return new Response(JSON.stringify({
