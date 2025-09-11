@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Crown, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Custom XP Coin component
 const XPCoin = ({ className }: { className?: string }) => (
@@ -73,7 +75,73 @@ const XP_PACKAGES = [
 
 export default function PurchaseXP() {
   const [loading, setLoading] = useState<string | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [subscriptionData, setSubscriptionData] = useState<any>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Check subscription status on mount
+  useEffect(() => {
+    if (user) {
+      checkSubscription();
+    }
+  }, [user]);
+
+  const checkSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) throw error;
+      setSubscriptionData(data);
+    } catch (error: any) {
+      console.error("Failed to check subscription:", error);
+    }
+  };
+
+  const handleSubscriptionCheckout = async () => {
+    try {
+      setSubscriptionLoading(true);
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: "price_1S65rm2XJfhJAhD8TGvfijgk" }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create subscription checkout",
+        variant: "destructive",
+      });
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      setSubscriptionLoading(true);
+      
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to open customer portal",
+        variant: "destructive",
+      });
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
 
   const handlePurchase = async (priceId: string) => {
     try {
@@ -190,6 +258,114 @@ export default function PurchaseXP() {
           <div className="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 px-6 py-2 rounded-full text-sm font-bold">
             ⭐ Most Popular
           </div>
+        </div>
+
+        {/* Creator Pro Subscription Section */}
+        <div className="mt-16 mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Unlock Creator <span className="text-yellow-400">Pro</span>
+            </h2>
+            <p className="text-blue-200 text-lg">
+              Get unlimited features and premium tools for serious creators
+            </p>
+          </div>
+          
+          <Card className="max-w-lg mx-auto relative overflow-hidden backdrop-blur-sm bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border-yellow-500/50 shadow-2xl shadow-yellow-400/20">
+            {/* Premium glow effect */}
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 animate-pulse"></div>
+            </div>
+            
+            <CardHeader className="text-center relative z-10 pt-8">
+              <div className="flex justify-center mb-4">
+                <Badge className="bg-yellow-500 text-black font-bold px-4 py-1">
+                  <Crown className="h-4 w-4 mr-2" />
+                  PREMIUM
+                </Badge>
+              </div>
+              <CardTitle className="text-3xl font-bold text-white mb-2">Creator Pro</CardTitle>
+              <CardDescription className="text-yellow-200 text-lg">
+                Everything you need to monetize your content
+              </CardDescription>
+              
+              <div className="text-5xl font-bold text-yellow-300 mt-4 mb-2">
+                $8.99
+                <span className="text-lg text-yellow-200">/month</span>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="relative z-10 pb-8">
+              {/* Features list */}
+              <div className="space-y-3 mb-6">
+                {[
+                  "Unlimited XP messaging",
+                  "Advanced analytics dashboard", 
+                  "Custom reward creation",
+                  "Priority customer support",
+                  "Exclusive creator tools",
+                  "Revenue optimization features"
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center text-white">
+                    <Check className="h-5 w-5 text-yellow-400 mr-3 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Action button */}
+              {subscriptionData?.subscribed ? (
+                <Button 
+                  onClick={handleManageSubscription}
+                  disabled={subscriptionLoading}
+                  className="w-full h-12 font-semibold text-lg bg-yellow-500 hover:bg-yellow-400 text-black shadow-lg shadow-yellow-400/25"
+                >
+                  {subscriptionLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Crown className="mr-2 h-5 w-5" />
+                      Manage Subscription
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleSubscriptionCheckout}
+                  disabled={subscriptionLoading}
+                  className="w-full h-12 font-semibold text-lg bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black shadow-lg shadow-yellow-400/25"
+                >
+                  {subscriptionLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Crown className="mr-2 h-5 w-5" />
+                      Start Pro Subscription
+                    </>
+                  )}
+                </Button>
+              )}
+              
+              {subscriptionData?.subscribed && (
+                <div className="mt-4 p-3 bg-green-900/30 border border-green-500/50 rounded-lg">
+                  <p className="text-green-300 text-sm text-center">
+                    ✅ Active {subscriptionData.subscription_tier} subscription
+                    {subscriptionData.subscription_end && (
+                      <span className="block text-green-400 text-xs mt-1">
+                        Renews on {new Date(subscriptionData.subscription_end).toLocaleDateString()}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 
