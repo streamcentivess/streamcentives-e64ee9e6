@@ -151,27 +151,27 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-3 -mx-4 px-4 md:mx-0 md:px-0 md:space-y-6">
       {activeCampaigns.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <Trophy className="h-4 w-4 text-blue-400" />
-            <h3 className="text-base font-semibold">Active Campaigns ({activeCampaigns.length})</h3>
+          <div className="flex items-center gap-2 mb-2 md:mb-3">
+            <Trophy className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-400" />
+            <h3 className="text-sm md:text-base font-semibold">Active ({activeCampaigns.length})</h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 md:space-y-2">
             {activeCampaigns.map((participation) => (
               <div 
                 key={participation.campaign_id} 
-                className="bg-card/30 border border-border/30 rounded-xl p-3 md:p-4 hover:bg-card/50 transition-colors"
+                className="bg-card/30 border border-border/30 rounded-lg md:rounded-xl p-2.5 md:p-4 hover:bg-card/50 transition-colors"
               >
-                <div className="flex items-start gap-3">
-                  <div className="text-xl flex-shrink-0 mt-0.5">
+                <div className="flex items-start gap-2 md:gap-3">
+                  <div className="text-lg md:text-xl flex-shrink-0 mt-0.5">
                     {getCampaignTypeIcon(participation.campaigns.type)}
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <h4 className="font-medium text-sm truncate">
+                    <div className="flex items-center justify-between gap-1.5 md:gap-2 mb-1">
+                      <h4 className="font-medium text-xs md:text-sm truncate">
                         {participation.campaigns.title}
                       </h4>
                       {!isOwnProfile && user && (
@@ -180,10 +180,10 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
                           variant="outline"
                           onClick={() => handleJoinCampaign(participation.campaign_id)}
                           disabled={!!joinLoading}
-                          className="text-xs px-2 py-1 h-7 flex-shrink-0"
+                          className="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 h-6 md:h-7 flex-shrink-0"
                         >
                           {joinLoading === participation.campaign_id ? (
-                            <div className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
+                            <div className="h-2.5 w-2.5 md:h-3 md:w-3 animate-spin rounded-full border border-primary border-t-transparent" />
                           ) : (
                             "Join"
                           )}
@@ -191,29 +191,29 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
                       )}
                     </div>
                     
-                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                    <p className="text-[10px] md:text-xs text-muted-foreground mb-1.5 md:mb-2 line-clamp-2">
                       {participation.campaigns.description}
                     </p>
                     
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <Badge className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-400 border-blue-500/20">
+                    <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                      <Badge className="text-[10px] md:text-xs px-1.5 md:px-2 py-0 md:py-0.5 bg-blue-500/10 text-blue-400 border-blue-500/20">
                         In Progress
                       </Badge>
                       
                       {participation.progress !== null && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-[10px] md:text-xs text-muted-foreground">
                           {participation.progress}% complete
                         </span>
                       )}
                       
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Zap className="h-3 w-3" />
+                      <div className="flex items-center gap-0.5 md:gap-1 text-[10px] md:text-xs text-muted-foreground">
+                        <Zap className="h-2.5 w-2.5 md:h-3 md:w-3" />
                         <span>+{participation.campaigns.xp_reward} XP</span>
                       </div>
                       
                       {participation.campaigns.end_date && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
+                        <div className="flex items-center gap-0.5 md:gap-1 text-[10px] md:text-xs text-muted-foreground">
+                          <Calendar className="h-2.5 w-2.5 md:h-3 md:w-3" />
                           <span>Ends {new Date(participation.campaigns.end_date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}</span>
                         </div>
                       )}
@@ -228,51 +228,51 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
 
       {/* Share Section - Instagram Style */}
       {activeCampaigns.length > 0 && (
-        <div className="bg-card/20 border border-border/20 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <ExternalLink className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-sm">Share Campaigns & Earn XP</h3>
+        <div className="bg-card/20 border border-border/20 rounded-lg md:rounded-xl p-3 md:p-4 -mx-4 md:mx-0">
+          <div className="flex items-center justify-between mb-2 md:mb-3">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <ExternalLink className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" />
+              <h3 className="font-semibold text-xs md:text-sm">Share Campaigns & Earn XP</h3>
             </div>
-            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+            <ExternalLink className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             <div>
-              <p className="font-medium text-sm mb-1">Share on Streamcentives</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="font-medium text-xs md:text-sm mb-0.5 md:mb-1">Share on Streamcentives</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
                 Repost campaigns to your feed and earn XP when others engage
               </p>
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-primary">+10 XP per share</span>
-              <ExternalLink className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs md:text-sm font-medium text-primary">+10 XP per share</span>
+              <ExternalLink className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
             </div>
           </div>
         </div>
       )}
 
       {completedCampaigns.length > 0 && (
-        <div className="pt-2">
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <Star className="h-4 w-4 text-yellow-400" />
-            <h3 className="text-base font-semibold">Completed ({completedCampaigns.length})</h3>
+        <div className="pt-1 md:pt-2">
+          <div className="flex items-center gap-2 mb-2 md:mb-3">
+            <Star className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-400" />
+            <h3 className="text-sm md:text-base font-semibold">Completed ({completedCampaigns.length})</h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 md:space-y-2">
             {completedCampaigns.map((participation) => (
               <div 
                 key={participation.campaign_id} 
-                className="bg-card/20 border border-border/20 rounded-xl p-3 md:p-4 opacity-75"
+                className="bg-card/20 border border-border/20 rounded-lg md:rounded-xl p-2.5 md:p-4 opacity-75"
               >
-                <div className="flex items-start gap-3">
-                  <div className="text-xl flex-shrink-0 mt-0.5 grayscale">
+                <div className="flex items-start gap-2 md:gap-3">
+                  <div className="text-lg md:text-xl flex-shrink-0 mt-0.5 grayscale">
                     {getCampaignTypeIcon(participation.campaigns.type)}
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <h4 className="font-medium text-sm truncate">
+                    <div className="flex items-center justify-between gap-1.5 md:gap-2 mb-1">
+                      <h4 className="font-medium text-xs md:text-sm truncate">
                         {participation.campaigns.title}
                       </h4>
                       {!isOwnProfile && user && (
@@ -292,22 +292,22 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
                       )}
                     </div>
                     
-                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                    <p className="text-[10px] md:text-xs text-muted-foreground mb-1.5 md:mb-2 line-clamp-2">
                       {participation.campaigns.description}
                     </p>
                     
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <Badge className="text-xs px-2 py-0.5 bg-green-500/10 text-green-400 border-green-500/20">
+                    <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                      <Badge className="text-[10px] md:text-xs px-1.5 md:px-2 py-0 md:py-0.5 bg-green-500/10 text-green-400 border-green-500/20">
                         ✓ Completed
                       </Badge>
                       
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Zap className="h-3 w-3" />
+                      <div className="flex items-center gap-0.5 md:gap-1 text-[10px] md:text-xs text-muted-foreground">
+                        <Zap className="h-2.5 w-2.5 md:h-3 md:w-3" />
                         <span>+{participation.campaigns.xp_reward} XP earned</span>
                       </div>
                       
                       {participation.campaigns.cash_reward && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-[10px] md:text-xs text-muted-foreground">
                           ${participation.campaigns.cash_reward} earned
                         </span>
                       )}
