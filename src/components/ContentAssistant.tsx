@@ -88,14 +88,11 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('ai_generated_content')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        setGeneratedContent(data);
+      // For now, load from localStorage until types are updated
+      const stored = localStorage.getItem(`ai_content_${user.id}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setGeneratedContent(parsed || []);
       }
     } catch (error) {
       console.error('Error loading generated content:', error);
@@ -155,7 +152,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
 
       if (error) throw error;
 
-      // Save generated content
+      // Save generated content temporarily to localStorage
       const contentToSave = data.generatedContent.map((item: any) => ({
         ...item,
         user_id: user.id,
@@ -163,20 +160,20 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
         created_at: new Date().toISOString()
       }));
 
-      const { error: saveError } = await supabase
-        .from('ai_generated_content')
-        .insert(contentToSave);
+      // Save to localStorage for now
+      const existing = localStorage.getItem(`ai_content_${user.id}`);
+      const existingContent = existing ? JSON.parse(existing) : [];
+      const updatedContent = [...contentToSave, ...existingContent];
+      localStorage.setItem(`ai_content_${user.id}`, JSON.stringify(updatedContent));
 
-      if (!saveError) {
-        setGeneratedContent(prev => [...contentToSave, ...prev]);
-        toast.success(`Generated ${contentToSave.length} pieces of content!`);
-        
-        // Clear form
-        setContentPrompt('');
-        setTargetAudience('');
-        setContentGoal('');
-        setReferenceImages([]);
-      }
+      setGeneratedContent(prev => [...contentToSave, ...prev]);
+      toast.success(`Generated ${contentToSave.length} pieces of content!`);
+      
+      // Clear form
+      setContentPrompt('');
+      setTargetAudience('');
+      setContentGoal('');
+      setReferenceImages([]);
 
     } catch (error) {
       console.error('Error generating content:', error);

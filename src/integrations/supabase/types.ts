@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_generated_content: {
+        Row: {
+          boost_applied: boolean | null
+          boost_expires_at: string | null
+          boost_multiplier: number | null
+          content: string
+          created_at: string | null
+          download_url: string | null
+          engagement_tip: string | null
+          hashtags: string[] | null
+          id: string
+          image_url: string | null
+          metadata: Json | null
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+          viral_potential: number | null
+        }
+        Insert: {
+          boost_applied?: boolean | null
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
+          content: string
+          created_at?: string | null
+          download_url?: string | null
+          engagement_tip?: string | null
+          hashtags?: string[] | null
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+          viral_potential?: number | null
+        }
+        Update: {
+          boost_applied?: boolean | null
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
+          content?: string
+          created_at?: string | null
+          download_url?: string | null
+          engagement_tip?: string | null
+          hashtags?: string[] | null
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+          viral_potential?: number | null
+        }
+        Relationships: []
+      }
       ai_tool_subscriptions: {
         Row: {
           created_at: string
@@ -489,6 +546,45 @@ export type Database = {
         }
         Relationships: []
       }
+      content_boosts: {
+        Row: {
+          boost_multiplier: number
+          boost_type: string
+          content_id: string
+          content_type: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          boost_multiplier?: number
+          boost_type?: string
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          boost_multiplier?: number
+          boost_type?: string
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       creator_earnings: {
         Row: {
           amount_cents: number
@@ -917,33 +1013,48 @@ export type Database = {
       }
       posts: {
         Row: {
+          boost_expires_at: string | null
+          boost_multiplier: number | null
+          boost_type: string | null
           caption: string | null
+          carousel_urls: string[] | null
           content_type: string
           content_url: string
           created_at: string
           id: string
+          is_boosted: boolean | null
           is_community_post: boolean | null
           is_cross_posted: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
+          boost_type?: string | null
           caption?: string | null
+          carousel_urls?: string[] | null
           content_type: string
           content_url: string
           created_at?: string
           id?: string
+          is_boosted?: boolean | null
           is_community_post?: boolean | null
           is_cross_posted?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
+          boost_type?: string | null
           caption?: string | null
+          carousel_urls?: string[] | null
           content_type?: string
           content_url?: string
           created_at?: string
           id?: string
+          is_boosted?: boolean | null
           is_community_post?: boolean | null
           is_cross_posted?: boolean | null
           updated_at?: string

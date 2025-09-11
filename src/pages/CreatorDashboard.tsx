@@ -13,6 +13,7 @@ import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AICampaignBuilder } from '@/components/AICampaignBuilder';
+import { ContentAssistant } from '@/components/ContentAssistant';
 
 const CreatorDashboard = () => {
   const { user, signOut, signInWithSpotify } = useAuth();
@@ -23,6 +24,7 @@ const CreatorDashboard = () => {
   const [profile, setProfile] = useState<any>(null);
   const [showMerchDialog, setShowMerchDialog] = useState(false);
   const [showAICampaignBuilder, setShowAICampaignBuilder] = useState(false);
+  const [showContentAssistant, setShowContentAssistant] = useState(false);
   const [merchStoreData, setMerchStoreData] = useState({
     url: '',
     platform: 'shopify'
@@ -667,7 +669,11 @@ const CreatorDashboard = () => {
                 >
                   🤖 AI Campaign Builder
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => setShowContentAssistant(true)}
+                >
                   ✨ Content Assistant
                 </Button>
                 <Button className="w-full" variant="outline">
@@ -740,6 +746,15 @@ const CreatorDashboard = () => {
         isOpen={showAICampaignBuilder} 
         onClose={() => setShowAICampaignBuilder(false)} 
       />
+      
+      {/* Content Assistant Modal */}
+      {/* Content Assistant Modal */}
+      {showContentAssistant && (
+        <ContentAssistant 
+          profile={profile}
+          onClose={() => setShowContentAssistant(false)} 
+        />
+      )}
     </div>
   );
 };
