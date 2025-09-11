@@ -1116,21 +1116,27 @@ const UniversalProfile = () => {
           </div>
         </div>
 
-        {/* Search Section - Compact Mobile Optimized */}
-        <Card className="card-modern">
-          <CardContent className="p-2 sm:p-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Search for users and creators..." value={searchQuery} onChange={handleSearchChange} className="pl-10 h-9 text-sm border-0 bg-muted/50 focus:bg-background" />
-              {searching && <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                </div>}
-            </div>
-            
-            {/* Search Results */}
-            {searchResults.length > 0 && <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
-                {searchResults.map(result => <div key={result.user_id} onClick={() => viewProfile(result.user_id)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors">
-                    <Avatar className="h-10 w-10">
+        {/* Search Section - Minimal Compact */}
+        <div className="max-w-md mx-auto">
+          <Card className="card-modern shadow-sm">
+            <CardContent className="p-1.5 sm:p-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input 
+                  placeholder="Search for users and creators..." 
+                  value={searchQuery} 
+                  onChange={handleSearchChange} 
+                  className="pl-9 h-8 text-sm border-0 bg-muted/30 focus:bg-white focus:text-black placeholder:text-muted-foreground transition-colors" 
+                />
+                {searching && <div className="absolute right-2.5 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-primary"></div>
+                  </div>}
+              </div>
+              
+              {/* Search Results */}
+              {searchResults.length > 0 && <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
+                {searchResults.map(result => <div key={result.user_id} onClick={() => viewProfile(result.user_id)} className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-muted cursor-pointer transition-colors">
+                    <Avatar className="h-9 w-9">
                       <AvatarImage src={result.avatar_url || ''} />
                       <AvatarFallback>
                         {result.display_name?.[0] || result.username?.[0]?.toUpperCase() || '?'}
@@ -1158,11 +1164,14 @@ const UniversalProfile = () => {
                   </div>)}
               </div>}
             
-            {searchQuery && searchResults.length === 0 && !searching && <div className="mt-4 text-center text-muted-foreground py-4">
-                No users found matching "{searchQuery}"
-              </div>}
+            {searchQuery && !searching && searchResults.length === 0 && (
+              <div className="text-center text-muted-foreground py-3 text-sm">
+                No users found matching your search.
+              </div>
+            )}
           </CardContent>
         </Card>
+        </div>
 
         {/* Profile Card - Instagram Style */}
         <Card className="card-modern">
