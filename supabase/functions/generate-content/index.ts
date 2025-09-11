@@ -22,9 +22,9 @@ serve(async (req) => {
       generationType = 'mixed' 
     } = await req.json();
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    if (!geminiApiKey) {
+      throw new Error('Gemini API key not configured');
     }
 
     // Generate content ideas based on profile and prompt
@@ -67,30 +67,34 @@ Format response as JSON array with objects containing:
     
     Generate 6-8 diverse content pieces optimized for maximum virality and engagement.`;
 
-    // Call OpenAI for content generation
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call Gemini for content generation
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        max_tokens: 3000,
-        temperature: 0.8,
+        contents: [{
+          parts: [{
+            text: `${systemPrompt}\n\nUser Request: ${userPrompt}`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 3000,
+        }
       }),
     });
 
-    if (!openAIResponse.ok) {
-      throw new Error(`OpenAI API error: ${openAIResponse.status}`);
+    if (!geminiResponse.ok) {
+      throw new Error(`Gemini API error: ${geminiResponse.status}`);
     }
 
-    const openAIData = await openAIResponse.json();
-    const contentIdeas = JSON.parse(openAIData.choices[0].message.content);
+    const geminiData = await geminiResponse.json();
+    const contentText = geminiData.candidates[0].content.parts[0].text;
+    const contentIdeas = JSON.parse(contentText);
 
     // Generate images for image concepts using DALL-E
     const generatedContent = [];
@@ -102,86 +106,33 @@ Format response as JSON array with objects containing:
         created_at: new Date().toISOString()
       };
 
-      // Generate actual images for image concepts
+      // For image concepts, provide detailed description for manual creation or external tools
       if (idea.type === 'image_concept') {
-        try {
-          const imagePrompt = `Create a high-quality, engaging social media image: ${idea.content}. Style should be modern, eye-catching, and optimized for social media platforms. Professional photography quality, vibrant colors, good composition.`;
-          
-          const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${openAIApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: 'gpt-image-1',
-              prompt: imagePrompt,
-              n: 1,
-              size: '1024x1024',
-              quality: 'standard'
-            }),
-          });
-
-          if (imageResponse.ok) {
-            const imageData = await imageResponse.json();
-            
-            // Convert base64 to blob and upload to Supabase storage
-            if (imageData.data && imageData.data[0]) {
-              const base64Data = imageData.data[0].b64_json;
-              if (base64Data) {
-                const supabaseUrl = Deno.env.get('SUPABASE_URL');
-                const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-                
-                if (supabaseUrl && supabaseKey) {
-                  const supabase = createClient(supabaseUrl, supabaseKey);
-                  
-                  // Convert base64 to blob
-                  const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-                  const blob = new Blob([binaryData], { type: 'image/png' });
-                  
-                  // Upload to storage
-                  const fileName = `generated/${crypto.randomUUID()}.png`;
-                  const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('posts')
-                    .upload(fileName, blob);
-                  
-                  if (!uploadError) {
-                    const { data: urlData } = supabase.storage
-                      .from('posts')
-                      .getPublicUrl(fileName);
-                    
-                    generatedItem.imageUrl = urlData.publicUrl;
-                  }
-                }
-              }
-            }
-          }
-        } catch (imageError) {
-          console.error('Error generating image:', imageError);
-          // Continue without image
-        }
+        generatedItem.imagePrompt = `Create a high-quality, engaging social media image: ${idea.content}. Style should be modern, eye-catching, and optimized for social media platforms. Professional photography quality, vibrant colors, good composition.`;
+        generatedItem.imageDescription = idea.content;
       }
 
       generatedContent.push(generatedItem);
     }
 
-    // Add trending topics and personalized suggestions
-    const trendingResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Add trending topics and personalized suggestions using Gemini
+    const trendingResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'user', 
-            content: `Generate current trending topics and hashtags relevant to: ${prompt}. Include viral challenges, seasonal trends, and platform-specific trends. Format as JSON with trending_topics array and recommended_hashtags array.` 
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
+        contents: [{
+          parts: [{
+            text: `Generate current trending topics and hashtags relevant to: ${prompt}. Include viral challenges, seasonal trends, and platform-specific trends. Format as JSON with trending_topics array and recommended_hashtags array.`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 500,
+        }
       }),
     });
 
@@ -189,7 +140,8 @@ Format response as JSON array with objects containing:
     if (trendingResponse.ok) {
       try {
         const trendingResult = await trendingResponse.json();
-        trendingData = JSON.parse(trendingResult.choices[0].message.content);
+        const trendingText = trendingResult.candidates[0].content.parts[0].text;
+        trendingData = JSON.parse(trendingText);
       } catch (error) {
         console.error('Error parsing trending data:', error);
       }
