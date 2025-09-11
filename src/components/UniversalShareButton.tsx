@@ -60,7 +60,7 @@ export const UniversalShareButton: React.FC<UniversalShareButtonProps> = ({
 
   const shareUrl = getShareableUrl();
 
-  const handleShare = async (shareType: 'on_platform' | 'off_platform', platform?: string) => {
+  const handleShare = async (platform: string) => {
     if (!user || isOwnContent) {
       if (isOwnContent) {
         toast.error('Cannot earn XP from sharing your own content');
@@ -70,27 +70,27 @@ export const UniversalShareButton: React.FC<UniversalShareButtonProps> = ({
       return;
     }
 
+    if (!itemId) {
+      toast.error('Cannot share: content ID is missing');
+      return;
+    }
+
     setIsSharing(true);
     try {
-      // Handle different share types
-      if (type === 'post' && itemId) {
-        const { data, error } = await supabase.rpc('handle_post_share', {
-          post_id_param: itemId,
-          share_type_param: shareType,
-          platform_param: platform || null
-        });
+      const { data, error } = await supabase.rpc('handle_universal_share', {
+        content_type_param: type,
+        content_id_param: itemId,
+        platform_param: platform,
+        share_url_param: shareUrl
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        const result = data as any;
-        if (result?.success) {
-          toast.success(`Shared successfully! Earned ${result.xp_earned} XP`);
-        } else {
-          toast.error(result?.error || 'Failed to share');
-        }
+      const result = data as any;
+      if (result?.success) {
+        toast.success(`${result.message}`);
       } else {
-        // For other types, just show success (can implement XP system later)
-        toast.success('Shared successfully!');
+        toast.error(result?.error || 'Failed to share');
       }
     } catch (error: any) {
       console.error('Error sharing:', error);
@@ -113,26 +113,41 @@ export const UniversalShareButton: React.FC<UniversalShareButtonProps> = ({
     const text = `Check out this ${type} by ${creatorName || 'creator'} on Streamcentives! ${description ? `"${description}"` : ''}`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
-    handleShare('off_platform', 'twitter');
+    handleShare('twitter');
   };
 
   const shareToFacebook = () => {
     const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
-    handleShare('off_platform', 'facebook');
+    handleShare('facebook');
   };
 
-  const shareToInstagram = () => {
-    // Instagram doesn't have direct URL sharing, so we copy the link and provide instructions
-    copyToClipboard();
-    toast.success('Link copied! Paste it in your Instagram story or bio.');
+  const shareToInstagram = async () => {
+    // Instagram Stories URL - opens Instagram app with camera ready
+    const instagramUrl = `instagram://story-camera`;
+    
+    // Try to open Instagram app first
+    try {
+      window.open(instagramUrl, '_blank');
+      // Copy link for manual sharing
+      await copyToClipboard();
+      toast.success('Instagram opened! Link copied to paste in your story.');
+      
+      // Award XP for Instagram sharing
+      await handleShare('instagram');
+    } catch (error) {
+      // Fallback: just copy link if Instagram app can't be opened
+      await copyToClipboard();
+      toast.success('Link copied! Open Instagram and paste in your story or bio.');
+      await handleShare('instagram');
+    }
   };
 
   const shareViaSMS = () => {
     const message = `Check out this ${type} on Streamcentives: ${title}${description ? ` - ${description}` : ''} ${shareUrl}`;
     const smsUrl = `sms:?&body=${encodeURIComponent(message)}`;
     window.open(smsUrl, '_blank');
-    handleShare('off_platform', 'sms');
+    handleShare('sms');
   };
 
   const shareViaEmail = () => {
@@ -140,11 +155,11 @@ export const UniversalShareButton: React.FC<UniversalShareButtonProps> = ({
     const body = `Hey!\n\nI wanted to share this ${type} with you: ${title}${description ? `\n\n"${description}"` : ''}\n\nCheck it out here: ${shareUrl}\n\nStreamcentives - Where fans and creators connect!`;
     const emailUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(emailUrl, '_blank');
-    handleShare('off_platform', 'email');
+    handleShare('email');
   };
 
   const shareOnPlatform = () => {
-    handleShare('on_platform', 'streamcentives');
+    handleShare('streamcentives');
   };
 
   const sendPrivateMessage = async () => {

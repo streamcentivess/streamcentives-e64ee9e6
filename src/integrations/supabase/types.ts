@@ -733,6 +733,42 @@ export type Database = {
         }
         Relationships: []
       }
+      share_activities: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          platform: string
+          share_date: string
+          share_url: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          platform: string
+          share_date?: string
+          share_url: string
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          platform?: string
+          share_date?: string
+          share_url?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       spotify_accounts: {
         Row: {
           access_token: string
@@ -945,6 +981,15 @@ export type Database = {
           platform_param?: string
           post_id_param: string
           share_type_param: string
+        }
+        Returns: Json
+      }
+      handle_universal_share: {
+        Args: {
+          content_id_param: string
+          content_type_param: string
+          platform_param: string
+          share_url_param: string
         }
         Returns: Json
       }
