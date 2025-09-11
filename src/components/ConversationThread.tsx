@@ -127,6 +127,52 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId,
     }
   };
 
+  const handleApprove = async (messageId: string) => {
+    try {
+      const { error } = await supabase.rpc('update_message_status', {
+        message_id_param: messageId,
+        new_status_param: 'approved'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message approved",
+        description: "You can now continue the conversation"
+      });
+    } catch (error: any) {
+      console.error('Error approving message:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to approve message",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeny = async (messageId: string) => {
+    try {
+      const { error } = await supabase.rpc('update_message_status', {
+        message_id_param: messageId,
+        new_status_param: 'denied'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message denied",
+        description: "The message has been rejected"
+      });
+    } catch (error: any) {
+      console.error('Error denying message:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to deny message",
+        variant: "destructive"
+      });
+    }
+  };
+
   const sendReply = async () => {
     if (!user || !replyContent.trim() || !otherParticipant) return;
 
@@ -240,6 +286,27 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId,
                         </Badge>
                       )}
                     </div>
+                    
+                    {/* Show approve/deny buttons for pending messages from others */}
+                    {message.status === 'pending' && message.recipient_id === user?.id && !isOwnMessage && (
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleApprove(message.id)}
+                          className="h-6 text-xs"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeny(message.id)}
+                          className="h-6 text-xs"
+                        >
+                          Deny
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
