@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Search, Calendar, Users, Trophy, DollarSign, Edit, Trash2, Play, Pause, BarChart3, Target, Eye, Gift } from 'lucide-react';
+import { ArrowLeft, Plus, Search, Calendar, Users, Trophy, DollarSign, Edit, Trash2, Play, Pause, BarChart3, Target, Eye, Gift, Upload, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Campaign {
@@ -85,11 +85,17 @@ const Campaigns = () => {
     end_date: '',
     max_participants: '',
     image_url: '',
+    content_url: '',
     tags: '',
     merch_product_name: '',
     merch_product_url: '',
     merch_discount_code: '',
   });
+
+  // File upload states
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [contentFile, setContentFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -234,13 +240,117 @@ const Campaigns = () => {
       end_date: '',
       max_participants: '',
       image_url: '',
+      content_url: '',
       tags: '',
       merch_product_name: '',
       merch_product_url: '',
       merch_discount_code: '',
     });
+    setCoverImageFile(null);
+    setContentFile(null);
     setShowCreateForm(false);
     setEditingCampaign(null);
+  };
+
+  // File upload handlers
+  const handleCoverImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select a PNG or JPEG image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 10MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCoverImageFile(file);
+  };
+
+  const handleContentFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate video duration for video files
+    if (file.type.startsWith('video/')) {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        const duration = video.duration;
+        
+        if (duration > 300) { // 5 minutes = 300 seconds
+          toast({
+            title: "Video too long",
+            description: "Please select a video shorter than 5 minutes.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        setContentFile(file);
+      };
+      
+      video.src = URL.createObjectURL(file);
+    } else if (file.type.startsWith('image/')) {
+      // Validate image size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setContentFile(file);
+    } else if (file.type.startsWith('audio/')) {
+      // No size limit for audio files as requested
+      setContentFile(file);
+    } else {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image, video, or audio file.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const uploadFile = async (file: File, bucketName: string, folder: string) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
+  const getFileTypeDisplay = (mimeType: string) => {
+    if (mimeType.startsWith('image/')) return 'Image';
+    if (mimeType.startsWith('video/')) return 'Video';
+    if (mimeType.startsWith('audio/')) return 'Audio';
+    return 'File';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -318,6 +428,7 @@ const Campaigns = () => {
       end_date: campaign.end_date ? new Date(campaign.end_date).toISOString().slice(0, 16) : '',
       max_participants: campaign.max_participants?.toString() || '',
       image_url: campaign.image_url || '',
+      content_url: '',
       tags: campaign.tags?.join(', ') || '',
       merch_product_name: '',
       merch_product_url: '',
@@ -738,14 +849,59 @@ const Campaigns = () => {
                       />
                     </div>
 
+                    {/* Campaign Cover Photo */}
                     <div className="space-y-2">
-                      <Label htmlFor="image_url">Image URL</Label>
-                      <Input
-                        id="image_url"
-                        value={formData.image_url}
-                        onChange={(e) => handleInputChange('image_url', e.target.value)}
-                        placeholder="https://example.com/image.jpg"
-                      />
+                      <Label>Campaign Cover Photo</Label>
+                      <div className="border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg"
+                          onChange={handleCoverImageSelect}
+                          className="hidden"
+                          id="cover-upload"
+                        />
+                        <label htmlFor="cover-upload" className="cursor-pointer">
+                          <div className="flex flex-col items-center gap-2 text-center">
+                            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                            <p className="text-sm font-medium">
+                              {coverImageFile ? coverImageFile.name : 'Upload Cover Photo'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              PNG, JPEG up to 10MB
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Content Upload */}
+                    <div className="space-y-2">
+                      <Label>Campaign Content</Label>
+                      <div className="border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,video/mp4,video/mov,audio/mp3,audio/mpeg"
+                          onChange={handleContentFileSelect}
+                          className="hidden"
+                          id="content-upload"
+                        />
+                        <label htmlFor="content-upload" className="cursor-pointer">
+                          <div className="flex flex-col items-center gap-2 text-center">
+                            <Upload className="h-8 w-8 text-muted-foreground" />
+                            <p className="text-sm font-medium">
+                              {contentFile ? contentFile.name : 'Upload Content'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Photos (PNG, JPEG), Videos (MP4, MOV - max 5 min), Audio (MP3)
+                            </p>
+                            {contentFile && (
+                              <p className="text-xs text-primary">
+                                {getFileTypeDisplay(contentFile.type)} • {(contentFile.size / (1024 * 1024)).toFixed(1)}MB
+                              </p>
+                            )}
+                          </div>
+                        </label>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
