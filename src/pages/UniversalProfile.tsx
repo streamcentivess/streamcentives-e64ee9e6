@@ -114,6 +114,25 @@ const UniversalProfile = () => {
       supabase.removeChannel(channel);
     };
   }, [profile?.user_id]);
+
+  // Set up real-time campaign participation updates
+  useEffect(() => {
+    if (!profile?.user_id) return;
+    const channel = supabase.channel('campaign-participation-updates').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'campaign_participants',
+      filter: `user_id=eq.${profile.user_id}`
+    }, (payload: any) => {
+      console.log('Campaign participation updated:', payload);
+      // Refresh joined campaigns when user joins/leaves campaigns
+      fetchJoinedCampaigns();
+    }).subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.user_id]);
+
   const fetchProfile = async () => {
     const targetUserId = finalUsername ? null : finalUserId || user?.id;
     if (!targetUserId && !finalUsername) return;
