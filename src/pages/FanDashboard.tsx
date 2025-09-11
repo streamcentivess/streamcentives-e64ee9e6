@@ -9,6 +9,8 @@ import { Trophy, Star, Gift, Target, Music, Users, Calendar, TrendingUp, Plus } 
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import FanRewardsTab from '@/components/FanRewardsTab';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
@@ -225,318 +227,344 @@ const FanDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total XP</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-2xl font-bold text-primary">{metrics.xpBalance.toLocaleString()}</p>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="h-6 w-6 p-0 hover:bg-primary/10"
-                      onClick={async () => {
-                        if (!user) return;
-                        const { data } = await supabase
-                          .from('user_xp_balances')
-                          .select('current_xp, total_earned_xp')
-                          .eq('user_id', user.id)
-                          .maybeSingle();
-                        
-                        if (data) {
-                          setMetrics(prev => ({
-                            ...prev,
-                            xpBalance: data.current_xp || 0,
-                            totalXPEarned: data.total_earned_xp || 0
-                          }));
-                          toast({
-                            title: "Refreshed",
-                            description: "XP balance updated",
-                          });
-                        }
-                      }}
-                    >
-                      <TrendingUp className="h-3 w-3 text-primary" />
-                    </Button>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="rewards">Rewards</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6 mt-6">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="card-modern">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total XP</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-2xl font-bold text-primary">{metrics.xpBalance.toLocaleString()}</p>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-6 w-6 p-0 hover:bg-primary/10"
+                          onClick={async () => {
+                            if (!user) return;
+                            const { data } = await supabase
+                              .from('user_xp_balances')
+                              .select('current_xp, total_earned_xp')
+                              .eq('user_id', user.id)
+                              .maybeSingle();
+                            
+                            if (data) {
+                              setMetrics(prev => ({
+                                ...prev,
+                                xpBalance: data.current_xp || 0,
+                                totalXPEarned: data.total_earned_xp || 0
+                              }));
+                              toast({
+                                title: "Refreshed",
+                                description: "XP balance updated",
+                              });
+                            }
+                          }}
+                        >
+                          <TrendingUp className="h-3 w-3 text-primary" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="xp-orb"></div>
                   </div>
-                </div>
-                <div className="xp-orb"></div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Global Rank</p>
-                  <p className="text-2xl font-bold">
-                    {metrics.currentRank ? `#${metrics.currentRank}` : '--'}
-                  </p>
-                </div>
-                <Trophy className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="card-modern">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Global Rank</p>
+                      <p className="text-2xl font-bold">
+                        {metrics.currentRank ? `#${metrics.currentRank}` : '--'}
+                      </p>
+                    </div>
+                    <Trophy className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Campaigns</p>
-                  <p className="text-2xl font-bold">{metrics.completedCampaigns}</p>
-                </div>
-                <Target className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="card-modern">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Campaigns</p>
+                      <p className="text-2xl font-bold">{metrics.completedCampaigns}</p>
+                    </div>
+                    <Target className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Quests</p>
-                  <p className="text-2xl font-bold">{metrics.activeCampaigns}</p>
-                </div>
-                <Star className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="card-modern">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Active Quests</p>
+                      <p className="text-2xl font-bold">{metrics.activeCampaigns}</p>
+                    </div>
+                    <Star className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Progress to Next Tier */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Progress to {nextTier} Tier
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {metrics.xpBalance === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="xp-orb mb-4 mx-auto opacity-50"></div>
-                    <h3 className="text-lg font-medium text-muted-foreground mb-2">Start Your Journey</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Earn your first XP by streaming music, joining campaigns, and engaging with creators
-                    </p>
-        <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
-                      <Plus className="h-4 w-4 mr-2" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Progress to Next Tier */}
+                <Card className="card-modern">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Progress to {nextTier} Tier
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {metrics.xpBalance === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="xp-orb mb-4 mx-auto opacity-50"></div>
+                        <h3 className="text-lg font-medium text-muted-foreground mb-2">Start Your Journey</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Earn your first XP by streaming music, joining campaigns, and engaging with creators
+                        </p>
+                        <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Browse Campaigns
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>{metrics.xpBalance} XP</span>
+                          <span>{nextTierXP} XP</span>
+                        </div>
+                        <Progress value={(metrics.xpBalance / nextTierXP) * 100} className="h-2" />
+                        <p className="text-sm text-muted-foreground">
+                          {nextTierXP - metrics.xpBalance} XP until {nextTier} Tier
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Active Campaigns */}
+                <Card className="card-modern">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Active Campaigns
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {activeCampaigns.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                        <h3 className="text-lg font-medium text-muted-foreground mb-2">No Active Campaigns</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Join campaigns to earn XP, unlock rewards, and support your favorite creators
+                        </p>
+                        <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Browse Available Campaigns
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {activeCampaigns.map((campaign, index) => (
+                          <div key={campaign.id || index} className="flex items-center justify-between p-4 rounded-lg bg-surface border">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarFallback>
+                                  {campaign.campaigns?.title?.slice(0, 2).toUpperCase() || 'CA'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{campaign.campaigns?.title || 'Campaign'}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {campaign.progress || 0}% complete
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <Badge className="bg-primary/20 text-primary">
+                                +{campaign.campaigns?.xp_reward || 0} XP
+                              </Badge>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {campaign.status}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                        <Button 
+                          className="w-full bg-sky-400 hover:bg-sky-500 text-white"
+                          onClick={() => navigate('/fan-campaigns')}
+                        >
+                          View All Campaigns
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Recent Activity */}
+                <Card className="card-modern">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Recent Activity
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {recentActivity.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                        <p className="text-sm text-muted-foreground">
+                          No recent activity. Start engaging to see your activity here!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {recentActivity.map((activity, index) => (
+                          <div key={index} className="flex items-center justify-between py-2">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${
+                                activity.type === 'stream' ? 'bg-primary' : 
+                                activity.type === 'campaign' ? 'bg-success' : 'bg-brand-accent'
+                              }`}></div>
+                              <span className="text-sm">{activity.message}</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(activity.timestamp).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-6">
+                {/* Quick Actions */}
+                <Card className="card-modern">
+                  <CardHeader>
+                    <CardTitle>Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button className="w-full" onClick={() => navigate('/fan-campaigns')}>
+                      <Target className="h-4 w-4 mr-2" />
                       Browse Campaigns
                     </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{metrics.xpBalance} XP</span>
-                      <span>{nextTierXP} XP</span>
-                    </div>
-                    <Progress value={(metrics.xpBalance / nextTierXP) * 100} className="h-2" />
-                    <p className="text-sm text-muted-foreground">
-                      {nextTierXP - metrics.xpBalance} XP until {nextTier} Tier
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Active Campaigns */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Active Campaigns
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {activeCampaigns.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-medium text-muted-foreground mb-2">No Active Campaigns</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Join campaigns to earn XP, unlock rewards, and support your favorite creators
-                    </p>
-                    <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Browse Available Campaigns
+                    <Button className="w-full" variant="outline" onClick={() => navigate('/marketplace')}>
+                      <Gift className="h-4 w-4 mr-2" />
+                      Redeem Rewards
                     </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {activeCampaigns.map((campaign, index) => (
-                      <div key={campaign.id || index} className="flex items-center justify-between p-4 rounded-lg bg-surface border">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback>
-                              {campaign.campaigns?.title?.slice(0, 2).toUpperCase() || 'CA'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{campaign.campaigns?.title || 'Campaign'}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {campaign.progress || 0}% complete
-                            </p>
+                    <Button className="w-full" variant="outline" onClick={() => navigate('/leaderboards')}>
+                      <Trophy className="h-4 w-4 mr-2" />
+                      View Leaderboards
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Top Artists */}
+                <Card className="card-modern">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Music className="h-5 w-5" />
+                      Top Supported Artists
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {topArtists.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                        <p className="text-sm text-muted-foreground">
+                          Start streaming music to see your top supported artists here!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {topArtists.map((artist, index) => (
+                          <div key={artist.user_id || index} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={artist.avatar_url} />
+                                <AvatarFallback>
+                                  {(artist.display_name || artist.username || 'AR').slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm font-medium">
+                                {artist.display_name || artist.username || 'Unknown Artist'}
+                              </span>
+                            </div>
+                            <span className="text-sm text-primary">{artist.xp} XP</span>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge className="bg-primary/20 text-primary">
-                            +{campaign.campaigns?.xp_reward || 0} XP
-                          </Badge>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {campaign.status}
-                          </p>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                   <Button 
-                     className="w-full bg-sky-400 hover:bg-sky-500 text-white"
-                     onClick={() => navigate('/fan-campaigns')}
-                   >
-                    View All Campaigns
-                  </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    )}
+                  </CardContent>
+                </Card>
 
-            {/* Recent Activity */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {recentActivity.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <p className="text-sm text-muted-foreground">
-                      No recent activity. Start engaging to see your activity here!
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {recentActivity.map((activity, index) => (
-                      <div key={index} className="flex items-center justify-between py-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${
-                            activity.type === 'stream' ? 'bg-primary' : 
-                            activity.type === 'campaign' ? 'bg-success' : 'bg-brand-accent'
-                          }`}></div>
-                          <span className="text-sm">{activity.message}</span>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(activity.timestamp).toLocaleDateString()}
-                        </span>
+                {/* Achievements */}
+                <Card className="card-modern">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="h-5 w-5" />
+                      Recent Achievements
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {metrics.achievements.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                        <p className="text-sm text-muted-foreground">
+                          Complete activities to unlock achievements!
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full" onClick={() => navigate('/fan-campaigns')}>
-                  <Target className="h-4 w-4 mr-2" />
-                  Browse Campaigns
-                </Button>
-                <Button className="w-full" variant="outline" onClick={() => navigate('/marketplace')}>
-                  <Gift className="h-4 w-4 mr-2" />
-                  Redeem Rewards
-                </Button>
-                <Button className="w-full" variant="outline" onClick={() => navigate('/leaderboards')}>
-                  <Trophy className="h-4 w-4 mr-2" />
-                  View Leaderboards
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Top Artists */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Music className="h-5 w-5" />
-                  Top Supported Artists
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {topArtists.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <p className="text-sm text-muted-foreground">
-                      Start streaming music to see your top supported artists here!
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {topArtists.map((artist, index) => (
-                      <div key={artist.user_id || index} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={artist.avatar_url} />
-                            <AvatarFallback>
-                              {(artist.display_name || artist.username || 'AR').slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm font-medium">
-                            {artist.display_name || artist.username || 'Unknown Artist'}
-                          </span>
-                        </div>
-                        <span className="text-sm text-primary">{artist.xp} XP</span>
+                    ) : (
+                      <div className="space-y-3">
+                        {metrics.achievements.map((achievement, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Badge variant="secondary" className="bg-success/20 text-success">
+                              <Star className="h-3 w-3 mr-1" />
+                              {achievement.name}
+                            </Badge>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
 
-            {/* Achievements */}
+          <TabsContent value="rewards" className="mt-6">
+            <FanRewardsTab />
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-6">
             <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Recent Achievements
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {metrics.achievements.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <p className="text-sm text-muted-foreground">
-                      Complete activities to unlock achievements!
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {metrics.achievements.map((achievement, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-success/20 text-success">
-                          <Star className="h-3 w-3 mr-1" />
-                          {achievement.name}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <CardContent className="p-8 text-center">
+                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Activity History</h3>
+                <p className="text-muted-foreground">
+                  Your complete activity history will be shown here.
+                </p>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
