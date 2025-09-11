@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { AICampaignBuilder } from '@/components/AICampaignBuilder';
 
 const CreatorDashboard = () => {
   const { user, signOut, signInWithSpotify } = useAuth();
@@ -21,6 +22,7 @@ const CreatorDashboard = () => {
   // State for merch store
   const [profile, setProfile] = useState<any>(null);
   const [showMerchDialog, setShowMerchDialog] = useState(false);
+  const [showAICampaignBuilder, setShowAICampaignBuilder] = useState(false);
   const [merchStoreData, setMerchStoreData] = useState({
     url: '',
     platform: 'shopify'
@@ -659,7 +661,10 @@ const CreatorDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full bg-gradient-primary text-white hover:shadow-glow transition-all" 
+                  onClick={() => setShowAICampaignBuilder(true)}
+                >
                   🤖 AI Campaign Builder
                 </Button>
                 <Button className="w-full" variant="outline">
@@ -730,6 +735,11 @@ const CreatorDashboard = () => {
           </div>
         </div>
       </div>
+      
+      <AICampaignBuilder 
+        isOpen={showAICampaignBuilder} 
+        onClose={() => setShowAICampaignBuilder(false)} 
+      />
     </div>
   );
 };
