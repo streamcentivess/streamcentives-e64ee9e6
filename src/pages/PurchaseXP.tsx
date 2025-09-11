@@ -92,8 +92,8 @@ export default function PurchaseXP() {
             <Card key={pkg.id} className={`relative overflow-hidden backdrop-blur-sm bg-slate-800/30 border-slate-700 hover:border-cyan-500/50 transition-all duration-300 ${pkg.popular ? 'ring-2 ring-cyan-400 shadow-2xl shadow-cyan-400/20 scale-105' : 'hover:scale-105'}`}>
               {pkg.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
-                  <div className="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 px-6 py-2 rounded-full text-sm font-bold">
-                    ⭐ Most Popular
+                  <div className="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 px-3 py-1 rounded-full text-xs font-bold">
+                    ⭐ Popular
                   </div>
                 </div>
               )}
