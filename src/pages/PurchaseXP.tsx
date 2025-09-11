@@ -49,21 +49,21 @@ const XPCoin = ({ className }: { className?: string }) => (
 
 const XP_PACKAGES = [
   {
-    id: "price_1S61gh2UwaYvRlm0O1VvcNIK",
+    id: "price_1S65Zr2XJfhJAhD8CuWu3KKI",
     name: "Starter Pack",
     xp: 500,
     price: "$4.99",
     popular: false,
   },
   {
-    id: "price_1S61gi2UwaYvRlm0fQVvlMzK",
+    id: "price_1S65hR2XJfhJAhD8Qal3BZEY",
     name: "Power Pack", 
-    xp: 1200,
+    xp: 1220,
     price: "$9.99",
     popular: true,
   },
   {
-    id: "price_1S61gj2UwaYvRlm0bJVvnOxL",
+    id: "price_1S65lJ2XJfhJAhD8axA12XlE",
     name: "Ultimate Pack",
     xp: 2500,
     price: "$19.99", 
