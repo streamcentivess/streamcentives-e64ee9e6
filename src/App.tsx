@@ -30,6 +30,8 @@ import ProfileSetup from "./pages/ProfileSetup";
 import Feed from "./pages/Feed";
 import PurchaseXP from "./pages/PurchaseXP";
 import XPPurchaseSuccess from "./pages/XPPurchaseSuccess";
+import TermsConditions from "./pages/TermsConditions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App = () => (
             <Route path="/team" element={<Team />} />
             <Route path="/purchase-xp" element={<PurchaseXP />} />
             <Route path="/xp-purchase-success" element={<XPPurchaseSuccess />} />
+            <Route path="/terms-conditions" element={<TermsConditions />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             
             {/* Auth Routes */}
             <Route path="/auth/signin" element={<SignIn />} />

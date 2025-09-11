@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -392,6 +392,9 @@ const EditProfile = () => {
               <Settings className="h-5 w-5" />
               Account Settings
             </CardTitle>
+            <CardDescription>
+              Manage your account preferences and legal information
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
@@ -503,6 +506,26 @@ const EditProfile = () => {
               <Bell className="h-4 w-4 mr-2" />
               Notification Preferences
             </Button>
+
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-3 text-muted-foreground">Legal Information</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/terms-conditions')}
+                >
+                  Terms & Conditions
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/privacy-policy')}
+                >
+                  Privacy Policy
+                </Button>
+              </div>
+            </div>
 
             <Separator />
 

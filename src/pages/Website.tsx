@@ -634,6 +634,12 @@ const Website = () => {
               <Link to="/pitch" className="hover:text-foreground transition-colors">
                 Investor Relations
               </Link>
+              <Link to="/terms-conditions" className="hover:text-foreground transition-colors">
+                Terms & Conditions
+              </Link>
+              <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
+                Privacy Policy
+              </Link>
             </div>
           </div>
         </div>
