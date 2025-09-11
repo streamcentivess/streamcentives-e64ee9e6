@@ -40,6 +40,34 @@ const FanDashboard = () => {
     }
   }, [user]);
 
+  // Set up real-time XP balance updates
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    const channel = supabase
+      .channel('xp-balance-updates-fan')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_xp_balances',
+        filter: `user_id=eq.${user.id}`
+      }, (payload: any) => {
+        console.log('Fan Dashboard XP balance updated:', payload);
+        if (payload.new && typeof payload.new.current_xp === 'number') {
+          setMetrics(prev => ({
+            ...prev,
+            xpBalance: payload.new.current_xp,
+            totalXPEarned: payload.new.total_earned_xp || prev.totalXPEarned
+          }));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const fetchFanMetrics = async () => {
     if (!user) return;
     
@@ -204,7 +232,36 @@ const FanDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total XP</p>
-                  <p className="text-2xl font-bold text-primary">{metrics.xpBalance.toLocaleString()}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-bold text-primary">{metrics.xpBalance.toLocaleString()}</p>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-6 w-6 p-0 hover:bg-primary/10"
+                      onClick={async () => {
+                        if (!user) return;
+                        const { data } = await supabase
+                          .from('user_xp_balances')
+                          .select('current_xp, total_earned_xp')
+                          .eq('user_id', user.id)
+                          .maybeSingle();
+                        
+                        if (data) {
+                          setMetrics(prev => ({
+                            ...prev,
+                            xpBalance: data.current_xp || 0,
+                            totalXPEarned: data.total_earned_xp || 0
+                          }));
+                          toast({
+                            title: "Refreshed",
+                            description: "XP balance updated",
+                          });
+                        }
+                      }}
+                    >
+                      <TrendingUp className="h-3 w-3 text-primary" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="xp-orb"></div>
               </div>
