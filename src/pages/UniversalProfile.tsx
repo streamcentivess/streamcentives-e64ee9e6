@@ -823,10 +823,10 @@ const UniversalProfile = () => {
 
   // Check follow states when followers data changes
   useEffect(() => {
-    if (!isOwnProfile && user && followers.length > 0 && listType === 'followers') {
+    if (user && followers.length > 0 && listType === 'followers') {
       checkMultipleFollowStates(followers);
     }
-  }, [followers, isOwnProfile, user, listType]);
+  }, [followers, user, listType]);
 
   // Check follow states when following data changes  
   useEffect(() => {
@@ -1568,10 +1568,24 @@ const UniversalProfile = () => {
                     {/* Follow/Unfollow button - only show if viewing from own profile and not the person's own entry */}
                     {isOwnProfile && person.user_id !== user?.id && (
                       listType === 'followers' ? (
-                        <Button size="sm" variant="outline" onClick={() => handleRemoveFollower(person.user_id)}>
-                          <UserMinus className="h-3 w-3 mr-1" />
-                          Remove Follower
-                        </Button>
+                        // For followers list, check if we're following them back
+                        !userFollowStates[person.user_id] ? (
+                          <Button size="sm" variant="default" onClick={() => handleUserFollowToggle(person.user_id)} className="bg-gradient-primary hover:opacity-90">
+                            <UserPlus className="h-3 w-3 mr-1" />
+                            Follow Back
+                          </Button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => handleUserFollowToggle(person.user_id)}>
+                              <UserMinus className="h-3 w-3 mr-1" />
+                              Unfollow
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleRemoveFollower(person.user_id)}>
+                              <UserMinus className="h-3 w-3 mr-1" />
+                              Remove Follower
+                            </Button>
+                          </div>
+                        )
                       ) : (
                         // For following list, always show unfollow since we're following everyone in this list
                         <Button
