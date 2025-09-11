@@ -60,6 +60,8 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [showCarouselUpload, setShowCarouselUpload] = useState(false);
   const [isProSubscriber, setIsProSubscriber] = useState(false);
+  const [previewContent, setPreviewContent] = useState<GeneratedContent[]>([]);
+  const [generationProgress, setGenerationProgress] = useState(0);
 
   useEffect(() => {
     checkProSubscription();
@@ -115,6 +117,8 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
     }
 
     setGenerating(true);
+    setPreviewContent([]);
+    setGenerationProgress(0);
     
     try {
       // Upload reference images if any
@@ -132,6 +136,9 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
           referenceUrls.push(data.publicUrl);
         }
       }
+
+      // Set progress to 25% after image upload
+      setGenerationProgress(25);
 
       // Call AI generation service
       const { data, error } = await supabase.functions.invoke('generate-content', {
@@ -152,6 +159,9 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
 
       if (error) throw error;
 
+      // Set progress to 75% after API call
+      setGenerationProgress(75);
+
       // Save generated content temporarily to localStorage
       const contentToSave = data.generatedContent.map((item: any) => ({
         ...item,
@@ -160,6 +170,9 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
         created_at: new Date().toISOString()
       }));
 
+      // Show preview content as it generates
+      setPreviewContent(contentToSave);
+
       // Save to localStorage for now
       const existing = localStorage.getItem(`ai_content_${user.id}`);
       const existingContent = existing ? JSON.parse(existing) : [];
@@ -167,13 +180,17 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
       localStorage.setItem(`ai_content_${user.id}`, JSON.stringify(updatedContent));
 
       setGeneratedContent(prev => [...contentToSave, ...prev]);
+      setGenerationProgress(100);
       toast.success(`Generated ${contentToSave.length} pieces of content!`);
       
-      // Clear form
-      setContentPrompt('');
-      setTargetAudience('');
-      setContentGoal('');
-      setReferenceImages([]);
+      // Clear form after a delay to show completed preview
+      setTimeout(() => {
+        setContentPrompt('');
+        setTargetAudience('');
+        setContentGoal('');
+        setReferenceImages([]);
+        setGenerationProgress(0);
+      }, 2000);
 
     } catch (error) {
       console.error('Error generating content:', error);
@@ -393,6 +410,74 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                     </Button>
                   </CardContent>
                 </Card>
+
+                {/* Real-time Preview */}
+                {(generating || previewContent.length > 0) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        Live Preview
+                        {generating && (
+                          <Badge variant="outline" className="ml-auto">
+                            Generating...
+                          </Badge>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {generating && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span>Generation Progress</span>
+                            <span>{generationProgress}%</span>
+                          </div>
+                          <Progress value={generationProgress} className="h-2" />
+                        </div>
+                      )}
+                      
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {previewContent.map((content) => (
+                          <div key={content.id} className="p-3 border rounded-lg">
+                            {content.imageUrl && (
+                              <img
+                                src={content.imageUrl}
+                                alt={content.title}
+                                className="w-full h-24 object-cover rounded mb-2"
+                              />
+                            )}
+                            <h4 className="font-medium text-sm mb-1">{content.title}</h4>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {content.content}
+                            </p>
+                            <Badge variant="outline" className="mt-2">
+                              {content.type}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+
+                      {previewContent.length > 0 && !generating && (
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            size="sm"
+                            onClick={() => setActiveTab('library')}
+                            className="flex-1"
+                          >
+                            View in Library
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setPreviewContent([])}
+                          >
+                            Clear Preview
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               {/* AI Insights */}
