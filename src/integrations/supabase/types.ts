@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaign_merchandise: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          creator_id: string
+          currency: string
+          discount_code: string | null
+          external_product_url: string | null
+          id: string
+          is_active: boolean
+          price_cents: number
+          product_description: string | null
+          product_image_url: string | null
+          product_name: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          creator_id: string
+          currency?: string
+          discount_code?: string | null
+          external_product_url?: string | null
+          id?: string
+          is_active?: boolean
+          price_cents: number
+          product_description?: string | null
+          product_image_url?: string | null
+          product_name: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          discount_code?: string | null
+          external_product_url?: string | null
+          id?: string
+          is_active?: boolean
+          price_cents?: number
+          product_description?: string | null
+          product_image_url?: string | null
+          product_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_merchandise_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_participants: {
         Row: {
           campaign_id: string
@@ -63,6 +119,72 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_purchases: {
+        Row: {
+          amount_paid_cents: number
+          campaign_id: string
+          completed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          merchandise_id: string
+          proof_of_purchase_url: string | null
+          purchase_status: string
+          purchased_at: string | null
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          amount_paid_cents: number
+          campaign_id: string
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          merchandise_id: string
+          proof_of_purchase_url?: string | null
+          purchase_status?: string
+          purchased_at?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          amount_paid_cents?: number
+          campaign_id?: string
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          merchandise_id?: string
+          proof_of_purchase_url?: string | null
+          purchase_status?: string
+          purchased_at?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_purchases_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_purchases_merchandise_id_fkey"
+            columns: ["merchandise_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_merchandise"
             referencedColumns: ["id"]
           },
         ]
