@@ -128,6 +128,9 @@ export default function XPPurchaseSuccess() {
               <Link to="/fan-dashboard">Go to Dashboard</Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
+              <Link to="/universal-profile">Return to Profile</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
               <Link to="/marketplace">Browse Rewards</Link>
             </Button>
           </div>
