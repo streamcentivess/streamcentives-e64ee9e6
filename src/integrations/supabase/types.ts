@@ -83,6 +83,57 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_boosts: {
+        Row: {
+          boost_amount: number
+          boost_duration_hours: number
+          boost_type: string
+          campaign_id: string
+          created_at: string | null
+          creator_id: string
+          expires_at: string
+          id: string
+          is_active: boolean | null
+        }
+        Insert: {
+          boost_amount?: number
+          boost_duration_hours?: number
+          boost_type?: string
+          campaign_id: string
+          created_at?: string | null
+          creator_id: string
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+        }
+        Update: {
+          boost_amount?: number
+          boost_duration_hours?: number
+          boost_type?: string
+          campaign_id?: string
+          created_at?: string | null
+          creator_id?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_boosts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "boosted_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_boosts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_interactions: {
         Row: {
           campaign_id: string
@@ -170,6 +221,13 @@ export type Database = {
             foreignKeyName: "campaign_merchandise_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "boosted_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_merchandise_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -219,6 +277,13 @@ export type Database = {
           xp_earned?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "campaign_participants_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "boosted_campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "campaign_participants_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -282,6 +347,13 @@ export type Database = {
             foreignKeyName: "campaign_purchases_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
+            referencedRelation: "boosted_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_purchases_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -329,6 +401,9 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          boost_expires_at: string | null
+          boost_multiplier: number | null
+          boost_score: number | null
           cash_reward: number | null
           created_at: string
           creator_id: string
@@ -337,6 +412,7 @@ export type Database = {
           end_date: string | null
           id: string
           image_url: string | null
+          is_boosted: boolean | null
           is_featured: boolean | null
           max_participants: number | null
           required_listen_duration_seconds: number | null
@@ -354,6 +430,9 @@ export type Database = {
           xp_reward: number
         }
         Insert: {
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
+          boost_score?: number | null
           cash_reward?: number | null
           created_at?: string
           creator_id: string
@@ -362,6 +441,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           image_url?: string | null
+          is_boosted?: boolean | null
           is_featured?: boolean | null
           max_participants?: number | null
           required_listen_duration_seconds?: number | null
@@ -379,6 +459,9 @@ export type Database = {
           xp_reward?: number
         }
         Update: {
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
+          boost_score?: number | null
           cash_reward?: number | null
           created_at?: string
           creator_id?: string
@@ -387,6 +470,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           image_url?: string | null
+          is_boosted?: boolean | null
           is_featured?: boolean | null
           max_participants?: number | null
           required_listen_duration_seconds?: number | null
@@ -879,12 +963,15 @@ export type Database = {
           email: string | null
           id: string
           interests: string | null
+          last_boost_at: string | null
           location: string | null
           merch_store_connected: boolean | null
           merch_store_connected_at: string | null
           merch_store_platform: string | null
           merch_store_url: string | null
+          profile_boost_score: number | null
           spotify_connected: boolean | null
+          total_boosts_received: number | null
           updated_at: string
           user_id: string
           username: string | null
@@ -900,12 +987,15 @@ export type Database = {
           email?: string | null
           id?: string
           interests?: string | null
+          last_boost_at?: string | null
           location?: string | null
           merch_store_connected?: boolean | null
           merch_store_connected_at?: string | null
           merch_store_platform?: string | null
           merch_store_url?: string | null
+          profile_boost_score?: number | null
           spotify_connected?: boolean | null
+          total_boosts_received?: number | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -921,12 +1011,15 @@ export type Database = {
           email?: string | null
           id?: string
           interests?: string | null
+          last_boost_at?: string | null
           location?: string | null
           merch_store_connected?: boolean | null
           merch_store_connected_at?: string | null
           merch_store_platform?: string | null
           merch_store_url?: string | null
+          profile_boost_score?: number | null
           spotify_connected?: boolean | null
+          total_boosts_received?: number | null
           updated_at?: string
           user_id?: string
           username?: string | null
@@ -1443,6 +1536,42 @@ export type Database = {
       }
     }
     Views: {
+      boosted_campaigns: {
+        Row: {
+          boost_amount: number | null
+          boost_expires: string | null
+          boost_expires_at: string | null
+          boost_multiplier: number | null
+          boost_score: number | null
+          cash_reward: number | null
+          created_at: string | null
+          creator_id: string | null
+          current_progress: number | null
+          currently_boosted: boolean | null
+          description: string | null
+          end_date: string | null
+          id: string | null
+          image_url: string | null
+          is_boosted: boolean | null
+          is_featured: boolean | null
+          max_participants: number | null
+          required_listen_duration_seconds: number | null
+          requirements: string | null
+          spotify_artist_id: string | null
+          spotify_artist_url: string | null
+          start_date: string | null
+          status: string | null
+          tags: string[] | null
+          target_metric: string | null
+          target_value: number | null
+          title: string | null
+          type: string | null
+          updated_at: string | null
+          visibility_score: number | null
+          xp_reward: number | null
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string | null
@@ -1512,6 +1641,14 @@ export type Database = {
       }
     }
     Functions: {
+      apply_creator_pro_boost: {
+        Args: { campaign_id_param: string; creator_id_param: string }
+        Returns: Json
+      }
+      calculate_campaign_visibility_score: {
+        Args: { campaign_id_param: string }
+        Returns: number
+      }
       complete_campaign_interaction: {
         Args: { campaign_id_param: string; interaction_data_param?: Json }
         Returns: Json

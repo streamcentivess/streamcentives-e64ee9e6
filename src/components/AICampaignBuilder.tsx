@@ -118,16 +118,50 @@ export const AICampaignBuilder: React.FC<AICampaignBuilderProps> = ({ isOpen, on
         status: 'active'
       };
 
-      const { error } = await supabase
+      const { data: newCampaign, error } = await supabase
         .from('campaigns')
-        .insert([campaignData]);
+        .insert([campaignData])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      toast.success('🎉 Campaign Created Successfully!');
+      // Check for Creator Pro subscription and apply boost
+      const { data: subscription } = await supabase
+        .from('ai_tool_subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('tool_name', 'creator_pro')
+        .eq('status', 'active')
+        .single();
+
+      let boostMessage = '';
+      if (subscription && newCampaign) {
+        try {
+          const { data: boostResult, error: boostError } = await supabase
+            .rpc('apply_creator_pro_boost', {
+              campaign_id_param: newCampaign.id,
+              creator_id_param: user.id
+            });
+
+          if (!boostError && boostResult) {
+            const result = boostResult as any;
+            if (result?.success) {
+              boostMessage = `\n🚀 Creator Pro Boost Applied! Visibility score: ${result.new_visibility_score}`;
+            }
+          }
+        } catch (boostErr) {
+          console.log('Boost application failed:', boostErr);
+        }
+      }
+
+      toast.success(`🎉 Campaign Created Successfully!${boostMessage}`);
       setGeneratedCampaign(null);
       setPrompt('');
       setTargetAudience('');
+      setKpiGoal('');
+      setTargetMetric('');
+      setUploadedImages([]);
       onClose();
     } catch (error) {
       console.error('Campaign creation error:', error);
