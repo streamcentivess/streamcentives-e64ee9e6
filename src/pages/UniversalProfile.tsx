@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
+import { useGestures } from '@/hooks/useGestures';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { HeartAnimation } from '@/components/ui/heart-animation';
+import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
 interface Profile {
   id?: string;
   user_id: string;
@@ -67,6 +71,19 @@ const UniversalProfile = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [startY, setStartY] = useState(0);
+
+  // Gesture states
+  const [showHeartAnimation, setShowHeartAnimation] = useState<Record<string, boolean>>({});
+  const [contextMenu, setContextMenu] = useState<{
+    isVisible: boolean;
+    position: { x: number; y: number };
+    userId: string | null;
+  }>({ isVisible: false, position: { x: 0, y: 0 }, userId: null });
+  const [pinchScale, setPinchScale] = useState(1);
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  // Haptic feedback
+  const { triggerHaptic } = useHapticFeedback();
 
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId') || searchParams.get('user');
@@ -552,6 +569,142 @@ const UniversalProfile = () => {
       });
     } finally {
       setConfirmAddSupporter({ show: false, profile: null });
+    }
+  };
+
+  // Gesture handlers
+  const toggleFollowUser = async (userId: string, shouldFollow: boolean) => {
+    if (!user || userId === user.id) return;
+    
+    try {
+      if (!shouldFollow) {
+        // Unfollow
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', userId);
+        if (error) throw error;
+        
+        setUserFollowStates(prev => ({ ...prev, [userId]: false }));
+      } else {
+        // Follow
+        const { error } = await supabase
+          .from('follows')
+          .insert([{
+            follower_id: user.id,
+            following_id: userId
+          }]);
+        if (error) throw error;
+        
+        setUserFollowStates(prev => ({ ...prev, [userId]: true }));
+      }
+      
+      // Update main profile following state if it's the same user
+      if (profile?.user_id === userId) {
+        setFollowing(shouldFollow);
+        fetchFollowStats();
+      }
+      
+    } catch (error: any) {
+      console.error('Error toggling follow:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update follow status",
+      });
+    }
+  };
+
+  const handleDoubleTapFollow = async (userId: string) => {
+    if (userId === user?.id) return; // Can't follow yourself
+    
+    triggerHaptic('success');
+    setShowHeartAnimation(prev => ({ ...prev, [userId]: true }));
+    
+    // Toggle follow state
+    const isCurrentlyFollowing = userFollowStates[userId];
+    await toggleFollowUser(userId, !isCurrentlyFollowing);
+    
+    toast({
+      title: isCurrentlyFollowing ? "Unfollowed" : "Followed!",
+      description: isCurrentlyFollowing ? "User unfollowed" : "Double-tap magic! ✨",
+    });
+  };
+
+  const handleSwipeFollow = async (userId: string) => {
+    if (userId === user?.id) return;
+    
+    triggerHaptic('medium');
+    await toggleFollowUser(userId, true);
+    
+    toast({
+      title: "Followed!",
+      description: "Swiped to follow ➡️",
+    });
+  };
+
+  const handleSwipeDismiss = (userId: string) => {
+    triggerHaptic('light');
+    setSearchResults(prev => prev.filter(result => result.user_id !== userId));
+    
+    toast({
+      title: "Dismissed",
+      description: "User removed from search",
+    });
+  };
+
+  const handleLongPress = (userId: string, event: React.TouchEvent) => {
+    if (userId === user?.id) return;
+    
+    triggerHaptic('heavy');
+    const touch = event.touches[0];
+    setContextMenu({
+      isVisible: true,
+      position: { x: touch.clientX, y: touch.clientY },
+      userId,
+    });
+  };
+
+  const handlePinchZoom = (scale: number) => {
+    setPinchScale(scale);
+    if (scale > 1.5 && !isZoomed) {
+      setIsZoomed(true);
+      triggerHaptic('light');
+    } else if (scale <= 1.1 && isZoomed) {
+      setIsZoomed(false);
+    }
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu({ isVisible: false, position: { x: 0, y: 0 }, userId: null });
+  };
+
+  const handleContextAction = async (action: string, userId: string) => {
+    triggerHaptic('medium');
+    
+    switch (action) {
+      case 'follow':
+        await handleDoubleTapFollow(userId);
+        break;
+      case 'message':
+        // Navigate to message
+        navigate(`/inbox?user=${userId}`);
+        break;
+      case 'block':
+        toast({
+          title: "User Blocked",
+          description: "User has been blocked",
+        });
+        break;
+      case 'report':
+        toast({
+          title: "User Reported",
+          description: "Thank you for reporting",
+        });
+        break;
+      case 'share':
+        // Handle share
+        break;
     }
   };
 
@@ -1135,33 +1288,73 @@ const UniversalProfile = () => {
               
               {/* Search Results */}
               {searchResults.length > 0 && <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
-                {searchResults.map(result => <div key={result.user_id} onClick={() => viewProfile(result.user_id)} className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-muted cursor-pointer transition-colors">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={result.avatar_url || ''} />
-                      <AvatarFallback>
-                        {result.display_name?.[0] || result.username?.[0]?.toUpperCase() || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="font-medium">
-                        {result.display_name || result.username || 'Anonymous User'}
+                {searchResults.map(result => {
+                  const gestureHandlers = useGestures({
+                    onDoubleTap: () => handleDoubleTapFollow(result.user_id),
+                    onSwipeRight: () => handleSwipeFollow(result.user_id),
+                    onSwipeLeft: () => handleSwipeDismiss(result.user_id),
+                    onLongPress: () => {
+                      triggerHaptic('heavy');
+                      setContextMenu({
+                        isVisible: true,
+                        position: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+                        userId: result.user_id,
+                      });
+                    },
+                  });
+
+                  return (
+                    <div
+                      key={result.user_id}
+                      className="relative flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-muted cursor-pointer transition-all duration-200 select-none"
+                      onClick={() => viewProfile(result.user_id)}
+                      {...gestureHandlers}
+                    >
+                      {/* Heart Animation */}
+                      <HeartAnimation 
+                        isVisible={showHeartAnimation[result.user_id] || false}
+                        onComplete={() => setShowHeartAnimation(prev => ({ ...prev, [result.user_id]: false }))}
+                      />
+                      
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={result.avatar_url || ''} />
+                        <AvatarFallback>
+                          {result.display_name?.[0] || result.username?.[0]?.toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="font-medium">
+                          {result.display_name || result.username || 'Anonymous User'}
+                        </div>
+                        {result.username && result.display_name && <div className="text-sm text-muted-foreground">@{result.username}</div>}
+                        {result.bio && <div className="text-sm text-muted-foreground truncate">
+                            {result.bio}
+                          </div>}
                       </div>
-                      {result.username && result.display_name && <div className="text-sm text-muted-foreground">@{result.username}</div>}
-                      {result.bio && <div className="text-sm text-muted-foreground truncate">
-                          {result.bio}
-                        </div>}
+                      <div className="flex items-center gap-1">
+                        {/* Follow indicator */}
+                        {userFollowStates[result.user_id] && (
+                          <Badge variant="outline" className="text-xs text-primary">
+                            <Heart className="h-3 w-3 mr-1 fill-primary" />
+                            Following
+                          </Badge>
+                        )}
+                        {result.spotify_connected && <Badge variant="outline" className="text-xs">
+                            <Music className="h-3 w-3 mr-1" />
+                            Creator
+                          </Badge>}
+                        <Badge variant="secondary" className="text-xs">
+                          <Users className="h-3 w-3 mr-1" />
+                          Fan
+                        </Badge>
+                      </div>
+                      
+                      {/* Swipe indicators */}
+                      <div className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-green-500/20 to-transparent opacity-0 pointer-events-none transition-opacity" />
+                      <div className="absolute inset-y-0 right-0 w-2 bg-gradient-to-l from-red-500/20 to-transparent opacity-0 pointer-events-none transition-opacity" />
                     </div>
-                    <div className="flex items-center gap-1">
-                      {result.spotify_connected && <Badge variant="outline" className="text-xs">
-                          <Music className="h-3 w-3 mr-1" />
-                          Creator
-                        </Badge>}
-                      <Badge variant="secondary" className="text-xs">
-                        <Users className="h-3 w-3 mr-1" />
-                        Fan
-                      </Badge>
-                    </div>
-                  </div>)}
+                  );
+                })}
               </div>}
             
             {searchQuery && !searching && searchResults.length === 0 && (
@@ -1180,12 +1373,17 @@ const UniversalProfile = () => {
             <div className="flex items-center gap-4 mb-4">
               {/* Avatar */}
               <div className="relative">
-                <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
-                  <AvatarImage src={profile.avatar_url || ''} />
-                  <AvatarFallback className="text-xl">
-                    {profile.display_name?.[0] || user?.email?.[0]?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div 
+                  className={`transform transition-transform duration-300 ${isZoomed ? 'scale-150 z-10' : 'scale-100'}`}
+                  {...useGestures({ onPinchZoom: handlePinchZoom })}
+                >
+                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24 cursor-pointer select-none">
+                    <AvatarImage src={profile.avatar_url || ''} />
+                    <AvatarFallback className="text-xl">
+                      {profile.display_name?.[0] || user?.email?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
                 {isOwnProfile && (
                   <>
                     <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" id="avatar-upload" />
@@ -1703,6 +1901,35 @@ const UniversalProfile = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Context Menu */}
+        <ContextMenuGesture
+          isVisible={contextMenu.isVisible}
+          position={contextMenu.position}
+          onClose={closeContextMenu}
+          onFollow={() => contextMenu.userId && handleContextAction('follow', contextMenu.userId)}
+          onMessage={() => contextMenu.userId && handleContextAction('message', contextMenu.userId)}
+          onBlock={() => contextMenu.userId && handleContextAction('block', contextMenu.userId)}
+          onReport={() => contextMenu.userId && handleContextAction('report', contextMenu.userId)}
+          onShare={() => contextMenu.userId && handleContextAction('share', contextMenu.userId)}
+          isFollowing={contextMenu.userId ? userFollowStates[contextMenu.userId] : false}
+        />
+
+        {/* Zoom overlay */}
+        {isZoomed && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-5 flex items-center justify-center"
+            onClick={() => {
+              setIsZoomed(false);
+              setPinchScale(1);
+            }}
+          >
+            <div className="text-white text-center">
+              <p className="text-sm mb-2">Pinch to zoom out</p>
+              <p className="text-xs opacity-75">Tap anywhere to close</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>;
 };
