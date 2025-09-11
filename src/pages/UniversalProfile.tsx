@@ -1234,7 +1234,7 @@ const UniversalProfile = () => {
           
           <TabsContent value="campaigns" className="mt-6">
             <Card className="card-modern">
-              <CardContent className="p-6">
+              <CardContent className="px-4 py-6 md:p-6">
                 <UserCampaignDisplay 
                   campaigns={joinedCampaigns} 
                   userId={profile?.user_id || user?.id || ''} 

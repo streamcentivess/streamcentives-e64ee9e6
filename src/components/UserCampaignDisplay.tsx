@@ -151,128 +151,170 @@ export const UserCampaignDisplay = ({ campaigns, userId, isOwnProfile }: UserCam
   };
 
   return (
-    <div className="space-y-6">
-      {completedCampaigns.length > 0 && (
+    <div className="space-y-4 md:space-y-6">
+      {activeCampaigns.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-400" />
-            Completed Campaigns ({completedCampaigns.length})
-          </h3>
-          <div className="grid gap-3">
-            {completedCampaigns.map((participation) => (
-              <Card key={participation.campaign_id} className="bg-card/50 border-border/50">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="text-2xl">{getCampaignTypeIcon(participation.campaigns.type)}</div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate">{participation.campaigns.title}</h4>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {participation.campaigns.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge className={getStatusColor(participation.status)}>
-                            ✓ Completed
-                          </Badge>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Zap className="h-3 w-3" />
-                            {participation.campaigns.xp_reward} XP earned
-                          </span>
-                          {participation.campaigns.cash_reward && (
-                            <span className="text-xs text-muted-foreground">
-                              ${participation.campaigns.cash_reward} cash reward
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    {!isOwnProfile && user && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleJoinCampaign(participation.campaign_id)}
-                        disabled={!!joinLoading}
-                        className="ml-2"
-                      >
-                        {joinLoading === participation.campaign_id ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                        ) : (
-                          <>
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            Join
-                          </>
-                        )}
-                      </Button>
-                    )}
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <Trophy className="h-4 w-4 text-blue-400" />
+            <h3 className="text-base font-semibold">Active Campaigns ({activeCampaigns.length})</h3>
+          </div>
+          <div className="space-y-2">
+            {activeCampaigns.map((participation) => (
+              <div 
+                key={participation.campaign_id} 
+                className="bg-card/30 border border-border/30 rounded-xl p-3 md:p-4 hover:bg-card/50 transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-xl flex-shrink-0 mt-0.5">
+                    {getCampaignTypeIcon(participation.campaigns.type)}
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h4 className="font-medium text-sm truncate">
+                        {participation.campaigns.title}
+                      </h4>
+                      {!isOwnProfile && user && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleJoinCampaign(participation.campaign_id)}
+                          disabled={!!joinLoading}
+                          className="text-xs px-2 py-1 h-7 flex-shrink-0"
+                        >
+                          {joinLoading === participation.campaign_id ? (
+                            <div className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
+                          ) : (
+                            "Join"
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                      {participation.campaigns.description}
+                    </p>
+                    
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <Badge className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-400 border-blue-500/20">
+                        In Progress
+                      </Badge>
+                      
+                      {participation.progress !== null && (
+                        <span className="text-xs text-muted-foreground">
+                          {participation.progress}% complete
+                        </span>
+                      )}
+                      
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Zap className="h-3 w-3" />
+                        <span>+{participation.campaigns.xp_reward} XP</span>
+                      </div>
+                      
+                      {participation.campaigns.end_date && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>Ends {new Date(participation.campaigns.end_date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       )}
 
+      {/* Share Section - Instagram Style */}
       {activeCampaigns.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-blue-400" />
-            Active Campaigns ({activeCampaigns.length})
-          </h3>
-          <div className="grid gap-3">
-            {activeCampaigns.map((participation) => (
-              <Card key={participation.campaign_id} className="bg-card/50 border-border/50">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="text-2xl">{getCampaignTypeIcon(participation.campaigns.type)}</div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate">{participation.campaigns.title}</h4>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {participation.campaigns.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge className={getStatusColor(participation.status)}>
-                            In Progress
-                          </Badge>
-                          {participation.progress !== null && (
-                            <span className="text-xs text-muted-foreground">
-                              {participation.progress}% complete
-                            </span>
-                          )}
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Zap className="h-3 w-3" />
-                            {participation.campaigns.xp_reward} XP
-                          </span>
-                          {participation.campaigns.end_date && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              Ends {new Date(participation.campaigns.end_date).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    {!isOwnProfile && user && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleJoinCampaign(participation.campaign_id)}
-                        disabled={!!joinLoading}
-                        className="ml-2"
-                      >
-                        {joinLoading === participation.campaign_id ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                        ) : (
-                          <>
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            Join
-                          </>
-                        )}
-                      </Button>
-                    )}
+        <div className="bg-card/20 border border-border/20 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <ExternalLink className="h-4 w-4 text-primary" />
+              <h3 className="font-semibold text-sm">Share Campaigns & Earn XP</h3>
+            </div>
+            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+          </div>
+          
+          <div className="space-y-3">
+            <div>
+              <p className="font-medium text-sm mb-1">Share on Streamcentives</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Repost campaigns to your feed and earn XP when others engage
+              </p>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-primary">+10 XP per share</span>
+              <ExternalLink className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {completedCampaigns.length > 0 && (
+        <div className="pt-2">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <Star className="h-4 w-4 text-yellow-400" />
+            <h3 className="text-base font-semibold">Completed ({completedCampaigns.length})</h3>
+          </div>
+          <div className="space-y-2">
+            {completedCampaigns.map((participation) => (
+              <div 
+                key={participation.campaign_id} 
+                className="bg-card/20 border border-border/20 rounded-xl p-3 md:p-4 opacity-75"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-xl flex-shrink-0 mt-0.5 grayscale">
+                    {getCampaignTypeIcon(participation.campaigns.type)}
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h4 className="font-medium text-sm truncate">
+                        {participation.campaigns.title}
+                      </h4>
+                      {!isOwnProfile && user && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleJoinCampaign(participation.campaign_id)}
+                          disabled={!!joinLoading}
+                          className="text-xs px-2 py-1 h-7 flex-shrink-0"
+                        >
+                          {joinLoading === participation.campaign_id ? (
+                            <div className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
+                          ) : (
+                            "Join"
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                      {participation.campaigns.description}
+                    </p>
+                    
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <Badge className="text-xs px-2 py-0.5 bg-green-500/10 text-green-400 border-green-500/20">
+                        ✓ Completed
+                      </Badge>
+                      
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Zap className="h-3 w-3" />
+                        <span>+{participation.campaigns.xp_reward} XP earned</span>
+                      </div>
+                      
+                      {participation.campaigns.cash_reward && (
+                        <span className="text-xs text-muted-foreground">
+                          ${participation.campaigns.cash_reward} earned
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
