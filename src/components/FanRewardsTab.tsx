@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Gift, ShoppingCart, Package, DollarSign, Sparkles } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useOptimizedRealtime } from '@/hooks/useOptimizedRealtime';
 
 interface Reward {
   id: string;
@@ -42,12 +45,32 @@ const FanRewardsTab = () => {
   const [userRedemptions, setUserRedemptions] = useState<UserRedemption[]>([]);
   const [loading, setLoading] = useState(true);
   const [userXP, setUserXP] = useState(0);
+  const [sellModalOpen, setSellModalOpen] = useState(false);
+  const [selectedRedemption, setSelectedRedemption] = useState<UserRedemption | null>(null);
+  const [askingPrice, setAskingPrice] = useState(''); // USD
 
   useEffect(() => {
     if (user) {
       fetchRewardsData();
     }
   }, [user]);
+
+  // Realtime updates for XP and redemptions
+  useOptimizedRealtime({
+    table: 'user_xp_balances',
+    filter: user?.id ? `user_id=eq.${user.id}` : undefined,
+    onUpdate: () => loadUserXP(),
+    debounceMs: 200,
+    enabled: !!user?.id,
+  });
+
+  useOptimizedRealtime({
+    table: 'reward_redemptions',
+    filter: user?.id ? `user_id=eq.${user.id}` : undefined,
+    onUpdate: () => fetchRewardsData(),
+    debounceMs: 300,
+    enabled: !!user?.id,
+  });
 
   const fetchRewardsData = async () => {
     if (!user) return;
