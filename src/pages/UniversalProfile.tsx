@@ -1122,23 +1122,36 @@ const UniversalProfile = () => {
                     <Calendar className="h-3 w-3" />
                     <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3 text-yellow-500" />
-                    <span className="text-yellow-500 font-medium">{xpBalance} XP</span>
+                  <div className="flex flex-col items-start gap-1">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3 text-yellow-500" />
+                      <span className="text-yellow-500 font-medium">{xpBalance} XP</span>
+                      {isOwnProfile && (
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-4 w-4 p-0 ml-1 hover:bg-yellow-100"
+                          onClick={() => {
+                            fetchXpBalance();
+                            toast({
+                              title: "Refreshed",
+                              description: "XP balance updated",
+                            });
+                          }}
+                        >
+                          <BarChart3 className="h-3 w-3 text-yellow-500" />
+                        </Button>
+                      )}
+                    </div>
                     {isOwnProfile && (
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-4 w-4 p-0 ml-1 hover:bg-yellow-100"
-                        onClick={() => {
-                          fetchXpBalance();
-                          toast({
-                            title: "Refreshed",
-                            description: "XP balance updated",
-                          });
-                        }}
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 text-xs text-green-600 hover:text-green-700 font-medium"
+                        onClick={() => navigate('/purchase-xp')}
                       >
-                        <BarChart3 className="h-3 w-3 text-yellow-500" />
+                        <DollarSign className="h-3 w-3 mr-1" />
+                        Buy XP
                       </Button>
                     )}
                   </div>
