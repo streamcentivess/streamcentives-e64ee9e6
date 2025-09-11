@@ -118,13 +118,6 @@ const UniversalProfile = () => {
           setUserRole('fan'); // Default to fan
         }
       }
-      
-      // Auto-execute XP updates
-      if (isOwnProfile && user.id === 'bfc4f2d3-8bc7-4848-9fa7-fec4242f445e') {
-        import('../utils/xpUpdates').then(({ executeXPUpdates }) => {
-          executeXPUpdates();
-        });
-      }
     }
   }, [user, finalUserId, finalUsername]);
 

@@ -36,19 +36,18 @@ export const bulkUpdateAllUsersXP = async (xpAmount: number) => {
   }
 };
 
-// Auto-trigger functions
-export const executeXPUpdates = async () => {
-  // First update current user to 800 XP
-  const currentUserId = 'bfc4f2d3-8bc7-4848-9fa7-fec4242f445e';
-  
-  console.log('Updating current user XP to 800...');
-  const userResult = await updateUserXP(currentUserId, 800);
+// Manual trigger function (call only when needed)
+export const executeXPUpdates = async (userId: string, userXPAmount: number, bulkXPAmount: number) => {
+  console.log(`Updating user ${userId} XP to ${userXPAmount}...`);
+  const userResult = await updateUserXP(userId, userXPAmount);
   console.log('User XP update result:', userResult);
 
-  // Wait a moment then update all users to 1000 XP
-  setTimeout(async () => {
-    console.log('Starting bulk update for all users to 1000 XP...');
-    const bulkResult = await bulkUpdateAllUsersXP(1000);
-    console.log('Bulk update result:', bulkResult);
-  }, 2000);
+  if (bulkXPAmount > 0) {
+    // Wait a moment then update all users
+    setTimeout(async () => {
+      console.log(`Starting bulk update for all users to ${bulkXPAmount} XP...`);
+      const bulkResult = await bulkUpdateAllUsersXP(bulkXPAmount);
+      console.log('Bulk update result:', bulkResult);
+    }, 2000);
+  }
 };
