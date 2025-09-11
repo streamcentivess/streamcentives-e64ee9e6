@@ -30,22 +30,30 @@ serve(async (req) => {
 
     // Get price details to determine XP amount
     const lineItems = await stripe.checkout.sessions.listLineItems(sessionId);
-    const priceId = lineItems.data[0]?.price?.id;
-    
+    const priceId = lineItems.data[0]?.price?.id as string | undefined;
     if (!priceId) throw new Error("No price found");
 
-    // Get price metadata to determine XP amount
-    const price = await stripe.prices.retrieve(priceId);
-    const product = await stripe.products.retrieve(price.product as string);
-    
-    const coinAmount = price.metadata?.coin_amount || product.metadata?.coin_amount;
-    
-    if (!coinAmount) throw new Error("XP amount not found in metadata");
+    // Try metadata first, then fall back to known price->XP map
+    const priceToXp: Record<string, number> = {
+      "price_1S65Zr2XJfhJAhD8CuWu3KKI": 500,
+      "price_1S65hR2XJfhJAhD8Qal3BZEY": 1220,
+      "price_1S65lJ2XJfhJAhD8axA12XlE": 2500,
+    };
 
-    const xpAmount = parseInt(coinAmount);
-    const userId = session.metadata?.user_id;
-    
-    if (!userId) throw new Error("User ID not found");
+    const price = await stripe.prices.retrieve(priceId);
+    const product = typeof price.product === 'string' ? await stripe.products.retrieve(price.product as string) : null;
+
+    const coinAmount = price.metadata?.coin_amount || product?.metadata?.coin_amount;
+    let xpAmount = coinAmount ? parseInt(coinAmount, 10) : NaN;
+
+    if (!coinAmount || Number.isNaN(xpAmount)) {
+      const mapped = priceToXp[priceId];
+      if (!mapped) throw new Error("XP amount not found (missing metadata and no mapping for price)");
+      xpAmount = mapped;
+    }
+
+    const userId = session.metadata?.user_id as string | undefined;
+    if (!userId) throw new Error("User ID not found in session metadata");
 
     // Initialize Supabase with service role key to bypass RLS
     const supabaseService = createClient(
