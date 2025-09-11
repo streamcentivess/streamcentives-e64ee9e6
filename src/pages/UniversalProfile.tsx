@@ -63,6 +63,11 @@ const UniversalProfile = () => {
   const [joinedCampaigns, setJoinedCampaigns] = useState<any[]>([]);
   const unreadCount = useUnreadMessages();
 
+  // Pull-to-refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [startY, setStartY] = useState(0);
+
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId') || searchParams.get('user');
   const viewingUsername = searchParams.get('username');
@@ -813,6 +818,44 @@ const UniversalProfile = () => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   };
+  
+  // Pull-to-refresh functionality
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    
+    // Only allow pull down when at top of page
+    if (window.scrollY === 0 && diff > 0) {
+      e.preventDefault();
+      setPullDistance(Math.min(diff / 3, 100)); // Limit pull distance
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullDistance > 60 && !isRefreshing) {
+      setIsRefreshing(true);
+      // Refresh profile data
+      Promise.all([
+        fetchProfile(),
+        fetchFollowStats(),
+        fetchXpBalance()
+      ]).finally(() => {
+        setIsRefreshing(false);
+        setPullDistance(0);
+        toast({
+          title: "Profile refreshed",
+          description: "Your profile data has been updated"
+        });
+      });
+    } else {
+      setPullDistance(0);
+    }
+  };
+
   const openFollowersList = async () => {
     setListType('followers');
     await fetchFollowers();
@@ -936,8 +979,33 @@ const UniversalProfile = () => {
         </Card>
       </div>;
   }
-  return <div className="min-h-screen bg-background p-4">
-      <div className="w-full max-w-4xl mx-auto space-y-6 px-2 sm:px-4">
+  return <div className="min-h-screen bg-background p-4" 
+    onTouchStart={handleTouchStart}
+    onTouchMove={handleTouchMove}
+    onTouchEnd={handleTouchEnd}
+  >
+    {/* Pull-to-refresh indicator */}
+    {pullDistance > 0 && (
+      <div 
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4"
+        style={{ transform: `translateY(${Math.min(pullDistance - 60, 0)}px)` }}
+      >
+        <div className="bg-background/90 backdrop-blur-sm rounded-full px-4 py-2 border shadow-lg">
+          {isRefreshing ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <span className="text-sm">Refreshing...</span>
+            </div>
+          ) : pullDistance > 60 ? (
+            <span className="text-sm">Release to refresh</span>
+          ) : (
+            <span className="text-sm">Pull down to refresh</span>
+          )}
+        </div>
+      </div>
+    )}
+    
+      <div className="w-full max-w-4xl mx-auto space-y-6 px-2 sm:px-4" style={{ paddingTop: pullDistance > 0 ? `${pullDistance}px` : '0px' }}>
         {/* Header - Instagram Style */}
         <div className="flex justify-between items-center gap-2 py-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -1048,19 +1116,19 @@ const UniversalProfile = () => {
           </div>
         </div>
 
-        {/* Search Section - Mobile Optimized */}
+        {/* Search Section - Compact Mobile Optimized */}
         <Card className="card-modern">
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-2 sm:p-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Search for users and creators..." value={searchQuery} onChange={handleSearchChange} className="pl-10 h-10 text-sm" />
+              <Input placeholder="Search for users and creators..." value={searchQuery} onChange={handleSearchChange} className="pl-10 h-9 text-sm border-0 bg-muted/50 focus:bg-background" />
               {searching && <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                 </div>}
             </div>
             
             {/* Search Results */}
-            {searchResults.length > 0 && <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
+            {searchResults.length > 0 && <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
                 {searchResults.map(result => <div key={result.user_id} onClick={() => viewProfile(result.user_id)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={result.avatar_url || ''} />
