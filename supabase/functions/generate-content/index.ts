@@ -32,25 +32,37 @@ function detectRequestedFormat(prompt: string): string[] {
   return formats.length > 0 ? formats : ['mixed'];
 }
 
-// Helper function to generate actual image files
+// Helper function to generate actual image files using Hugging Face
 async function generateImageFile(prompt: string, supabase: any): Promise<string | null> {
   try {
-    // Use Supabase to call image generation (assuming you have an image gen service)
-    const response = await fetch('https://api.flux.ai/v1/generate', {
+    const huggingFaceToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
+    if (!huggingFaceToken) {
+      console.error('HUGGING_FACE_ACCESS_TOKEN not configured');
+      return null;
+    }
+
+    // Use Hugging Face Inference API with FLUX.1-schnell model
+    const response = await fetch('https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('FLUX_API_KEY') || 'demo-key'}`
+        'Authorization': `Bearer ${huggingFaceToken}`
       },
       body: JSON.stringify({
-        prompt: prompt,
-        width: 1024,
-        height: 1024,
-        steps: 20
+        inputs: prompt,
+        parameters: {
+          width: 1024,
+          height: 1024,
+          num_inference_steps: 4
+        }
       })
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Hugging Face API error:', response.status, errorText);
+      return null;
+    }
     
     const imageBlob = await response.blob();
     const fileName = `generated-images/${crypto.randomUUID()}.png`;
@@ -61,7 +73,10 @@ async function generateImageFile(prompt: string, supabase: any): Promise<string 
         contentType: 'image/png'
       });
     
-    if (error) return null;
+    if (error) {
+      console.error('Storage upload error:', error);
+      return null;
+    }
     
     const { data: urlData } = supabase.storage
       .from('posts')
