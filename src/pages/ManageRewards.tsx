@@ -23,6 +23,7 @@ interface Reward {
   quantity_available: number;
   quantity_redeemed: number;
   image_url: string | null;
+  cover_photo_url: string | null;
   rarity: string;
   tags: string[] | null;
   is_active: boolean;
@@ -39,6 +40,7 @@ const ManageRewards = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingReward, setEditingReward] = useState<Reward | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -49,6 +51,7 @@ const ManageRewards = () => {
     cash_price: '',
     quantity_available: '',
     image_url: '',
+    cover_photo_url: '',
     rarity: 'common',
     tags: '',
   });
@@ -132,6 +135,63 @@ const ManageRewards = () => {
     }
   };
 
+  const handleCoverPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type (only images for cover photos)
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Cover photo must be an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (10MB max for cover photos)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Cover photo size must be under 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingCover(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `covers/${user.id}/${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('posts')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('posts')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, cover_photo_url: publicUrl }));
+
+      toast({
+        title: "Success",
+        description: "Cover photo uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Cover photo upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload cover photo",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -141,6 +201,7 @@ const ManageRewards = () => {
       cash_price: '',
       quantity_available: '',
       image_url: '',
+      cover_photo_url: '',
       rarity: 'common',
       tags: '',
     });
@@ -225,6 +286,7 @@ const ManageRewards = () => {
       cash_price: reward.cash_price?.toString() || '',
       quantity_available: reward.quantity_available.toString(),
       image_url: reward.image_url || '',
+      cover_photo_url: reward.cover_photo_url || '',
       rarity: reward.rarity,
       tags: reward.tags?.join(', ') || '',
     });
@@ -432,7 +494,38 @@ const ManageRewards = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="file_upload">Upload Media File</Label>
+                  <Label htmlFor="cover_photo_upload">Cover Photo</Label>
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      id="cover_photo_upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCoverPhotoUpload}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Upload a cover image for your reward (PNG, JPG - Max 10MB)
+                    </p>
+                    {uploadingCover && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                        Uploading cover photo...
+                      </div>
+                    )}
+                    {formData.cover_photo_url && (
+                      <div className="mt-2">
+                        <img 
+                          src={formData.cover_photo_url} 
+                          alt="Cover preview" 
+                          className="w-32 h-20 object-cover rounded border"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="file_upload">Media File (Optional)</Label>
                   <div className="flex flex-col gap-2">
                     <Input
                       id="file_upload"
@@ -442,25 +535,33 @@ const ManageRewards = () => {
                       className="cursor-pointer"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Supported: MP3, MP4, PNG, JPG, MOV, WAV, M4A (Max 50MB)
+                      Upload media: MP3, MP4, PNG, JPG, MOV, WAV, M4A (Max 50MB)
                     </p>
                     {uploading && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                        Uploading...
+                        Uploading media...
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="image_url">Or Enter URL</Label>
-                  <Input
-                    id="image_url"
-                    value={formData.image_url}
-                    onChange={(e) => handleInputChange('image_url', e.target.value)}
-                    placeholder="https://example.com/image.jpg"
-                  />
+                  <Label htmlFor="image_url">Or Enter URLs</Label>
+                  <div className="grid gap-2">
+                    <Input
+                      id="cover_photo_url"
+                      value={formData.cover_photo_url}
+                      onChange={(e) => handleInputChange('cover_photo_url', e.target.value)}
+                      placeholder="Cover photo URL (https://example.com/cover.jpg)"
+                    />
+                    <Input
+                      id="image_url"
+                      value={formData.image_url}
+                      onChange={(e) => handleInputChange('image_url', e.target.value)}
+                      placeholder="Media file URL (https://example.com/media.mp4)"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
