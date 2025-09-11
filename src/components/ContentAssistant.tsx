@@ -23,7 +23,8 @@ import {
   TrendingUp,
   Users,
   Brain,
-  Palette
+  Palette,
+  Trash2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -274,6 +275,29 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
     } catch (error) {
       console.error('Error posting content:', error);
       toast.error('Failed to post content');
+    }
+  };
+
+  const deleteContent = async (contentId: string) => {
+    if (!user) return;
+    
+    try {
+      // Remove from state
+      setGeneratedContent(prev => prev.filter(content => content.id !== contentId));
+      setPreviewContent(prev => prev.filter(content => content.id !== contentId));
+      
+      // Remove from localStorage
+      const existing = localStorage.getItem(`ai_content_${user.id}`);
+      if (existing) {
+        const existingContent = JSON.parse(existing);
+        const updatedContent = existingContent.filter((content: any) => content.id !== contentId);
+        localStorage.setItem(`ai_content_${user.id}`, JSON.stringify(updatedContent));
+      }
+      
+      toast.success('Content deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      toast.error('Failed to delete content');
     }
   };
 
@@ -579,36 +603,44 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                         <p className="text-xs text-muted-foreground mb-3 line-clamp-3">
                           {content.content}
                         </p>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => downloadContent(content)}
-                          >
-                            <Download className="h-3 w-3 mr-1" />
-                            Download
-                          </Button>
-                          {content.imageUrl && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedContent(content);
-                                setShowPhotoEditor(true);
-                              }}
-                            >
-                              <Edit3 className="h-3 w-3 mr-1" />
-                              Edit
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            onClick={() => postToProfile(content)}
-                          >
-                            <Share2 className="h-3 w-3 mr-1" />
-                            Post
-                          </Button>
-                        </div>
+                         <div className="flex items-center gap-2 flex-wrap">
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => downloadContent(content)}
+                           >
+                             <Download className="h-3 w-3 mr-1" />
+                             Download
+                           </Button>
+                           {content.imageUrl && (
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               onClick={() => {
+                                 setSelectedContent(content);
+                                 setShowPhotoEditor(true);
+                               }}
+                             >
+                               <Edit3 className="h-3 w-3 mr-1" />
+                               Edit
+                             </Button>
+                           )}
+                           <Button
+                             size="sm"
+                             onClick={() => postToProfile(content)}
+                           >
+                             <Share2 className="h-3 w-3 mr-1" />
+                             Post
+                           </Button>
+                           <Button
+                             size="sm"
+                             variant="destructive"
+                             onClick={() => deleteContent(content.id)}
+                           >
+                             <Trash2 className="h-3 w-3 mr-1" />
+                             Delete
+                           </Button>
+                         </div>
                       </CardContent>
                     </Card>
                   ))}
