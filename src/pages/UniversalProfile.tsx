@@ -76,7 +76,6 @@ const UniversalProfile = () => {
     if (user) {
       fetchProfile();
       fetchFollowStats();
-      fetchJoinedCampaigns();
       // Force refresh XP balance if on own profile
       if (isOwnProfile) {
         setTimeout(() => fetchXpBalance(), 1000);
@@ -108,6 +107,14 @@ const UniversalProfile = () => {
     }
   }, [user, finalUserId, finalUsername]);
 
+  // Fetch campaigns after profile is loaded to ensure we have the correct user ID
+  useEffect(() => {
+    const targetUserId = profile?.user_id || finalUserId || user?.id;
+    if (targetUserId) {
+      fetchJoinedCampaigns();
+    }
+  }, [profile?.user_id, finalUserId, user?.id]);
+
   // Set up real-time XP balance updates
   useEffect(() => {
     if (!profile?.user_id) return;
@@ -129,21 +136,24 @@ const UniversalProfile = () => {
 
   // Set up real-time campaign participation updates
   useEffect(() => {
-    if (!profile?.user_id) return;
-    const channel = supabase.channel('campaign-participation-updates').on('postgres_changes', {
+    const targetUserId = profile?.user_id || finalUserId || user?.id;
+    if (!targetUserId) return;
+    
+    const channel = supabase.channel(`campaign-participation-${targetUserId}`).on('postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'campaign_participants',
-      filter: `user_id=eq.${profile.user_id}`
+      filter: `user_id=eq.${targetUserId}`
     }, (payload: any) => {
       console.log('Campaign participation updated:', payload);
-      // Refresh joined campaigns when user joins/leaves campaigns
-      fetchJoinedCampaigns();
+      // Immediately refresh joined campaigns when user joins/leaves campaigns
+      setTimeout(() => fetchJoinedCampaigns(), 100);
     }).subscribe();
+    
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.user_id]);
+  }, [profile?.user_id, finalUserId, user?.id]);
 
   const fetchProfile = async () => {
     const targetUserId = finalUsername ? null : finalUserId || user?.id;
