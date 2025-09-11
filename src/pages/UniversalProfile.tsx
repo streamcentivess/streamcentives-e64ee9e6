@@ -790,6 +790,29 @@ const UniversalProfile = () => {
       });
     }
   };
+  // Remove follower (when viewing your own followers list)
+  const handleRemoveFollower = async (followerUserId: string) => {
+    if (!user || followerUserId === user.id) return;
+    try {
+      const { error } = await supabase
+        .from('follows')
+        .delete()
+        .eq('follower_id', followerUserId)
+        .eq('following_id', user.id);
+      if (error) throw error;
+
+      // Optimistic UI update for real-time feel
+      setFollowers(prev => prev.filter(p => p.user_id !== followerUserId));
+      setFollowStats(prev => ({ ...prev, followers_count: Math.max(0, (prev.followers_count || 0) - 1) }));
+
+      toast({
+        title: 'Removed follower',
+        description: 'This user no longer follows you.'
+      });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
   const openFollowersList = async () => {
     setListType('followers');
     await fetchFollowers();
@@ -1543,15 +1566,33 @@ const UniversalProfile = () => {
                       {person.username && person.display_name && <div className="text-sm text-muted-foreground">@{person.username}</div>}
                     </div>
                     {/* Follow/Unfollow button - only show if viewing from own profile and not the person's own entry */}
-                     {isOwnProfile && person.user_id !== user?.id && <Button size="sm" variant={userFollowStates[person.user_id] ? "outline" : "default"} onClick={() => handleUserFollowToggle(person.user_id)} className={userFollowStates[person.user_id] ? "" : "bg-gradient-primary hover:opacity-90"}>
-                         {userFollowStates[person.user_id] ? <>
-                             <UserMinus className="h-3 w-3 mr-1" />
-                             {listType === 'followers' ? 'Remove Follower' : 'Unfollow'}
-                           </> : <>
-                             <UserPlus className="h-3 w-3 mr-1" />
-                             Follow
-                           </>}
-                       </Button>}
+                    {isOwnProfile && person.user_id !== user?.id && (
+                      listType === 'followers' ? (
+                        <Button size="sm" variant="outline" onClick={() => handleRemoveFollower(person.user_id)}>
+                          <UserMinus className="h-3 w-3 mr-1" />
+                          Remove Follower
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant={userFollowStates[person.user_id] ? 'outline' : 'default'}
+                          onClick={() => handleUserFollowToggle(person.user_id)}
+                          className={userFollowStates[person.user_id] ? '' : 'bg-gradient-primary hover:opacity-90'}
+                        >
+                          {userFollowStates[person.user_id] ? (
+                            <>
+                              <UserMinus className="h-3 w-3 mr-1" />
+                              Unfollow
+                            </>
+                          ) : (
+                            <>
+                              <UserPlus className="h-3 w-3 mr-1" />
+                              Follow
+                            </>
+                          )}
+                        </Button>
+                      )
+                    )}
                   </div>) : <div className="text-center text-muted-foreground py-8">
                   {listType === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
                 </div>}
