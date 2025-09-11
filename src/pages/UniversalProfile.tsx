@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search, Share2, Mail, Heart } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search, Share2, Mail, Heart, DollarSign } from 'lucide-react';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { supabase } from '@/integrations/supabase/client';
 import { PostsGrid } from '@/components/PostsGrid';
@@ -59,6 +59,7 @@ const UniversalProfile = () => {
     show: boolean;
     profile: Profile | null;
   }>({ show: false, profile: null });
+  const [joinedCampaigns, setJoinedCampaigns] = useState<any[]>([]);
   const unreadCount = useUnreadMessages();
 
   // Check if viewing own profile or another user's profile
@@ -74,6 +75,7 @@ const UniversalProfile = () => {
     if (user) {
       fetchProfile();
       fetchFollowStats();
+      fetchJoinedCampaigns();
       // Clear follow states when switching profiles
       setUserFollowStates({});
       // Determine user role from sessionStorage or URL params
@@ -311,6 +313,48 @@ const UniversalProfile = () => {
       setSupporters(profiles || []);
     } catch (error) {
       console.error('Error fetching supporters:', error);
+    }
+  };
+
+  // Fetch joined campaigns for current profile
+  const fetchJoinedCampaigns = async () => {
+    const targetUserId = profile?.user_id || viewingUserId || user?.id;
+    if (!targetUserId) return;
+
+    try {
+      const { data: campaignParticipants, error } = await supabase
+        .from('campaign_participants')
+        .select(`
+          campaign_id,
+          status,
+          progress,
+          joined_at,
+          campaigns (
+            id,
+            title,
+            description,
+            type,
+            xp_reward,
+            cash_reward,
+            end_date,
+            image_url,
+            profiles (
+              display_name,
+              avatar_url
+            )
+          )
+        `)
+        .eq('user_id', targetUserId)
+        .order('joined_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching joined campaigns:', error);
+        return;
+      }
+
+      setJoinedCampaigns(campaignParticipants || []);
+    } catch (error) {
+      console.error('Error fetching joined campaigns:', error);
     }
   };
 
@@ -1123,24 +1167,71 @@ const UniversalProfile = () => {
           <TabsContent value="campaigns" className="mt-6">
             <Card className="card-modern">
               <CardContent className="p-6">
-                <div className="text-center mb-6">
-                  <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50 text-muted-foreground" />
-                  {isOwnProfile ?
-                // Show different content based on user's role
-                userRole === 'creator' ? <div className="space-y-4">
-                        <p className="text-muted-foreground">No campaigns created yet. Start building your community with your first campaign!</p>
-                        <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
-                          Create Campaign
-                        </Button>
-                      </div> : <div className="space-y-4">
-                        <p className="text-muted-foreground">No campaigns joined yet. Discover and join campaigns to start earning XP!</p>
-                        <Button onClick={() => navigate('/fan-campaigns')} className="bg-gradient-primary hover:opacity-90">
-                          Join Campaigns
-                        </Button>
-                      </div> :
-                // Viewing someone else's profile - show generic message
-                <p className="text-muted-foreground">No public campaign activity to display.</p>}
-                </div>
+                {isOwnProfile && userRole === 'fan' && joinedCampaigns.length > 0 ? (
+                  // Show joined campaigns for fans
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold mb-4">My Joined Campaigns</h3>
+                    <div className="grid gap-4">
+                      {joinedCampaigns.map((participation) => {
+                        const campaign = participation.campaigns;
+                        return (
+                          <Card key={participation.campaign_id} className="p-4 border border-border/50 hover:border-border transition-colors">
+                            <div className="flex items-center gap-4">
+                              {campaign.image_url && (
+                                <img
+                                  src={campaign.image_url}
+                                  alt={campaign.title}
+                                  className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-medium text-foreground truncate">{campaign.title}</h4>
+                                  <Badge variant={participation.status === 'completed' ? 'default' : 'secondary'}>
+                                    {participation.status}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{campaign.description}</p>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <Trophy className="h-3 w-3" />
+                                    {campaign.xp_reward} XP
+                                  </span>
+                                  {campaign.cash_reward && (
+                                    <span className="flex items-center gap-1">
+                                      <DollarSign className="h-3 w-3" />
+                                      ${campaign.cash_reward}
+                                    </span>
+                                  )}
+                                  <span>Progress: {participation.progress || 0}%</span>
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center mb-6">
+                    <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50 text-muted-foreground" />
+                    {isOwnProfile ?
+                  // Show different content based on user's role
+                  userRole === 'creator' ? <div className="space-y-4">
+                          <p className="text-muted-foreground">No campaigns created yet. Start building your community with your first campaign!</p>
+                          <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
+                            Create Campaign
+                          </Button>
+                        </div> : <div className="space-y-4">
+                          <p className="text-muted-foreground">No campaigns joined yet. Discover and join campaigns to start earning XP!</p>
+                          <Button onClick={() => navigate('/fan-campaigns')} className="bg-gradient-primary hover:opacity-90">
+                            Join Campaigns
+                          </Button>
+                        </div> :
+                  // Viewing someone else's profile - show generic message
+                  <p className="text-muted-foreground">No public campaign activity to display.</p>}
+                  </div>
+                )}
 
                 {/* Share & Earn Section */}
                 <div className="border-t pt-6">
