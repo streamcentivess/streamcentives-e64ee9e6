@@ -6,11 +6,16 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Filter, Target, Users, Calendar, MapPin, Music, Star, Trophy, Clock, ArrowLeft } from 'lucide-react';
+import { Search, Filter, Target, Users, Calendar, MapPin, Music, Star, Trophy, Clock, ArrowLeft, ShoppingBag, Upload, Vote, Share2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MerchandiseCampaign } from '@/components/campaign-interactions/MerchandiseCampaign';
+import { StreamingCampaign } from '@/components/campaign-interactions/StreamingCampaign';
+import { VoteCampaign } from '@/components/campaign-interactions/VoteCampaign';
+import { ShareCampaign } from '@/components/campaign-interactions/ShareCampaign';
+import { UploadCampaign } from '@/components/campaign-interactions/UploadCampaign';
 
 interface Campaign {
   id: string;
@@ -35,6 +40,7 @@ interface Campaign {
   };
   participant_count?: number;
   is_joined?: boolean;
+  interaction_completed?: boolean;
 }
 
 const FanCampaigns = () => {
@@ -156,17 +162,31 @@ const FanCampaigns = () => {
         userParticipation = userParticipations || [];
       }
 
+      // Get interaction completion status for joined campaigns
+      let interactionData: any[] = [];
+      if (campaignIds.length > 0) {
+        const { data: interactions } = await supabase
+          .from('campaign_interactions')
+          .select('campaign_id, completed')
+          .eq('user_id', user.id)
+          .in('campaign_id', campaignIds);
+        
+        interactionData = interactions || [];
+      }
+
       // Process campaigns with additional data
       const processedCampaigns = campaignData?.map(campaign => {
         const participantCount = participationData.filter(p => p.campaign_id === campaign.id).length;
         const isJoined = userParticipation.some(p => p.campaign_id === campaign.id);
         const creatorProfile = creatorProfiles.find(p => p.user_id === campaign.creator_id);
+        const interaction = interactionData.find(i => i.campaign_id === campaign.id);
         
         return {
           ...campaign,
           creator_profile: creatorProfile,
           participant_count: participantCount,
-          is_joined: isJoined
+          is_joined: isJoined,
+          interaction_completed: interaction?.completed || false
         };
       }) || [];
 
@@ -248,6 +268,10 @@ const FanCampaigns = () => {
   const getCampaignTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'streaming': return <Music className="h-4 w-4" />;
+      case 'merchandise': return <ShoppingBag className="h-4 w-4" />;
+      case 'upload': return <Upload className="h-4 w-4" />;
+      case 'vote': return <Vote className="h-4 w-4" />;
+      case 'share': return <Share2 className="h-4 w-4" />;
       case 'social': return <Users className="h-4 w-4" />;
       case 'engagement': return <Star className="h-4 w-4" />;
       default: return <Target className="h-4 w-4" />;
@@ -321,6 +345,9 @@ const FanCampaigns = () => {
                   <SelectItem value="social">Social</SelectItem>
                   <SelectItem value="engagement">Engagement</SelectItem>
                   <SelectItem value="merchandise">Merchandise</SelectItem>
+                  <SelectItem value="upload">Upload</SelectItem>
+                  <SelectItem value="vote">Vote</SelectItem>
+                  <SelectItem value="share">Share</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -433,14 +460,21 @@ const FanCampaigns = () => {
                     {/* Action Button */}
                     <div className="pt-2">
                       {campaign.is_joined ? (
-                        <Button 
-                          variant="outline" 
-                          className="w-full"
-                          onClick={() => setSelectedCampaign(campaign)}
-                        >
-                          <Trophy className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
+                        campaign.interaction_completed ? (
+                          <Badge className="w-full justify-center bg-green-100 text-green-800 border-green-200">
+                            <Trophy className="h-4 w-4 mr-2" />
+                            Completed
+                          </Badge>
+                        ) : (
+                          <Button 
+                            variant="outline" 
+                            className="w-full border-primary text-primary hover:bg-primary hover:text-white"
+                            onClick={() => setSelectedCampaign(campaign)}
+                          >
+                            <Target className="h-4 w-4 mr-2" />
+                            Complete Campaign
+                          </Button>
+                        )
                       ) : (
                         <Button 
                           className="w-full bg-gradient-primary hover:opacity-90"
@@ -505,47 +539,100 @@ const FanCampaigns = () => {
                 </div>
               </div>
 
-              {/* Description */}
-              <div>
-                <h4 className="font-medium mb-2">Campaign Description</h4>
-                <p className="text-muted-foreground">{selectedCampaign.description}</p>
-              </div>
-
-              {/* Campaign Details */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Campaign Interaction Interface */}
+              {selectedCampaign.is_joined && !selectedCampaign.interaction_completed ? (
                 <div>
-                  <div className="text-sm font-medium">Participants</div>
-                  <div className="text-2xl font-bold">{selectedCampaign.participant_count}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium">Time Remaining</div>
-                  <div className="text-lg font-semibold">{formatTimeRemaining(selectedCampaign.end_date)}</div>
-                </div>
-              </div>
-
-              {/* Progress */}
-              {selectedCampaign.target_value > 0 && (
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Campaign Progress</span>
-                    <span className="text-sm">
-                      {selectedCampaign.current_progress} / {selectedCampaign.target_value}
-                    </span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-3">
-                    <div 
-                      className="bg-gradient-primary h-3 rounded-full transition-all"
-                      style={{ width: `${Math.min((selectedCampaign.current_progress / selectedCampaign.target_value) * 100, 100)}%` }}
+                  {selectedCampaign.type === 'merchandise' && (
+                    <MerchandiseCampaign 
+                      campaign={selectedCampaign} 
+                      onComplete={() => {
+                        fetchCampaigns();
+                        setSelectedCampaign(null);
+                      }} 
                     />
-                  </div>
+                  )}
+                  {selectedCampaign.type === 'streaming' && (
+                    <StreamingCampaign 
+                      campaign={selectedCampaign} 
+                      onComplete={() => {
+                        fetchCampaigns();
+                        setSelectedCampaign(null);
+                      }} 
+                    />
+                  )}
+                  {selectedCampaign.type === 'vote' && (
+                    <VoteCampaign 
+                      campaign={selectedCampaign} 
+                      onComplete={() => {
+                        fetchCampaigns();
+                        setSelectedCampaign(null);
+                      }} 
+                    />
+                  )}
+                  {selectedCampaign.type === 'share' && (
+                    <ShareCampaign 
+                      campaign={selectedCampaign} 
+                      onComplete={() => {
+                        fetchCampaigns();
+                        setSelectedCampaign(null);
+                      }} 
+                    />
+                  )}
+                  {selectedCampaign.type === 'upload' && (
+                    <UploadCampaign 
+                      campaign={selectedCampaign} 
+                      onComplete={() => {
+                        fetchCampaigns();
+                        setSelectedCampaign(null);
+                      }} 
+                    />
+                  )}
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Description */}
+                  <div>
+                    <h4 className="font-medium mb-2">Campaign Description</h4>
+                    <p className="text-muted-foreground">{selectedCampaign.description}</p>
+                  </div>
 
-              {selectedCampaign.is_joined && (
-                <Badge className="w-fit bg-success/20 text-success">
-                  <Trophy className="h-3 w-3 mr-1" />
-                  You're participating in this campaign!
-                </Badge>
+                  {/* Campaign Details */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm font-medium">Participants</div>
+                      <div className="text-2xl font-bold">{selectedCampaign.participant_count}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Time Remaining</div>
+                      <div className="text-lg font-semibold">{formatTimeRemaining(selectedCampaign.end_date)}</div>
+                    </div>
+                  </div>
+
+                  {/* Progress */}
+                  {selectedCampaign.target_value > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Campaign Progress</span>
+                        <span className="text-sm">
+                          {selectedCampaign.current_progress} / {selectedCampaign.target_value}
+                        </span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-3">
+                        <div 
+                          className="bg-gradient-primary h-3 rounded-full transition-all"
+                          style={{ width: `${Math.min((selectedCampaign.current_progress / selectedCampaign.target_value) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedCampaign.is_joined && (
+                    <Badge className="w-fit bg-success/20 text-success">
+                      <Trophy className="h-3 w-3 mr-1" />
+                      {selectedCampaign.interaction_completed ? 'Campaign Completed!' : "You're participating in this campaign!"}
+                    </Badge>
+                  )}
+                </>
               )}
             </div>
           )}

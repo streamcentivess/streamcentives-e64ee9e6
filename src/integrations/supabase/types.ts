@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaign_assets: {
+        Row: {
+          asset_data: Json
+          asset_type: string
+          campaign_id: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          asset_data: Json
+          asset_type: string
+          campaign_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          asset_data?: Json
+          asset_type?: string
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      campaign_interactions: {
+        Row: {
+          campaign_id: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          interaction_data: Json | null
+          interaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          interaction_data?: Json | null
+          interaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          interaction_data?: Json | null
+          interaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       campaign_merchandise: {
         Row: {
           campaign_id: string
@@ -480,6 +543,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      poll_votes: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          poll_option: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          poll_option: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          poll_option?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       post_comments: {
         Row: {
@@ -1160,6 +1247,10 @@ export type Database = {
       }
     }
     Functions: {
+      complete_campaign_interaction: {
+        Args: { campaign_id_param: string; interaction_data_param?: Json }
+        Returns: Json
+      }
       get_campaign_stats: {
         Args: { campaign_id_param: string }
         Returns: {
