@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 interface PhotoEditorProps {
   initialImage?: string;
   onSave: (editedImages: string[]) => void;
+  onPost?: (editedImages: string[]) => void;
   onClose: () => void;
 }
 
@@ -47,7 +48,7 @@ const presetFilters = [
   { name: 'Drama', settings: { brightness: 90, contrast: 150, saturation: 130, hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0 } }
 ];
 
-export const PhotoEditor: React.FC<PhotoEditorProps> = ({ initialImage, onSave, onClose }) => {
+export const PhotoEditor: React.FC<PhotoEditorProps> = ({ initialImage, onSave, onPost, onClose }) => {
   const [images, setImages] = useState<string[]>(initialImage ? [initialImage] : []);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [filters, setFilters] = useState<FilterSettings>(presetFilters[0].settings);
@@ -183,6 +184,54 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({ initialImage, onSave, 
     setFilters(presetFilters[0].settings);
   };
 
+  const processImages = async (): Promise<string[]> => {
+    const editedImages: string[] = [];
+    
+    // Process each image
+    for (let i = 0; i < images.length; i++) {
+      // Load image into a temporary canvas
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) continue;
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      await new Promise((resolve) => {
+        img.onload = () => {
+          tempCanvas.width = img.width;
+          tempCanvas.height = img.height;
+          
+          // Apply filters
+          tempCtx.filter = `
+            brightness(${filters.brightness}%)
+            contrast(${filters.contrast}%)
+            saturate(${filters.saturation}%)
+            hue-rotate(${filters.hue}deg)
+            blur(${filters.blur}px)
+            sepia(${filters.sepia}%)
+            grayscale(${filters.grayscale}%)
+            invert(${filters.invert}%)
+          `;
+          
+          tempCtx.drawImage(img, 0, 0);
+          
+          // Convert to blob and create URL
+          tempCanvas.toBlob((blob) => {
+            if (blob) {
+              const url = URL.createObjectURL(blob);
+              editedImages.push(url);
+            }
+            resolve(void 0);
+          }, 'image/jpeg', 0.9);
+        };
+        img.src = images[i];
+      });
+    }
+    
+    return editedImages;
+  };
+
   const saveEditedImages = async () => {
     if (images.length === 0) {
       toast.error('No images to save');
@@ -192,52 +241,35 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({ initialImage, onSave, 
     setIsProcessing(true);
     
     try {
-      const editedImages: string[] = [];
-      
-      // Process each image
-      for (let i = 0; i < images.length; i++) {
-        // Load image into a temporary canvas
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        if (!tempCtx) continue;
-
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        
-        await new Promise((resolve) => {
-          img.onload = () => {
-            tempCanvas.width = img.width;
-            tempCanvas.height = img.height;
-            
-            // Apply filters
-            tempCtx.filter = `
-              brightness(${filters.brightness}%)
-              contrast(${filters.contrast}%)
-              saturate(${filters.saturation}%)
-              hue-rotate(${filters.hue}deg)
-              blur(${filters.blur}px)
-              sepia(${filters.sepia}%)
-              grayscale(${filters.grayscale}%)
-              invert(${filters.invert}%)
-            `;
-            
-            tempCtx.drawImage(img, 0, 0);
-            
-            // Convert to blob and create URL
-            tempCanvas.toBlob((blob) => {
-              if (blob) {
-                const url = URL.createObjectURL(blob);
-                editedImages.push(url);
-              }
-              resolve(void 0);
-            }, 'image/jpeg', 0.9);
-          };
-          img.src = images[i];
-        });
-      }
-      
+      const editedImages = await processImages();
       onSave(editedImages);
-      toast.success('Images processed successfully!');
+      toast.success('Images saved successfully!');
+      
+    } catch (error) {
+      console.error('Error processing images:', error);
+      toast.error('Failed to process images');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const postEditedImages = async () => {
+    if (images.length === 0) {
+      toast.error('No images to post');
+      return;
+    }
+
+    if (!onPost) {
+      toast.error('Post functionality not available');
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    try {
+      const editedImages = await processImages();
+      onPost(editedImages);
+      toast.success('Images posted successfully!');
       
     } catch (error) {
       console.error('Error processing images:', error);
@@ -497,6 +529,7 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({ initialImage, onSave, 
           
           <div className="flex gap-2">
             <Button
+              variant="outline"
               onClick={saveEditedImages}
               disabled={images.length === 0 || isProcessing}
             >
@@ -508,10 +541,28 @@ export const PhotoEditor: React.FC<PhotoEditorProps> = ({ initialImage, onSave, 
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save & Post
+                  Save
                 </>
               )}
             </Button>
+            {onPost && (
+              <Button
+                onClick={postEditedImages}
+                disabled={images.length === 0 || isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Post
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
