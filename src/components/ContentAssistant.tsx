@@ -181,7 +181,22 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
       }));
 
       // Show preview content as it generates
+      console.log('Generated content received:', data.generatedContent);
       setPreviewContent(contentToSave);
+      
+      // Debug: Log content structure
+      contentToSave.forEach((content: any) => {
+        if (content.type === 'image') {
+          console.log('Image content:', {
+            id: content.id,
+            title: content.title,
+            hasImageUrl: !!content.imageUrl,
+            hasDownloadUrl: !!content.downloadUrl,
+            hasImagePrompt: !!content.imagePrompt,
+            actualFile: content.actualFile
+          });
+        }
+      });
 
       // Save to localStorage for now
       const existing = localStorage.getItem(`ai_content_${user.id}`);
@@ -498,15 +513,34 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                         </div>
                       )}
                       
-                         <div className="space-y-3 max-h-60 overflow-y-auto">
+                          <div className="space-y-3 max-h-60 overflow-y-auto">
                         {previewContent.map((content) => (
                           <div key={content.id} className="p-3 border rounded-lg">
-                            {content.imageUrl && (
+                            {(content.imageUrl || content.downloadUrl) && content.type === 'image' && (
                               <img
-                                src={content.imageUrl}
+                                src={content.imageUrl || content.downloadUrl}
                                 alt={content.title}
                                 className="w-full h-24 object-cover rounded mb-2"
+                                onError={(e) => {
+                                  console.error('Image failed to load:', content);
+                                  e.currentTarget.style.display = 'none';
+                                }}
                               />
+                            )}
+                            {content.type === 'image' && !content.imageUrl && !content.downloadUrl && (
+                              <div className="w-full h-24 bg-muted rounded mb-2 flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed">
+                                {content.actualFile ? (
+                                  <div className="text-center">
+                                    <div className="animate-pulse">🎨 Generating image...</div>
+                                    <div className="text-xs mt-1">This may take a few moments</div>
+                                  </div>
+                                ) : (
+                                  <div className="text-center">
+                                    <div>📝 Image concept ready</div>
+                                    <div className="text-xs mt-1">Use prompt to generate manually</div>
+                                  </div>
+                                )}
+                              </div>
                             )}
                             <h4 className="font-medium text-sm mb-1">{content.title}</h4>
                             <p className="text-xs text-muted-foreground line-clamp-2">
