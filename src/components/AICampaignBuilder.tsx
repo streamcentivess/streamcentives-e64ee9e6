@@ -207,7 +207,7 @@ export const AICampaignBuilder: React.FC<AICampaignBuilderProps> = ({ isOpen, on
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {kpiGoals.map((goal) => (
                       <Card 
                         key={goal.id} 
@@ -228,7 +228,7 @@ export const AICampaignBuilder: React.FC<AICampaignBuilderProps> = ({ isOpen, on
                   </div>
                   
                   {kpiGoal && (
-                    <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label className="text-sm font-medium">Target Number</Label>
                         <Input
@@ -374,7 +374,7 @@ export const AICampaignBuilder: React.FC<AICampaignBuilderProps> = ({ isOpen, on
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">{generatedCampaign.description}</p>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Gift className="w-4 h-4 text-primary" />

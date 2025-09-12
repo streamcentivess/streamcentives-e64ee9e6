@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ const CreatorDashboard = () => {
   const { user, signOut, signInWithSpotify } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // State for merch store
   const [profile, setProfile] = useState<any>(null);
@@ -255,17 +257,17 @@ const CreatorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}>
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold bg-gradient-primary bg-clip-text text-transparent`}>
               Creator Dashboard
             </h1>
-            <p className="text-muted-foreground">Manage your campaigns and engage with fans</p>
+            <p className="text-muted-foreground text-sm sm:text-base">Manage your campaigns and engage with fans</p>
           </div>
-          <div className="flex gap-2">
+          <div className={`flex gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
             <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
               <Plus className="h-4 w-4 mr-2" />
               Create Campaign
@@ -280,7 +282,7 @@ const CreatorDashboard = () => {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
           <Card className="card-modern">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -342,7 +344,7 @@ const CreatorDashboard = () => {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Active Campaigns */}
@@ -403,7 +405,7 @@ const CreatorDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                   <div className="text-center p-4 rounded-lg bg-surface">
                     <div className="stat-number">{metrics.newFansThisWeek}</div>
                     <p className="text-sm text-muted-foreground">New Fans This Week</p>

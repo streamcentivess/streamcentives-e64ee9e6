@@ -195,7 +195,7 @@ export default function SettingsTab() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-primary">{xpBalance?.current_xp?.toLocaleString() || 0}</p>
                   <p className="text-sm text-muted-foreground">Current XP</p>

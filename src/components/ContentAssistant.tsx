@@ -371,7 +371,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
           </TabsList>
 
           <TabsContent value="generate" className="space-y-6 overflow-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
               {/* Generation Form */}
               <div className="space-y-4">
                 <Card>
@@ -433,7 +433,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                        </p>
                      </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium">Target Audience</label>
                         <Input
@@ -480,7 +480,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                       </div>
 
                       {referenceImages.length > 0 && (
-                        <div className="grid grid-cols-5 gap-2 mt-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mt-3">
                           {referenceImages.map((image, index) => (
                             <div key={index} className="relative group">
                               <img
@@ -738,7 +738,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                   <p className="text-muted-foreground">No generated content yet. Create some content first!</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                   {generatedContent.map((content) => (
                     <Card key={content.id} className="cursor-pointer hover:shadow-md transition-shadow">
                         <CardContent className="p-4">
@@ -842,7 +842,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                   <CardTitle className="text-sm">Photo & Video Editor</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4">
                     <Button
                       onClick={() => setShowPhotoEditor(true)}
                       className="h-32 flex-col gap-2"

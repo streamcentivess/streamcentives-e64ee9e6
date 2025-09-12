@@ -198,7 +198,7 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
 
   if (loading) {
     return (
-      <div className="grid grid-cols-3 gap-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
         {[...Array(6)].map((_, i) => (
           <div key={i} className="aspect-square bg-muted animate-pulse rounded" />
         ))}
@@ -229,7 +229,7 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
         </div>
       )}
       
-      <div className="grid grid-cols-3 gap-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
         {posts.map((post) => (
           <div
             key={post.id}
@@ -274,7 +274,7 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
       {selectedPost && (
         <Dialog open={!!selectedPost} onOpenChange={() => setSelectedPost(null)}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
               {/* Media */}
               <div className="aspect-square">
                 {selectedPost.content_type === 'video' ? (
