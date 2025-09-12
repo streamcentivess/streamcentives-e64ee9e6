@@ -444,12 +444,12 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
 
                      <div>
                        <label className="text-sm font-medium">Content Prompt</label>
-                       <Textarea
-                         placeholder={`Describe the ${contentType} you want to create...`}
-                         value={contentPrompt}
-                         onChange={(e) => setContentPrompt(e.target.value)}
-                         className="min-h-[100px]"
-                       />
+                        <Textarea
+                          placeholder={`Describe the ${contentType} you want to create...`}
+                          value={contentPrompt || "a white dove releasing from the hands of a paul bearer , dove flys in slow motion cinematic view and lands on a black stallion, vid ends wih full view shot of muscular stallion and white down spreading its wings in cemetary"}
+                          onChange={(e) => setContentPrompt(e.target.value)}
+                          className="min-h-[100px]"
+                        />
                        <p className="text-xs text-muted-foreground mt-1">
                          Will generate one {contentType} based on your description.
                        </p>
