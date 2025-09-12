@@ -139,6 +139,113 @@ async function generateDocumentFile(content: string, title: string, supabase: an
   }
 }
 
+// Helper function to generate video files using Runway ML
+async function generateVideoFile(prompt: string, supabase: any): Promise<string | null> {
+  try {
+    const runwayApiKey = Deno.env.get('RUNWAY_API_KEY');
+    if (!runwayApiKey) {
+      console.error('RUNWAY_API_KEY not configured');
+      return null;
+    }
+
+    console.log('Starting Runway ML video generation with prompt:', prompt);
+    
+    // Start video generation task
+    const response = await fetch('https://api.runwayml.com/v1/image_to_video', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${runwayApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        promptText: prompt,
+        seed: Math.floor(Math.random() * 1000000),
+        exploreMode: false,
+        watermark: false,
+        enhance_prompt: true,
+        image_as_end_frame: false,
+        use_image_prompt: false,
+        seconds: 10, // Generate 10-second videos
+        gen3a_turbo: true // Use faster turbo mode
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Runway ML API error:', response.status, errorText);
+      return null;
+    }
+
+    const taskResult = await response.json();
+    console.log('Runway ML task created:', taskResult);
+    
+    if (!taskResult.id) {
+      console.error('No task ID returned from Runway ML');
+      return null;
+    }
+
+    // Poll for completion (max 5 minutes)
+    let attempts = 0;
+    const maxAttempts = 60; // 5 minutes with 5-second intervals
+    
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+      attempts++;
+      
+      const statusResponse = await fetch(`https://api.runwayml.com/v1/tasks/${taskResult.id}`, {
+        headers: {
+          'Authorization': `Bearer ${runwayApiKey}`,
+        },
+      });
+
+      if (!statusResponse.ok) {
+        console.error('Failed to check task status:', statusResponse.status);
+        continue;
+      }
+
+      const statusResult = await statusResponse.json();
+      console.log(`Video generation status (attempt ${attempts}):`, statusResult.status);
+
+      if (statusResult.status === 'SUCCEEDED' && statusResult.output) {
+        // Download the video file
+        const videoResponse = await fetch(statusResult.output[0]);
+        if (!videoResponse.ok) {
+          console.error('Failed to download generated video');
+          return null;
+        }
+
+        const videoBlob = await videoResponse.blob();
+        const fileName = `generated-videos/${crypto.randomUUID()}.mp4`;
+
+        const { error } = await supabase.storage
+          .from('posts')
+          .upload(fileName, videoBlob, { contentType: 'video/mp4', upsert: false });
+
+        if (error) {
+          console.error('Storage upload error:', error);
+          return null;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('posts')
+          .getPublicUrl(fileName);
+
+        console.log('Video generated successfully:', urlData.publicUrl);
+        return urlData.publicUrl;
+      } else if (statusResult.status === 'FAILED') {
+        console.error('Video generation failed:', statusResult.failure_reason);
+        return null;
+      }
+    }
+
+    console.error('Video generation timed out after 5 minutes');
+    return null;
+  } catch (error) {
+    console.error('Error generating video:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -348,11 +455,30 @@ Format response as JSON array with objects containing:
           case 'video_script':
           case 'document':
           case 'audio_script': {
-            const documentUrl = await generateDocumentFile(idea.content, idea.title, supabase);
-            if (documentUrl) {
-              generatedItem.downloadUrl = documentUrl;
-              generatedItem.fileUrl = documentUrl;
-              generatedItem.actualFile = true;
+            if (idea.type === 'video_script') {
+              // Generate actual video file using Runway ML
+              const videoUrl = await generateVideoFile(idea.content, supabase);
+              if (videoUrl) {
+                generatedItem.videoUrl = videoUrl;
+                generatedItem.downloadUrl = videoUrl;
+                generatedItem.actualFile = true;
+              } else {
+                // Fallback to script file
+                const documentUrl = await generateDocumentFile(idea.content, idea.title, supabase);
+                if (documentUrl) {
+                  generatedItem.downloadUrl = documentUrl;
+                  generatedItem.fileUrl = documentUrl;
+                  generatedItem.actualFile = true;
+                }
+              }
+            } else {
+              // Generate document file for other types
+              const documentUrl = await generateDocumentFile(idea.content, idea.title, supabase);
+              if (documentUrl) {
+                generatedItem.downloadUrl = documentUrl;
+                generatedItem.fileUrl = documentUrl;
+                generatedItem.actualFile = true;
+              }
             }
             break;
           }

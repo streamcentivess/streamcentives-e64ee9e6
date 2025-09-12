@@ -43,6 +43,7 @@ interface GeneratedContent {
   title: string;
   content: string;
   imageUrl?: string;
+  videoUrl?: string;
   downloadUrl?: string;
   fileUrl?: string;
   fileFormat?: string;
@@ -542,6 +543,34 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                                 )}
                               </div>
                             )}
+                            
+                            {content.videoUrl && content.type === 'video_script' && (
+                              <video
+                                src={content.videoUrl}
+                                controls
+                                className="w-full h-24 object-cover rounded mb-2"
+                                onError={(e) => {
+                                  console.error('Video failed to load:', content);
+                                }}
+                              >
+                                Your browser does not support the video tag.
+                              </video>
+                            )}
+                            {content.type === 'video_script' && !content.videoUrl && (
+                              <div className="w-full h-24 bg-muted rounded mb-2 flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed">
+                                {content.actualFile ? (
+                                  <div className="text-center">
+                                    <div className="animate-pulse">🎬 Generating video...</div>
+                                    <div className="text-xs mt-1">This may take up to 5 minutes</div>
+                                  </div>
+                                ) : (
+                                  <div className="text-center">
+                                    <div>📝 Video script ready</div>
+                                    <div className="text-xs mt-1">Use script to create video manually</div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             <h4 className="font-medium text-sm mb-1">{content.title}</h4>
                             <p className="text-xs text-muted-foreground line-clamp-2">
                               {content.content}
@@ -675,14 +704,23 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {generatedContent.map((content) => (
                     <Card key={content.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                       <CardContent className="p-4">
-                         {content.imageUrl && (
-                           <img
-                             src={content.imageUrl}
-                             alt={content.title}
-                             className="w-full h-32 object-cover rounded mb-3"
-                           />
-                         )}
+                        <CardContent className="p-4">
+                          {content.imageUrl && (
+                            <img
+                              src={content.imageUrl}
+                              alt={content.title}
+                              className="w-full h-32 object-cover rounded mb-3"
+                            />
+                          )}
+                          {content.videoUrl && content.type === 'video_script' && (
+                            <video
+                              src={content.videoUrl}
+                              controls
+                              className="w-full h-32 object-cover rounded mb-3"
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          )}
                          <div className="flex items-center gap-2 mb-2">
                            <Badge variant="outline">
                              {content.type}
