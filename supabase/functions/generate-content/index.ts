@@ -32,7 +32,7 @@ function detectRequestedFormat(prompt: string): string[] {
   return formats.length > 0 ? formats : ['mixed'];
 }
 
-// Helper function to generate actual image files using Hugging Face
+// Helper function to generate actual image files using Hugging Face with warmup handling
 async function generateImageFile(prompt: string, supabase: any): Promise<string | null> {
   try {
     const huggingFaceToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
@@ -41,47 +41,72 @@ async function generateImageFile(prompt: string, supabase: any): Promise<string 
       return null;
     }
 
-    // Use Hugging Face Inference API with FLUX.1-schnell model
-    const response = await fetch('https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${huggingFaceToken}`
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          width: 1024,
-          height: 1024,
-          num_inference_steps: 4
-        }
-      })
-    });
+    const endpoint = 'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell';
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Hugging Face API error:', response.status, errorText);
+    // Retry loop to handle model warmup (503)
+    let attempts = 0;
+    let response: Response | null = null;
+    while (attempts < 6) { // ~ up to ~45s depending on estimated_time
+      attempts++;
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${huggingFaceToken}`,
+          'Accept': 'image/png'
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            width: 896, // slightly smaller for faster generation
+            height: 896,
+            num_inference_steps: 4
+          }
+        })
+      });
+
+      if (response.ok) break;
+
+      // If model is loading, wait for the estimated time then retry
+      if (response.status === 503) {
+        try {
+          const info = await response.json();
+          const wait = Math.min(8000, Math.ceil((info?.estimated_time || 5) * 1000));
+          console.log(`Model warming up. Waiting ${wait}ms (attempt ${attempts})`);
+          await new Promise((r) => setTimeout(r, wait));
+          continue;
+        } catch (_) {
+          await new Promise((r) => setTimeout(r, 4000));
+          continue;
+        }
+      }
+
+      const errText = await response.text();
+      console.error('Hugging Face API error:', response.status, errText);
       return null;
     }
-    
+
+    if (!response || !response.ok) {
+      console.error('Failed to get image from Hugging Face after retries');
+      return null;
+    }
+
     const imageBlob = await response.blob();
     const fileName = `generated-images/${crypto.randomUUID()}.png`;
-    
-    const { data, error } = await supabase.storage
+
+    const { error } = await supabase.storage
       .from('posts')
-      .upload(fileName, imageBlob, {
-        contentType: 'image/png'
-      });
-    
+      .upload(fileName, imageBlob, { contentType: 'image/png', upsert: false });
+
     if (error) {
       console.error('Storage upload error:', error);
       return null;
     }
-    
+
     const { data: urlData } = supabase.storage
       .from('posts')
       .getPublicUrl(fileName);
-      
+
     return urlData.publicUrl;
   } catch (error) {
     console.error('Error generating image:', error);
@@ -303,31 +328,35 @@ Format response as JSON array with objects containing:
         created_at: new Date().toISOString()
       };
 
-      // Generate actual files based on type and actualFile flag
-      if (idea.actualFile) {
+      // Generate actual files based on type; always attempt for images/documents
+      const shouldGenerate = idea.type === 'image' || idea.type === 'document' || idea.type === 'video_script' || idea.type === 'audio_script' || idea.actualFile === true;
+      if (shouldGenerate) {
         switch (idea.type) {
-          case 'image':
+          case 'image': {
             const imageUrl = await generateImageFile(idea.content, supabase);
             if (imageUrl) {
               generatedItem.imageUrl = imageUrl;
               generatedItem.downloadUrl = imageUrl;
+              generatedItem.actualFile = true;
             } else {
               // Fallback to image prompt for manual generation
               generatedItem.imagePrompt = `Create a high-quality image: ${idea.content}`;
+              generatedItem.actualFile = false;
             }
             break;
-            
+          }
           case 'video_script':
           case 'document':
-          case 'audio_script':
+          case 'audio_script': {
             const documentUrl = await generateDocumentFile(idea.content, idea.title, supabase);
             if (documentUrl) {
               generatedItem.downloadUrl = documentUrl;
               generatedItem.fileUrl = documentUrl;
+              generatedItem.actualFile = true;
             }
             break;
-            
-          case 'carousel':
+          }
+          case 'carousel': {
             // For carousel, generate multiple image prompts
             const slides = idea.content.split('\n\n').filter(slide => slide.trim());
             generatedItem.carouselSlides = slides.map((slide, index) => ({
@@ -337,8 +366,10 @@ Format response as JSON array with objects containing:
               imagePrompt: `Create slide ${index + 1} for carousel: ${slide}`
             }));
             break;
+          }
         }
       }
+
 
       // For image concepts without actual file generation, provide detailed prompts
       if (idea.type === 'image' && !idea.actualFile) {
