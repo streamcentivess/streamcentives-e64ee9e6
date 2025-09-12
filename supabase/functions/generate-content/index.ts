@@ -141,7 +141,13 @@ async function generateDocumentFile(content: string, title: string, supabase: an
 
 // Helper function to generate video files using Runway ML (supports text-to-video and image-to-video)
 async function generateVideoFile(prompt: string, supabase: any, promptImage?: string | null): Promise<string | null> {
-  console.log('=== generateVideoFile called ===', { prompt, hasPromptImage: !!promptImage });
+  // Truncate prompt to stay within Runway ML's 1000 character limit
+  const truncatedPrompt = prompt.length > 950 ? prompt.substring(0, 950) + "..." : prompt;
+  console.log('=== generateVideoFile called ===', { 
+    originalLength: prompt.length, 
+    truncatedLength: truncatedPrompt.length, 
+    hasPromptImage: !!promptImage 
+  });
   try {
     const runwayApiKey = Deno.env.get('RUNWAY_API_KEY');
     if (!runwayApiKey) {
@@ -168,7 +174,7 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
         body: JSON.stringify({
           promptImage: promptImage,
           model: 'gen4_turbo',
-          promptText: prompt,
+          promptText: truncatedPrompt,
           duration: 5,
           ratio: '1280:720',
           seed: Math.floor(Math.random() * 1000000)
@@ -196,7 +202,7 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
           'X-Runway-Version': '2024-11-06',
         },
         body: JSON.stringify({
-          promptText: prompt,
+          promptText: truncatedPrompt,
           model: 'veo3',
           duration: 8,
           ratio: '1280:720',
