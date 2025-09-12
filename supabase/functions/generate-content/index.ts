@@ -187,7 +187,131 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Runway ML API error:', response.status, errorText);
+      console.error('Runway ML API error (gen4_turbo):', response.status, errorText);
+
+      // Fallback to Gen-3 Alpha Turbo task types if Gen-4 fails
+      if ([400, 404, 422].includes(response.status)) {
+        const fallbackTaskType = usingImageToVideo ? 'gen3a_turbo.image_to_video' : 'gen3a_turbo.text_to_video';
+        console.log('Falling back to', fallbackTaskType);
+        const fallbackResp = await fetch('https://api.runwayml.com/v1/tasks', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${runwayApiKey}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Runway-Version': '2024-11-06',
+          },
+          body: JSON.stringify({
+            taskType: fallbackTaskType,
+            internal: false,
+            options: {
+              ...options,
+              model: 'gen3a_turbo',
+              ratio: usingImageToVideo ? '1280:720' : '16:9'
+            }
+          }),
+        });
+
+        if (fallbackResp.ok) {
+          const taskResult = await fallbackResp.json();
+          console.log('Runway ML fallback task created:', taskResult);
+          if (!taskResult.id) {
+            console.error('No task ID returned from Runway ML (fallback)');
+            return null;
+          }
+          // Replace response/taskResult variables to continue flow below
+          // by reassigning taskResult via a small scope trick
+          // We'll return a special marker object that the outer logic will treat as the created task
+          // But to keep code minimal, we directly continue by polling using taskResult.id
+          // The outer code uses `taskResult`, so we emulate by early polling block here.
+
+          // Poll for completion (max ~5 minutes)
+          let attempts = 0;
+          const maxAttempts = 60;
+          while (attempts < maxAttempts) {
+            await new Promise((r) => setTimeout(r, 5000));
+            attempts++;
+            const statusResponse = await fetch(`https://api.runwayml.com/v1/tasks/${taskResult.id}`, {
+              headers: {
+                'Authorization': `Bearer ${runwayApiKey}`,
+                'X-Runway-Version': '2024-11-06',
+                'Accept': 'application/json',
+              },
+            });
+            if (!statusResponse.ok) {
+              console.error('Failed to check task status (fallback):', statusResponse.status);
+              continue;
+            }
+            const statusResult = await statusResponse.json();
+            const status = String(statusResult.status || '').toUpperCase();
+            console.log(`Video generation status (fallback, attempt ${attempts}):`, status);
+            if (status === 'SUCCEEDED') {
+              // Reuse the same storage handling logic by extracting URL and uploading
+              const firstUrl = ((): string | null => {
+                try {
+                  const candidates: string[] = [];
+                  const pushFrom = (arr: any[]) => {
+                    for (const it of arr) {
+                      if (!it) continue;
+                      if (typeof it === 'string') candidates.push(it);
+                      else if (typeof it === 'object') {
+                        if (typeof it.url === 'string') candidates.push(it.url);
+                        if (typeof it.uri === 'string') candidates.push(it.uri);
+                        if (typeof it.href === 'string') candidates.push(it.href);
+                      }
+                    }
+                  };
+                  if (Array.isArray((statusResult as any)?.output)) pushFrom((statusResult as any).output);
+                  if (Array.isArray((statusResult as any)?.assets)) pushFrom((statusResult as any).assets);
+                  return candidates.find((u) => /^https?:\/\//.test(u)) || null;
+                } catch {
+                  return null;
+                }
+              })();
+
+              if (!firstUrl) {
+                console.error('No output URL found in Runway response (fallback)');
+                return null;
+              }
+              const videoResponse = await fetch(firstUrl);
+              if (!videoResponse.ok) {
+                console.error('Failed to download generated video (fallback)');
+                return null;
+              }
+              const videoBlob = await videoResponse.blob();
+              const contentTypeHeader = videoResponse.headers.get('content-type') || '';
+              let ext = 'mp4';
+              let uploadContentType = 'video/mp4';
+              if (contentTypeHeader.includes('quicktime') || /\.mov(?:[?#]|$)/i.test(firstUrl)) {
+                ext = 'mov';
+                uploadContentType = 'video/quicktime';
+              } else if (contentTypeHeader.includes('webm') || /\.webm(?:[?#]|$)/i.test(firstUrl)) {
+                ext = 'webm';
+                uploadContentType = 'video/webm';
+              }
+              const fileName = `generated-videos/${crypto.randomUUID()}.${ext}`;
+              const { error } = await supabase.storage
+                .from('posts')
+                .upload(fileName, videoBlob, { contentType: uploadContentType, upsert: false });
+              if (error) {
+                console.error('Storage upload error (fallback):', error);
+                return null;
+              }
+              const { data: urlData } = supabase.storage
+                .from('posts')
+                .getPublicUrl(fileName);
+              console.log('Video generated successfully (fallback):', urlData.publicUrl);
+              return urlData.publicUrl;
+            } else if (status === 'FAILED') {
+              console.error('Video generation failed (fallback):', (statusResult as any).failure_reason || (statusResult as any).failureCode || 'Unknown reason');
+              return null;
+            }
+          }
+          console.error('Video generation timed out after ~5 minutes (fallback)');
+          return null;
+        }
+      }
+
       return null;
     }
 
@@ -535,7 +659,7 @@ Format response as JSON array with objects containing:
           case 'audio_script': {
             if (idea.type === 'video_script' && !videoGenerated) {
               // Generate only one video at a time
-              const videoUrl = await generateVideoFile(prompt || idea.content, supabase);
+              const videoUrl = await generateVideoFile(prompt || idea.content, supabase, referenceImages?.[0] || null);
               if (videoUrl) {
                 generatedItem.videoUrl = videoUrl;
                 generatedItem.downloadUrl = videoUrl;
