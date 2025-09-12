@@ -170,7 +170,7 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
     }
 
     // Start video generation task
-    const response = await fetch('https://api.runwayml.com/v1/tasks', {
+    const response = await fetch('https://api.dev.runwayml.com/v1/tasks', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${runwayApiKey}`,
@@ -193,7 +193,7 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
       if ([400, 404, 422].includes(response.status)) {
         const fallbackTaskType = usingImageToVideo ? 'gen3a_turbo.image_to_video' : 'gen3a_turbo.text_to_video';
         console.log('Falling back to', fallbackTaskType);
-        const fallbackResp = await fetch('https://api.runwayml.com/v1/tasks', {
+        const fallbackResp = await fetch('https://api.dev.runwayml.com/v1/tasks', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${runwayApiKey}`,
@@ -231,7 +231,7 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
           while (attempts < maxAttempts) {
             await new Promise((r) => setTimeout(r, 5000));
             attempts++;
-            const statusResponse = await fetch(`https://api.runwayml.com/v1/tasks/${taskResult.id}`, {
+            const statusResponse = await fetch(`https://api.dev.runwayml.com/v1/tasks/${taskResult.id}`, {
               headers: {
                 'Authorization': `Bearer ${runwayApiKey}`,
                 'X-Runway-Version': '2024-11-06',
@@ -365,7 +365,7 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
       await new Promise((resolve) => setTimeout(resolve, 5000));
       attempts++;
 
-      const statusResponse = await fetch(`https://api.runwayml.com/v1/tasks/${taskResult.id}`, {
+      const statusResponse = await fetch(`https://api.dev.runwayml.com/v1/tasks/${taskResult.id}`, {
         headers: {
           'Authorization': `Bearer ${runwayApiKey}`,
           'X-Runway-Version': '2024-11-06',
