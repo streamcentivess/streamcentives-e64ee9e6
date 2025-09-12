@@ -156,6 +156,7 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
       headers: {
         'Authorization': `Bearer ${runwayApiKey}`,
         'Content-Type': 'application/json',
+        'X-Runway-Version': '2024-11-06',
       },
       body: JSON.stringify({
         taskType: 'gen3a_turbo.text_to_video',
@@ -191,9 +192,10 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
       await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
       attempts++;
       
-      const statusResponse = await fetch(`https://api.runwayml.com/v1/tasks/${taskResult.id}`, {
+      const statusResponse = await fetch(`https://api.dev.runwayml.com/v1/tasks/${taskResult.id}`, {
         headers: {
           'Authorization': `Bearer ${runwayApiKey}`,
+          'X-Runway-Version': '2024-11-06',
         },
       });
 
