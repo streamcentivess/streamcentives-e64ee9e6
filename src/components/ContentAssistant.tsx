@@ -24,10 +24,13 @@ import {
   Users,
   Brain,
   Palette,
-  Trash2
+  Trash2,
+  ImageIcon,
+  LayoutGrid
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { PhotoEditor } from './PhotoEditor';
 import { CarouselUpload } from './CarouselUpload';
@@ -67,6 +70,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
   const [contentPrompt, setContentPrompt] = useState('');
   const [targetAudience, setTargetAudience] = useState('');
   const [contentGoal, setContentGoal] = useState('');
+  const [contentType, setContentType] = useState('image');
   const [selectedContent, setSelectedContent] = useState<GeneratedContent | null>(null);
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [showCarouselUpload, setShowCarouselUpload] = useState(false);
@@ -164,7 +168,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
             interests: profile?.interests
           },
           referenceImages: referenceUrls,
-          generationType: 'mixed' // images, text, video ideas
+          generationType: contentType
         }
       });
 
@@ -398,15 +402,56 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                   </CardHeader>
                   <CardContent className="space-y-4">
                      <div>
+                       <label className="text-sm font-medium">Content Type</label>
+                       <Select value={contentType} onValueChange={setContentType}>
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select content type" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="image">
+                             <div className="flex items-center gap-2">
+                               <ImageIcon className="h-4 w-4" />
+                               Image
+                             </div>
+                           </SelectItem>
+                           <SelectItem value="video">
+                             <div className="flex items-center gap-2">
+                               <Video className="h-4 w-4" />
+                               Video
+                             </div>
+                           </SelectItem>
+                           <SelectItem value="text">
+                             <div className="flex items-center gap-2">
+                               <FileText className="h-4 w-4" />
+                               Text Content
+                             </div>
+                           </SelectItem>
+                           <SelectItem value="document">
+                             <div className="flex items-center gap-2">
+                               <FileText className="h-4 w-4" />
+                               Document
+                             </div>
+                           </SelectItem>
+                           <SelectItem value="carousel">
+                             <div className="flex items-center gap-2">
+                               <LayoutGrid className="h-4 w-4" />
+                               Carousel
+                             </div>
+                           </SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+
+                     <div>
                        <label className="text-sm font-medium">Content Prompt</label>
                        <Textarea
-                         placeholder="Describe what type of content you want to create (e.g., 'Create an image of a sunset', 'Generate a video script about cooking', 'Make a document explaining social media tips')..."
+                         placeholder={`Describe the ${contentType} you want to create...`}
                          value={contentPrompt}
                          onChange={(e) => setContentPrompt(e.target.value)}
                          className="min-h-[100px]"
                        />
                        <p className="text-xs text-muted-foreground mt-1">
-                         Specify the file format you want: images, videos, documents, carousels, etc.
+                         Will generate one {contentType} based on your description.
                        </p>
                      </div>
 
