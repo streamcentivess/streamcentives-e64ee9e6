@@ -139,8 +139,8 @@ async function generateDocumentFile(content: string, title: string, supabase: an
   }
 }
 
-// Helper function to generate video files using Runway ML
-async function generateVideoFile(prompt: string, supabase: any): Promise<string | null> {
+// Helper function to generate video files using Runway ML (supports text-to-video and image-to-video)
+async function generateVideoFile(prompt: string, supabase: any, promptImage?: string | null): Promise<string | null> {
   try {
     const runwayApiKey = Deno.env.get('RUNWAY_API_KEY');
     if (!runwayApiKey) {
@@ -148,8 +148,27 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
       return null;
     }
 
-    console.log('Starting Runway ML video generation with prompt:', prompt);
-    
+    const usingImageToVideo = !!promptImage;
+    const taskType = usingImageToVideo ? 'gen4_turbo.image_to_video' : 'gen4_turbo.text_to_video';
+
+    console.log(`Starting Runway ML ${usingImageToVideo ? 'image-to-video' : 'text-to-video'} generation with model gen4_turbo`);
+
+    // Build task creation payload
+    const options: Record<string, unknown> = {
+      model: 'gen4_turbo',
+      prompt_text: prompt,
+      promptText: prompt,
+      duration: 5,
+      ratio: '1280:720',
+      seed: Math.floor(Math.random() * 1000000)
+    };
+
+    if (usingImageToVideo && promptImage) {
+      // Send both snake_case and camelCase to maximize compatibility across versions
+      (options as any).prompt_image = promptImage;
+      (options as any).promptImage = promptImage;
+    }
+
     // Start video generation task
     const response = await fetch('https://api.runwayml.com/v1/tasks', {
       method: 'POST',
@@ -160,15 +179,9 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
         'X-Runway-Version': '2024-11-06',
       },
       body: JSON.stringify({
-        taskType: 'gen3a_turbo.text_to_video',
+        taskType,
         internal: false,
-        options: {
-          prompt_text: prompt,
-          promptText: prompt,
-          duration: 5,
-          ratio: '16:9',
-          seed: Math.floor(Math.random() * 1000000)
-        }
+        options
       }),
     });
 
@@ -180,20 +193,54 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
 
     const taskResult = await response.json();
     console.log('Runway ML task created:', taskResult);
-    
+
     if (!taskResult.id) {
       console.error('No task ID returned from Runway ML');
       return null;
     }
 
-    // Poll for completion (max 5 minutes)
+    // Helper to extract the first URL from a variety of possible response shapes
+    const extractFirstUrl = (obj: any): string | null => {
+      try {
+        const candidates: string[] = [];
+        const pushFrom = (arr: any[]) => {
+          for (const it of arr) {
+            if (!it) continue;
+            if (typeof it === 'string') candidates.push(it);
+            else if (typeof it === 'object') {
+              if (typeof it.url === 'string') candidates.push(it.url);
+              if (typeof it.uri === 'string') candidates.push(it.uri);
+              if (typeof it.href === 'string') candidates.push(it.href);
+            }
+          }
+        };
+
+        if (Array.isArray(obj?.output)) pushFrom(obj.output);
+        if (Array.isArray(obj?.assets)) pushFrom(obj.assets);
+        if (obj?.output?.video?.url) candidates.push(obj.output.video.url);
+        if (obj?.result?.output) {
+          const out = obj.result.output;
+          if (Array.isArray(out)) pushFrom(out);
+          else if (typeof out === 'object') {
+            if (typeof out.url === 'string') candidates.push(out.url);
+            if (typeof out.uri === 'string') candidates.push(out.uri);
+          }
+        }
+
+        return candidates.find((u) => /^https?:\/\//.test(u)) || null;
+      } catch (_) {
+        return null;
+      }
+    };
+
+    // Poll for completion (max ~5 minutes)
     let attempts = 0;
     const maxAttempts = 60; // 5 minutes with 5-second intervals
-    
+
     while (attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       attempts++;
-      
+
       const statusResponse = await fetch(`https://api.runwayml.com/v1/tasks/${taskResult.id}`, {
         headers: {
           'Authorization': `Bearer ${runwayApiKey}`,
@@ -208,11 +255,21 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
       }
 
       const statusResult = await statusResponse.json();
-      console.log(`Video generation status (attempt ${attempts}):`, statusResult.status);
+      const status = String(statusResult.status || '').toUpperCase();
+      console.log(`Video generation status (attempt ${attempts}):`, status, {
+        hasOutput: !!statusResult.output,
+        hasAssets: !!statusResult.assets,
+      });
 
-      if (statusResult.status === 'SUCCEEDED' && statusResult.output) {
+      if (status === 'SUCCEEDED') {
+        const firstUrl = extractFirstUrl(statusResult);
+        if (!firstUrl) {
+          console.error('No output URL found in Runway response');
+          return null;
+        }
+
         // Download the video file
-        const videoResponse = await fetch(statusResult.output[0]);
+        const videoResponse = await fetch(firstUrl);
         if (!videoResponse.ok) {
           console.error('Failed to download generated video');
           return null;
@@ -224,10 +281,10 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
         let uploadContentType = 'video/mp4';
 
         // Infer extension from header or output URL
-        if (contentTypeHeader.includes('quicktime') || /\.mov(?:[?#]|$)/i.test(statusResult.output[0])) {
+        if (contentTypeHeader.includes('quicktime') || /\.mov(?:[?#]|$)/i.test(firstUrl)) {
           ext = 'mov';
           uploadContentType = 'video/quicktime';
-        } else if (contentTypeHeader.includes('webm') || /\.webm(?:[?#]|$)/i.test(statusResult.output[0])) {
+        } else if (contentTypeHeader.includes('webm') || /\.webm(?:[?#]|$)/i.test(firstUrl)) {
           ext = 'webm';
           uploadContentType = 'video/webm';
         }
@@ -249,19 +306,20 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
 
         console.log('Video generated successfully:', urlData.publicUrl);
         return urlData.publicUrl;
-      } else if (statusResult.status === 'FAILED') {
-        console.error('Video generation failed:', statusResult.failure_reason);
+      } else if (status === 'FAILED') {
+        console.error('Video generation failed:', statusResult.failure_reason || statusResult.failureCode || 'Unknown reason');
         return null;
       }
     }
 
-    console.error('Video generation timed out after 5 minutes');
+    console.error('Video generation timed out after ~5 minutes');
     return null;
   } catch (error) {
     console.error('Error generating video:', error);
     return null;
   }
 }
+
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
