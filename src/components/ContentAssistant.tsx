@@ -239,9 +239,9 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
 
   const downloadContent = async (content: GeneratedContent) => {
     try {
-      if (content.downloadUrl || content.fileUrl) {
+      if (content.downloadUrl || content.fileUrl || content.videoUrl || content.imageUrl) {
         // Download actual file
-        const fileUrl = content.downloadUrl || content.fileUrl || '';
+        const fileUrl = content.downloadUrl || content.fileUrl || content.videoUrl || content.imageUrl || '';
         const response = await fetch(fileUrl);
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -259,40 +259,12 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
         } else if (content.type === 'image') {
           extension = 'jpg';
         } else if (content.type === 'video_script') {
-          extension = 'mov';
+          extension = 'mp4';
         } else if (content.type === 'document') {
           extension = 'txt';
         }
         
         a.download = `${content.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${extension}`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else if (content.imageUrl) {
-        // Download image
-        const response = await fetch(content.imageUrl);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${content.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        // Prevent exporting .txt for videos that haven't finished generating
-        if (content.type === 'video_script') {
-          toast.error('Video is still generating. Please try again once it finishes.');
-          return;
-        }
-        // Download text content
-        const blob = new Blob([content.content], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${content.title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.txt`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -799,25 +771,33 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                                {content.fileFormat.toUpperCase()}
                              </Badge>
                            )}
-                           {(content.downloadUrl || content.fileUrl) && (
-                             <Badge variant="default" className="text-xs">
-                               ✓ File
-                             </Badge>
-                           )}
+                            {(content.downloadUrl || content.fileUrl || content.videoUrl || content.imageUrl) && (
+                              <Badge variant="default" className="text-xs">
+                                ✓ File
+                              </Badge>
+                            )}
                          </div>
                          <h3 className="font-semibold text-sm mb-2">{content.title}</h3>
                          <p className="text-xs text-muted-foreground mb-3 line-clamp-3">
                            {content.content}
                          </p>
                          <div className="flex items-center gap-2 flex-wrap">
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={() => downloadContent(content)}
-                           >
-                             <Download className="h-3 w-3 mr-1" />
-                             Download
-                           </Button>
+                            {(content.downloadUrl || content.fileUrl || content.videoUrl || content.imageUrl) ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => downloadContent(content)}
+                              >
+                                <Download className="h-3 w-3 mr-1" />
+                                Download
+                              </Button>
+                            ) : (
+                              content.type === 'video_script' && (
+                                <Button size="sm" variant="outline" disabled>
+                                  Generating video…
+                                </Button>
+                              )
+                            )}
                            {content.imageUrl && (
                              <Button
                                size="sm"
