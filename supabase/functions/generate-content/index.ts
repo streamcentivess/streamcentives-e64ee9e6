@@ -288,8 +288,10 @@ serve(async (req) => {
       throw new Error('Gemini API key not configured');
     }
 
-    // Detect requested file formats from prompt
-    const requestedFormats = detectRequestedFormat(prompt);
+    // Determine requested file formats: prefer explicit generationType over detection
+    let requestedFormats = (generationType && generationType !== 'mixed') 
+      ? [generationType]
+      : detectRequestedFormat(prompt);
     console.log('Detected formats:', requestedFormats);
 
     // Generate content ideas based on profile and prompt
@@ -336,7 +338,7 @@ Format response as JSON array with objects containing:
     
     ${referenceImages.length > 0 ? `Reference images provided: ${referenceImages.length} images to analyze for style/theme inspiration.` : ''}
     
-    Generate 4-6 content pieces that can be turned into actual files, optimized for maximum virality and engagement.`;
+    Generate exactly 1 content piece in the requested format that can be turned into an actual file, optimized for maximum virality and engagement.`;
 
     // Call Gemini for content generation with fallback & retries
     const requestText = `${systemPrompt}\n\nUser Request: ${userPrompt}`;
