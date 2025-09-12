@@ -141,6 +141,7 @@ async function generateDocumentFile(content: string, title: string, supabase: an
 
 // Helper function to generate video files using Runway ML (supports text-to-video and image-to-video)
 async function generateVideoFile(prompt: string, supabase: any, promptImage?: string | null): Promise<string | null> {
+  console.log('=== generateVideoFile called ===', { prompt, hasPromptImage: !!promptImage });
   try {
     const runwayApiKey = Deno.env.get('RUNWAY_API_KEY');
     if (!runwayApiKey) {
@@ -155,6 +156,7 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
 
     if (usingImageToVideo) {
       // Image-to-video using gen4_turbo
+      console.log('=== Using image-to-video endpoint ===');
       const response = await fetch('https://api.dev.runwayml.com/v1/image_to_video', {
         method: 'POST',
         headers: {
@@ -184,7 +186,9 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
       console.log('Runway ML image-to-video task created:', taskId);
     } else {
       // Text-to-video using veo3 (8 seconds only)
+      console.log('=== Using text-to-video endpoint ===');
       const response = await fetch('https://api.dev.runwayml.com/v1/text_to_video', {
+        method: 'POST',
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${runwayApiKey}`,
