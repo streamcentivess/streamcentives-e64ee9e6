@@ -461,6 +461,7 @@ Format response as JSON array with objects containing:
               if (videoUrl) {
                 generatedItem.videoUrl = videoUrl;
                 generatedItem.downloadUrl = videoUrl;
+                generatedItem.fileFormat = 'mov';
                 generatedItem.actualFile = true;
                 videoGenerated = true; // Mark video as generated
               } else {

@@ -174,12 +174,18 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
       setGenerationProgress(75);
 
       // Save generated content temporarily to localStorage
-      const contentToSave = data.generatedContent.map((item: any) => ({
-        ...item,
-        user_id: user.id,
-        id: crypto.randomUUID(),
-        created_at: new Date().toISOString()
-      }));
+      const contentToSave = data.generatedContent.map((item: any) => {
+        const urlForExt = item.downloadUrl || item.fileUrl || item.videoUrl || '';
+        const match = typeof urlForExt === 'string' ? urlForExt.match(/\.([a-zA-Z0-9]+)(?:[?#]|$)/) : null;
+        const derivedExt = match ? match[1].toLowerCase() : (item.type === 'video_script' && item.videoUrl ? 'mov' : item.fileFormat);
+        return {
+          ...item,
+          fileFormat: derivedExt || item.fileFormat,
+          user_id: user.id,
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString()
+        };
+      });
 
       // Show preview content as it generates
       console.log('Generated content received:', data.generatedContent);
@@ -237,14 +243,18 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
         const a = document.createElement('a');
         a.href = url;
         
-        // Determine file extension from fileFormat or type
+        // Determine file extension (prefer from URL), then fallback
         let extension = 'txt';
-        if (content.fileFormat) {
-          extension = content.fileFormat;
+        const urlForExt = fileUrl;
+        const match = typeof urlForExt === 'string' ? urlForExt.match(/\.([a-zA-Z0-9]+)(?:[?#]|$)/) : null;
+        if (match) {
+          extension = match[1].toLowerCase();
+        } else if (content.fileFormat) {
+          extension = content.fileFormat.toLowerCase();
         } else if (content.type === 'image') {
           extension = 'jpg';
         } else if (content.type === 'video_script') {
-          extension = 'txt';
+          extension = 'mov';
         } else if (content.type === 'document') {
           extension = 'txt';
         }
