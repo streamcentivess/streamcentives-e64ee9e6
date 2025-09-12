@@ -177,8 +177,9 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
       // Set progress to 75% after API call
       setGenerationProgress(75);
 
-      // Save generated content temporarily to localStorage
-      const contentToSave = data.generatedContent.map((item: any) => {
+      // Save generated content temporarily to localStorage (limit to 1 item)
+      const firstOnly = (data?.generatedContent || []).slice(0, 1);
+      const contentToSave = firstOnly.map((item: any) => {
         const urlForExt = item.downloadUrl || item.fileUrl || item.videoUrl || '';
         const match = typeof urlForExt === 'string' ? urlForExt.match(/\.([a-zA-Z0-9]+)(?:[?#]|$)/) : null;
         const derivedExt = match ? match[1].toLowerCase() : (item.type === 'video_script' && item.videoUrl ? 'mov' : item.fileFormat);
@@ -192,7 +193,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
       });
 
       // Show preview content as it generates
-      console.log('Generated content received:', data.generatedContent);
+      console.log('Generated content received:', firstOnly);
       setPreviewContent(contentToSave);
       
       // Debug: Log content structure
@@ -281,12 +282,17 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
+        // Prevent exporting .txt for videos that haven't finished generating
+        if (content.type === 'video_script') {
+          toast.error('Video is still generating. Please try again once it finishes.');
+          return;
+        }
         // Download text content
         const blob = new Blob([content.content], { type: 'text/plain' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${content.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+        a.download = `${content.title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.txt`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -570,7 +576,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                       )}
                       
                           <div className="space-y-3 max-h-60 overflow-y-auto">
-                        {previewContent.map((content) => (
+                        {previewContent.slice(0, 1).map((content) => (
                           <div key={content.id} className="p-3 border rounded-lg">
                             {(content.imageUrl || content.downloadUrl) && content.type === 'image' && (
                               <img

@@ -573,58 +573,65 @@ Format response as JSON array with objects containing:
       }
     }
 
-    // Last-resort local fallback to ensure UI doesn't break
+    // Last-resort local fallback: generate exactly one item
     if (!Array.isArray(contentIdeas) || contentIdeas.length === 0) {
       const baseHashtags = ['#viral', '#trend', '#content', '#engage'];
-      contentIdeas = requestedFormats.flatMap(format => {
-        switch(format) {
-          case 'image':
-            return [{
-              type: 'image',
-              title: `AI Generated Image: ${prompt?.slice(0, 30) || 'Content'}`,
-              content: `Create a high-quality, engaging social media image about "${prompt}". Professional photography style, vibrant colors, eye-catching composition.`,
-              fileFormat: 'jpg',
-              hashtags: baseHashtags,
-              engagement_tip: 'Post during peak hours and ask for opinions in comments.',
-              viral_potential: 8,
-              actualFile: true
-            }];
-          case 'video':
-            return [{
-              type: 'video_script',
-              title: `Video Script: ${prompt?.slice(0, 30) || 'Content'}`,
-              content: `HOOK (0-3s): Start with an attention-grabbing statement about "${prompt}"\nMAIN CONTENT (3-25s): Detailed explanation or demonstration\nCALL TO ACTION (25-30s): Ask viewers to engage`,
-              fileFormat: 'txt',
-              hashtags: [...baseHashtags, '#video', '#reel'],
-              engagement_tip: 'Use trending audio and add captions.',
-              viral_potential: 9,
-              actualFile: true
-            }];
-          case 'document':
-            return [{
-              type: 'document',
-              title: `Content Guide: ${prompt?.slice(0, 30) || 'Content'}`,
-              content: `# ${prompt}\n\nThis comprehensive guide covers everything about ${prompt}.\n\n## Key Points\n- Detailed information\n- Actionable tips\n- Best practices\n\n## Conclusion\nImplement these strategies to achieve your goals.`,
-              fileFormat: 'txt',
-              hashtags: baseHashtags,
-              engagement_tip: 'Share snippets as carousel posts.',
-              viral_potential: 7,
-              actualFile: true
-            }];
-          default:
-            return [{
-              type: 'text_post',
-              title: `Social Post: ${prompt?.slice(0, 30) || 'Content'}`,
-              content: `Create engaging content about "${prompt}" tailored to ${targetAudience || 'your audience'} with the goal to ${contentGoal || 'increase engagement'}. Include a clear CTA.`,
-              fileFormat: 'txt',
-              hashtags: baseHashtags,
-              engagement_tip: 'Ask a question and respond to comments within 30 minutes.',
-              viral_potential: 7,
-              actualFile: false
-            }];
-        }
-      });
+      const format = (requestedFormats && requestedFormats.length > 0) ? requestedFormats[0] : 'text';
+      let single: any;
+      switch (format) {
+        case 'image':
+          single = {
+            type: 'image',
+            title: `AI Generated Image: ${prompt?.slice(0, 30) || 'Content'}`,
+            content: `Create a high-quality, engaging social media image about "${prompt}". Professional photography style, vibrant colors, eye-catching composition.`,
+            fileFormat: 'jpg',
+            hashtags: baseHashtags,
+            engagement_tip: 'Post during peak hours and ask for opinions in comments.',
+            viral_potential: 8,
+            actualFile: true
+          };
+          break;
+        case 'video':
+          single = {
+            type: 'video_script',
+            title: `Video Script: ${prompt?.slice(0, 30) || 'Content'}`,
+            content: `HOOK (0-3s): Start with an attention-grabbing statement about "${prompt}"\nMAIN CONTENT (3-25s): Detailed explanation or demonstration\nCALL TO ACTION (25-30s): Ask viewers to engage`,
+            fileFormat: 'mp4',
+            hashtags: [...baseHashtags, '#video', '#reel'],
+            engagement_tip: 'Use trending audio and add captions.',
+            viral_potential: 9,
+            actualFile: true
+          };
+          break;
+        case 'document':
+          single = {
+            type: 'document',
+            title: `Content Guide: ${prompt?.slice(0, 30) || 'Content'}`,
+            content: `# ${prompt}\n\nThis comprehensive guide covers everything about ${prompt}.\n\n## Key Points\n- Detailed information\n- Actionable tips\n- Best practices\n\n## Conclusion\nImplement these strategies to achieve your goals.`,
+            fileFormat: 'txt',
+            hashtags: baseHashtags,
+            engagement_tip: 'Share snippets as carousel posts.',
+            viral_potential: 7,
+            actualFile: true
+          };
+          break;
+        default:
+          single = {
+            type: 'text_post',
+            title: `Social Post: ${prompt?.slice(0, 30) || 'Content'}`,
+            content: `Create engaging content about "${prompt}" tailored to ${targetAudience || 'your audience'} with the goal to ${contentGoal || 'increase engagement'}. Include a clear CTA.`,
+            fileFormat: 'txt',
+            hashtags: baseHashtags,
+            engagement_tip: 'Ask a question and respond to comments within 30 minutes.',
+            viral_potential: 7,
+            actualFile: false
+          };
+      }
+      contentIdeas = [single];
     }
+
+    // Ensure only one item is processed
+    contentIdeas = Array.isArray(contentIdeas) ? contentIdeas.slice(0, 1) : [];
 
     // Generate actual files for content that requires them
     const generatedContent = [];
