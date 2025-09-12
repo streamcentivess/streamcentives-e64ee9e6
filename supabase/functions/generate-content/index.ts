@@ -151,11 +151,12 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
     console.log('Starting Runway ML video generation with prompt:', prompt);
     
     // Start video generation task
-    const response = await fetch('https://api.dev.runwayml.com/v1/tasks', {
+    const response = await fetch('https://api.runwayml.com/v1/tasks', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${runwayApiKey}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'X-Runway-Version': '2024-11-06',
       },
       body: JSON.stringify({
@@ -163,6 +164,7 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
         internal: false,
         options: {
           prompt_text: prompt,
+          promptText: prompt,
           duration: 10,
           ratio: '16:9',
           seed: Math.floor(Math.random() * 1000000)
@@ -192,10 +194,11 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
       await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
       attempts++;
       
-      const statusResponse = await fetch(`https://api.dev.runwayml.com/v1/tasks/${taskResult.id}`, {
+      const statusResponse = await fetch(`https://api.runwayml.com/v1/tasks/${taskResult.id}`, {
         headers: {
           'Authorization': `Bearer ${runwayApiKey}`,
           'X-Runway-Version': '2024-11-06',
+          'Accept': 'application/json',
         },
       });
 
