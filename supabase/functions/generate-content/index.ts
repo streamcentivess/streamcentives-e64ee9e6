@@ -189,7 +189,6 @@ async function generateVideoFile(prompt: string, supabase: any, promptImage?: st
       console.log('=== Using text-to-video endpoint ===');
       const response = await fetch('https://api.dev.runwayml.com/v1/text_to_video', {
         method: 'POST',
-        method: 'POST',
         headers: {
           'Authorization': `Bearer ${runwayApiKey}`,
           'Content-Type': 'application/json',
