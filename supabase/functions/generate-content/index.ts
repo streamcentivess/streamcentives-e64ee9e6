@@ -492,10 +492,10 @@ Format response as JSON array with objects containing:
           single = {
             type: 'video_script',
             title: `Video Script: ${prompt?.slice(0, 30) || 'Content'}`,
-            content: `HOOK (0-3s): Start with an attention-grabbing statement about "${prompt}"\nMAIN CONTENT (3-25s): Detailed explanation or demonstration\nCALL TO ACTION (25-30s): Ask viewers to engage`,
+            content: prompt || 'Video script content',
             fileFormat: 'mp4',
             hashtags: [...baseHashtags, '#video', '#reel'],
-            engagement_tip: 'Use trending audio and add captions.',
+            engagement_tip: 'Create engaging video content based on your prompt.',
             viral_potential: 9,
             actualFile: true
           };
