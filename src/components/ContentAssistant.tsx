@@ -556,13 +556,17 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                             
                             {content.videoUrl && content.type === 'video_script' && (
                               <video
-                                src={content.videoUrl}
                                 controls
                                 className="w-full h-24 object-cover rounded mb-2"
                                 onError={(e) => {
                                   console.error('Video failed to load:', content);
                                 }}
+                                preload="metadata"
                               >
+                                <source
+                                  src={content.videoUrl}
+                                  type={(content.fileFormat === 'mov' ? 'video/quicktime' : content.fileFormat === 'webm' ? 'video/webm' : 'video/mp4')}
+                                />
                                 Your browser does not support the video tag.
                               </video>
                             )}
@@ -722,15 +726,19 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
                               className="w-full h-32 object-cover rounded mb-3"
                             />
                           )}
-                          {content.videoUrl && content.type === 'video_script' && (
-                            <video
-                              src={content.videoUrl}
-                              controls
-                              className="w-full h-32 object-cover rounded mb-3"
-                            >
-                              Your browser does not support the video tag.
-                            </video>
-                          )}
+                            {content.videoUrl && content.type === 'video_script' && (
+                              <video
+                                controls
+                                className="w-full h-32 object-cover rounded mb-3"
+                                preload="metadata"
+                              >
+                                <source
+                                  src={content.videoUrl}
+                                  type={(content.fileFormat === 'mov' ? 'video/quicktime' : content.fileFormat === 'webm' ? 'video/webm' : 'video/mp4')}
+                                />
+                                Your browser does not support the video tag.
+                              </video>
+                            )}
                          <div className="flex items-center gap-2 mb-2">
                            <Badge variant="outline">
                              {content.type}

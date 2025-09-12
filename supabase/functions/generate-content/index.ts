@@ -216,11 +216,24 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
         }
 
         const videoBlob = await videoResponse.blob();
-        const fileName = `generated-videos/${crypto.randomUUID()}.mov`;
+        const contentTypeHeader = videoResponse.headers.get('content-type') || '';
+        let ext = 'mp4';
+        let uploadContentType = 'video/mp4';
+
+        // Infer extension from header or output URL
+        if (contentTypeHeader.includes('quicktime') || /\.mov(?:[?#]|$)/i.test(statusResult.output[0])) {
+          ext = 'mov';
+          uploadContentType = 'video/quicktime';
+        } else if (contentTypeHeader.includes('webm') || /\.webm(?:[?#]|$)/i.test(statusResult.output[0])) {
+          ext = 'webm';
+          uploadContentType = 'video/webm';
+        }
+
+        const fileName = `generated-videos/${crypto.randomUUID()}.${ext}`;
 
         const { error } = await supabase.storage
           .from('posts')
-          .upload(fileName, videoBlob, { contentType: 'video/quicktime', upsert: false });
+          .upload(fileName, videoBlob, { contentType: uploadContentType, upsert: false });
 
         if (error) {
           console.error('Storage upload error:', error);
@@ -463,7 +476,8 @@ Format response as JSON array with objects containing:
               if (videoUrl) {
                 generatedItem.videoUrl = videoUrl;
                 generatedItem.downloadUrl = videoUrl;
-                generatedItem.fileFormat = 'mov';
+                const m = typeof videoUrl === 'string' ? videoUrl.match(/\.([a-z0-9]+)(?:[?#]|$)/i) : null;
+                generatedItem.fileFormat = (m ? m[1] : 'mp4').toLowerCase();
                 generatedItem.actualFile = true;
                 videoGenerated = true; // Mark video as generated
               } else {
