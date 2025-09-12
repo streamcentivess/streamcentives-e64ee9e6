@@ -214,11 +214,11 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
         }
 
         const videoBlob = await videoResponse.blob();
-        const fileName = `generated-videos/${crypto.randomUUID()}.mp4`;
+        const fileName = `generated-videos/${crypto.randomUUID()}.mov`;
 
         const { error } = await supabase.storage
           .from('posts')
-          .upload(fileName, videoBlob, { contentType: 'video/mp4', upsert: false });
+          .upload(fileName, videoBlob, { contentType: 'video/quicktime', upsert: false });
 
         if (error) {
           console.error('Storage upload error:', error);
@@ -426,6 +426,7 @@ Format response as JSON array with objects containing:
 
     // Generate actual files for content that requires them
     const generatedContent = [];
+    let videoGenerated = false; // Track if a video has been generated
 
     for (const idea of contentIdeas) {
       let generatedItem = {
@@ -454,13 +455,14 @@ Format response as JSON array with objects containing:
           case 'video_script':
           case 'document':
           case 'audio_script': {
-            if (idea.type === 'video_script') {
-              // Generate actual video file using Runway ML
+            if (idea.type === 'video_script' && !videoGenerated) {
+              // Generate only one video at a time
               const videoUrl = await generateVideoFile(idea.content, supabase);
               if (videoUrl) {
                 generatedItem.videoUrl = videoUrl;
                 generatedItem.downloadUrl = videoUrl;
                 generatedItem.actualFile = true;
+                videoGenerated = true; // Mark video as generated
               } else {
                 // Fallback to script file
                 const documentUrl = await generateDocumentFile(idea.content, idea.title, supabase);
@@ -469,6 +471,14 @@ Format response as JSON array with objects containing:
                   generatedItem.fileUrl = documentUrl;
                   generatedItem.actualFile = true;
                 }
+              }
+            } else if (idea.type === 'video_script' && videoGenerated) {
+              // If video already generated, create script file instead
+              const documentUrl = await generateDocumentFile(idea.content, idea.title, supabase);
+              if (documentUrl) {
+                generatedItem.downloadUrl = documentUrl;
+                generatedItem.fileUrl = documentUrl;
+                generatedItem.actualFile = true;
               }
             } else {
               // Generate document file for other types
