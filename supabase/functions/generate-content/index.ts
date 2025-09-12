@@ -165,7 +165,7 @@ async function generateVideoFile(prompt: string, supabase: any): Promise<string 
         options: {
           prompt_text: prompt,
           promptText: prompt,
-          duration: 10,
+          duration: 5,
           ratio: '16:9',
           seed: Math.floor(Math.random() * 1000000)
         }
@@ -477,7 +477,7 @@ Format response as JSON array with objects containing:
           case 'audio_script': {
             if (idea.type === 'video_script' && !videoGenerated) {
               // Generate only one video at a time
-              const videoUrl = await generateVideoFile(idea.content, supabase);
+              const videoUrl = await generateVideoFile(prompt || idea.content, supabase);
               if (videoUrl) {
                 generatedItem.videoUrl = videoUrl;
                 generatedItem.downloadUrl = videoUrl;
@@ -486,13 +486,8 @@ Format response as JSON array with objects containing:
                 generatedItem.actualFile = true;
                 videoGenerated = true; // Mark video as generated
               } else {
-                // Fallback to script file
-                const documentUrl = await generateDocumentFile(idea.content, idea.title, supabase);
-                if (documentUrl) {
-                  generatedItem.downloadUrl = documentUrl;
-                  generatedItem.fileUrl = documentUrl;
-                  generatedItem.actualFile = true;
-                }
+                // Video generation failed; do not create .txt fallback to avoid confusion
+                generatedItem.actualFile = false;
               }
             } else if (idea.type === 'video_script' && videoGenerated) {
               // If video already generated, create script file instead
