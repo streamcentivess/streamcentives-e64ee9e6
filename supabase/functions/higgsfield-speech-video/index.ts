@@ -121,18 +121,16 @@ serve(async (req) => {
             console.log(`ElevenLabs ${label} content-type:`, ct);
             
             const isWav = ct.includes('wav') || ct.includes('wave') || ct.includes('x-wav');
-            const isMpeg = ct.includes('mpeg') || ct.includes('mp3');
             const isOctet = ct.includes('octet-stream') || ct === '';
-            
-            if (!isWav && !isMpeg && !isOctet) {
-              console.warn(`ElevenLabs ${label} returned unexpected content-type:`, ct);
-              // Proceed anyway and let downstream validate
+
+            if (!isWav && !isOctet) {
+              console.warn(`ElevenLabs ${label} returned non-WAV content-type:`, ct);
+              return false;
             }
             
             const audioArrayBuffer = await res.arrayBuffer();
-            const ext = isWav ? 'wav' : isMpeg ? 'mp3' : 'wav';
-            const contentType = isWav ? 'audio/wav' : isMpeg ? 'audio/mpeg' : 'application/octet-stream';
-            const audioFileName = `higgsfield-tts-${Date.now()}.${ext}`;
+            const contentType = 'audio/wav';
+            const audioFileName = `higgsfield-tts-${Date.now()}.wav`;
             
             const { error: ttsUploadError } = await supabase.storage
               .from('generated-content')
@@ -145,15 +143,34 @@ serve(async (req) => {
               .from('generated-content')
               .getPublicUrl(audioFileName);
             audioUrl = ttsPublicUrl;
-            console.log(`TTS audio (${label}) generated and uploaded. URL:`, audioUrl);
+            console.log(`TTS audio (${label}) generated and uploaded as WAV. URL:`, audioUrl);
             return true;
           };
 
-          const gotAudio = await tryUploadWavAudio(elevenRes, 'Preferred Format');
+          let gotAudio = await tryUploadWavAudio(elevenRes, 'primary');
+
+          // If not WAV, try a second time forcing different model/format
+          if (!gotAudio) {
+            console.log('Retrying ElevenLabs TTS with stricter WAV format...');
+            const elevenResRetry = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+              method: 'POST',
+              headers: {
+                'xi-api-key': xiApiKey,
+                'Content-Type': 'application/json',
+                'Accept': 'audio/wav',
+              },
+              body: JSON.stringify({
+                text: finalPrompt,
+                model_id: 'eleven_multilingual_v2',
+                output_format: 'wav',
+              }),
+            });
+            gotAudio = await tryUploadWavAudio(elevenResRetry, 'retry');
+          }
 
           if (!gotAudio) {
             const errText = await elevenRes.text();
-            console.error('ElevenLabs TTS did not return usable audio. Response:', errText);
+            console.error('ElevenLabs TTS did not return WAV audio. Response:', errText);
           }
         } else {
           console.warn('ELEVENLABS_API_KEY not configured; will try Hugging Face.');
@@ -247,7 +264,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Audio input required. Please upload an audio file (WAV/MP3) or provide text for TTS synthesis.' 
+          error: 'Audio input required in WAV format. Please upload a .wav file or provide text for WAV TTS synthesis.' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
