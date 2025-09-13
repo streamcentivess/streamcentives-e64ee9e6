@@ -673,9 +673,35 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       
       toast.success('Speech video generated successfully!');
 
-      // Add to speech videos array and switch to library tab
+      // Add to speech videos array and save to library
       if (data?.videoUrl) {
+        const speechVideoContent: GeneratedContent = {
+          id: crypto.randomUUID(),
+          type: 'video_script',
+          title: `Speech Video - ${speechText.slice(0, 30)}...`,
+          content: speechText,
+          videoUrl: data.videoUrl,
+          imageUrl: uploadedImage,
+          created_at: new Date().toISOString(),
+          metadata: {
+            generationType: 'speech-to-video',
+            voiceSettings: selectedVoice,
+            originalImage: uploadedImage,
+            generatedAt: new Date().toISOString()
+          }
+        };
+
+        // Add to speech videos array
         setSpeechVideos(prev => [...prev, data]);
+        
+        // Save to generated content library
+        setGeneratedContent(prev => [speechVideoContent, ...prev]);
+        
+        // Save to localStorage for persistence
+        const existing = localStorage.getItem(`ai_content_${user.id}`);
+        const existingContent = existing ? JSON.parse(existing) : [];
+        const updatedContent = [speechVideoContent, ...existingContent];
+        localStorage.setItem(`ai_content_${user.id}`, JSON.stringify(updatedContent));
         
         // Automatically switch to library tab to show the generated content
         setActiveTab('library');
@@ -1804,6 +1830,66 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                   <CardTitle className="text-sm">Speech-to-Video Generation</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Image Upload Section */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Upload Image to Animate</label>
+                    <div className="relative w-full">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                        className="hidden"
+                        id="speech-image-upload"
+                      />
+                      
+                       {uploadedImage ? (
+                         <div className="relative w-full max-w-md mx-auto">
+                           <div className="aspect-square w-full overflow-hidden rounded-lg border-2 border-muted">
+                             <img
+                               src={uploadedImage}
+                               alt="Uploaded for animation"
+                               className="w-full h-full object-contain bg-muted"
+                             />
+                           </div>
+                           <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center group">
+                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                               <Button
+                                 size="sm"
+                                 variant="secondary"
+                                 onClick={() => document.getElementById('speech-image-upload')?.click()}
+                               >
+                                 <Upload className="h-4 w-4 mr-1" />
+                                 Replace
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="destructive"
+                                 onClick={() => setUploadedImage('')}
+                               >
+                                 <Trash2 className="h-4 w-4 mr-1" />
+                                 Remove
+                               </Button>
+                             </div>
+                           </div>
+                         </div>
+                       ) : (
+                         <label
+                           htmlFor="speech-image-upload"
+                           className="flex flex-col items-center justify-center w-full aspect-square max-w-md mx-auto border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
+                         >
+                           <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                           <p className="text-sm text-muted-foreground text-center mb-2">
+                             Click to upload image
+                           </p>
+                           <p className="text-xs text-muted-foreground/70 text-center px-4">
+                             JPG, PNG, WebP • 1024x1024+ recommended<br />
+                             Maximum file size: 20MB
+                           </p>
+                         </label>
+                       )}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="text-sm font-medium mb-2 block">Voice Recording</label>
                     <VoiceRecorder
