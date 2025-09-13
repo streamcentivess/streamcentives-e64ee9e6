@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, MessageCircle, Search, Share2, Mail, Heart, DollarSign } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, UserX, MessageCircle, Search, Share2, Mail, Heart, DollarSign } from 'lucide-react';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { supabase } from '@/integrations/supabase/client';
 import { PostsGrid } from '@/components/PostsGrid';
@@ -594,6 +594,16 @@ const UniversalProfile = () => {
     }
   };
 
+  // Remove hater (placeholder until types update)
+  const removeHaterAction = async (haterId: string) => {
+    // TODO: Implement after database types are regenerated
+    toast({
+      title: "Feature Coming Soon", 
+      description: "Haters functionality will be available after database setup completes.",
+      variant: "default"
+    });
+  };
+
   // Handle adding a supporter with restrictions
   const handleAddSupporter = async (profile: Profile) => {
     if (!user) return;
@@ -1139,6 +1149,7 @@ const UniversalProfile = () => {
       fetchPostCount();
       fetchXpBalance();
       fetchSupporters();
+      fetchHaters();
     }
   }, [profile?.user_id]);
 
@@ -1708,11 +1719,12 @@ const UniversalProfile = () => {
 
         {/* Tabs Section */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger> 
             <TabsTrigger value="rewards">Rewards</TabsTrigger>
             <TabsTrigger value="supporters">My Supporters</TabsTrigger>
+            <TabsTrigger value="haters">My Haters</TabsTrigger>
           </TabsList>
           
           <TabsContent value="posts" className="mt-6">
@@ -1999,6 +2011,144 @@ const UniversalProfile = () => {
               </CardContent>
             </Card>
           </TabsContent>
+          
+          <TabsContent value="haters" className="mt-6">
+            <Card className="card-modern">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <UserX className="h-5 w-5 text-red-500" />
+                      {isOwnProfile ? 'My Haters List' : `${profile?.display_name || profile?.username || 'User'}'s Haters`}
+                    </h3>
+                    {isOwnProfile && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Manage
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Manage Haters</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            {/* Search Bar */}
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                placeholder="Search users to add as haters..."
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                className="pl-10"
+                              />
+                              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            </div>
+                            
+                            {/* Search Results */}
+                            {searching && (
+                              <div className="text-center py-4">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                              </div>
+                            )}
+                            
+                            {searchResults.length > 0 && (
+                              <div className="space-y-2 max-h-60 overflow-y-auto">
+                                <p className="text-sm text-muted-foreground mb-2">Search Results:</p>
+                                {searchResults.map(profile => (
+                                  <div key={profile.user_id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                                    <Avatar className="h-10 w-10">
+                                      <AvatarImage src={profile.avatar_url || ''} />
+                                      <AvatarFallback>
+                                        {profile.display_name?.[0] || profile.username?.[0]?.toUpperCase() || '?'}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                      <div className="font-medium">
+                                        {profile.display_name || profile.username || 'Anonymous User'}
+                                      </div>
+                                      {profile.username && profile.display_name && <div className="text-sm text-muted-foreground">@{profile.username}</div>}
+                                    </div>
+                                    <Button 
+                                      size="sm" 
+                                      variant={haterStates[profile.user_id] ? "outline" : "default"}
+                                      onClick={() => haterStates[profile.user_id] ? removeHaterAction(profile.user_id) : handleAddHater(profile)}
+                                      className={haterStates[profile.user_id] ? "" : "bg-red-500 hover:bg-red-600"}
+                                    >
+                                      {haterStates[profile.user_id] ? (
+                                        <>
+                                          <UserMinus className="h-3 w-3 mr-1" />
+                                          Remove
+                                        </>
+                                      ) : (
+                                        <>
+                                          <UserX className="h-3 w-3 mr-1" />
+                                          Add
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {searchQuery && !searching && searchResults.length === 0 && (
+                              <div className="text-center text-muted-foreground py-4">
+                                No users found matching your search.
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {isOwnProfile 
+                      ? "Keep track of users who violate policies or cause problems. This helps you manage troublesome interactions."
+                      : "These are the people this user has flagged as policy violators or problematic users."
+                    }
+                  </p>
+                  
+                  {/* Haters Grid */}
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                    {haters.slice(0, 12).map((hater) => (
+                      <div key={hater.user_id} className="text-center">
+                        <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75 border-2 border-red-200" onClick={() => viewProfile(hater.user_id)}>
+                          <AvatarImage src={hater.avatar_url || ''} />
+                          <AvatarFallback className="text-xs bg-red-50">
+                            {hater.display_name?.[0] || hater.username?.[0]?.toUpperCase() || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">
+                          {hater.display_name?.split(' ')[0] || hater.username || 'User'}
+                        </p>
+                      </div>
+                    ))}
+                    {haters.length === 0 && (
+                      <div className="col-span-full text-center py-8">
+                        <UserX className="h-12 w-12 mx-auto mb-2 opacity-30 text-muted-foreground" />
+                        <p className="text-muted-foreground">
+                          {isOwnProfile 
+                            ? "No haters added yet. Add users who violate policies to keep track of them." 
+                            : "This user hasn't flagged any haters yet."
+                          }
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {haters.length > 12 && (
+                    <div className="text-center">
+                      <Button variant="outline" size="sm">
+                        View All {haters.length} Haters
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Followers/Following List Modal */}
@@ -2084,6 +2234,28 @@ const UniversalProfile = () => {
                   No
                 </Button>
                 <Button onClick={confirmAddSupporterAction} className="bg-gradient-primary hover:opacity-90">
+                  Yes
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Hater Confirmation Dialog */}
+        <Dialog open={confirmAddHater.show} onOpenChange={(open) => setConfirmAddHater({ show: open, profile: null })}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Add Hater</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-center">
+                Are you sure you want to add <strong>{confirmAddHater.profile?.display_name || confirmAddHater.profile?.username}</strong> to your haters list for policy violations?
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={() => setConfirmAddHater({ show: false, profile: null })}>
+                  No
+                </Button>
+                <Button onClick={confirmAddHaterAction} className="bg-red-500 hover:bg-red-600">
                   Yes
                 </Button>
               </div>
