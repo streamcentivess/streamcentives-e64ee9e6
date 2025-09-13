@@ -710,13 +710,32 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
 
       if (error) {
         console.error('Error generating speech video:', error);
-        toast.error('Failed to generate speech video. Please try again.');
+        
+        // Provide specific error messages based on error content
+        if (error.message?.includes('WAV') || error.message?.includes('wav')) {
+          toast.error('Audio format error: Please use WAV format audio or try text-to-speech mode.');
+        } else if (error.message?.includes('image')) {
+          toast.error('Image error: Please upload a valid image file.');
+        } else if (error.message?.includes('timeout') || error.message?.includes('522')) {
+          toast.error('Generation timed out. Please try again with a shorter duration.');
+        } else {
+          toast.error(`Generation failed: ${error.message || 'Please try again.'}`);
+        }
         return;
       }
 
       console.log('Speech video generated:', data);
       
-      toast.success('Speech video generated successfully!');
+      toast.success(
+        `🎥 Speech video generated successfully! Check the Library tab to view and share your video.`,
+        { 
+          duration: 4000,
+          action: {
+            label: 'View Library',
+            onClick: () => setActiveTab('library')
+          }
+        }
+      );
 
         // Add to speech videos array and save to library
         if (data?.videoUrl) {
@@ -753,11 +772,20 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
         localStorage.setItem(`ai_content_${user.id}`, JSON.stringify(updatedContent));
         
         // Automatically switch to library tab to show the generated content
-        setActiveTab('library');
+        setTimeout(() => {
+          setActiveTab('library');
+        }, 1000);
+        
+        // Clear form after successful generation
+        if (audioMode === 'tts') {
+          setSpeechText('');
+        } else {
+          setUploadedAudioFile('');
+        }
       }
     } catch (error) {
       console.error('Exception during speech video generation:', error);
-      toast.error('An unexpected error occurred while generating speech video.');
+      toast.error('An unexpected error occurred while generating speech video. Please check your inputs and try again.');
     } finally {
       setIsProcessingSpeech(false);
     }
@@ -2128,10 +2156,68 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                     </p>
                   )}
 
+                  {isProcessingSpeech && (
+                    <Card className="border-primary/20 bg-primary/5">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Wand2 className="h-5 w-5 animate-spin text-primary" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">Generating Speech Video...</p>
+                            <p className="text-xs text-muted-foreground">
+                              {audioMode === 'tts' 
+                                ? `Converting "${speechText.slice(0, 40)}..." to speech, then animating with your image` 
+                                : 'Processing your WAV audio and animating with your image'
+                              }
+                            </p>
+                            <div className="mt-2">
+                              <Progress value={33} className="h-2" />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                This usually takes 30-60 seconds...
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {!uploadedImage && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      Upload an image above to enable speech-to-video generation
-                    </p>
+                    <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-2">
+                          <Camera className="h-4 w-4 text-amber-600" />
+                          <p className="text-xs text-amber-800 dark:text-amber-200">
+                            Upload an image above to enable speech-to-video generation
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {(audioMode === 'tts' && !speechText.trim()) && uploadedImage && (
+                    <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-2">
+                          <Mic className="h-4 w-4 text-blue-600" />
+                          <p className="text-xs text-blue-800 dark:text-blue-200">
+                            Enter text or record voice to enable speech-to-video generation
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {(audioMode === 'upload' && !uploadedAudioFile) && uploadedImage && (
+                    <Card className="border-purple-200 bg-purple-50 dark:bg-purple-950/20 dark:border-purple-800">
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-2">
+                          <Upload className="h-4 w-4 text-purple-600" />
+                          <p className="text-xs text-purple-800 dark:text-purple-200">
+                            Upload a WAV audio file to enable generation
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
 
                   {speechVideos.length > 0 && (
@@ -2151,6 +2237,97 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                               </video>
                               <div className="flex gap-2">
                                 <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const a = document.createElement('a');
+                                    a.href = video.videoUrl;
+                                    a.download = `speech-video-${Date.now()}.mp4`;
+                                    a.click();
+                                  }}
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedVideoUrl(video.videoUrl);
+                                    setShowVideoEditor(true);
+                                  }}
+                                >
+                                  <Edit3 className="h-3 w-3 mr-1" />
+                                  Edit
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="sm">
+                                      <Share2 className="h-3 w-3 mr-1" />
+                                      Post
+                                      <ChevronDown className="h-3 w-3 ml-1" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        const videoContent: GeneratedContent = {
+                                          id: crypto.randomUUID(),
+                                          type: 'video_idea',
+                                          title: 'AI Speech Video',
+                                          content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
+                                          videoUrl: video.videoUrl,
+                                          created_at: new Date().toISOString()
+                                        };
+                                        postToProfile(videoContent, undefined, 'profile');
+                                      }}
+                                    >
+                                      <User className="h-4 w-4 mr-2" />
+                                      Post to Profile
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        const videoContent: GeneratedContent = {
+                                          id: crypto.randomUUID(),
+                                          type: 'video_idea',
+                                          title: 'AI Speech Video',
+                                          content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
+                                          videoUrl: video.videoUrl,
+                                          created_at: new Date().toISOString()
+                                        };
+                                        postToProfile(videoContent, undefined, 'community');
+                                      }}
+                                    >
+                                      <Users className="h-4 w-4 mr-2" />
+                                      Post to Community
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        const videoContent: GeneratedContent = {
+                                          id: crypto.randomUUID(),
+                                          type: 'video_idea',
+                                          title: 'AI Speech Video',
+                                          content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
+                                          videoUrl: video.videoUrl,
+                                          created_at: new Date().toISOString()
+                                        };
+                                        postToProfile(videoContent, undefined, 'both');
+                                      }}
+                                    >
+                                      <Share2 className="h-4 w-4 mr-2" />
+                                      Post to Both
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                   )}
+                 </CardContent>
+               </Card>
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
@@ -2215,33 +2392,33 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                                          <Users className="h-4 w-4 mr-2" />
                                          Post to Community
                                        </DropdownMenuItem>
-                                       <DropdownMenuItem
-                                         onClick={() => {
-                                           const videoContent: GeneratedContent = {
-                                             id: crypto.randomUUID(),
-                                             type: 'video_idea',
-                                             title: 'AI Speech Video',
-                                             content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
-                                             videoUrl: video.videoUrl,
-                                             created_at: new Date().toISOString()
-                                           };
-                                           postToProfile(videoContent, undefined, 'both');
-                                         }}
-                                       >
-                                         <Share2 className="h-4 w-4 mr-2" />
-                                         Post to Both
-                                       </DropdownMenuItem>
-                                     </DropdownMenuContent>
-                                   </DropdownMenu>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                                        <DropdownMenuItem
+                                          onClick={() => {
+                                            const videoContent: GeneratedContent = {
+                                              id: crypto.randomUUID(),
+                                              type: 'video_idea',
+                                              title: 'AI Speech Video',
+                                              content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
+                                              videoUrl: video.videoUrl,
+                                              created_at: new Date().toISOString()
+                                            };
+                                            postToProfile(videoContent, undefined, 'both');
+                                          }}
+                                        >
+                                          <Share2 className="h-4 w-4 mr-2" />
+                                          Post to Both
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                               </div>
+                             </CardContent>
+                           </Card>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+                 </CardContent>
+               </Card>
             </div>
           </TabsContent>
         </Tabs>
