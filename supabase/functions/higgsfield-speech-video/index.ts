@@ -103,10 +103,11 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'tts-1',
+            model: 'tts-1-hd', // Use HD model for better quality
             input: finalPrompt,
             voice: openaiVoice,
-            response_format: 'wav'
+            response_format: 'wav', // Explicitly request WAV format
+            speed: 1.0 // Ensure consistent speed
           })
         });
 
@@ -120,10 +121,24 @@ serve(async (req) => {
           throw new Error('OpenAI TTS returned empty audio');
         }
         
+        // Validate WAV format by checking file header
+        const audioBytes = new Uint8Array(ttsArrayBuffer);
+        const wavHeader = String.fromCharCode(...audioBytes.slice(0, 4));
+        if (wavHeader !== 'RIFF') {
+          console.error('Invalid WAV header detected:', wavHeader);
+          throw new Error('OpenAI TTS did not return valid WAV format');
+        }
+        
+        console.log('Valid WAV audio generated, size:', ttsArrayBuffer.byteLength, 'bytes');
+        
         const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
         const { error: ttsUploadError } = await supabase.storage
           .from('generated-content')
-          .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
+          .upload(ttsFileName, ttsArrayBuffer, { 
+            contentType: 'audio/wav',
+            cacheControl: '3600',
+            upsert: false
+          });
           
         if (ttsUploadError) {
           throw new Error(`Failed to upload TTS audio: ${ttsUploadError.message}`);
