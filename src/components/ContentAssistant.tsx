@@ -99,42 +99,13 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const [showVideoEditor, setShowVideoEditor] = useState(false);
   const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
   const [apiErrors, setApiErrors] = useState<{[key: string]: string}>({});
-
-  // Motion templates library
-  const motionTemplates = {
-    camera: [
-      { id: 'dolly-in', name: 'Dolly In', description: 'Smooth forward camera movement' },
-      { id: 'dolly-out', name: 'Dolly Out', description: 'Smooth backward camera movement' },
-      { id: 'crash-zoom', name: 'Crash Zoom', description: 'Dramatic zoom effect' },
-      { id: 'overhead-shot', name: 'Overhead Shot', description: 'Top-down camera movement' },
-      { id: 'pan-left', name: 'Pan Left', description: 'Horizontal left camera movement' },
-      { id: 'pan-right', name: 'Pan Right', description: 'Horizontal right camera movement' },
-      { id: 'tilt-up', name: 'Tilt Up', description: 'Vertical upward camera movement' },
-      { id: 'tilt-down', name: 'Tilt Down', description: 'Vertical downward camera movement' },
-      { id: 'rotate-cw', name: 'Rotate Clockwise', description: 'Clockwise camera rotation' },
-      { id: 'rotate-ccw', name: 'Rotate Counter-CW', description: 'Counter-clockwise rotation' }
-    ],
-    object: [
-      { id: 'object-float', name: 'Floating Motion', description: 'Gentle floating animation' },
-      { id: 'object-spin', name: 'Spin Animation', description: 'Object rotation effect' },
-      { id: 'object-bounce', name: 'Bounce Effect', description: 'Bouncing motion' },
-      { id: 'object-sway', name: 'Swaying Motion', description: 'Side-to-side movement' },
-      { id: 'object-pulse', name: 'Pulsing Effect', description: 'Scale in/out animation' },
-      { id: 'object-drift', name: 'Drift Motion', description: 'Smooth drifting movement' }
-    ],
-    environmental: [
-      { id: 'wind-effect', name: 'Wind Effect', description: 'Natural wind motion' },
-      { id: 'water-ripple', name: 'Water Ripples', description: 'Subtle water movement' },
-      { id: 'particle-float', name: 'Floating Particles', description: 'Ambient particle motion' },
-      { id: 'light-flicker', name: 'Light Flicker', description: 'Dynamic lighting effects' },
-      { id: 'fog-drift', name: 'Fog Drift', description: 'Atmospheric fog movement' },
-      { id: 'leaves-fall', name: 'Falling Leaves', description: 'Natural leaf animation' }
-    ]
-  };
+  const [availableMotions, setAvailableMotions] = useState<any[]>([]);
+  const [loadingMotions, setLoadingMotions] = useState(false);
 
   useEffect(() => {
     checkProSubscription();
     loadGeneratedContent();
+    loadAvailableMotions();
   }, [user]);
 
   const checkProSubscription = async () => {
@@ -413,6 +384,136 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       setIsProcessingMotion(false);
     }
   };
+
+  const loadAvailableMotions = async () => {
+    setLoadingMotions(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('higgsfield-motions');
+      
+      if (error) {
+        console.error('Error loading motions:', error);
+        // Fallback to default motions if API fails
+        setAvailableMotions(getEnhancedDefaultMotions());
+        return;
+      }
+
+      if (data?.success && data?.motions && data.motions.length > 0) {
+        // Enhance API motions with categories and better descriptions
+        const enhancedMotions = data.motions.map((motion: any) => ({
+          ...motion,
+          category: categorizeMotion(motion.name || motion.id),
+          enhanced_description: enhanceMotionDescription(motion.name || motion.id, motion.description)
+        }));
+        setAvailableMotions(enhancedMotions);
+      } else {
+        setAvailableMotions(getEnhancedDefaultMotions());
+      }
+    } catch (error) {
+      console.error('Error loading motions:', error);
+      setAvailableMotions(getEnhancedDefaultMotions());
+    } finally {
+      setLoadingMotions(false);
+    }
+  };
+
+  const categorizeMotion = (motionName: string): string => {
+    const name = motionName.toLowerCase();
+    if (name.includes('zoom') || name.includes('dolly') || name.includes('pan') || name.includes('tilt') || name.includes('rotate') || name.includes('crash')) {
+      return 'camera';
+    } else if (name.includes('wind') || name.includes('water') || name.includes('particle') || name.includes('light') || name.includes('fog') || name.includes('leaves')) {
+      return 'environmental';
+    } else {
+      return 'object';
+    }
+  };
+
+  const enhanceMotionDescription = (name: string, description: string): string => {
+    const enhancements: { [key: string]: string } = {
+      'object-drift': '✨ Creates a dreamy floating effect perfect for portraits and artistic shots',
+      'zoom-in': '🔍 Dramatic zoom that draws viewers deep into your content',
+      'parallax-scroll': '🌊 Professional depth effect that separates foreground and background',
+      'gentle-sway': '🍃 Natural organic movement ideal for nature and lifestyle content',
+      'rotate-slow': '🔄 Hypnotic rotation perfect for product showcases and abstract art',
+      'pulse-glow': '💫 Breathing light effect that adds energy and life to static images'
+    };
+    
+    return enhancements[name.toLowerCase()] || description || `Professional ${name.replace('-', ' ')} motion effect`;
+  };
+
+  const getEnhancedDefaultMotions = () => [
+    {
+      id: 'object-drift',
+      name: 'Floating Dreams',
+      description: 'Subtle floating motion that makes subjects appear weightless',
+      enhanced_description: '✨ Creates a dreamy floating effect perfect for portraits and artistic shots',
+      preview_url: null,
+      start_end_frame: false,
+      category: 'object'
+    },
+    {
+      id: 'zoom-in',
+      name: 'Dramatic Focus',
+      description: 'Smooth zoom effect that draws focus to the center',
+      enhanced_description: '🔍 Dramatic zoom that draws viewers deep into your content',
+      preview_url: null,
+      start_end_frame: false,
+      category: 'camera'
+    },
+    {
+      id: 'parallax-scroll',
+      name: 'Depth Master',
+      description: 'Creates depth by moving layers at different speeds',
+      enhanced_description: '🌊 Professional depth effect that separates foreground and background',
+      preview_url: null,
+      start_end_frame: false,
+      category: 'camera'
+    },
+    {
+      id: 'gentle-sway',
+      name: 'Natural Flow',
+      description: 'Organic swaying motion for natural elements',
+      enhanced_description: '🍃 Natural organic movement ideal for nature and lifestyle content',
+      preview_url: null,
+      start_end_frame: false,
+      category: 'environmental'
+    },
+    {
+      id: 'rotate-slow',
+      name: 'Hypnotic Spin',
+      description: 'Elegant rotating motion with mesmerizing appeal',
+      enhanced_description: '🔄 Hypnotic rotation perfect for product showcases and abstract art',
+      preview_url: null,
+      start_end_frame: false,
+      category: 'object'
+    },
+    {
+      id: 'pulse-glow',
+      name: 'Energy Pulse',
+      description: 'Breathing light effect that energizes images',
+      enhanced_description: '💫 Breathing light effect that adds energy and life to static images',
+      preview_url: null,
+      start_end_frame: false,
+      category: 'environmental'
+    },
+    {
+      id: 'pan-left',
+      name: 'Cinematic Pan',
+      description: 'Professional horizontal camera movement',
+      enhanced_description: '🎬 Hollywood-style panning for cinematic storytelling',
+      preview_url: null,
+      start_end_frame: false,
+      category: 'camera'
+    },
+    {
+      id: 'object-bounce',
+      name: 'Playful Bounce',
+      description: 'Fun bouncing animation for dynamic content',
+      enhanced_description: '🏀 Energetic bouncing perfect for playful and youthful content',
+      preview_url: null,
+      start_end_frame: false,
+      category: 'object'
+    }
+  ];
 
   const handleSpeechToVideo = async () => {
     if (!speechText.trim()) {
@@ -1085,51 +1186,103 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                   <div>
                     <label className="text-sm font-medium mb-3 block">Motion Templates Library</label>
                     
-                    {/* Category Selection */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Button
-                        size="sm"
-                        variant={selectedMotionCategory === 'camera' ? 'default' : 'outline'}
-                        onClick={() => setSelectedMotionCategory('camera')}
-                      >
-                        <Camera className="h-4 w-4 mr-1" />
-                        Camera Movement
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={selectedMotionCategory === 'object' ? 'default' : 'outline'}
-                        onClick={() => setSelectedMotionCategory('object')}
-                      >
-                        <Target className="h-4 w-4 mr-1" />
-                        Object Animation
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={selectedMotionCategory === 'environmental' ? 'default' : 'outline'}
-                        onClick={() => setSelectedMotionCategory('environmental')}
-                      >
-                        <Sparkles className="h-4 w-4 mr-1" />
-                        Environmental
-                      </Button>
-                    </div>
-
-                    {/* Motion Templates Grid */}
-                    <div className="grid grid-cols-2 gap-2">
-                      {motionTemplates[selectedMotionCategory as keyof typeof motionTemplates]?.map((template) => (
-                        <div
-                          key={template.id}
-                          onClick={() => setSelectedMotionId(template.id)}
-                          className={`p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                            selectedMotionId === template.id 
-                              ? 'border-primary bg-primary/5' 
-                              : 'border-muted hover:border-primary/50'
-                          }`}
-                        >
-                          <h4 className="font-medium text-sm mb-1">{template.name}</h4>
-                          <p className="text-xs text-muted-foreground">{template.description}</p>
+                    {loadingMotions ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <span className="ml-3 text-sm text-muted-foreground">Loading motion templates...</span>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Category Selection */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <Button
+                            size="sm"
+                            variant={selectedMotionCategory === 'camera' ? 'default' : 'outline'}
+                            onClick={() => setSelectedMotionCategory('camera')}
+                          >
+                            <Camera className="h-4 w-4 mr-1" />
+                            Camera ({availableMotions.filter(m => m.category === 'camera').length})
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={selectedMotionCategory === 'object' ? 'default' : 'outline'}
+                            onClick={() => setSelectedMotionCategory('object')}
+                          >
+                            <Target className="h-4 w-4 mr-1" />
+                            Object ({availableMotions.filter(m => m.category === 'object').length})
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={selectedMotionCategory === 'environmental' ? 'default' : 'outline'}
+                            onClick={() => setSelectedMotionCategory('environmental')}
+                          >
+                            <Sparkles className="h-4 w-4 mr-1" />
+                            Environmental ({availableMotions.filter(m => m.category === 'environmental').length})
+                          </Button>
                         </div>
-                      ))}
-                    </div>
+
+                        {/* Motion Templates Grid */}
+                        <div className="grid grid-cols-1 gap-3">
+                          {availableMotions
+                            .filter(motion => motion.category === selectedMotionCategory)
+                            .map((motion) => (
+                            <div
+                              key={motion.id}
+                              onClick={() => setSelectedMotionId(motion.id)}
+                              className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                                selectedMotionId === motion.id 
+                                  ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
+                                  : 'border-muted hover:border-primary/50 hover:bg-muted/30'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-medium text-sm">{motion.name}</h4>
+                                    {motion.start_end_frame && (
+                                      <Badge variant="secondary" className="text-xs px-2 py-0">
+                                        Advanced
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
+                                    {motion.enhanced_description || motion.description}
+                                  </p>
+                                  {motion.preview_url && (
+                                    <div className="mt-2">
+                                      <img
+                                        src={motion.preview_url}
+                                        alt={`${motion.name} preview`}
+                                        className="w-full h-20 object-cover rounded border"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                                {selectedMotionId === motion.id && (
+                                  <div className="ml-2">
+                                    <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* No motions found message */}
+                        {availableMotions.filter(m => m.category === selectedMotionCategory).length === 0 && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <Sparkles className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No {selectedMotionCategory} templates available</p>
+                            <p className="text-xs">Try selecting a different category</p>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   {/* Custom Motion Prompt */}
