@@ -89,7 +89,8 @@ serve(async (req) => {
           const selected = (voice && typeof voice === 'string') ? voice : 'en-US-female';
           const voiceId = voiceMap[selected] || voiceMap['en-US-female'];
 
-          const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+          const params = new URLSearchParams({ output_format: 'wav' });
+          const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?${params.toString()}`, {
             method: 'POST',
             headers: {
               'xi-api-key': xiApiKey,
@@ -99,14 +100,13 @@ serve(async (req) => {
             body: JSON.stringify({
               text: finalPrompt,
               model_id: 'eleven_turbo_v2_5',
-              output_format: 'wav',
             }),
           });
 
           if (elevenRes.ok) {
             const ct = elevenRes.headers.get('content-type') || '';
             if (!ct.includes('wav')) {
-              console.warn('ElevenLabs returned non-WAV content-type:', ct, '— will fallback to Hugging Face.');
+              console.warn('ElevenLabs STREAM endpoint returned non-WAV content-type:', ct, '— will fallback to Hugging Face.');
             } else {
               const wavArrayBuffer = await elevenRes.arrayBuffer();
               const wavFileName = `higgsfield-tts-${Date.now()}.wav`;
@@ -121,7 +121,7 @@ serve(async (req) => {
                 .from('generated-content')
                 .getPublicUrl(wavFileName);
               audioUrl = ttsPublicUrl;
-              console.log('TTS audio (ElevenLabs WAV) generated and uploaded. URL:', audioUrl);
+              console.log('TTS audio (ElevenLabs STREAM WAV) generated and uploaded. URL:', audioUrl);
             }
           } else {
             const errText = await elevenRes.text();
