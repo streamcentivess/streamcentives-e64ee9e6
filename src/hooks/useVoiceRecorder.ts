@@ -94,6 +94,8 @@ export const useVoiceRecorder = (): UseVoiceRecorderReturn => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcription, setTranscription] = useState('');
+  const [lastWavBlob, setLastWavBlob] = useState<Blob | null>(null);
+  const [lastWavBase64, setLastWavBase64] = useState('');
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -179,6 +181,10 @@ export const useVoiceRecorder = (): UseVoiceRecorderReturn => {
       const base64Audio = btoa(binary);
       console.log('WAV audio converted to base64, size:', base64Audio.length);
       
+      // Store the WAV blob and base64 for external use
+      setLastWavBlob(wavBlob);
+      setLastWavBase64(base64Audio);
+      
       // Send to voice-to-text function
       const { data, error } = await supabase.functions.invoke('voice-to-text', {
         body: { audio: base64Audio }
@@ -214,6 +220,8 @@ export const useVoiceRecorder = (): UseVoiceRecorderReturn => {
     transcription,
     startRecording,
     stopRecording,
-    clearTranscription
+    clearTranscription,
+    lastWavBlob,
+    lastWavBase64,
   };
 };
