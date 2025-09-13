@@ -54,79 +54,51 @@ serve(async (req) => {
     const binaryAudio = processBase64Chunks(audio)
     console.log('Processed audio chunks, size:', binaryAudio.length)
     
-    // Prepare form data
-    const formData = new FormData()
-    const blob = new Blob([binaryAudio], { type: 'audio/webm' })
-    formData.append('file', blob, 'audio.webm')
-    formData.append('model', 'whisper-1')
-
-    console.log('Sending to OpenAI Whisper API...')
-    
-    const openaiKey = Deno.env.get('OPENAI_API_KEY')
-    let transcriptText: string | null = null
-
-    // Try OpenAI Whisper first
-    if (openaiKey) {
-      try {
-        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openaiKey}`,
-          },
-          body: formData,
-        })
-
-        if (response.ok) {
-          const result = await response.json()
-          transcriptText = result.text
-          console.log('Transcription successful via OpenAI:', transcriptText)
-        } else {
-          const errorText = await response.text()
-          console.error('OpenAI API error:', errorText)
-        }
-      } catch (e) {
-        console.error('OpenAI Whisper request failed:', e)
+    // Detect audio type (WAV vs WebM)
+    let audioMime = 'audio/webm';
+    let fileName = 'audio.webm';
+    try {
+      const header = String.fromCharCode(...binaryAudio.slice(0, 4));
+      if (header === 'RIFF') {
+        audioMime = 'audio/wav';
+        fileName = 'audio.wav';
       }
-    } else {
-      console.warn('OPENAI_API_KEY is not configured. Will try Hugging Face fallback...')
+    } catch (_) {}
+
+    const blob = new Blob([binaryAudio], { type: audioMime })
+
+    // Use Hugging Face Whisper for STT (avoid OpenAI quota issues)
+    const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
+    if (!hfToken) {
+      throw new Error('HUGGING_FACE_ACCESS_TOKEN is not set')
     }
 
-    // Fallback to Hugging Face Inference if OpenAI failed or is unavailable
-    if (!transcriptText) {
-      console.log('Attempting Hugging Face ASR fallback (openai/whisper-large-v3)...')
-      const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
-      if (!hfToken) {
-        throw new Error('No transcription provider available: OPENAI failed/unavailable and HUGGING_FACE_ACCESS_TOKEN is not set')
-      }
+    const hfResponse = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large-v3', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${hfToken}`,
+        'Content-Type': audioMime,
+        'Accept': 'application/json'
+      },
+      body: blob
+    })
 
-      const hfResponse = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large-v3', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${hfToken}`,
-          'Content-Type': 'audio/webm',
-          'Accept': 'application/json'
-        },
-        body: blob
-      })
-
-      if (!hfResponse.ok) {
-        const err = await hfResponse.text()
-        console.error('Hugging Face API error:', err)
-        throw new Error(`Hugging Face API error: ${err}`)
-      }
-
-      const hfJson = await hfResponse.json()
-      let hfText = ''
-      if (typeof hfJson?.text === 'string') {
-        hfText = hfJson.text
-      } else if (Array.isArray(hfJson)) {
-        hfText = hfJson.map((c: any) => c?.text).filter(Boolean).join(' ')
-      } else if (hfJson?.[0]?.text) {
-        hfText = hfJson[0].text
-      }
-      transcriptText = hfText
-      console.log('Transcription successful via Hugging Face:', transcriptText)
+    if (!hfResponse.ok) {
+      const err = await hfResponse.text()
+      console.error('Hugging Face API error:', err)
+      throw new Error(`Hugging Face API error: ${err}`)
     }
+
+    const hfJson = await hfResponse.json()
+    let transcriptText = ''
+    if (typeof hfJson?.text === 'string') {
+      transcriptText = hfJson.text
+    } else if (Array.isArray(hfJson)) {
+      transcriptText = hfJson.map((c: any) => c?.text).filter(Boolean).join(' ')
+    } else if (hfJson?.[0]?.text) {
+      transcriptText = hfJson[0].text
+    }
+    console.log('Transcription successful via Hugging Face:', transcriptText)
 
     return new Response(
       JSON.stringify({ text: transcriptText }),

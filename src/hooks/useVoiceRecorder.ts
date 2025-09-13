@@ -31,41 +31,51 @@ const convertToWav = async (audioBlob: Blob): Promise<Blob> => {
 // Convert AudioBuffer to WAV format
 const audioBufferToWav = (buffer: AudioBuffer): ArrayBuffer => {
   const length = buffer.length;
-  const numberOfChannels = buffer.numberOfChannels;
   const sampleRate = buffer.sampleRate;
-  const arrayBuffer = new ArrayBuffer(44 + length * 2);
+  const numChannels = 1; // downmix to mono for compatibility
+  const bytesPerSample = 2; // 16-bit PCM
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = length * bytesPerSample; // mono 16-bit
+
+  const arrayBuffer = new ArrayBuffer(44 + dataSize);
   const view = new DataView(arrayBuffer);
-  
+
   // WAV header
   const writeString = (offset: number, string: string) => {
-    for (let i = 0; i < string.length; i++) {
-      view.setUint8(offset + i, string.charCodeAt(i));
-    }
+    for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
   };
-  
+
   writeString(0, 'RIFF');
-  view.setUint32(4, 36 + length * 2, true);
+  view.setUint32(4, 36 + dataSize, true);
   writeString(8, 'WAVE');
   writeString(12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, numberOfChannels, true);
+  view.setUint32(16, 16, true); // PCM chunk size
+  view.setUint16(20, 1, true); // audio format = PCM
+  view.setUint16(22, numChannels, true);
   view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true); // bits per sample
   writeString(36, 'data');
-  view.setUint32(40, length * 2, true);
-  
-  // Convert float samples to 16-bit PCM
-  const samples = buffer.getChannelData(0);
+  view.setUint32(40, dataSize, true);
+
+  // Downmix to mono and write samples
+  const channelData = [] as Float32Array[];
+  for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+    channelData.push(buffer.getChannelData(ch));
+  }
+
   let offset = 44;
   for (let i = 0; i < length; i++) {
-    const sample = Math.max(-1, Math.min(1, samples[i]));
+    let sample = 0;
+    for (let ch = 0; ch < channelData.length; ch++) sample += channelData[ch][i] || 0;
+    sample /= channelData.length || 1;
+    sample = Math.max(-1, Math.min(1, sample));
     view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-    offset += 2;
+    offset += bytesPerSample;
   }
-  
+
   return arrayBuffer;
 };
 
@@ -76,6 +86,8 @@ export interface UseVoiceRecorderReturn {
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   clearTranscription: () => void;
+  lastWavBlob: Blob | null;
+  lastWavBase64: string;
 }
 
 export const useVoiceRecorder = (): UseVoiceRecorderReturn => {
@@ -92,9 +104,10 @@ export const useVoiceRecorder = (): UseVoiceRecorderReturn => {
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          echoCancellation: false, // Disable for pro mics
-          noiseSuppression: false, // Disable for pro mics  
-          autoGainControl: false // Disable for pro mics
+          channelCount: 1,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
         } 
       });
       
