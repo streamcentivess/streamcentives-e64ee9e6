@@ -1033,146 +1033,87 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                   {generatedContent.map((content) => (
-                    <CampaignCard
-                      key={content.id}
-                      title={content.title}
-                      description={content.content}
-                      imageUrl={content.imageUrl}
-                      videoUrl={content.videoUrl || content.carouselImageUrls?.[0]}
-                      onEdit={() => {
-                        setSelectedContent(content);
-                        if (content.type === 'image') {
-                          setShowPhotoEditor(true);
-                        } else if (content.carouselImageUrls) {
-                          setShowCarouselUpload(true);
-                        }
-                      }}
-                      onDelete={() => deleteContent(content.id)}
-                      actionLabel={content.type === 'image' ? 'Edit Image' : 'View Details'}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="editor" className="flex-1 overflow-auto">
-            <div className="space-y-4 p-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Motion Templates & Effects</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Content will be here but truncated for brevity */}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="speechvideo" className="flex-1 overflow-auto">
-            <div className="space-y-4 p-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Speech Video Generation</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Speech video content */}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                  {generatedContent.map((content) => (
                     <Card key={content.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          {content.imageUrl && (
-                            <img
-                              src={content.imageUrl}
-                              alt={content.title}
-                              className="w-full h-32 object-cover rounded mb-3"
+                      <CardContent className="p-4">
+                        {content.imageUrl && (
+                          <img
+                            src={content.imageUrl}
+                            alt={content.title}
+                            className="w-full h-32 object-cover rounded mb-3"
+                          />
+                        )}
+                        {content.videoUrl && (
+                          <video
+                            controls
+                            className="w-full h-32 object-cover rounded mb-3"
+                            preload="metadata"
+                          >
+                            <source
+                              src={content.videoUrl}
+                              type={(
+                                content.fileFormat === 'mov'
+                                  ? 'video/quicktime'
+                                  : content.fileFormat === 'webm'
+                                  ? 'video/webm'
+                                  : 'video/mp4'
+                              )}
                             />
+                            Your browser does not support the video tag.
+                          </video>
+                        )}
+
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline">{content.type}</Badge>
+                          {content.fileFormat && (
+                            <Badge variant="secondary" className="text-xs">
+                              {content.fileFormat.toUpperCase()}
+                            </Badge>
                           )}
-                            {content.videoUrl && content.type === 'video_script' && (
-                              <video
-                                controls
-                                className="w-full h-32 object-cover rounded mb-3"
-                                preload="metadata"
-                              >
-                                <source
-                                  src={content.videoUrl}
-                                  type={(content.fileFormat === 'mov' ? 'video/quicktime' : content.fileFormat === 'webm' ? 'video/webm' : 'video/mp4')}
-                                />
-                                Your browser does not support the video tag.
-                              </video>
-                            )}
-                         <div className="flex items-center gap-2 mb-2">
-                           <Badge variant="outline">
-                             {content.type}
-                           </Badge>
-                           {content.fileFormat && (
-                             <Badge variant="secondary" className="text-xs">
-                               {content.fileFormat.toUpperCase()}
-                             </Badge>
-                           )}
-                            {(content.downloadUrl || content.fileUrl || content.videoUrl || content.imageUrl) && (
-                              <Badge variant="default" className="text-xs">
-                                ✓ File
-                              </Badge>
-                            )}
-                         </div>
-                         <h3 className="font-semibold text-sm mb-2">{content.title}</h3>
-                         <p className="text-xs text-muted-foreground mb-3 line-clamp-3">
-                           {content.content}
-                         </p>
-                         <div className="flex items-center gap-2 flex-wrap">
-                            {(content.downloadUrl || content.fileUrl || content.videoUrl || content.imageUrl) ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => downloadContent(content)}
-                              >
-                                <Download className="h-3 w-3 mr-1" />
-                                Download
+                          {(content.downloadUrl || content.fileUrl || content.videoUrl || content.imageUrl) && (
+                            <Badge variant="default" className="text-xs">✓ File</Badge>
+                          )}
+                        </div>
+
+                        <h3 className="font-semibold text-sm mb-2">{content.title}</h3>
+                        <p className="text-xs text-muted-foreground mb-3 line-clamp-3">{content.content}</p>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {(content.downloadUrl || content.fileUrl || content.videoUrl || content.imageUrl) ? (
+                            <Button size="sm" variant="outline" onClick={() => downloadContent(content)}>
+                              <Download className="h-3 w-3 mr-1" />
+                              Download
+                            </Button>
+                          ) : (
+                            content.type === 'video_script' && (
+                              <Button size="sm" variant="outline" disabled>
+                                Generating video…
                               </Button>
-                            ) : (
-                              content.type === 'video_script' && (
-                                <Button size="sm" variant="outline" disabled>
-                                  Generating video…
-                                </Button>
-                              )
-                            )}
-                           {content.imageUrl && (
-                             <Button
-                               size="sm"
-                               variant="outline"
-                               onClick={() => {
-                                 setSelectedContent(content);
-                                 setShowPhotoEditor(true);
-                               }}
-                             >
-                               <Edit3 className="h-3 w-3 mr-1" />
-                               Edit
-                             </Button>
-                           )}
-                           <Button
-                             size="sm"
-                             onClick={() => postToProfile(content)}
-                           >
-                             <Share2 className="h-3 w-3 mr-1" />
-                             Post
-                           </Button>
-                           <Button
-                             size="sm"
-                             variant="destructive"
-                             onClick={() => deleteContent(content.id)}
-                           >
-                             <Trash2 className="h-3 w-3 mr-1" />
-                             Delete
-                           </Button>
-                         </div>
+                            )
+                          )}
+
+                          {content.imageUrl && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedContent(content);
+                                setShowPhotoEditor(true);
+                              }}
+                            >
+                              <Edit3 className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                          )}
+
+                          <Button size="sm" onClick={() => postToProfile(content)}>
+                            <Share2 className="h-3 w-3 mr-1" />
+                            Post
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => deleteContent(content.id)}>
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Delete
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -1180,6 +1121,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
               )}
             </div>
           </TabsContent>
+
 
           <TabsContent value="editor" className="overflow-auto">
             <div className="space-y-4">
@@ -1289,7 +1231,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
 
                         {/* Instagram-Style Templates Grid */}
                         <div className="border rounded-lg p-2 max-h-80 overflow-y-auto">
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {availableMotions
                               .filter(motion => motion.category === selectedMotionCategory)
                               .map((motion) => (
