@@ -63,6 +63,12 @@ const UniversalProfile = () => {
     show: boolean;
     profile: Profile | null;
   }>({ show: false, profile: null });
+  const [haters, setHaters] = useState<Profile[]>([]);
+  const [haterStates, setHaterStates] = useState<Record<string, boolean>>({});
+  const [confirmAddHater, setConfirmAddHater] = useState<{
+    show: boolean;
+    profile: Profile | null;
+  }>({ show: false, profile: null });
   const [joinedCampaigns, setJoinedCampaigns] = useState<any[]>([]);
   const unreadCount = useUnreadMessages();
 
@@ -372,6 +378,47 @@ const UniversalProfile = () => {
     }
   };
 
+  // Fetch haters for current profile
+  const fetchHaters = async () => {
+    const targetUserId = profile?.user_id || viewingUserId || user?.id;
+    if (!targetUserId) return;
+    
+    try {
+      // First get hater IDs
+      const { data: haterIds, error: haterError } = await supabase
+        .from('user_haters')
+        .select('hater_id')
+        .eq('user_id', targetUserId)
+        .order('created_at', { ascending: false });
+
+      if (haterError) {
+        console.error('Error fetching hater IDs:', haterError);
+        return;
+      }
+
+      if (!haterIds || haterIds.length === 0) {
+        setHaters([]);
+        return;
+      }
+
+      // Then get profile data for those haters
+      const ids = haterIds.map(item => item.hater_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url, bio, location, interests')
+        .in('user_id', ids);
+
+      if (profileError) {
+        console.error('Error fetching hater profiles:', profileError);
+        return;
+      }
+
+      setHaters(profiles || []);
+    } catch (error) {
+      console.error('Error fetching haters:', error);
+    }
+  };
+
   // Fetch joined campaigns for current profile
   const fetchJoinedCampaigns = async () => {
     const targetUserId = profile?.user_id || viewingUserId || user?.id;
@@ -481,6 +528,69 @@ const UniversalProfile = () => {
     } catch (error) {
       console.error('Error checking follower count:', error);
       return false;
+    }
+  };
+
+  // Handle adding a hater 
+  const handleAddHater = async (profile: Profile) => {
+    if (!user) return;
+
+    try {
+      setConfirmAddHater({ show: true, profile });
+    } catch (error) {
+      console.error('Error in handleAddHater:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add hater. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Confirm adding hater
+  const confirmAddHaterAction = async () => {
+    if (!user || !confirmAddHater.profile) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_haters')
+        .insert([{
+          user_id: user.id,
+          hater_id: confirmAddHater.profile.user_id
+        }]);
+
+      if (error) {
+        console.error('Error adding hater:', error);
+        toast({
+          title: "Error",
+          description: "Failed to add hater. They might already be in your haters list.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Update hater states
+      setHaterStates(prev => ({
+        ...prev,
+        [confirmAddHater.profile!.user_id]: true
+      }));
+
+      // Refresh haters list
+      fetchHaters();
+
+      toast({
+        title: "Hater Added",
+        description: `${confirmAddHater.profile.display_name || confirmAddHater.profile.username} has been added to your haters list.`,
+      });
+
+      setConfirmAddHater({ show: false, profile: null });
+    } catch (error) {
+      console.error('Error adding hater:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add hater. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
