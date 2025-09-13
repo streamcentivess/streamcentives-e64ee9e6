@@ -12,7 +12,17 @@ serve(async (req) => {
   }
 
   try {
-    const { text, voice = 'en-US-female', style = 'conversational' } = await req.json();
+    const {
+      prompt,
+      text,
+      input_audio_url,
+      input_image_url,
+      audioBase64,
+      duration = 5,
+      quality = 'high',
+      enhance_prompt = true,
+      seed
+    } = await req.json();
     
     const higgsFieldApiKey = Deno.env.get('HIGGSFIELD_API_KEY');
     const higgsFieldSecret = Deno.env.get('HIGGSFIELD_SECRET');
@@ -21,12 +31,60 @@ serve(async (req) => {
       throw new Error('HiggsField API credentials not configured');
     }
 
-    if (!text) {
-      throw new Error('Text is required for speech-to-video generation');
+    const finalPrompt = prompt ?? text;
+    if (!finalPrompt) {
+      throw new Error('Prompt/text is required for speech-to-video generation');
     }
 
     console.log('Starting speech video generation with HiggsField...');
-    console.log('Text input:', text);
+    console.log('Prompt:', finalPrompt);
+    console.log('Input image URL:', input_image_url);
+    console.log('Input audio URL (initial):', input_audio_url ? 'provided' : 'none');
+
+    // Initialize Supabase client for uploading input audio (if base64) and output video
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Ensure we have an audio URL if audioBase64 provided
+    let audioUrl = input_audio_url as string | undefined;
+    if (!audioUrl && audioBase64) {
+      console.log('Uploading base64 audio to Supabase storage...');
+      const binaryString = atob(audioBase64);
+      const audioBytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) audioBytes[i] = binaryString.charCodeAt(i);
+      const audioFileName = `higgsfield-input-audio-${Date.now()}.webm`;
+      const { error: audioUploadError } = await supabase.storage
+        .from('generated-content')
+        .upload(audioFileName, audioBytes, { contentType: 'audio/webm' });
+      if (audioUploadError) {
+        console.error('Audio upload error:', audioUploadError);
+        throw new Error('Failed to upload input audio to storage');
+      }
+      const { data: { publicUrl: uploadedAudioUrl } } = supabase.storage
+        .from('generated-content')
+        .getPublicUrl(audioFileName);
+      audioUrl = uploadedAudioUrl;
+      console.log('Audio uploaded. URL:', audioUrl);
+    }
+
+    // Compose request body per Speak v2 spec
+    const params: Record<string, unknown> = {
+      prompt: finalPrompt,
+      quality,
+      enhance_prompt,
+      seed: typeof seed === 'number' ? seed : Math.floor(Math.random() * 1000),
+      duration
+    };
+    if (input_image_url) {
+      // Optional image input
+      (params as any).input_image = { type: 'image_url', image_url: input_image_url };
+    }
+    if (audioUrl) {
+      // Optional audio input
+      (params as any).input_audio = { type: 'audio_url', audio_url: audioUrl };
+    }
 
     // Use the speak/higgsfield endpoint for speech-to-video generation
     const createResponse = await fetch('https://platform.higgsfield.ai/v1/speak/higgsfield', {
@@ -36,15 +94,7 @@ serve(async (req) => {
         'hf-secret': higgsFieldSecret,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        params: {
-          prompt: text,
-          quality: 'high',
-          enhance_prompt: true,
-          seed: Math.floor(Math.random() * 1000),
-          duration: 5
-        }
-      }),
+      body: JSON.stringify({ params }),
     });
 
     if (!createResponse.ok) {
@@ -99,11 +149,7 @@ serve(async (req) => {
           throw new Error('No successful video generation found');
         }
         
-        // Initialize Supabase client
-        const supabase = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
+        // Supabase client already initialized above
 
         // Download and upload video to Supabase Storage
         const videoResponse = await fetch(successfulJob.results.raw.url);
@@ -131,8 +177,9 @@ serve(async (req) => {
             success: true,
             videoUrl: publicUrl,
             jobSetId: jobSetId,
-            text: text,
-            voice: voice
+            prompt: finalPrompt,
+            audioUrlUsed: audioUrl ?? null,
+            input_image_url: input_image_url ?? null
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

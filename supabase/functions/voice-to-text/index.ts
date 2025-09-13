@@ -62,26 +62,74 @@ serve(async (req) => {
 
     console.log('Sending to OpenAI Whisper API...')
     
-    // Send to OpenAI
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-      },
-      body: formData,
-    })
+    const openaiKey = Deno.env.get('OPENAI_API_KEY')
+    let transcriptText: string | null = null
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('OpenAI API error:', errorText)
-      throw new Error(`OpenAI API error: ${errorText}`)
+    // Try OpenAI Whisper first
+    if (openaiKey) {
+      try {
+        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openaiKey}`,
+          },
+          body: formData,
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          transcriptText = result.text
+          console.log('Transcription successful via OpenAI:', transcriptText)
+        } else {
+          const errorText = await response.text()
+          console.error('OpenAI API error:', errorText)
+        }
+      } catch (e) {
+        console.error('OpenAI Whisper request failed:', e)
+      }
+    } else {
+      console.warn('OPENAI_API_KEY is not configured. Will try Hugging Face fallback...')
     }
 
-    const result = await response.json()
-    console.log('Transcription successful:', result.text)
+    // Fallback to Hugging Face Inference if OpenAI failed or is unavailable
+    if (!transcriptText) {
+      console.log('Attempting Hugging Face ASR fallback (openai/whisper-large-v3)...')
+      const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
+      if (!hfToken) {
+        throw new Error('No transcription provider available: OPENAI failed/unavailable and HUGGING_FACE_ACCESS_TOKEN is not set')
+      }
+
+      const hfResponse = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large-v3', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${hfToken}`,
+          'Content-Type': 'audio/webm',
+          'Accept': 'application/json'
+        },
+        body: blob
+      })
+
+      if (!hfResponse.ok) {
+        const err = await hfResponse.text()
+        console.error('Hugging Face API error:', err)
+        throw new Error(`Hugging Face API error: ${err}`)
+      }
+
+      const hfJson = await hfResponse.json()
+      let hfText = ''
+      if (typeof hfJson?.text === 'string') {
+        hfText = hfJson.text
+      } else if (Array.isArray(hfJson)) {
+        hfText = hfJson.map((c: any) => c?.text).filter(Boolean).join(' ')
+      } else if (hfJson?.[0]?.text) {
+        hfText = hfJson[0].text
+      }
+      transcriptText = hfText
+      console.log('Transcription successful via Hugging Face:', transcriptText)
+    }
 
     return new Response(
-      JSON.stringify({ text: result.text }),
+      JSON.stringify({ text: transcriptText }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
