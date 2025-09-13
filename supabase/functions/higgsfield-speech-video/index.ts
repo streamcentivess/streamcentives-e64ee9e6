@@ -99,24 +99,30 @@ serve(async (req) => {
             body: JSON.stringify({
               text: finalPrompt,
               model_id: 'eleven_turbo_v2_5',
+              output_format: 'wav',
             }),
           });
 
           if (elevenRes.ok) {
-            const wavArrayBuffer = await elevenRes.arrayBuffer();
-            const wavFileName = `higgsfield-tts-${Date.now()}.wav`;
-            const { error: ttsUploadError } = await supabase.storage
-              .from('generated-content')
-              .upload(wavFileName, wavArrayBuffer, { contentType: 'audio/wav' });
-            if (ttsUploadError) {
-              console.error('TTS upload error (ElevenLabs):', ttsUploadError);
-              throw new Error('Failed to upload synthesized audio to storage');
+            const ct = elevenRes.headers.get('content-type') || '';
+            if (!ct.includes('wav')) {
+              console.warn('ElevenLabs returned non-WAV content-type:', ct, '— will fallback to Hugging Face.');
+            } else {
+              const wavArrayBuffer = await elevenRes.arrayBuffer();
+              const wavFileName = `higgsfield-tts-${Date.now()}.wav`;
+              const { error: ttsUploadError } = await supabase.storage
+                .from('generated-content')
+                .upload(wavFileName, wavArrayBuffer, { contentType: 'audio/wav' });
+              if (ttsUploadError) {
+                console.error('TTS upload error (ElevenLabs):', ttsUploadError);
+                throw new Error('Failed to upload synthesized audio to storage');
+              }
+              const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
+                .from('generated-content')
+                .getPublicUrl(wavFileName);
+              audioUrl = ttsPublicUrl;
+              console.log('TTS audio (ElevenLabs WAV) generated and uploaded. URL:', audioUrl);
             }
-            const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
-              .from('generated-content')
-              .getPublicUrl(wavFileName);
-            audioUrl = ttsPublicUrl;
-            console.log('TTS audio (ElevenLabs WAV) generated and uploaded. URL:', audioUrl);
           } else {
             const errText = await elevenRes.text();
             console.error('ElevenLabs TTS generation failed:', errText);
