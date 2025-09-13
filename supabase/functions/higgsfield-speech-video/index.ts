@@ -94,7 +94,7 @@ serve(async (req) => {
             headers: {
               'xi-api-key': xiApiKey,
               'Content-Type': 'application/json',
-              'Accept': 'audio/mpeg',
+              'Accept': 'audio/wav',
             },
             body: JSON.stringify({
               text: finalPrompt,
@@ -103,20 +103,20 @@ serve(async (req) => {
           });
 
           if (elevenRes.ok) {
-            const mp3ArrayBuffer = await elevenRes.arrayBuffer();
-            const mp3FileName = `higgsfield-tts-${Date.now()}.mp3`;
+            const wavArrayBuffer = await elevenRes.arrayBuffer();
+            const wavFileName = `higgsfield-tts-${Date.now()}.wav`;
             const { error: ttsUploadError } = await supabase.storage
               .from('generated-content')
-              .upload(mp3FileName, mp3ArrayBuffer, { contentType: 'audio/mpeg' });
+              .upload(wavFileName, wavArrayBuffer, { contentType: 'audio/wav' });
             if (ttsUploadError) {
               console.error('TTS upload error (ElevenLabs):', ttsUploadError);
               throw new Error('Failed to upload synthesized audio to storage');
             }
             const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
               .from('generated-content')
-              .getPublicUrl(mp3FileName);
+              .getPublicUrl(wavFileName);
             audioUrl = ttsPublicUrl;
-            console.log('TTS audio (ElevenLabs) generated and uploaded. URL:', audioUrl);
+            console.log('TTS audio (ElevenLabs WAV) generated and uploaded. URL:', audioUrl);
           } else {
             const errText = await elevenRes.text();
             console.error('ElevenLabs TTS generation failed:', errText);
