@@ -52,16 +52,30 @@ serve(async (req) => {
     // Ensure we have an audio URL
     let audioUrl = input_audio_url as string | undefined;
 
-    // If audioBase64 is provided, upload it
+    // If audioBase64 is provided, upload it (only accept WAV format)
     if (!audioUrl && audioBase64) {
       console.log('Uploading base64 audio to Supabase storage...');
       const binaryString = atob(audioBase64);
       const audioBytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) audioBytes[i] = binaryString.charCodeAt(i);
-      const audioFileName = `higgsfield-input-audio-${Date.now()}.webm`;
+      
+      // Check for WAV header (should start with "RIFF")
+      const header = new TextDecoder().decode(audioBytes.slice(0, 4));
+      if (header !== 'RIFF') {
+        console.error('Audio format validation failed: Expected WAV format');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'HiggsField requires WAV audio format. Please upload a .wav file or use text-to-speech.' 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+      
+      const audioFileName = `higgsfield-input-audio-${Date.now()}.wav`;
       const { error: audioUploadError } = await supabase.storage
         .from('generated-content')
-        .upload(audioFileName, audioBytes, { contentType: 'audio/webm' });
+        .upload(audioFileName, audioBytes, { contentType: 'audio/wav' });
       if (audioUploadError) {
         console.error('Audio upload error:', audioUploadError);
         throw new Error('Failed to upload input audio to storage');
@@ -70,7 +84,7 @@ serve(async (req) => {
         .from('generated-content')
         .getPublicUrl(audioFileName);
       audioUrl = uploadedAudioUrl;
-      console.log('Audio uploaded. URL:', audioUrl);
+      console.log('WAV audio uploaded. URL:', audioUrl);
     }
 
     // If still no audio but we have text, synthesize TTS (prefer ElevenLabs, fallback to Hugging Face)
@@ -89,9 +103,8 @@ serve(async (req) => {
           const selected = (voice && typeof voice === 'string') ? voice : 'en-US-female';
           const voiceId = voiceMap[selected] || voiceMap['en-US-female'];
 
-          // Try STREAM with PCM WAV first
-          const paramsPcm = new URLSearchParams({ output_format: 'pcm_16000' });
-          let elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?${paramsPcm.toString()}`, {
+          // Force WAV format only for HiggsField compatibility
+          let elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
             method: 'POST',
             headers: {
               'xi-api-key': xiApiKey,
@@ -101,31 +114,29 @@ serve(async (req) => {
             body: JSON.stringify({
               text: finalPrompt,
               model_id: 'eleven_turbo_v2_5',
+              output_format: 'wav'
             }),
           });
 
-          const tryUploadAudio = async (res: Response, label: string) => {
+          const tryUploadWavAudio = async (res: Response, label: string) => {
             if (!res.ok) return false;
             const ct = res.headers.get('content-type') || '';
             console.log(`ElevenLabs ${label} content-type:`, ct);
             
-            // Accept both WAV and MP3 formats
+            // Only accept WAV format for HiggsField compatibility
             const isWav = ct.includes('wav');
-            const isMp3 = ct.includes('mpeg') || ct.includes('mp3');
             
-            if (!isWav && !isMp3) {
-              console.warn(`ElevenLabs ${label} returned unsupported content-type:`, ct);
+            if (!isWav) {
+              console.warn(`ElevenLabs ${label} returned non-WAV content-type:`, ct);
               return false;
             }
             
             const audioArrayBuffer = await res.arrayBuffer();
-            const extension = isWav ? 'wav' : 'mp3';
-            const mimeType = isWav ? 'audio/wav' : 'audio/mpeg';
-            const audioFileName = `higgsfield-tts-${Date.now()}.${extension}`;
+            const audioFileName = `higgsfield-tts-${Date.now()}.wav`;
             
             const { error: ttsUploadError } = await supabase.storage
               .from('generated-content')
-              .upload(audioFileName, audioArrayBuffer, { contentType: mimeType });
+              .upload(audioFileName, audioArrayBuffer, { contentType: 'audio/wav' });
             if (ttsUploadError) {
               console.error('TTS upload error (ElevenLabs):', ttsUploadError);
               throw new Error('Failed to upload synthesized audio to storage');
@@ -134,58 +145,16 @@ serve(async (req) => {
               .from('generated-content')
               .getPublicUrl(audioFileName);
             audioUrl = ttsPublicUrl;
-            console.log(`TTS audio (${label}) generated and uploaded. URL:`, audioUrl);
+            console.log(`TTS WAV audio (${label}) generated and uploaded. URL:`, audioUrl);
             return true;
           };
 
-          let gotAudio = await tryUploadAudio(elevenRes, 'STREAM pcm_16000');
-
-          // Fallback 1: STREAM with plain WAV container
-          if (!gotAudio) {
-            const paramsWav = new URLSearchParams({ output_format: 'wav' });
-            elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?${paramsWav.toString()}`, {
-              method: 'POST',
-              headers: {
-                'xi-api-key': xiApiKey,
-                'Content-Type': 'application/json',
-                'Accept': 'audio/wav',
-              },
-              body: JSON.stringify({ text: finalPrompt, model_id: 'eleven_turbo_v2_5' }),
-            });
-            gotAudio = await tryUploadAudio(elevenRes, 'STREAM wav');
-          }
-
-          // Fallback 2: Non-stream endpoint with PCM
-          if (!gotAudio) {
-            elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-              method: 'POST',
-              headers: {
-                'xi-api-key': xiApiKey,
-                'Content-Type': 'application/json',
-                'Accept': 'audio/wav',
-              },
-              body: JSON.stringify({ text: finalPrompt, model_id: 'eleven_turbo_v2_5', output_format: 'pcm_16000' }),
-            });
-            gotAudio = await tryUploadAudio(elevenRes, 'PCM 16000');
-          }
-
-          // Fallback 3: Accept default MP3 format
-          if (!gotAudio) {
-            elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-              method: 'POST',
-              headers: {
-                'xi-api-key': xiApiKey,
-                'Content-Type': 'application/json',
-                'Accept': 'audio/mpeg',
-              },
-              body: JSON.stringify({ text: finalPrompt, model_id: 'eleven_turbo_v2_5' }),
-            });
-            gotAudio = await tryUploadAudio(elevenRes, 'Default MP3');
-          }
+          const gotAudio = await tryUploadWavAudio(elevenRes, 'WAV Format');
 
           if (!gotAudio) {
             const errText = await elevenRes.text();
-            console.warn('ElevenLabs TTS failed with all formats. Last response:', errText);
+            console.error('ElevenLabs TTS failed to produce WAV format. Response:', errText);
+            console.warn('HiggsField speech-to-video requires WAV audio format. ElevenLabs TTS failed to provide WAV.');
           }
         } else {
           console.warn('ELEVENLABS_API_KEY not configured; will try Hugging Face.');
@@ -277,7 +246,10 @@ serve(async (req) => {
     if (!audioUrl) {
       console.error('Missing required input_audio (no audio provided or synthesized)');
       return new Response(
-        JSON.stringify({ success: false, error: 'input_audio is required. Provide input_audio_url or audioBase64, or send text to synthesize TTS.' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Audio input required in WAV format. Please upload a .wav file or provide text for WAV TTS synthesis.' 
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }

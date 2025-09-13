@@ -97,6 +97,10 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
   const [selectedVoice, setSelectedVoice] = useState('en-US-female');
   const [isProcessingMotion, setIsProcessingMotion] = useState(false);
   const [isProcessingSpeech, setIsProcessingSpeech] = useState(false);
+  const [audioMode, setAudioMode] = useState<'tts' | 'upload'>('tts');
+  const [uploadedAudioFile, setUploadedAudioFile] = useState<string>('');
+  const [speechDuration, setSpeechDuration] = useState<5 | 10 | 15>(5);
+  const [speechQuality, setSpeechQuality] = useState<'high' | 'mid'>('high');
 const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const [speechVideos, setSpeechVideos] = useState<any[]>([]);
   const [selectedMotionId, setSelectedMotionId] = useState<string>('');
@@ -637,9 +641,41 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
     }
   ];
 
+  const handleAudioUpload = async (file: File) => {
+    try {
+      // Validate file type
+      if (!file.type.includes('wav') && !file.name.toLowerCase().endsWith('.wav')) {
+        toast.error('Please upload a WAV audio file (.wav format required)');
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}/speech-audio/${Date.now()}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('generated-content')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('generated-content').getPublicUrl(fileName);
+      setUploadedAudioFile(data.publicUrl);
+      toast.success('WAV audio file uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading audio file:', error);
+      toast.error('Failed to upload audio file');
+    }
+  };
+
   const handleSpeechToVideo = async () => {
-    if (!speechText.trim()) {
+    // Validation based on audio mode
+    if (audioMode === 'tts' && !speechText.trim()) {
       toast.error('Please enter text for speech-to-video generation.');
+      return;
+    }
+
+    if (audioMode === 'upload' && !uploadedAudioFile) {
+      toast.error('Please upload a WAV audio file.');
       return;
     }
 
@@ -652,15 +688,24 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
     setIsProcessingSpeech(true);
 
     try {
-      console.log('Generating speech-to-video:', speechText);
+      console.log('Generating speech-to-video with mode:', audioMode);
+      
+      const requestBody: any = {
+        input_image_url: uploadedImage,
+        duration: speechDuration,
+        quality: speechQuality,
+      };
+
+      if (audioMode === 'tts') {
+        requestBody.text = speechText;
+        requestBody.voice = selectedVoice;
+      } else {
+        requestBody.input_audio_url = uploadedAudioFile;
+        requestBody.prompt = speechText || 'Speech-to-video animation';
+      }
       
       const { data, error } = await supabase.functions.invoke('higgsfield-speech-video', {
-        body: {
-          text: speechText,
-          input_image_url: uploadedImage,
-          voice: selectedVoice,
-          style: 'conversational'
-        }
+        body: requestBody
       });
 
       if (error) {
@@ -673,23 +718,27 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       
       toast.success('Speech video generated successfully!');
 
-      // Add to speech videos array and save to library
-      if (data?.videoUrl) {
-        const speechVideoContent: GeneratedContent = {
-          id: crypto.randomUUID(),
-          type: 'video_script',
-          title: `Speech Video - ${speechText.slice(0, 30)}...`,
-          content: speechText,
-          videoUrl: data.videoUrl,
-          imageUrl: uploadedImage,
-          created_at: new Date().toISOString(),
-          metadata: {
-            generationType: 'speech-to-video',
-            voiceSettings: selectedVoice,
-            originalImage: uploadedImage,
-            generatedAt: new Date().toISOString()
-          }
-        };
+        // Add to speech videos array and save to library
+        if (data?.videoUrl) {
+          const displayText = speechText || 'Speech-to-video animation';
+          const speechVideoContent: GeneratedContent = {
+            id: crypto.randomUUID(),
+            type: 'video_script',
+            title: `Speech Video - ${displayText.slice(0, 30)}...`,
+            content: displayText,
+            videoUrl: data.videoUrl,
+            imageUrl: uploadedImage,
+            created_at: new Date().toISOString(),
+            metadata: {
+              generationType: 'speech-to-video',
+              audioMode: audioMode,
+              voiceSettings: audioMode === 'tts' ? selectedVoice : 'uploaded',
+              originalImage: uploadedImage,
+              duration: speechDuration,
+              quality: speechQuality,
+              generatedAt: new Date().toISOString()
+            }
+          };
 
         // Add to speech videos array
         setSpeechVideos(prev => [...prev, data]);
@@ -1891,53 +1940,167 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Voice Recording</label>
-                    <VoiceRecorder
-                      onTranscription={(text) => setSpeechText(text)}
-                      placeholder="Record your voice to convert to speech video..."
-                      showTranscription={true}
-                    />
+                    <label className="text-sm font-medium mb-3 block">Audio Input Method</label>
+                    <Tabs value={audioMode} onValueChange={(value) => setAudioMode(value as 'tts' | 'upload')}>
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="tts" className="flex items-center gap-2">
+                          <Mic className="h-4 w-4" />
+                          Text-to-Speech
+                        </TabsTrigger>
+                        <TabsTrigger value="upload" className="flex items-center gap-2">
+                          <Upload className="h-4 w-4" />
+                          Upload WAV
+                        </TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="tts" className="space-y-4 mt-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Voice Recording</label>
+                          <VoiceRecorder
+                            onTranscription={(text) => setSpeechText(text)}
+                            placeholder="Record your voice to convert to speech video..."
+                            showTranscription={true}
+                          />
+                        </div>
+
+                        <div className="relative">
+                          <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                          </div>
+                          <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-background px-2 text-muted-foreground">
+                              Or type manually
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Speech Text</label>
+                          <Textarea
+                            placeholder="Enter the text you want to convert to speech video..."
+                            value={speechText}
+                            onChange={(e) => setSpeechText(e.target.value)}
+                            className="min-h-[120px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Voice Selection</label>
+                          <Select value={selectedVoice} onValueChange={setSelectedVoice}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select voice" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="en-US-female">English (US) - Female</SelectItem>
+                              <SelectItem value="en-US-male">English (US) - Male</SelectItem>
+                              <SelectItem value="en-UK-female">English (UK) - Female</SelectItem>
+                              <SelectItem value="en-UK-male">English (UK) - Male</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="upload" className="space-y-4 mt-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Upload WAV Audio File</label>
+                          <input
+                            type="file"
+                            accept="audio/wav,.wav"
+                            onChange={(e) => e.target.files?.[0] && handleAudioUpload(e.target.files[0])}
+                            className="hidden"
+                            id="wav-audio-upload"
+                          />
+                          {uploadedAudioFile ? (
+                            <div className="border rounded-lg p-4 bg-muted/50">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium">WAV Audio Uploaded</p>
+                                  <audio controls className="mt-2 w-full max-w-xs">
+                                    <source src={uploadedAudioFile} type="audio/wav" />
+                                    Your browser does not support audio playback.
+                                  </audio>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setUploadedAudioFile('')}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <label
+                              htmlFor="wav-audio-upload"
+                              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
+                            >
+                              <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                              <p className="text-sm text-muted-foreground text-center">
+                                Click to upload WAV audio file
+                              </p>
+                              <p className="text-xs text-muted-foreground/70 text-center px-4">
+                                Only .wav format • Maximum 20MB
+                              </p>
+                            </label>
+                          )}
+                        </div>
+
+                        {audioMode === 'upload' && (
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Description (Optional)</label>
+                            <Textarea
+                              placeholder="Describe what's happening in your audio..."
+                              value={speechText}
+                              onChange={(e) => setSpeechText(e.target.value)}
+                              className="min-h-[80px]"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              This description helps create better video animations.
+                            </p>
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
                   </div>
 
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Video Duration</label>
+                      <Select value={speechDuration.toString()} onValueChange={(value) => setSpeechDuration(Number(value) as 5 | 10 | 15)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5 seconds</SelectItem>
+                          <SelectItem value="10">10 seconds</SelectItem>
+                          <SelectItem value="15">15 seconds</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        Or type manually
-                      </span>
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Video Quality</label>
+                      <Select value={speechQuality} onValueChange={(value) => setSpeechQuality(value as 'high' | 'mid')}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High Quality</SelectItem>
+                          <SelectItem value="mid">Standard Quality</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Speech Text</label>
-                    <Textarea
-                      placeholder="Enter the text you want to convert to speech video..."
-                      value={speechText}
-                      onChange={(e) => setSpeechText(e.target.value)}
-                      className="min-h-[120px]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Voice Selection</label>
-                    <Select value={selectedVoice} onValueChange={setSelectedVoice}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select voice" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en-US-female">English (US) - Female</SelectItem>
-                        <SelectItem value="en-US-male">English (US) - Male</SelectItem>
-                        <SelectItem value="en-UK-female">English (UK) - Female</SelectItem>
-                        <SelectItem value="en-UK-male">English (UK) - Male</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
 
                   <Button
                     onClick={handleSpeechToVideo}
-                    disabled={!speechText.trim() || isProcessingSpeech}
+                    disabled={
+                      isProcessingSpeech || 
+                      !uploadedImage || 
+                      (audioMode === 'tts' && !speechText.trim()) ||
+                      (audioMode === 'upload' && !uploadedAudioFile)
+                    }
                     className="w-full"
                   >
                     {isProcessingSpeech ? (
@@ -1948,10 +2111,28 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                     ) : (
                       <>
                         <Mic className="h-4 w-4 mr-2" />
-                        Generate Speech Video
+                        Generate Speech Video ({audioMode === 'tts' ? 'TTS' : 'WAV'})
                       </>
                     )}
                   </Button>
+
+                  {(audioMode === 'tts' && !speechText.trim()) && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Enter text to enable speech-to-video generation
+                    </p>
+                  )}
+
+                  {(audioMode === 'upload' && !uploadedAudioFile) && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Upload a WAV audio file to enable generation
+                    </p>
+                  )}
+
+                  {!uploadedImage && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Upload an image above to enable speech-to-video generation
+                    </p>
+                  )}
 
                   {speechVideos.length > 0 && (
                     <div>
