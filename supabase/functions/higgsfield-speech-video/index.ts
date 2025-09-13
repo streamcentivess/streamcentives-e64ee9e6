@@ -73,46 +73,102 @@ serve(async (req) => {
       console.log('Audio uploaded. URL:', audioUrl);
     }
 
-    // If still no audio but we have text, synthesize TTS via Hugging Face
+    // If still no audio but we have text, synthesize TTS (prefer ElevenLabs, fallback to Hugging Face)
     if (!audioUrl && finalPrompt) {
+      // 1) Try ElevenLabs first if API key is configured
       try {
-        const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
-        if (!hfToken) {
-          console.warn('HUGGING_FACE_ACCESS_TOKEN not configured; cannot synthesize audio from text.');
-        } else {
-          console.log('Generating TTS audio from text using Hugging Face...');
-          const ttsResponse = await fetch('https://api-inference.huggingface.co/models/espnet/kan-bayashi_ljspeech_vits', {
+        const xiApiKey = Deno.env.get('ELEVENLABS_API_KEY');
+        if (xiApiKey) {
+          console.log('Generating TTS audio from text using ElevenLabs...');
+          const voiceMap: Record<string, string> = {
+            'en-US-female': '9BWtsMINqrJLrRacOk9x', // Aria
+            'en-US-male': 'cjVigY5qzO86Huf0OWal',   // Eric
+            'en-UK-female': 'XB0fDUnXU5powFXDhCwa', // Charlotte
+            'en-UK-male': 'onwK4e9ZLuTAKqWW03F9',   // Daniel
+          };
+          const selected = (voice && typeof voice === 'string') ? voice : 'en-US-female';
+          const voiceId = voiceMap[selected] || voiceMap['en-US-female'];
+
+          const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${hfToken}`,
+              'xi-api-key': xiApiKey,
               'Content-Type': 'application/json',
-              'Accept': 'audio/wav'
+              'Accept': 'audio/mpeg',
             },
-            body: JSON.stringify({ inputs: finalPrompt })
+            body: JSON.stringify({
+              text: finalPrompt,
+              model_id: 'eleven_turbo_v2_5',
+            }),
           });
 
-          if (ttsResponse.ok) {
-            const ttsArrayBuffer = await ttsResponse.arrayBuffer();
-            const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
+          if (elevenRes.ok) {
+            const mp3ArrayBuffer = await elevenRes.arrayBuffer();
+            const mp3FileName = `higgsfield-tts-${Date.now()}.mp3`;
             const { error: ttsUploadError } = await supabase.storage
               .from('generated-content')
-              .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
+              .upload(mp3FileName, mp3ArrayBuffer, { contentType: 'audio/mpeg' });
             if (ttsUploadError) {
-              console.error('TTS upload error:', ttsUploadError);
+              console.error('TTS upload error (ElevenLabs):', ttsUploadError);
               throw new Error('Failed to upload synthesized audio to storage');
             }
             const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
               .from('generated-content')
-              .getPublicUrl(ttsFileName);
+              .getPublicUrl(mp3FileName);
             audioUrl = ttsPublicUrl;
-            console.log('TTS audio generated and uploaded. URL:', audioUrl);
+            console.log('TTS audio (ElevenLabs) generated and uploaded. URL:', audioUrl);
           } else {
-            const errText = await ttsResponse.text();
-            console.error('TTS generation failed:', errText);
+            const errText = await elevenRes.text();
+            console.error('ElevenLabs TTS generation failed:', errText);
           }
+        } else {
+          console.warn('ELEVENLABS_API_KEY not configured; will try Hugging Face.');
         }
       } catch (e) {
-        console.error('TTS generation error:', e);
+        console.error('ElevenLabs TTS generation error:', e);
+      }
+
+      // 2) Fallback to Hugging Face if ElevenLabs not available or failed
+      if (!audioUrl) {
+        try {
+          const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
+          if (!hfToken) {
+            console.warn('HUGGING_FACE_ACCESS_TOKEN not configured; cannot synthesize audio from text.');
+          } else {
+            console.log('Generating TTS audio from text using Hugging Face...');
+            const ttsResponse = await fetch('https://api-inference.huggingface.co/models/espnet/kan-bayashi_ljspeech_vits', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${hfToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'audio/wav'
+              },
+              body: JSON.stringify({ inputs: finalPrompt })
+            });
+
+            if (ttsResponse.ok) {
+              const ttsArrayBuffer = await ttsResponse.arrayBuffer();
+              const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
+              const { error: ttsUploadError } = await supabase.storage
+                .from('generated-content')
+                .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
+              if (ttsUploadError) {
+                console.error('TTS upload error (HF):', ttsUploadError);
+                throw new Error('Failed to upload synthesized audio to storage');
+              }
+              const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
+                .from('generated-content')
+                .getPublicUrl(ttsFileName);
+              audioUrl = ttsPublicUrl;
+              console.log('TTS audio (HF) generated and uploaded. URL:', audioUrl);
+            } else {
+              const errText = await ttsResponse.text();
+              console.error('Hugging Face TTS generation failed:', errText);
+            }
+          }
+        } catch (e) {
+          console.error('Hugging Face TTS generation error:', e);
+        }
       }
     }
 
