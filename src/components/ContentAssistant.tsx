@@ -1020,13 +1020,13 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
             <div className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">HiggsField Motion Editor</CardTitle>
+                  <CardTitle className="text-sm">Streamcentives Suite</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Image Upload Section */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Upload Image for Motion</label>
-                    <div className="space-y-3">
+                    <div className="relative w-full">
                       <input
                         type="file"
                         accept="image/*"
@@ -1034,33 +1034,49 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                         className="hidden"
                         id="motion-image-upload"
                       />
-                      <label
-                        htmlFor="motion-image-upload"
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
-                      >
-                        <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground text-center">
-                          Click to upload image<br />
-                          <span className="text-xs">JPG, PNG, WebP (1024x1024+ recommended)</span>
-                        </p>
-                      </label>
-
-                      {uploadedImage && (
-                        <div className="relative">
+                      
+                      {uploadedImage ? (
+                        <div className="relative w-full">
                           <img
                             src={uploadedImage}
                             alt="Uploaded for motion"
-                            className="w-full h-48 object-cover rounded-lg"
+                            className="w-full h-64 object-cover rounded-lg"
                           />
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="absolute top-2 right-2"
-                            onClick={() => setUploadedImage('')}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center group">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => document.getElementById('motion-image-upload')?.click()}
+                              >
+                                <Upload className="h-4 w-4 mr-1" />
+                                Replace
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => setUploadedImage('')}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
                         </div>
+                      ) : (
+                        <label
+                          htmlFor="motion-image-upload"
+                          className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
+                        >
+                          <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                          <p className="text-sm text-muted-foreground text-center mb-2">
+                            Click to upload image
+                          </p>
+                          <p className="text-xs text-muted-foreground/70 text-center">
+                            JPG, PNG, WebP • 1024x1024+ recommended<br />
+                            Maximum file size: 20MB
+                          </p>
+                        </label>
                       )}
                     </div>
                   </div>
