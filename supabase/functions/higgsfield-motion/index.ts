@@ -68,93 +68,80 @@ serve(async (req) => {
     
     console.log('HiggsField job set created:', jobSetId);
 
-    // Poll for completion using job-sets endpoint
-    let completed = false;
-    let attempts = 0;
-    const maxAttempts = 120; // 10 minutes timeout
-    
-    while (!completed && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-      
-      const statusResponse = await fetch(`https://platform.higgsfield.ai/v1/job-sets/${jobSetId}`, {
-        headers: {
-          'hf-api-key': higgsFieldApiKey,
-          'hf-secret': higgsFieldSecret,
-        },
-      });
+    // Kick off background polling + upload, and return immediately
+    EdgeRuntime.waitUntil((async () => {
+      try {
+        let attempts = 0;
+        const maxAttempts = 120; // up to ~10 minutes
+        const pollDelayMs = 5000;
 
-      if (!statusResponse.ok) {
-        console.error('Status check failed:', statusResponse.status);
-        attempts++;
-        continue;
-      }
-
-      const statusData = await statusResponse.json();
-      console.log('Status check:', statusData);
-      
-      // Check if all jobs are completed
-      const allJobsCompleted = statusData.jobs && statusData.jobs.every(job => 
-        job.status === 'completed' || job.status === 'failed'
-      );
-      
-      if (allJobsCompleted) {
-        completed = true;
-        
-        // Find the first successful job with results
-        const successfulJob = statusData.jobs.find(job => 
-          job.status === 'completed' && job.results && job.results.raw
-        );
-        
-        if (!successfulJob) {
-          throw new Error('No successful video generation found');
-        }
-        
-        // Initialize Supabase client
+        // Initialize Supabase client once
         const supabase = createClient(
           Deno.env.get('SUPABASE_URL') ?? '',
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
-        // Download and upload video to Supabase Storage
-        const videoResponse = await fetch(successfulJob.results.raw.url);
-        const videoBlob = await videoResponse.blob();
-        const videoArrayBuffer = await videoBlob.arrayBuffer();
-        
-        const fileName = `higgsfield-motion-${Date.now()}.mp4`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('generated-content')
-          .upload(fileName, videoArrayBuffer, {
-            contentType: 'video/mp4',
+        while (attempts < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, pollDelayMs));
+
+          const statusResponse = await fetch(`https://platform.higgsfield.ai/v1/job-sets/${jobSetId}`, {
+            headers: {
+              'hf-api-key': higgsFieldApiKey,
+              'hf-secret': higgsFieldSecret,
+            },
           });
 
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          throw new Error('Failed to upload video to storage');
+          if (!statusResponse.ok) {
+            console.error('Status check failed:', statusResponse.status);
+            attempts++;
+            continue;
+          }
+
+          const statusData = await statusResponse.json();
+          console.log('Status check:', statusData);
+
+          // If any job failed or flagged as nsfw, stop
+          const failed = statusData.jobs && statusData.jobs.some((job: any) => job.status === 'failed' || job.status === 'nsfw');
+          if (failed) {
+            console.error('HiggsField job failed:', jobSetId);
+            break;
+          }
+
+          // Find the first successful job with results
+          const successfulJob = statusData.jobs?.find((job: any) => job.status === 'completed' && job.results?.raw?.url);
+          if (successfulJob) {
+            const videoResponse = await fetch(successfulJob.results.raw.url);
+            const videoBlob = await videoResponse.blob();
+            const videoArrayBuffer = await videoBlob.arrayBuffer();
+
+            const filePath = `higgsfield-motion/${jobSetId}.mp4`;
+            const { error: uploadError } = await supabase.storage
+              .from('generated-content')
+              .upload(filePath, videoArrayBuffer, {
+                contentType: 'video/mp4',
+                upsert: true,
+              });
+
+            if (uploadError) {
+              console.error('Upload error:', uploadError);
+            } else {
+              console.log('Uploaded generated video to storage at', filePath);
+            }
+            break;
+          }
+
+          attempts++;
         }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('generated-content')
-          .getPublicUrl(fileName);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            videoUrl: publicUrl,
-            jobSetId: jobSetId,
-            motionId: motionId
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } else if (statusData.jobs && statusData.jobs.some(job => job.status === 'failed')) {
-        throw new Error('Image-to-video generation failed');
+      } catch (bgErr) {
+        console.error('Background processing error:', bgErr);
       }
-      
-      attempts++;
-    }
+    })());
 
-    if (!completed) {
-      throw new Error('Image-to-video generation timeout');
-    }
+    // Return immediately with jobSetId so client can poll status
+    return new Response(
+      JSON.stringify({ success: true, jobSetId, motionId }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
     console.error('HiggsField motion error:', error);

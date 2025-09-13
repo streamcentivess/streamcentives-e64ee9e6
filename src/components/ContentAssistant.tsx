@@ -350,38 +350,75 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
           imageUrl: targetImageUrl,
           motionId: selectedMotionId,
           prompt: motionPrompt || `Apply ${selectedMotionId} motion effect`,
-          type: 'image_to_video'
+          type: 'image2video'
         }
       });
 
       if (error) {
-        console.error('Error adding motion:', error);
-        
-        // Check if it's a HiggsField API timeout
+        console.error('Error starting motion job:', error);
         if (error.message?.includes('522') || error.message?.includes('timeout')) {
           setApiErrors(prev => ({ ...prev, motion: 'HiggsField service is temporarily unavailable. Please try again later.' }));
           toast.error('Motion service is temporarily down. Please try again in a few minutes.');
         } else {
-          toast.error('Failed to add motion to image. Please try again.');
+          toast.error('Failed to start motion job. Please try again.');
         }
         return;
       }
 
-      console.log('Motion video generated:', data);
-      
-      toast.success('Motion added successfully!');
-
-      // Add to motion videos array and switch to library tab
+      // If function returned the video immediately (rare), handle it
       if (data?.videoUrl) {
         setMotionVideos(prev => [...prev, {
           ...data,
           motionId: selectedMotionId,
           originalImage: targetImageUrl
         }]);
-        
-        // Automatically switch to library tab to show the generated content
         setActiveTab('library');
+        toast.success('Motion video generated!');
+        return;
       }
+
+      // Otherwise, poll for completion using jobSetId
+      const jobSetId = data?.jobSetId;
+      if (!jobSetId) {
+        toast.error('Failed to start generation. Missing job id.');
+        return;
+      }
+
+      toast.message('Processing started', { description: 'Your motion video is being generated. This can take 30–60 seconds.' });
+
+      const pollIntervalMs = 5000;
+      const maxAttempts = 120; // up to ~10 minutes
+
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await new Promise((r) => setTimeout(r, pollIntervalMs));
+        const { data: statusData, error: statusError } = await supabase.functions.invoke('higgsfield-motion-status', {
+          body: { jobSetId }
+        });
+
+        if (statusError) {
+          console.warn('Status check error:', statusError);
+          continue;
+        }
+
+        if (statusData?.status === 'completed' && statusData?.videoUrl) {
+          setMotionVideos(prev => [...prev, {
+            ...statusData,
+            jobSetId,
+            motionId: selectedMotionId,
+            originalImage: targetImageUrl
+          }]);
+          setActiveTab('library');
+          toast.success('Motion video ready!');
+          return;
+        }
+
+        if (statusData?.status === 'failed') {
+          toast.error('Generation failed. Try a different image or template.');
+          return;
+        }
+      }
+
+      toast.error('Timed out while generating video. Please try again.');
     } catch (error) {
       console.error('Exception during motion generation:', error);
       setApiErrors(prev => ({ ...prev, motion: 'Service temporarily unavailable. Please try again later.' }));
