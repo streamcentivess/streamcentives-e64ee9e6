@@ -89,8 +89,9 @@ serve(async (req) => {
           const selected = (voice && typeof voice === 'string') ? voice : 'en-US-female';
           const voiceId = voiceMap[selected] || voiceMap['en-US-female'];
 
-          const params = new URLSearchParams({ output_format: 'wav' });
-          const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?${params.toString()}`, {
+          // Try STREAM with PCM WAV first
+          const paramsPcm = new URLSearchParams({ output_format: 'pcm_16000' });
+          let elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?${paramsPcm.toString()}`, {
             method: 'POST',
             headers: {
               'xi-api-key': xiApiKey,
@@ -103,29 +104,64 @@ serve(async (req) => {
             }),
           });
 
-          if (elevenRes.ok) {
-            const ct = elevenRes.headers.get('content-type') || '';
+          const tryUploadIfWav = async (res: Response, label: string) => {
+            if (!res.ok) return false;
+            const ct = res.headers.get('content-type') || '';
             if (!ct.includes('wav')) {
-              console.warn('ElevenLabs STREAM endpoint returned non-WAV content-type:', ct, '— will fallback to Hugging Face.');
-            } else {
-              const wavArrayBuffer = await elevenRes.arrayBuffer();
-              const wavFileName = `higgsfield-tts-${Date.now()}.wav`;
-              const { error: ttsUploadError } = await supabase.storage
-                .from('generated-content')
-                .upload(wavFileName, wavArrayBuffer, { contentType: 'audio/wav' });
-              if (ttsUploadError) {
-                console.error('TTS upload error (ElevenLabs):', ttsUploadError);
-                throw new Error('Failed to upload synthesized audio to storage');
-              }
-              const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
-                .from('generated-content')
-                .getPublicUrl(wavFileName);
-              audioUrl = ttsPublicUrl;
-              console.log('TTS audio (ElevenLabs STREAM WAV) generated and uploaded. URL:', audioUrl);
+              console.warn(`ElevenLabs ${label} returned non-WAV content-type:`, ct);
+              return false;
             }
-          } else {
+            const wavArrayBuffer = await res.arrayBuffer();
+            const wavFileName = `higgsfield-tts-${Date.now()}.wav`;
+            const { error: ttsUploadError } = await supabase.storage
+              .from('generated-content')
+              .upload(wavFileName, wavArrayBuffer, { contentType: 'audio/wav' });
+            if (ttsUploadError) {
+              console.error('TTS upload error (ElevenLabs):', ttsUploadError);
+              throw new Error('Failed to upload synthesized audio to storage');
+            }
+            const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
+              .from('generated-content')
+              .getPublicUrl(wavFileName);
+            audioUrl = ttsPublicUrl;
+            console.log(`TTS audio (${label}) generated and uploaded. URL:`, audioUrl);
+            return true;
+          };
+
+          let gotWav = await tryUploadIfWav(elevenRes, 'STREAM pcm_16000');
+
+          // Fallback 1: STREAM with plain WAV container
+          if (!gotWav) {
+            const paramsWav = new URLSearchParams({ output_format: 'wav' });
+            elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?${paramsWav.toString()}`, {
+              method: 'POST',
+              headers: {
+                'xi-api-key': xiApiKey,
+                'Content-Type': 'application/json',
+                'Accept': 'audio/wav',
+              },
+              body: JSON.stringify({ text: finalPrompt, model_id: 'eleven_turbo_v2_5' }),
+            });
+            gotWav = await tryUploadIfWav(elevenRes, 'STREAM wav');
+          }
+
+          // Fallback 2: Non-stream endpoint with PCM
+          if (!gotWav) {
+            elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+              method: 'POST',
+              headers: {
+                'xi-api-key': xiApiKey,
+                'Content-Type': 'application/json',
+                'Accept': 'audio/wav',
+              },
+              body: JSON.stringify({ text: finalPrompt, model_id: 'eleven_turbo_v2_5', output_format: 'pcm_16000' }),
+            });
+            gotWav = await tryUploadIfWav(elevenRes, 'PCM 16000');
+          }
+
+          if (!gotWav) {
             const errText = await elevenRes.text();
-            console.error('ElevenLabs TTS generation failed:', errText);
+            console.warn('ElevenLabs TTS could not provide WAV after fallbacks. Last response:', errText);
           }
         } else {
           console.warn('ELEVENLABS_API_KEY not configured; will try Hugging Face.');
@@ -147,7 +183,9 @@ serve(async (req) => {
               headers: {
                 'Authorization': `Bearer ${hfToken}`,
                 'Content-Type': 'application/json',
-                'Accept': 'audio/wav'
+                'Accept': 'audio/wav',
+                'x-wait-for-model': 'true',
+                'x-use-cache': 'false'
               },
               body: JSON.stringify({ inputs: finalPrompt })
             });
