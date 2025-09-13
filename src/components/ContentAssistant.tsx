@@ -191,15 +191,40 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
 
       if (error) {
         console.error('Error saving motion video to database:', error);
-        return null;
+      } else {
+        console.log('Motion video saved to database:', data);
       }
-
-      return data;
     } catch (error) {
-      console.error('Error saving motion video to database:', error);
-      return null;
+      console.error('Exception saving motion video:', error);
     }
   };
+
+  const saveSpeechVideoToDatabase = async (videoData: GeneratedContent) => {
+    try {
+      const { data, error } = await supabase
+        .from('ai_generated_content')
+        .insert({
+          user_id: user?.id,
+          type: 'speech_video',
+          title: videoData.title,
+          content: videoData.content,
+          download_url: videoData.videoUrl,
+          image_url: videoData.imageUrl,
+          metadata: videoData.metadata
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving speech video to database:', error);
+      } else {
+        console.log('Speech video saved to database:', data);
+      }
+    } catch (error) {
+      console.error('Exception saving speech video:', error);
+    }
+  };
+
 
   const loadGeneratedContent = async () => {
     if (!user) return;
@@ -814,6 +839,8 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
         
         // Save to generated content library
         setGeneratedContent(prev => [speechVideoContent, ...prev]);
+        // Save to database for persistence
+        await saveSpeechVideoToDatabase(speechVideoContent);
         
         // Save to localStorage for persistence
         const existing = localStorage.getItem(`ai_content_${user.id}`);

@@ -83,177 +83,66 @@ serve(async (req) => {
       }
     }
 
-    // Generate TTS if no audio provided
+    // Only use OpenAI TTS for reliable audio generation
     if (!audioUrl && finalPrompt) {
-      console.log('Generating TTS audio from text...');
+      console.log('Generating TTS audio from text using OpenAI...');
       
-      // Try ElevenLabs first
-      const xiApiKey = Deno.env.get('ELEVENLABS_API_KEY');
-      if (xiApiKey) {
-        try {
-          console.log('Using ElevenLabs TTS...');
-          const voiceId = '9BWtsMINqrJLrRacOk9x'; // Default Aria voice
-          
-          const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-            method: 'POST',
-            headers: {
-              'xi-api-key': xiApiKey,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              text: finalPrompt,
-              model_id: 'eleven_turbo_v2_5',
-              output_format: 'wav'
-            }),
-          });
-
-          if (elevenRes.ok) {
-            const audioArrayBuffer = await elevenRes.arrayBuffer();
-            const audioFileName = `higgsfield-tts-${Date.now()}.wav`;
-            
-            const { error: ttsUploadError } = await supabase.storage
-              .from('generated-content')
-              .upload(audioFileName, audioArrayBuffer, { contentType: 'audio/wav' });
-              
-            if (!ttsUploadError) {
-              const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
-                .from('generated-content')
-                .getPublicUrl(audioFileName);
-              audioUrl = ttsPublicUrl;
-              console.log('ElevenLabs TTS audio generated and uploaded:', audioUrl);
-            }
-          }
-        } catch (e) {
-          console.error('ElevenLabs TTS error:', e);
-        }
-      }
-
-      // Fallback to Hugging Face if ElevenLabs failed
-      if (!audioUrl) {
-        const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
-        if (hfToken) {
-          try {
-            console.log('Using Hugging Face TTS fallback...');
-            const ttsResponse = await fetch('https://api-inference.huggingface.co/models/microsoft/speecht5_tts', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${hfToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ inputs: finalPrompt })
-            });
-            
-            console.log('HF TTS Response status:', ttsResponse.status);
-            console.log('HF TTS Response headers:', Object.fromEntries(ttsResponse.headers.entries()));
-            
-            if (ttsResponse.ok) {
-              const contentType = ttsResponse.headers.get('content-type') || '';
-              console.log('HF TTS Content-Type:', contentType);
-              
-              if (contentType.includes('audio/') || contentType.includes('application/octet-stream')) {
-                const ttsArrayBuffer = await ttsResponse.arrayBuffer();
-                console.log('HF TTS Audio buffer size:', ttsArrayBuffer.byteLength);
-                
-                if (ttsArrayBuffer.byteLength > 0) {
-                  const ttsFileName = `higgsfield-tts-hf-${Date.now()}.wav`;
-                  
-                  const { error: ttsUploadError } = await supabase.storage
-                    .from('generated-content')
-                    .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
-                    
-                  if (!ttsUploadError) {
-                    const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
-                      .from('generated-content')
-                      .getPublicUrl(ttsFileName);
-                    audioUrl = ttsPublicUrl;
-                    console.log('Hugging Face TTS audio generated and uploaded:', audioUrl);
-                  } else {
-                    console.error('HF TTS upload error:', ttsUploadError);
-                  }
-                } else {
-                  console.warn('HF TTS returned empty audio buffer');
-                }
-              } else {
-                const responseText = await ttsResponse.text();
-                console.error('HF TTS returned non-audio response:', responseText);
-              }
-            } else {
-              const errorText = await ttsResponse.text();
-              console.error('HF TTS request failed with status:', ttsResponse.status, 'Response:', errorText);
-            }
-          } catch (e) {
-            console.error('Hugging Face TTS error:', e);
-          }
-        } else {
-          console.warn('HUGGING_FACE_ACCESS_TOKEN not configured; skipping HF TTS fallback.');
-        }
-      }
-    }
-    // Final fallback: OpenAI TTS if still no audio
-    if (!audioUrl) {
       const oaiKey = Deno.env.get('OPENAI_API_KEY');
-      if (oaiKey) {
-        try {
-          console.log('Generating TTS audio from text using OpenAI...');
-          const voiceStr = (voice && typeof voice === 'string') ? String(voice).toLowerCase() : '';
-          const openaiVoice = voiceStr.includes('female') ? 'nova' : 'alloy';
-          
-          console.log('OpenAI TTS request:', {
+      if (!oaiKey) {
+        throw new Error('OpenAI API key not configured');
+      }
+      
+      try {
+        const voiceStr = (voice && typeof voice === 'string') ? String(voice).toLowerCase() : '';
+        const openaiVoice = voiceStr.includes('female') ? 'nova' : 'alloy';
+        
+        const oaiRes = await fetch('https://api.openai.com/v1/audio/speech', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${oaiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             model: 'tts-1',
             input: finalPrompt,
             voice: openaiVoice,
             response_format: 'wav'
-          });
-          
-          const oaiRes = await fetch('https://api.openai.com/v1/audio/speech', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${oaiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: 'tts-1',
-              input: finalPrompt,
-              voice: openaiVoice,
-              response_format: 'wav'
-            })
-          });
+          })
+        });
 
-          console.log('OpenAI TTS Response status:', oaiRes.status);
-          console.log('OpenAI TTS Response headers:', Object.fromEntries(oaiRes.headers.entries()));
-
-          if (oaiRes.ok) {
-            const ttsArrayBuffer = await oaiRes.arrayBuffer();
-            console.log('OpenAI TTS Audio buffer size:', ttsArrayBuffer.byteLength);
-            
-            if (ttsArrayBuffer.byteLength > 0) {
-              const ttsFileName = `higgsfield-tts-openai-${Date.now()}.wav`;
-              const { error: ttsUploadError } = await supabase.storage
-                .from('generated-content')
-                .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
-              if (ttsUploadError) {
-                console.error('TTS upload error (OpenAI):', ttsUploadError);
-              } else {
-                const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
-                  .from('generated-content')
-                  .getPublicUrl(ttsFileName);
-                audioUrl = ttsPublicUrl;
-                console.log('OpenAI TTS audio generated and uploaded. URL:', audioUrl);
-              }
-            } else {
-              console.warn('OpenAI TTS returned empty audio buffer');
-            }
-          } else {
-            const errorText = await oaiRes.text();
-            console.error('OpenAI TTS request failed:', oaiRes.status, errorText);
-          }
-        } catch (e) {
-          console.error('OpenAI TTS error:', e);
+        if (!oaiRes.ok) {
+          const errorText = await oaiRes.text();
+          throw new Error(`OpenAI TTS failed: ${oaiRes.status} ${errorText}`);
         }
-      } else {
-        console.warn('OPENAI_API_KEY not configured; skipping OpenAI TTS fallback.');
+
+        const ttsArrayBuffer = await oaiRes.arrayBuffer();
+        if (ttsArrayBuffer.byteLength === 0) {
+          throw new Error('OpenAI TTS returned empty audio');
+        }
+        
+        const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
+        const { error: ttsUploadError } = await supabase.storage
+          .from('generated-content')
+          .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
+          
+        if (ttsUploadError) {
+          throw new Error(`Failed to upload TTS audio: ${ttsUploadError.message}`);
+        }
+        
+        const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
+          .from('generated-content')
+          .getPublicUrl(ttsFileName);
+        audioUrl = ttsPublicUrl;
+        
+        console.log('OpenAI TTS audio generated and uploaded successfully:', audioUrl);
+      } catch (e) {
+        console.error('OpenAI TTS error:', e);
+        throw new Error(`TTS generation failed: ${e.message}`);
       }
     }
+    // Final fallback: OpenAI TTS if still no audio
+    if (!audioUrl) {
+    // Generate TTS if no audio provided
 
     // Validate required inputs
     if (!input_image_url) {
