@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle } from "lucide-react";
@@ -12,6 +12,7 @@ export default function AwardXP() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const amountParam = searchParams.get('amount');
 
@@ -37,7 +38,7 @@ export default function AwardXP() {
           setResult(`${amt} XP added to your account`);
           toast({ title: 'XP Added', description: `${amt} XP has been added to your balance` });
           setTimeout(() => {
-            window.location.href = '/fan-dashboard';
+            navigate('/fan-dashboard');
           }, 1500);
         } else {
           throw new Error(data?.error || 'Failed to add XP');

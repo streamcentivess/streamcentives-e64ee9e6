@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Loader2, Zap } from "lucide-react";
@@ -12,6 +12,7 @@ export default function XPPurchaseSuccess() {
   const [xpAdded, setXpAdded] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const sessionId = searchParams.get('session_id');
 
@@ -39,7 +40,7 @@ export default function XPPurchaseSuccess() {
           
           // Refresh the page after a short delay to update XP balance
           setTimeout(() => {
-            window.location.reload();
+            navigate(0); // React Router way to reload
           }, 2000);
         } else {
           throw new Error(data?.error || "Failed to verify purchase");
