@@ -81,7 +81,7 @@ serve(async (req) => {
           console.warn('HUGGING_FACE_ACCESS_TOKEN not configured; cannot synthesize audio from text.');
         } else {
           console.log('Generating TTS audio from text using Hugging Face...');
-          const ttsResponse = await fetch('https://api-inference.huggingface.co/models/espnet/kan-bayashi-ljspeech_vits', {
+          const ttsResponse = await fetch('https://api-inference.huggingface.co/models/espnet/kan-bayashi_ljspeech_vits', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${hfToken}`,
