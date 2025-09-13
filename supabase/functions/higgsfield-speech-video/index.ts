@@ -58,7 +58,8 @@ serve(async (req) => {
     if (!audioUrl && audioBase64) {
       console.log('Uploading base64 audio to storage...');
       try {
-        const binaryString = atob(audioBase64);
+        const base64Payload = audioBase64.includes(',') ? audioBase64.split(',').pop()! : audioBase64;
+        const binaryString = atob(base64Payload);
         const audioBytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) audioBytes[i] = binaryString.charCodeAt(i);
         
@@ -83,9 +84,9 @@ serve(async (req) => {
       }
     }
 
-    // Use ElevenLabs TTS for reliable audio generation
+    // Use ElevenLabs TTS for reliable audio generation (WAV output for HiggsField)
     if (!audioUrl && finalPrompt) {
-      console.log('Generating TTS audio from text using ElevenLabs...');
+      console.log('Generating TTS audio from text using ElevenLabs (WAV)...');
       
       const elevenLabsKey = Deno.env.get('ELEVENLABS_API_KEY');
       if (!elevenLabsKey) {
@@ -106,15 +107,17 @@ serve(async (req) => {
           voiceId = 'IKne3meq5aSn9XLyUdCD'; // Charlie
         }
         
-        const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}` , {
           method: 'POST',
           headers: {
             'xi-api-key': elevenLabsKey,
             'Content-Type': 'application/json',
+            'Accept': 'audio/wav',
           },
           body: JSON.stringify({
             text: finalPrompt,
-            model_id: 'eleven_turbo_v2_5', // Fast, high quality model
+            model_id: 'eleven_turbo_v2_5',
+            output_format: 'wav',
             voice_settings: {
               stability: 0.5,
               similarity_boost: 0.8,
@@ -134,13 +137,13 @@ serve(async (req) => {
           throw new Error('ElevenLabs TTS returned empty audio');
         }
         
-        console.log('ElevenLabs audio generated, size:', ttsArrayBuffer.byteLength, 'bytes');
+        console.log('ElevenLabs WAV audio generated, size:', ttsArrayBuffer.byteLength, 'bytes');
         
-        const ttsFileName = `higgsfield-elevenlabs-tts-${Date.now()}.mp3`;
+        const ttsFileName = `higgsfield-elevenlabs-tts-${Date.now()}.wav`;
         const { error: ttsUploadError } = await supabase.storage
           .from('generated-content')
           .upload(ttsFileName, ttsArrayBuffer, { 
-            contentType: 'audio/mpeg',
+            contentType: 'audio/wav',
             cacheControl: '3600',
             upsert: false
           });
@@ -154,7 +157,7 @@ serve(async (req) => {
           .getPublicUrl(ttsFileName);
         audioUrl = ttsPublicUrl;
         
-        console.log('ElevenLabs TTS audio generated and uploaded successfully:', audioUrl);
+        console.log('ElevenLabs TTS WAV audio generated and uploaded successfully:', audioUrl);
       } catch (e) {
         console.error('ElevenLabs TTS error:', e);
         throw new Error(`TTS generation failed: ${e.message}`);
