@@ -37,8 +37,11 @@ import {
   Clock,
   Mic,
   Eye,
-  X
+  X,
+  User,
+  ChevronDown
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -677,26 +680,48 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
     }
   };
 
-  const postToProfile = async (content: GeneratedContent, editedImages?: string[]) => {
+  const postToProfile = async (content: GeneratedContent, editedImages?: string[], destination: 'profile' | 'community' | 'both' = 'profile') => {
     if (!user) return;
 
     try {
-      const imagesToPost = editedImages || (content.imageUrl ? [content.imageUrl] : []);
+      const imagesToPost = editedImages || (content.imageUrl ? [content.imageUrl] : content.videoUrl ? [] : []);
       
-      // Create post with carousel if multiple images
-      const postData = {
-        user_id: user.id,
-        content_type: imagesToPost.length > 0 ? 'image' : 'text',
-        content_url: imagesToPost[0] || '',
-        caption: content.content,
-        is_community_post: false,
-        is_cross_posted: isProSubscriber, // Auto cross-post for Pro users
-        carousel_urls: imagesToPost.length > 1 ? imagesToPost : null
-      };
+      // Handle video content
+      const contentType = content.videoUrl ? 'video' : (imagesToPost.length > 0 ? 'image' : 'text');
+      const contentUrl = content.videoUrl || imagesToPost[0] || '';
+      
+      const postsToCreate = [];
+      
+      // Create profile post
+      if (destination === 'profile' || destination === 'both') {
+        postsToCreate.push({
+          user_id: user.id,
+          content_type: contentType,
+          content_url: contentUrl,
+          caption: content.content,
+          is_community_post: false,
+          is_cross_posted: destination === 'both',
+          carousel_urls: imagesToPost.length > 1 ? imagesToPost : null
+        });
+      }
+      
+      // Create community post
+      if (destination === 'community' || destination === 'both') {
+        postsToCreate.push({
+          user_id: user.id,
+          content_type: contentType,
+          content_url: contentUrl,
+          caption: content.content,
+          is_community_post: true,
+          is_cross_posted: destination === 'both',
+          carousel_urls: imagesToPost.length > 1 ? imagesToPost : null
+        });
+      }
 
+      // Insert all posts
       const { error } = await supabase
         .from('posts')
-        .insert([postData]);
+        .insert(postsToCreate);
 
       if (error) throw error;
 
@@ -711,8 +736,8 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
         });
       }
 
-      toast.success('Posted to your profile!');
-      if (onClose) onClose();
+      const destinationText = destination === 'both' ? 'profile and community' : destination;
+      toast.success(`Posted to your ${destinationText}!`);
       
     } catch (error) {
       console.error('Error posting content:', error);
@@ -1217,10 +1242,29 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                             </Button>
                           )}
 
-                          <Button size="sm" onClick={() => postToProfile(content)}>
-                            <Share2 className="h-3 w-3 mr-1" />
-                            Post
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="sm">
+                                <Share2 className="h-3 w-3 mr-1" />
+                                Post
+                                <ChevronDown className="h-3 w-3 ml-1" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => postToProfile(content, undefined, 'profile')}>
+                                <User className="h-4 w-4 mr-2" />
+                                Post to Profile
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => postToProfile(content, undefined, 'community')}>
+                                <Users className="h-4 w-4 mr-2" />
+                                Post to Community
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => postToProfile(content, undefined, 'both')}>
+                                <Share2 className="h-4 w-4 mr-2" />
+                                Post to Both
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <Button size="sm" variant="destructive" onClick={() => deleteContent(content.id)}>
                             <Trash2 className="h-3 w-3 mr-1" />
                             Delete
@@ -1558,24 +1602,65 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                                     <Edit3 className="h-3 w-3 mr-1" />
                                     Edit
                                   </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      // Convert video to content format and post
-                                      const videoContent: GeneratedContent = {
-                                        id: crypto.randomUUID(),
-                                        type: 'video_idea',
-                                        title: `Motion Video - ${video.motionId}`,
-                                        content: `Generated motion video with ${video.motionId} effect`,
-                                        videoUrl: video.videoUrl,
-                                        created_at: new Date().toISOString()
-                                      };
-                                      postToProfile(videoContent);
-                                    }}
-                                  >
-                                    <Share2 className="h-3 w-3 mr-1" />
-                                    Post
-                                  </Button>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button size="sm">
+                                        <Share2 className="h-3 w-3 mr-1" />
+                                        Post
+                                        <ChevronDown className="h-3 w-3 ml-1" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          const videoContent: GeneratedContent = {
+                                            id: crypto.randomUUID(),
+                                            type: 'video_idea',
+                                            title: `Motion Video - ${video.motionId}`,
+                                            content: `Generated motion video with ${video.motionId} effect`,
+                                            videoUrl: video.videoUrl,
+                                            created_at: new Date().toISOString()
+                                          };
+                                          postToProfile(videoContent, undefined, 'profile');
+                                        }}
+                                      >
+                                        <User className="h-4 w-4 mr-2" />
+                                        Post to Profile
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          const videoContent: GeneratedContent = {
+                                            id: crypto.randomUUID(),
+                                            type: 'video_idea',
+                                            title: `Motion Video - ${video.motionId}`,
+                                            content: `Generated motion video with ${video.motionId} effect`,
+                                            videoUrl: video.videoUrl,
+                                            created_at: new Date().toISOString()
+                                          };
+                                          postToProfile(videoContent, undefined, 'community');
+                                        }}
+                                      >
+                                        <Users className="h-4 w-4 mr-2" />
+                                        Post to Community
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          const videoContent: GeneratedContent = {
+                                            id: crypto.randomUUID(),
+                                            type: 'video_idea',
+                                            title: `Motion Video - ${video.motionId}`,
+                                            content: `Generated motion video with ${video.motionId} effect`,
+                                            videoUrl: video.videoUrl,
+                                            created_at: new Date().toISOString()
+                                          };
+                                          postToProfile(videoContent, undefined, 'both');
+                                        }}
+                                      >
+                                        <Share2 className="h-4 w-4 mr-2" />
+                                        Post to Both
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 </div>
                               </div>
                             </CardContent>
@@ -1794,23 +1879,65 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                                   <Edit3 className="h-3 w-3 mr-1" />
                                   Edit
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  onClick={() => {
-                                    const videoContent: GeneratedContent = {
-                                      id: crypto.randomUUID(),
-                                      type: 'video_idea',
-                                      title: 'AI Speech Video',
-                                      content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
-                                      videoUrl: video.videoUrl,
-                                      created_at: new Date().toISOString()
-                                    };
-                                    postToProfile(videoContent);
-                                  }}
-                                >
-                                  <Share2 className="h-3 w-3 mr-1" />
-                                  Post
-                                </Button>
+                                <DropdownMenu>
+                                     <DropdownMenuTrigger asChild>
+                                       <Button size="sm">
+                                         <Share2 className="h-3 w-3 mr-1" />
+                                         Post
+                                         <ChevronDown className="h-3 w-3 ml-1" />
+                                       </Button>
+                                     </DropdownMenuTrigger>
+                                     <DropdownMenuContent>
+                                       <DropdownMenuItem
+                                         onClick={() => {
+                                           const videoContent: GeneratedContent = {
+                                             id: crypto.randomUUID(),
+                                             type: 'video_idea',
+                                             title: 'AI Speech Video',
+                                             content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
+                                             videoUrl: video.videoUrl,
+                                             created_at: new Date().toISOString()
+                                           };
+                                           postToProfile(videoContent, undefined, 'profile');
+                                         }}
+                                       >
+                                         <User className="h-4 w-4 mr-2" />
+                                         Post to Profile
+                                       </DropdownMenuItem>
+                                       <DropdownMenuItem
+                                         onClick={() => {
+                                           const videoContent: GeneratedContent = {
+                                             id: crypto.randomUUID(),
+                                             type: 'video_idea',
+                                             title: 'AI Speech Video',
+                                             content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
+                                             videoUrl: video.videoUrl,
+                                             created_at: new Date().toISOString()
+                                           };
+                                           postToProfile(videoContent, undefined, 'community');
+                                         }}
+                                       >
+                                         <Users className="h-4 w-4 mr-2" />
+                                         Post to Community
+                                       </DropdownMenuItem>
+                                       <DropdownMenuItem
+                                         onClick={() => {
+                                           const videoContent: GeneratedContent = {
+                                             id: crypto.randomUUID(),
+                                             type: 'video_idea',
+                                             title: 'AI Speech Video',
+                                             content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
+                                             videoUrl: video.videoUrl,
+                                             created_at: new Date().toISOString()
+                                           };
+                                           postToProfile(videoContent, undefined, 'both');
+                                         }}
+                                       >
+                                         <Share2 className="h-4 w-4 mr-2" />
+                                         Post to Both
+                                       </DropdownMenuItem>
+                                     </DropdownMenuContent>
+                                   </DropdownMenu>
                               </div>
                             </CardContent>
                           </Card>
