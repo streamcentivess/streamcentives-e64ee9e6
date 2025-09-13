@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -7,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Sparkles, 
   Image, 
@@ -26,11 +26,13 @@ import {
   Palette,
   Trash2,
   ImageIcon,
-  LayoutGrid
+  LayoutGrid,
+  Play,
+  Clock,
+  Mic
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { PhotoEditor } from './PhotoEditor';
 import { CarouselUpload } from './CarouselUpload';
@@ -77,6 +79,13 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
   const [isProSubscriber, setIsProSubscriber] = useState(false);
   const [previewContent, setPreviewContent] = useState<GeneratedContent[]>([]);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [motionPrompt, setMotionPrompt] = useState('');
+  const [speechText, setSpeechText] = useState('');
+  const [selectedVoice, setSelectedVoice] = useState('en-US-female');
+  const [isProcessingMotion, setIsProcessingMotion] = useState(false);
+  const [isProcessingSpeech, setIsProcessingSpeech] = useState(false);
+  const [motionVideos, setMotionVideos] = useState<any[]>([]);
+  const [speechVideos, setSpeechVideos] = useState<any[]>([]);
 
   useEffect(() => {
     checkProSubscription();
@@ -278,6 +287,88 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
     }
   };
 
+  const handleMotionEdit = async (imageUrl: string) => {
+    if (!motionPrompt.trim()) {
+      toast.error('Please enter a motion prompt to animate the image.');
+      return;
+    }
+
+    setIsProcessingMotion(true);
+
+    try {
+      console.log('Adding motion to image:', imageUrl);
+      
+      const { data, error } = await supabase.functions.invoke('higgsfield-motion', {
+        body: {
+          imageUrl: imageUrl,
+          prompt: motionPrompt,
+          type: 'image_to_video'
+        }
+      });
+
+      if (error) {
+        console.error('Error adding motion:', error);
+        toast.error('Failed to add motion to image. Please try again.');
+        return;
+      }
+
+      console.log('Motion video generated:', data);
+      
+      toast.success('Motion added successfully!');
+
+      // Add to motion videos array
+      if (data?.videoUrl) {
+        setMotionVideos(prev => [...prev, data]);
+      }
+    } catch (error) {
+      console.error('Exception during motion generation:', error);
+      toast.error('An unexpected error occurred while adding motion.');
+    } finally {
+      setIsProcessingMotion(false);
+    }
+  };
+
+  const handleSpeechToVideo = async () => {
+    if (!speechText.trim()) {
+      toast.error('Please enter text for speech-to-video generation.');
+      return;
+    }
+
+    setIsProcessingSpeech(true);
+
+    try {
+      console.log('Generating speech-to-video:', speechText);
+      
+      const { data, error } = await supabase.functions.invoke('higgsfield-speech-video', {
+        body: {
+          text: speechText,
+          voice: selectedVoice,
+          style: 'conversational'
+        }
+      });
+
+      if (error) {
+        console.error('Error generating speech video:', error);
+        toast.error('Failed to generate speech video. Please try again.');
+        return;
+      }
+
+      console.log('Speech video generated:', data);
+      
+      toast.success('Speech video generated successfully!');
+
+      // Add to speech videos array
+      if (data?.videoUrl) {
+        setSpeechVideos(prev => [...prev, data]);
+      }
+    } catch (error) {
+      console.error('Exception during speech video generation:', error);
+      toast.error('An unexpected error occurred while generating speech video.');
+    } finally {
+      setIsProcessingSpeech(false);
+    }
+  };
+
   const postToProfile = async (content: GeneratedContent, editedImages?: string[]) => {
     if (!user) return;
 
@@ -355,7 +446,7 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="generate" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
               Generate
@@ -367,6 +458,10 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
             <TabsTrigger value="editor" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
               Editor
+            </TabsTrigger>
+            <TabsTrigger value="speech-video" className="flex items-center gap-2">
+              <Mic className="h-4 w-4" />
+              Speech Video
             </TabsTrigger>
           </TabsList>
 
