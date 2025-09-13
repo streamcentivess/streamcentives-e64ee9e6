@@ -15,30 +15,36 @@ serve(async (req) => {
     const { text, voice = 'en-US-female', style = 'conversational' } = await req.json();
     
     const higgsFieldApiKey = Deno.env.get('HIGGSFIELD_API_KEY');
-    if (!higgsFieldApiKey) {
-      throw new Error('HiggsField API key not configured');
+    const higgsFieldSecret = Deno.env.get('HIGGSFIELD_SECRET');
+    
+    if (!higgsFieldApiKey || !higgsFieldSecret) {
+      throw new Error('HiggsField API credentials not configured');
     }
 
     if (!text) {
       throw new Error('Text is required for speech-to-video generation');
     }
 
-    console.log('Starting speech-to-video generation with HiggsField...');
+    console.log('Starting text2image_soul generation with HiggsField...');
+    console.log('Text input:', text);
 
-    // Create speech-to-video generation request
-    const createResponse = await fetch('https://api.higgsfield.ai/v1/generations', {
+    // For speech-to-video, we'll use text2image_soul for now since the docs show that endpoint
+    // This creates an avatar-style video from text
+    const createResponse = await fetch('https://platform.higgsfield.ai/v1/text2image_soul', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${higgsFieldApiKey}`,
+        'hf-api-key': higgsFieldApiKey,
+        'hf-secret': higgsFieldSecret,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        type: 'speech_to_video',
-        text: text,
-        voice: voice,
-        style: style,
-        duration: Math.min(Math.max(text.length / 10, 3), 30), // Dynamic duration based on text length
-        aspect_ratio: "16:9"
+        params: {
+          prompt: `Create a speaking avatar video saying: "${text}"`,
+          voice_style: voice,
+          speech_style: style,
+          enhance_prompt: true,
+          check_nsfw: true
+        }
       }),
     });
 
@@ -49,11 +55,11 @@ serve(async (req) => {
     }
 
     const createData = await createResponse.json();
-    const taskId = createData.id;
+    const jobSetId = createData.id;
     
-    console.log('HiggsField speech-to-video task created:', taskId);
+    console.log('HiggsField job set created:', jobSetId);
 
-    // Poll for completion
+    // Poll for completion using job-sets endpoint
     let completed = false;
     let attempts = 0;
     const maxAttempts = 120; // 10 minutes timeout for speech generation
@@ -61,9 +67,10 @@ serve(async (req) => {
     while (!completed && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
       
-      const statusResponse = await fetch(`https://api.higgsfield.ai/v1/generations/${taskId}`, {
+      const statusResponse = await fetch(`https://platform.higgsfield.ai/v1/job-sets/${jobSetId}`, {
         headers: {
-          'Authorization': `Bearer ${higgsFieldApiKey}`,
+          'hf-api-key': higgsFieldApiKey,
+          'hf-secret': higgsFieldSecret,
         },
       });
 
@@ -74,10 +81,24 @@ serve(async (req) => {
       }
 
       const statusData = await statusResponse.json();
-      console.log('Status check:', statusData.status);
+      console.log('Status check:', statusData);
       
-      if (statusData.status === 'completed') {
+      // Check if all jobs are completed
+      const allJobsCompleted = statusData.jobs && statusData.jobs.every(job => 
+        job.status === 'completed' || job.status === 'failed'
+      );
+      
+      if (allJobsCompleted) {
         completed = true;
+        
+        // Find the first successful job with results
+        const successfulJob = statusData.jobs.find(job => 
+          job.status === 'completed' && job.results && job.results.raw
+        );
+        
+        if (!successfulJob) {
+          throw new Error('No successful video generation found');
+        }
         
         // Initialize Supabase client
         const supabase = createClient(
@@ -86,7 +107,7 @@ serve(async (req) => {
         );
 
         // Download and upload video to Supabase Storage
-        const videoResponse = await fetch(statusData.output.video_url);
+        const videoResponse = await fetch(successfulJob.results.raw.url);
         const videoBlob = await videoResponse.blob();
         const videoArrayBuffer = await videoBlob.arrayBuffer();
         
@@ -110,13 +131,13 @@ serve(async (req) => {
           JSON.stringify({
             success: true,
             videoUrl: publicUrl,
-            taskId: taskId,
+            jobSetId: jobSetId,
             text: text,
             voice: voice
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
-      } else if (statusData.status === 'failed') {
+      } else if (statusData.jobs && statusData.jobs.some(job => job.status === 'failed')) {
         throw new Error('Speech-to-video generation failed');
       }
       
