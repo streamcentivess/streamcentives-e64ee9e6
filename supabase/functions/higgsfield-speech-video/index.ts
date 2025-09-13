@@ -165,6 +165,53 @@ serve(async (req) => {
         }
       }
     }
+    // Final fallback: OpenAI TTS if still no audio
+    if (!audioUrl) {
+      const oaiKey = Deno.env.get('OPENAI_API_KEY');
+      if (oaiKey) {
+        try {
+          console.log('Generating TTS audio from text using OpenAI...');
+          const voiceStr = (voice && typeof voice === 'string') ? String(voice).toLowerCase() : '';
+          const openaiVoice = voiceStr.includes('female') ? 'verse' : 'alloy';
+          const oaiRes = await fetch('https://api.openai.com/v1/audio/speech', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${oaiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'tts-1',
+              input: finalPrompt,
+              voice: openaiVoice,
+              response_format: 'wav'
+            })
+          });
+
+          if (oaiRes.ok) {
+            const ttsArrayBuffer = await oaiRes.arrayBuffer();
+            const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
+            const { error: ttsUploadError } = await supabase.storage
+              .from('generated-content')
+              .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
+            if (ttsUploadError) {
+              console.error('TTS upload error (OpenAI):', ttsUploadError);
+            } else {
+              const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
+                .from('generated-content')
+                .getPublicUrl(ttsFileName);
+              audioUrl = ttsPublicUrl;
+              console.log('OpenAI TTS audio generated and uploaded. URL:', audioUrl);
+            }
+          } else {
+            console.error('OpenAI TTS request failed:', await oaiRes.text());
+          }
+        } catch (e) {
+          console.error('OpenAI TTS error:', e);
+        }
+      } else {
+        console.warn('OPENAI_API_KEY not configured; skipping OpenAI TTS fallback.');
+      }
+    }
 
     // Validate required inputs
     if (!input_image_url) {
