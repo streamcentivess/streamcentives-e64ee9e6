@@ -48,7 +48,7 @@ serve(async (req) => {
             strength: 0.5
           }],
           input_images: [{
-            type: 'url',
+            type: 'image_url',
             image_url: imageUrl
           }],
           enhance_prompt: true,
