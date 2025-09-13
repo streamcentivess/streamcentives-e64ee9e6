@@ -36,7 +36,8 @@ import {
   Play,
   Clock,
   Mic,
-  Eye
+  Eye,
+  X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -99,6 +100,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const [selectedMotionCategory, setSelectedMotionCategory] = useState<string>('camera');
   const [showVideoEditor, setShowVideoEditor] = useState(false);
   const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const [apiErrors, setApiErrors] = useState<{[key: string]: string}>({});
   const [availableMotions, setAvailableMotions] = useState<any[]>([]);
   const [loadingMotions, setLoadingMotions] = useState(false);
@@ -1431,16 +1433,29 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                       <h3 className="text-sm font-medium mb-3">Generated Motion Videos</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {motionVideos.map((video, index) => (
-                          <Card key={index} className="overflow-hidden">
+                           <Card key={index} className="overflow-hidden">
                             <CardContent className="p-0">
-                              <video
-                                controls
-                                className="w-full h-32 object-cover"
-                                preload="metadata"
+                              <div 
+                                className="relative cursor-pointer group"
+                                onClick={() => {
+                                  setSelectedVideoUrl(video.videoUrl);
+                                  setShowVideoModal(true);
+                                }}
                               >
-                                <source src={video.videoUrl} type="video/mp4" />
-                                Your browser does not support the video tag.
-                              </video>
+                                <video
+                                  className="w-full h-32 object-cover"
+                                  preload="metadata"
+                                  muted
+                                >
+                                  <source src={video.videoUrl} type="video/mp4" />
+                                  Your browser does not support the video tag.
+                                </video>
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                  <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Play className="w-6 h-6 text-gray-800 ml-0.5" fill="currentColor" />
+                                  </div>
+                                </div>
+                              </div>
                               <div className="p-3 space-y-2">
                                 <Badge variant="outline" className="text-xs">
                                   {video.motionId || 'Custom Motion'}
@@ -1775,6 +1790,36 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                     Select This Template
                   </Button>
                 </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+        
+        {/* Video Modal */}
+        {showVideoModal && selectedVideoUrl && (
+          <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
+            <DialogContent className="max-w-4xl w-full h-[80vh] p-0 bg-black">
+              <div className="relative w-full h-full flex items-center justify-center">
+                <video
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-full"
+                  onLoadedMetadata={(e) => {
+                    // Focus the video element to enable keyboard controls
+                    (e.target as HTMLVideoElement).focus();
+                  }}
+                >
+                  <source src={selectedVideoUrl} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="absolute top-4 right-4 z-10"
+                  onClick={() => setShowVideoModal(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
