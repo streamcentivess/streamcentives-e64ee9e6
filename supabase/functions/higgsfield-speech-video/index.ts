@@ -254,7 +254,6 @@ serve(async (req) => {
         console.warn('OPENAI_API_KEY not configured; skipping OpenAI TTS fallback.');
       }
     }
-    }
 
     // Validate required inputs
     if (!input_image_url) {
