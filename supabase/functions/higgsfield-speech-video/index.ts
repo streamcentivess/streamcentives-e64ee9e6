@@ -21,7 +21,9 @@ serve(async (req) => {
       duration = 5,
       quality = 'high',
       enhance_prompt = true,
-      seed
+      seed,
+      voice,
+      style
     } = await req.json();
     
     const higgsFieldApiKey = Deno.env.get('HIGGSFIELD_API_KEY');
@@ -47,8 +49,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Ensure we have an audio URL if audioBase64 provided
+    // Ensure we have an audio URL
     let audioUrl = input_audio_url as string | undefined;
+
+    // If audioBase64 is provided, upload it
     if (!audioUrl && audioBase64) {
       console.log('Uploading base64 audio to Supabase storage...');
       const binaryString = atob(audioBase64);
@@ -67,6 +71,65 @@ serve(async (req) => {
         .getPublicUrl(audioFileName);
       audioUrl = uploadedAudioUrl;
       console.log('Audio uploaded. URL:', audioUrl);
+    }
+
+    // If still no audio but we have text, synthesize TTS via Hugging Face
+    if (!audioUrl && finalPrompt) {
+      try {
+        const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
+        if (!hfToken) {
+          console.warn('HUGGING_FACE_ACCESS_TOKEN not configured; cannot synthesize audio from text.');
+        } else {
+          console.log('Generating TTS audio from text using Hugging Face...');
+          const ttsResponse = await fetch('https://api-inference.huggingface.co/models/espnet/kan-bayashi-ljspeech_vits', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${hfToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'audio/wav'
+            },
+            body: JSON.stringify({ inputs: finalPrompt })
+          });
+
+          if (ttsResponse.ok) {
+            const ttsArrayBuffer = await ttsResponse.arrayBuffer();
+            const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
+            const { error: ttsUploadError } = await supabase.storage
+              .from('generated-content')
+              .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
+            if (ttsUploadError) {
+              console.error('TTS upload error:', ttsUploadError);
+              throw new Error('Failed to upload synthesized audio to storage');
+            }
+            const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
+              .from('generated-content')
+              .getPublicUrl(ttsFileName);
+            audioUrl = ttsPublicUrl;
+            console.log('TTS audio generated and uploaded. URL:', audioUrl);
+          } else {
+            const errText = await ttsResponse.text();
+            console.error('TTS generation failed:', errText);
+          }
+        }
+      } catch (e) {
+        console.error('TTS generation error:', e);
+      }
+    }
+
+    // Validate required params for Speak v2
+    if (!input_image_url) {
+      console.error('Missing required input_image_url');
+      return new Response(
+        JSON.stringify({ success: false, error: 'input_image_url is required for speech-to-video generation' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    if (!audioUrl) {
+      console.error('Missing required input_audio (no audio provided or synthesized)');
+      return new Response(
+        JSON.stringify({ success: false, error: 'input_audio is required. Provide input_audio_url or audioBase64, or send text to synthesize TTS.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
     }
 
     // Compose request body per Speak v2 spec

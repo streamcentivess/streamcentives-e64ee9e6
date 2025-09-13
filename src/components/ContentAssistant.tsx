@@ -643,6 +643,12 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       return;
     }
 
+    // Require an image to animate per HiggsField Speak v2 spec
+    if (!uploadedImage) {
+      toast.error('Please upload an image to animate.');
+      return;
+    }
+
     setIsProcessingSpeech(true);
 
     try {
@@ -651,6 +657,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       const { data, error } = await supabase.functions.invoke('higgsfield-speech-video', {
         body: {
           text: speechText,
+          input_image_url: uploadedImage,
           voice: selectedVoice,
           style: 'conversational'
         }
