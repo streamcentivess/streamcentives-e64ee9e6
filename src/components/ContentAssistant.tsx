@@ -1851,7 +1851,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
               setSelectedContent(null);
               toast.success('Images edited and saved!');
             }}
-            onCancel={() => {
+            onClose={() => {
               setShowPhotoEditor(false);
               setSelectedContent(null);
             }}
@@ -1861,13 +1861,12 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
         {/* Carousel Upload Modal */}
         {showCarouselUpload && (
           <CarouselUpload
-            onComplete={(urls) => {
+            onUploadComplete={() => {
               const carouselContent: GeneratedContent = {
                 id: crypto.randomUUID(),
-                type: 'carousel_post',
+                type: 'carousel',
                 title: 'Carousel Post',
                 content: 'Created carousel from uploaded images',
-                carouselUrls: urls,
                 created_at: new Date().toISOString()
               };
 
@@ -1902,7 +1901,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
               setSelectedVideoUrl('');
               toast.success('Video edited and saved!');
             }}
-            onCancel={() => {
+            onClose={() => {
               setShowVideoEditor(false);
               setSelectedVideoUrl('');
             }}
