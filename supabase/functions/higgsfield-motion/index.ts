@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl, prompt, type = 'image_to_video' } = await req.json();
+    const { imageUrl, prompt, motionId, type = 'image_to_video' } = await req.json();
     
     const higgsFieldApiKey = Deno.env.get('HIGGSFIELD_API_KEY');
     if (!higgsFieldApiKey) {
@@ -20,6 +20,22 @@ serve(async (req) => {
     }
 
     console.log(`Starting ${type} generation with HiggsField...`);
+    console.log('Motion ID:', motionId);
+
+    // Prepare request body
+    const requestBody: any = {
+      type: type,
+      prompt: prompt || "Add cinematic motion to this image",
+      image_url: imageUrl,
+      duration: 5, // 5 seconds duration for better quality
+      aspect_ratio: "16:9"
+    };
+
+    // Add motion ID if provided
+    if (motionId) {
+      requestBody.motion_id = motionId;
+      console.log('Using motion template:', motionId);
+    }
 
     // Create video generation request
     const createResponse = await fetch('https://api.higgsfield.ai/v1/generations', {
@@ -28,13 +44,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${higgsFieldApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        type: type,
-        prompt: prompt || "Add cinematic motion to this image",
-        image_url: imageUrl,
-        duration: 4, // 4 seconds duration
-        aspect_ratio: "16:9"
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!createResponse.ok) {

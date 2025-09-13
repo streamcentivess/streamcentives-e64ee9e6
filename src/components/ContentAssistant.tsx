@@ -85,8 +85,43 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
   const [selectedVoice, setSelectedVoice] = useState('en-US-female');
   const [isProcessingMotion, setIsProcessingMotion] = useState(false);
   const [isProcessingSpeech, setIsProcessingSpeech] = useState(false);
-  const [motionVideos, setMotionVideos] = useState<any[]>([]);
+const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const [speechVideos, setSpeechVideos] = useState<any[]>([]);
+  const [selectedMotionId, setSelectedMotionId] = useState<string>('');
+  const [uploadedImage, setUploadedImage] = useState<string>('');
+  const [selectedMotionCategory, setSelectedMotionCategory] = useState<string>('camera');
+
+  // Motion templates library
+  const motionTemplates = {
+    camera: [
+      { id: 'dolly-in', name: 'Dolly In', description: 'Smooth forward camera movement' },
+      { id: 'dolly-out', name: 'Dolly Out', description: 'Smooth backward camera movement' },
+      { id: 'crash-zoom', name: 'Crash Zoom', description: 'Dramatic zoom effect' },
+      { id: 'overhead-shot', name: 'Overhead Shot', description: 'Top-down camera movement' },
+      { id: 'pan-left', name: 'Pan Left', description: 'Horizontal left camera movement' },
+      { id: 'pan-right', name: 'Pan Right', description: 'Horizontal right camera movement' },
+      { id: 'tilt-up', name: 'Tilt Up', description: 'Vertical upward camera movement' },
+      { id: 'tilt-down', name: 'Tilt Down', description: 'Vertical downward camera movement' },
+      { id: 'rotate-cw', name: 'Rotate Clockwise', description: 'Clockwise camera rotation' },
+      { id: 'rotate-ccw', name: 'Rotate Counter-CW', description: 'Counter-clockwise rotation' }
+    ],
+    object: [
+      { id: 'object-float', name: 'Floating Motion', description: 'Gentle floating animation' },
+      { id: 'object-spin', name: 'Spin Animation', description: 'Object rotation effect' },
+      { id: 'object-bounce', name: 'Bounce Effect', description: 'Bouncing motion' },
+      { id: 'object-sway', name: 'Swaying Motion', description: 'Side-to-side movement' },
+      { id: 'object-pulse', name: 'Pulsing Effect', description: 'Scale in/out animation' },
+      { id: 'object-drift', name: 'Drift Motion', description: 'Smooth drifting movement' }
+    ],
+    environmental: [
+      { id: 'wind-effect', name: 'Wind Effect', description: 'Natural wind motion' },
+      { id: 'water-ripple', name: 'Water Ripples', description: 'Subtle water movement' },
+      { id: 'particle-float', name: 'Floating Particles', description: 'Ambient particle motion' },
+      { id: 'light-flicker', name: 'Light Flicker', description: 'Dynamic lighting effects' },
+      { id: 'fog-drift', name: 'Fog Drift', description: 'Atmospheric fog movement' },
+      { id: 'leaves-fall', name: 'Falling Leaves', description: 'Natural leaf animation' }
+    ]
+  };
 
   useEffect(() => {
     checkProSubscription();
@@ -288,21 +323,49 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
     }
   };
 
-  const handleMotionEdit = async (imageUrl: string) => {
-    if (!motionPrompt.trim()) {
-      toast.error('Please enter a motion prompt to animate the image.');
+  const handleImageUpload = async (file: File) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}/motion/${Date.now()}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('posts')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('posts').getPublicUrl(fileName);
+      setUploadedImage(data.publicUrl);
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+    }
+  };
+
+  const handleMotionEdit = async (imageUrl?: string) => {
+    const targetImageUrl = imageUrl || uploadedImage;
+    
+    if (!targetImageUrl) {
+      toast.error('Please upload an image first.');
+      return;
+    }
+
+    if (!selectedMotionId) {
+      toast.error('Please select a motion template.');
       return;
     }
 
     setIsProcessingMotion(true);
 
     try {
-      console.log('Adding motion to image:', imageUrl);
+      console.log('Adding motion to image:', targetImageUrl, 'with motion ID:', selectedMotionId);
       
       const { data, error } = await supabase.functions.invoke('higgsfield-motion', {
         body: {
-          imageUrl: imageUrl,
-          prompt: motionPrompt,
+          imageUrl: targetImageUrl,
+          motionId: selectedMotionId,
+          prompt: motionPrompt || `Apply ${selectedMotionId} motion effect`,
           type: 'image_to_video'
         }
       });
@@ -319,7 +382,11 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
 
       // Add to motion videos array
       if (data?.videoUrl) {
-        setMotionVideos(prev => [...prev, data]);
+        setMotionVideos(prev => [...prev, {
+          ...data,
+          motionId: selectedMotionId,
+          originalImage: targetImageUrl
+        }]);
       }
     } catch (error) {
       console.error('Exception during motion generation:', error);
@@ -935,34 +1002,330 @@ export const ContentAssistant: React.FC<ContentAssistantProps> = ({ profile, onC
             <div className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">Photo & Video Editor</CardTitle>
+                  <CardTitle className="text-sm">HiggsField Motion Editor</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-3 sm:gap-4">
-                    <Button
-                      onClick={() => setShowPhotoEditor(true)}
-                      className="h-32 flex-col gap-2"
-                      variant="outline"
-                    >
-                      <Camera className="h-8 w-8" />
-                      <span>Edit Photos</span>
-                      <span className="text-xs text-muted-foreground">
-                        Filters, lighting, effects
-                      </span>
-                    </Button>
-                    
-                    <Button
-                      onClick={() => setShowCarouselUpload(true)}
-                      className="h-32 flex-col gap-2"
-                      variant="outline"
-                    >
-                      <Upload className="h-8 w-8" />
-                      <span>Carousel Upload</span>
-                      <span className="text-xs text-muted-foreground">
-                        Multiple photos & videos
-                      </span>
-                    </Button>
+                <CardContent className="space-y-4">
+                  {/* Image Upload Section */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Upload Image for Motion</label>
+                    <div className="space-y-3">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                        className="hidden"
+                        id="motion-image-upload"
+                      />
+                      <label
+                        htmlFor="motion-image-upload"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
+                      >
+                        <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground text-center">
+                          Click to upload image<br />
+                          <span className="text-xs">JPG, PNG, WebP (1024x1024+ recommended)</span>
+                        </p>
+                      </label>
+
+                      {uploadedImage && (
+                        <div className="relative">
+                          <img
+                            src={uploadedImage}
+                            alt="Uploaded for motion"
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="absolute top-2 right-2"
+                            onClick={() => setUploadedImage('')}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Motion Templates Selection */}
+                  <div>
+                    <label className="text-sm font-medium mb-3 block">Motion Templates Library</label>
+                    
+                    {/* Category Selection */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <Button
+                        size="sm"
+                        variant={selectedMotionCategory === 'camera' ? 'default' : 'outline'}
+                        onClick={() => setSelectedMotionCategory('camera')}
+                      >
+                        <Camera className="h-4 w-4 mr-1" />
+                        Camera Movement
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={selectedMotionCategory === 'object' ? 'default' : 'outline'}
+                        onClick={() => setSelectedMotionCategory('object')}
+                      >
+                        <Target className="h-4 w-4 mr-1" />
+                        Object Animation
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={selectedMotionCategory === 'environmental' ? 'default' : 'outline'}
+                        onClick={() => setSelectedMotionCategory('environmental')}
+                      >
+                        <Sparkles className="h-4 w-4 mr-1" />
+                        Environmental
+                      </Button>
+                    </div>
+
+                    {/* Motion Templates Grid */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {motionTemplates[selectedMotionCategory as keyof typeof motionTemplates]?.map((template) => (
+                        <div
+                          key={template.id}
+                          onClick={() => setSelectedMotionId(template.id)}
+                          className={`p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                            selectedMotionId === template.id 
+                              ? 'border-primary bg-primary/5' 
+                              : 'border-muted hover:border-primary/50'
+                          }`}
+                        >
+                          <h4 className="font-medium text-sm mb-1">{template.name}</h4>
+                          <p className="text-xs text-muted-foreground">{template.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Custom Motion Prompt */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Custom Motion Prompt (Optional)</label>
+                    <Textarea
+                      placeholder="Add custom motion instructions or leave empty to use template default..."
+                      value={motionPrompt}
+                      onChange={(e) => setMotionPrompt(e.target.value)}
+                      className="min-h-[80px]"
+                    />
+                  </div>
+
+                  {/* Generate Motion Button */}
+                  <Button
+                    onClick={() => handleMotionEdit()}
+                    disabled={!uploadedImage || !selectedMotionId || isProcessingMotion}
+                    className="w-full"
+                  >
+                    {isProcessingMotion ? (
+                      <>
+                        <Wand2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating Motion... (30-60s)
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-4 w-4 mr-2" />
+                        Apply Motion Effect
+                      </>
+                    )}
+                  </Button>
+
+                  {/* Generated Motion Videos */}
+                  {motionVideos.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium mb-3">Generated Motion Videos</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {motionVideos.map((video, index) => (
+                          <Card key={index} className="overflow-hidden">
+                            <CardContent className="p-0">
+                              <video
+                                controls
+                                className="w-full h-32 object-cover"
+                                preload="metadata"
+                              >
+                                <source src={video.videoUrl} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                              <div className="p-3 space-y-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {video.motionId || 'Custom Motion'}
+                                </Badge>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const a = document.createElement('a');
+                                      a.href = video.videoUrl;
+                                      a.download = `motion-video-${video.motionId}-${Date.now()}.mp4`;
+                                      a.click();
+                                    }}
+                                  >
+                                    <Download className="h-3 w-3 mr-1" />
+                                    Download
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      // Convert video to content format and post
+                                      const videoContent: GeneratedContent = {
+                                        id: crypto.randomUUID(),
+                                        type: 'video_idea',
+                                        title: `Motion Video - ${video.motionId}`,
+                                        content: `Generated motion video with ${video.motionId} effect`,
+                                        videoUrl: video.videoUrl,
+                                        created_at: new Date().toISOString()
+                                      };
+                                      postToProfile(videoContent);
+                                    }}
+                                  >
+                                    <Share2 className="h-3 w-3 mr-1" />
+                                    Post
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Legacy Editor Options */}
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-medium mb-3">Additional Tools</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Button
+                        onClick={() => setShowPhotoEditor(true)}
+                        className="h-24 flex-col gap-2"
+                        variant="outline"
+                      >
+                        <Edit3 className="h-6 w-6" />
+                        <span className="text-sm">Photo Editor</span>
+                        <span className="text-xs text-muted-foreground">
+                          Filters & effects
+                        </span>
+                      </Button>
+                      
+                      <Button
+                        onClick={() => setShowCarouselUpload(true)}
+                        className="h-24 flex-col gap-2"
+                        variant="outline"
+                      >
+                        <LayoutGrid className="h-6 w-6" />
+                        <span className="text-sm">Carousel Upload</span>
+                        <span className="text-xs text-muted-foreground">
+                          Multiple files
+                        </span>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="speech-video" className="overflow-auto">
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Speech-to-Video Generation</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Speech Text</label>
+                    <Textarea
+                      placeholder="Enter the text you want to convert to speech video..."
+                      value={speechText}
+                      onChange={(e) => setSpeechText(e.target.value)}
+                      className="min-h-[120px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Voice Selection</label>
+                    <Select value={selectedVoice} onValueChange={setSelectedVoice}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select voice" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en-US-female">English (US) - Female</SelectItem>
+                        <SelectItem value="en-US-male">English (US) - Male</SelectItem>
+                        <SelectItem value="en-UK-female">English (UK) - Female</SelectItem>
+                        <SelectItem value="en-UK-male">English (UK) - Male</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    onClick={handleSpeechToVideo}
+                    disabled={!speechText.trim() || isProcessingSpeech}
+                    className="w-full"
+                  >
+                    {isProcessingSpeech ? (
+                      <>
+                        <Wand2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating Speech Video...
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="h-4 w-4 mr-2" />
+                        Generate Speech Video
+                      </>
+                    )}
+                  </Button>
+
+                  {speechVideos.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium mb-3">Generated Speech Videos</h3>
+                      <div className="space-y-3">
+                        {speechVideos.map((video, index) => (
+                          <Card key={index}>
+                            <CardContent className="p-4">
+                              <video
+                                controls
+                                className="w-full h-48 object-cover rounded mb-3"
+                                preload="metadata"
+                              >
+                                <source src={video.videoUrl} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const a = document.createElement('a');
+                                    a.href = video.videoUrl;
+                                    a.download = `speech-video-${Date.now()}.mp4`;
+                                    a.click();
+                                  }}
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    const videoContent: GeneratedContent = {
+                                      id: crypto.randomUUID(),
+                                      type: 'video_idea',
+                                      title: 'AI Speech Video',
+                                      content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
+                                      videoUrl: video.videoUrl,
+                                      created_at: new Date().toISOString()
+                                    };
+                                    postToProfile(videoContent);
+                                  }}
+                                >
+                                  <Share2 className="h-3 w-3 mr-1" />
+                                  Post
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
