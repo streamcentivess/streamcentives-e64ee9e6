@@ -191,20 +191,6 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       return null;
     }
   };
-    try {
-      const { data, error } = await supabase
-        .from('ai_tool_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('tool_name', 'creator_pro')
-        .eq('status', 'active')
-        .maybeSingle();
-
-      setIsProSubscriber(!!data);
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-    }
-  };
 
   const loadGeneratedContent = async () => {
     if (!user) return;
@@ -1683,61 +1669,6 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                       </div>
                     </div>
                   )}
-                              <div className="p-3 space-y-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {video.motionId || 'Custom Motion'}
-                                </Badge>
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      const a = document.createElement('a');
-                                      a.href = video.videoUrl;
-                                      a.download = `motion-video-${video.motionId}-${Date.now()}.mp4`;
-                                      a.click();
-                                    }}
-                                  >
-                                    <Download className="h-3 w-3 mr-1" />
-                                    Download
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      setSelectedVideoUrl(video.videoUrl);
-                                      setShowVideoEditor(true);
-                                    }}
-                                  >
-                                    <Edit3 className="h-3 w-3 mr-1" />
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      // Convert video to content format and post
-                                      const videoContent: GeneratedContent = {
-                                        id: crypto.randomUUID(),
-                                        type: 'video_idea',
-                                        title: `Motion Video - ${video.motionId}`,
-                                        content: `Generated motion video with ${video.motionId} effect`,
-                                        videoUrl: video.videoUrl,
-                                        created_at: new Date().toISOString()
-                                      };
-                                      postToProfile(videoContent);
-                                    }}
-                                  >
-                                    <Share2 className="h-3 w-3 mr-1" />
-                                    Post
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Legacy Editor Options */}
                   <div className="border-t pt-4">
@@ -1898,13 +1829,29 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
           <PhotoEditor
             initialImage={selectedContent?.imageUrl}
             onSave={(editedImages) => {
-              if (selectedContent) {
-                postToProfile(selectedContent, editedImages);
-              }
+              // Handle saved images
+              editedImages.forEach((image, index) => {
+                const imageContent: GeneratedContent = {
+                  id: crypto.randomUUID(),
+                  type: 'image',
+                  title: `Edited Image ${index + 1}`,
+                  content: 'Edited image from Content Assistant',
+                  imageUrl: image,
+                  created_at: new Date().toISOString()
+                };
+                
+                // Add to generated content
+                setGeneratedContent(prev => [imageContent, ...prev]);
+                
+                // Also post to profile if requested
+                postToProfile(imageContent);
+              });
+              
               setShowPhotoEditor(false);
               setSelectedContent(null);
+              toast.success('Images edited and saved!');
             }}
-            onClose={() => {
+            onCancel={() => {
               setShowPhotoEditor(false);
               setSelectedContent(null);
             }}
@@ -1914,7 +1861,18 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
         {/* Carousel Upload Modal */}
         {showCarouselUpload && (
           <CarouselUpload
-            onUploadComplete={() => {
+            onComplete={(urls) => {
+              const carouselContent: GeneratedContent = {
+                id: crypto.randomUUID(),
+                type: 'carousel_post',
+                title: 'Carousel Post',
+                content: 'Created carousel from uploaded images',
+                carouselUrls: urls,
+                created_at: new Date().toISOString()
+              };
+
+              setGeneratedContent(prev => [carouselContent, ...prev]);
+              postToProfile(carouselContent);
               setShowCarouselUpload(false);
               if (onClose) onClose();
             }}
@@ -1933,77 +1891,58 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                 id: crypto.randomUUID(),
                 type: 'video_idea',
                 title: 'Edited Video',
-                content: 'Video edited with custom effects and filters',
+                content: 'Video edited in Content Assistant',
                 videoUrl: editedVideoUrl,
                 created_at: new Date().toISOString()
               };
               
               setGeneratedContent(prev => [videoContent, ...prev]);
+              postToProfile(videoContent);
               setShowVideoEditor(false);
               setSelectedVideoUrl('');
-              toast.success('Video saved to library!');
+              toast.success('Video edited and saved!');
             }}
-            onClose={() => {
+            onCancel={() => {
               setShowVideoEditor(false);
               setSelectedVideoUrl('');
             }}
           />
         )}
 
-        {/* Template Preview Dialog */}
+        {/* Template Preview Modal */}
         {showTemplatePreview && selectedTemplateForPreview && (
           <Dialog open={showTemplatePreview} onOpenChange={setShowTemplatePreview}>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Play className="h-5 w-5" />
-                  {selectedTemplateForPreview.name} Preview
-                </DialogTitle>
+                <DialogTitle>{selectedTemplateForPreview.name}</DialogTitle>
               </DialogHeader>
-              
               <div className="space-y-4">
-                {/* Large Preview */}
-                <div className="aspect-video rounded-lg overflow-hidden border">
-                  {selectedTemplateForPreview.preview_url ? (
+                {selectedTemplateForPreview.preview_url && (
+                  <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
                     <img
                       src={selectedTemplateForPreview.preview_url}
-                      alt={`${selectedTemplateForPreview.name} preview`}
+                      alt={selectedTemplateForPreview.name}
                       className="w-full h-full object-cover"
                     />
-                  ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <Sparkles className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Template Details */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold">{selectedTemplateForPreview.name}</h3>
-                    {selectedTemplateForPreview.start_end_frame && (
-                      <Badge variant="secondary">Advanced</Badge>
-                    )}
                   </div>
-                  
-                  <p className="text-muted-foreground leading-relaxed">
-                    {selectedTemplateForPreview.enhanced_description || selectedTemplateForPreview.description}
+                )}
+                <div>
+                  <h4 className="font-medium mb-2">Description</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedTemplateForPreview.description}
                   </p>
-
-                  {/* Template Usage */}
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <h4 className="text-sm font-medium mb-2">How to use this template:</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Upload an image in the Editor tab</li>
-                      <li>• Select this template from the grid</li>
-                      <li>• Click "Apply Motion" to generate your video</li>
-                      {selectedTemplateForPreview.start_end_frame && (
-                        <li>• This advanced template supports start and end frame customization</li>
-                      )}
-                    </ul>
-                  </div>
                 </div>
-
+                <div>
+                  <h4 className="font-medium mb-2">How to use:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Upload an image in the Editor tab</li>
+                    <li>• Select this template from the grid</li>
+                    <li>• Click "Apply Motion" to generate your video</li>
+                    {selectedTemplateForPreview.start_end_frame && (
+                      <li>• This advanced template supports start and end frame customization</li>
+                    )}
+                  </ul>
+                </div>
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" onClick={() => setShowTemplatePreview(false)}>
                     Close
@@ -2012,9 +1951,10 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                     onClick={() => {
                       setSelectedMotionId(selectedTemplateForPreview.id);
                       setShowTemplatePreview(false);
+                      setActiveTab('editor');
                     }}
                   >
-                    Select This Template
+                    Use Template
                   </Button>
                 </div>
               </div>
