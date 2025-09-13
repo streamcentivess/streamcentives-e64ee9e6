@@ -140,9 +140,6 @@ serve(async (req) => {
         throw new Error(`TTS generation failed: ${e.message}`);
       }
     }
-    // Final fallback: OpenAI TTS if still no audio
-    if (!audioUrl) {
-    // Generate TTS if no audio provided
 
     // Validate required inputs
     if (!input_image_url) {
