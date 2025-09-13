@@ -35,7 +35,8 @@ import {
   LayoutGrid,
   Play,
   Clock,
-  Mic
+  Mic,
+  Eye
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -101,6 +102,8 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const [apiErrors, setApiErrors] = useState<{[key: string]: string}>({});
   const [availableMotions, setAvailableMotions] = useState<any[]>([]);
   const [loadingMotions, setLoadingMotions] = useState(false);
+  const [selectedTemplateForPreview, setSelectedTemplateForPreview] = useState<any | null>(null);
+  const [showTemplatePreview, setShowTemplatePreview] = useState(false);
 
   useEffect(() => {
     checkProSubscription();
@@ -368,13 +371,16 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       
       toast.success('Motion added successfully!');
 
-      // Add to motion videos array
+      // Add to motion videos array and switch to library tab
       if (data?.videoUrl) {
         setMotionVideos(prev => [...prev, {
           ...data,
           motionId: selectedMotionId,
           originalImage: targetImageUrl
         }]);
+        
+        // Automatically switch to library tab to show the generated content
+        setActiveTab('library');
       }
     } catch (error) {
       console.error('Exception during motion generation:', error);
@@ -544,9 +550,12 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       
       toast.success('Speech video generated successfully!');
 
-      // Add to speech videos array
+      // Add to speech videos array and switch to library tab
       if (data?.videoUrl) {
         setSpeechVideos(prev => [...prev, data]);
+        
+        // Automatically switch to library tab to show the generated content
+        setActiveTab('library');
       }
     } catch (error) {
       console.error('Exception during speech video generation:', error);
@@ -1221,57 +1230,112 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                           </Button>
                         </div>
 
-                        {/* Motion Templates Grid */}
-                        <div className="grid grid-cols-1 gap-3">
-                          {availableMotions
-                            .filter(motion => motion.category === selectedMotionCategory)
-                            .map((motion) => (
-                            <div
-                              key={motion.id}
-                              onClick={() => setSelectedMotionId(motion.id)}
-                              className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                                selectedMotionId === motion.id 
-                                  ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
-                                  : 'border-muted hover:border-primary/50 hover:bg-muted/30'
-                              }`}
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <h4 className="font-medium text-sm">{motion.name}</h4>
-                                    {motion.start_end_frame && (
-                                      <Badge variant="secondary" className="text-xs px-2 py-0">
-                                        Advanced
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
-                                    {motion.enhanced_description || motion.description}
-                                  </p>
-                                  {motion.preview_url && (
-                                    <div className="mt-2">
-                                      <img
-                                        src={motion.preview_url}
-                                        alt={`${motion.name} preview`}
-                                        className="w-full h-20 object-cover rounded border"
-                                        onError={(e) => {
-                                          (e.target as HTMLImageElement).style.display = 'none';
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                                {selectedMotionId === motion.id && (
-                                  <div className="ml-2">
-                                    <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                                    </div>
+                        {/* Instagram-Style Templates Grid */}
+                        <div className="border rounded-lg p-2 max-h-80 overflow-y-auto">
+                          <div className="grid grid-cols-3 gap-2">
+                            {availableMotions
+                              .filter(motion => motion.category === selectedMotionCategory)
+                              .map((motion) => (
+                              <div
+                                key={motion.id}
+                                className={`relative aspect-square cursor-pointer group overflow-hidden rounded-lg border-2 transition-all ${
+                                  selectedMotionId === motion.id 
+                                    ? 'border-primary ring-2 ring-primary/20' 
+                                    : 'border-transparent hover:border-primary/50'
+                                }`}
+                                onClick={() => setSelectedMotionId(motion.id)}
+                              >
+                                {/* Template Preview Image */}
+                                {motion.preview_url ? (
+                                  <img
+                                    src={motion.preview_url}
+                                    alt={`${motion.name} preview`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = '/placeholder.svg'
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                                    <Sparkles className="h-8 w-8 text-muted-foreground" />
                                   </div>
                                 )}
+
+                                {/* Overlay with template info */}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
+                                  <h4 className="text-white text-xs font-medium mb-1 line-clamp-1">{motion.name}</h4>
+                                  <p className="text-white/80 text-xs line-clamp-2 leading-tight">
+                                    {motion.enhanced_description || motion.description}
+                                  </p>
+                                  {motion.start_end_frame && (
+                                    <Badge variant="secondary" className="text-xs px-1 py-0 mt-1 w-fit">
+                                      Advanced
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                {/* Selection indicator */}
+                                {selectedMotionId === motion.id && (
+                                  <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                                  </div>
+                                )}
+
+                                {/* Preview button */}
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 px-2 text-xs"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedTemplateForPreview(motion);
+                                    setShowTemplatePreview(true);
+                                  }}
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
+
+                        {/* Selected Template Info */}
+                        {selectedMotionId && (
+                          <div className="mt-4 p-3 bg-muted/30 rounded-lg border">
+                            {(() => {
+                              const selectedTemplate = availableMotions.find(m => m.id === selectedMotionId);
+                              return selectedTemplate ? (
+                                <div className="flex items-start gap-3">
+                                  {selectedTemplate.preview_url && (
+                                    <img
+                                      src={selectedTemplate.preview_url}
+                                      alt={`${selectedTemplate.name} preview`}
+                                      className="w-16 h-16 object-cover rounded border flex-shrink-0"
+                                    />
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <h4 className="font-medium text-sm">{selectedTemplate.name}</h4>
+                                      {selectedTemplate.start_end_frame && (
+                                        <Badge variant="secondary" className="text-xs px-2 py-0">
+                                          Advanced
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                      {selectedTemplate.enhanced_description || selectedTemplate.description}
+                                    </p>
+                                    {uploadedImage && (
+                                      <div className="mt-2 text-xs text-primary font-medium">
+                                        ✓ Ready to apply to your uploaded image
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : null;
+                            })()}
+                          </div>
+                        )}
 
                         {/* No motions found message */}
                         {availableMotions.filter(m => m.category === selectedMotionCategory).length === 0 && (
@@ -1608,6 +1672,78 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
           />
         )}
       </DialogContent>
+
+      {/* Template Preview Dialog */}
+      {showTemplatePreview && selectedTemplateForPreview && (
+        <Dialog open={showTemplatePreview} onOpenChange={setShowTemplatePreview}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Play className="h-5 w-5" />
+                {selectedTemplateForPreview.name} Preview
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Large Preview */}
+              <div className="aspect-video rounded-lg overflow-hidden border">
+                {selectedTemplateForPreview.preview_url ? (
+                  <img
+                    src={selectedTemplateForPreview.preview_url}
+                    alt={`${selectedTemplateForPreview.name} preview`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <Sparkles className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+
+              {/* Template Details */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold">{selectedTemplateForPreview.name}</h3>
+                  {selectedTemplateForPreview.start_end_frame && (
+                    <Badge variant="secondary">Advanced</Badge>
+                  )}
+                </div>
+                
+                <p className="text-muted-foreground leading-relaxed">
+                  {selectedTemplateForPreview.enhanced_description || selectedTemplateForPreview.description}
+                </p>
+
+                {/* Template Usage */}
+                <div className="p-3 bg-muted/30 rounded-lg">
+                  <h4 className="text-sm font-medium mb-2">How to use this template:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Upload an image in the Editor tab</li>
+                    <li>• Select this template from the grid</li>
+                    <li>• Click "Apply Motion" to generate your video</li>
+                    {selectedTemplateForPreview.start_end_frame && (
+                      <li>• This advanced template supports start and end frame customization</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setShowTemplatePreview(false)}>
+                  Close
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setSelectedMotionId(selectedTemplateForPreview.id);
+                    setShowTemplatePreview(false);
+                  }}
+                >
+                  Select This Template
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   );
 };
