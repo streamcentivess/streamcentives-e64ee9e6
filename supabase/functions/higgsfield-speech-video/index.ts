@@ -23,7 +23,9 @@ serve(async (req) => {
       enhance_prompt = true,
       seed,
       voice,
-      style
+      style,
+      webhook_url,
+      webhook_secret
     } = await req.json();
     
     const higgsFieldApiKey = Deno.env.get('HIGGSFIELD_API_KEY');
@@ -43,70 +45,60 @@ serve(async (req) => {
     console.log('Input image URL:', input_image_url);
     console.log('Input audio URL (initial):', input_audio_url ? 'provided' : 'none');
 
-    // Initialize Supabase client for uploading input audio (if base64) and output video
+    // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Ensure we have an audio URL
+    // Handle audio input
     let audioUrl = input_audio_url as string | undefined;
 
-    // If audioBase64 is provided, upload it (only accept WAV format)
+    // Upload base64 audio if provided
     if (!audioUrl && audioBase64) {
-      console.log('Uploading base64 audio to Supabase storage...');
-      const binaryString = atob(audioBase64);
-      const audioBytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) audioBytes[i] = binaryString.charCodeAt(i);
-      
-      // Try to detect WAV header ("RIFF"); if absent, proceed anyway and let HiggsField validate
-      const header = new TextDecoder().decode(audioBytes.slice(0, 4));
-      const isWavHeader = header === 'RIFF';
-      if (!isWavHeader) {
-        console.warn('Base64 audio does not appear to be WAV (no RIFF header). Proceeding without blocking.');
+      console.log('Uploading base64 audio to storage...');
+      try {
+        const binaryString = atob(audioBase64);
+        const audioBytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) audioBytes[i] = binaryString.charCodeAt(i);
+        
+        const audioFileName = `higgsfield-input-audio-${Date.now()}.wav`;
+        const { error: audioUploadError } = await supabase.storage
+          .from('generated-content')
+          .upload(audioFileName, audioBytes, { contentType: 'audio/wav' });
+          
+        if (audioUploadError) {
+          console.error('Audio upload error:', audioUploadError);
+          throw new Error('Failed to upload input audio to storage');
+        }
+        
+        const { data: { publicUrl: uploadedAudioUrl } } = supabase.storage
+          .from('generated-content')
+          .getPublicUrl(audioFileName);
+        audioUrl = uploadedAudioUrl;
+        console.log('Input audio uploaded. URL:', audioUrl);
+      } catch (e) {
+        console.error('Base64 audio processing error:', e);
+        throw new Error('Invalid base64 audio data');
       }
-      
-      const audioExt = isWavHeader ? 'wav' : 'mp3';
-      const audioContentType = isWavHeader ? 'audio/wav' : 'audio/mpeg';
-      
-      const audioFileName = `higgsfield-input-audio-${Date.now()}.${audioExt}`;
-      const { error: audioUploadError } = await supabase.storage
-        .from('generated-content')
-        .upload(audioFileName, audioBytes, { contentType: audioContentType });
-      if (audioUploadError) {
-        console.error('Audio upload error:', audioUploadError);
-        throw new Error('Failed to upload input audio to storage');
-      }
-      const { data: { publicUrl: uploadedAudioUrl } } = supabase.storage
-        .from('generated-content')
-        .getPublicUrl(audioFileName);
-      audioUrl = uploadedAudioUrl;
-      console.log('Input audio uploaded. URL:', audioUrl);
     }
 
-    // If still no audio but we have text, synthesize TTS (prefer ElevenLabs, fallback to Hugging Face)
+    // Generate TTS if no audio provided
     if (!audioUrl && finalPrompt) {
-      // 1) Try ElevenLabs first if API key is configured
-      try {
-        const xiApiKey = Deno.env.get('ELEVENLABS_API_KEY');
-        if (xiApiKey) {
-          console.log('Generating TTS audio from text using ElevenLabs...');
-          const voiceMap: Record<string, string> = {
-            'en-US-female': '9BWtsMINqrJLrRacOk9x', // Aria
-            'en-US-male': 'cjVigY5qzO86Huf0OWal',   // Eric
-            'en-UK-female': 'XB0fDUnXU5powFXDhCwa', // Charlotte
-            'en-UK-male': 'onwK4e9ZLuTAKqWW03F9',   // Daniel
-          };
-          const selected = (voice && typeof voice === 'string') ? voice : 'en-US-female';
-          const voiceId = voiceMap[selected] || voiceMap['en-US-female'];
-
-          // Force WAV format only for HiggsField compatibility
-          let elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      console.log('Generating TTS audio from text...');
+      
+      // Try ElevenLabs first
+      const xiApiKey = Deno.env.get('ELEVENLABS_API_KEY');
+      if (xiApiKey) {
+        try {
+          console.log('Using ElevenLabs TTS...');
+          const voiceId = '9BWtsMINqrJLrRacOk9x'; // Default Aria voice
+          
+          const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
             method: 'POST',
             headers: {
               'xi-api-key': xiApiKey,
               'Content-Type': 'application/json',
-              'Accept': 'audio/wav',
             },
             body: JSON.stringify({
               text: finalPrompt,
@@ -115,185 +107,106 @@ serve(async (req) => {
             }),
           });
 
-          const tryUploadWavAudio = async (res: Response, label: string) => {
-            if (!res.ok) return false;
-            const ct = (res.headers.get('content-type') || '').toLowerCase();
-            console.log(`ElevenLabs ${label} content-type:`, ct);
-            
-            const isWav = ct.includes('wav') || ct.includes('wave') || ct.includes('x-wav');
-            const isOctet = ct.includes('octet-stream') || ct === '';
-
-            if (!isWav && !isOctet) {
-              console.warn(`ElevenLabs ${label} returned non-WAV content-type:`, ct);
-              return false;
-            }
-            
-            const audioArrayBuffer = await res.arrayBuffer();
-            const contentType = 'audio/wav';
+          if (elevenRes.ok) {
+            const audioArrayBuffer = await elevenRes.arrayBuffer();
             const audioFileName = `higgsfield-tts-${Date.now()}.wav`;
             
             const { error: ttsUploadError } = await supabase.storage
               .from('generated-content')
-              .upload(audioFileName, audioArrayBuffer, { contentType });
-            if (ttsUploadError) {
-              console.error('TTS upload error (ElevenLabs):', ttsUploadError);
-              throw new Error('Failed to upload synthesized audio to storage');
-            }
-            const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
-              .from('generated-content')
-              .getPublicUrl(audioFileName);
-            audioUrl = ttsPublicUrl;
-            console.log(`TTS audio (${label}) generated and uploaded as WAV. URL:`, audioUrl);
-            return true;
-          };
-
-          let gotAudio = await tryUploadWavAudio(elevenRes, 'primary');
-
-          // If not WAV, try a second time forcing different model/format
-          if (!gotAudio) {
-            console.log('Retrying ElevenLabs TTS with stricter WAV format...');
-            const elevenResRetry = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-              method: 'POST',
-              headers: {
-                'xi-api-key': xiApiKey,
-                'Content-Type': 'application/json',
-                'Accept': 'audio/wav',
-              },
-              body: JSON.stringify({
-                text: finalPrompt,
-                model_id: 'eleven_multilingual_v2',
-                output_format: 'wav',
-              }),
-            });
-            gotAudio = await tryUploadWavAudio(elevenResRetry, 'retry');
-          }
-
-          if (!gotAudio) {
-            const errText = await elevenRes.text();
-            console.error('ElevenLabs TTS did not return WAV audio. Response:', errText);
-          }
-        } else {
-          console.warn('ELEVENLABS_API_KEY not configured; will try Hugging Face.');
-        }
-      } catch (e) {
-        console.error('ElevenLabs TTS generation error:', e);
-      }
-
-      // 2) Fallback to Hugging Face if ElevenLabs not available or failed
-      if (!audioUrl) {
-        try {
-          const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
-          if (!hfToken) {
-            console.warn('HUGGING_FACE_ACCESS_TOKEN not configured; cannot synthesize audio from text.');
-          } else {
-            console.log('Generating TTS audio from text using Hugging Face...');
-            
-            // Try multiple TTS models as fallbacks
-            const models = [
-              'microsoft/speecht5_tts',
-              'suno/bark',
-              'facebook/mms-tts-eng'
-            ];
-            
-            let ttsResponse: Response | null = null;
-            
-            for (const model of models) {
-              try {
-                console.log(`Trying HF model: ${model}`);
-                ttsResponse = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${hfToken}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'audio/wav',
-                    'x-wait-for-model': 'true',
-                    'x-use-cache': 'false'
-                  },
-                  body: JSON.stringify({ inputs: finalPrompt })
-                });
-                
-                if (ttsResponse.ok) {
-                  console.log(`Successfully got response from ${model}`);
-                  break;
-                } else {
-                  console.log(`Model ${model} failed with status:`, ttsResponse.status);
-                  ttsResponse = null;
-                }
-              } catch (e) {
-                console.log(`Error with model ${model}:`, e);
-                ttsResponse = null;
-              }
-            }
-
-            if (ttsResponse && ttsResponse.ok) {
-              const ttsArrayBuffer = await ttsResponse.arrayBuffer();
-              const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
-              const { error: ttsUploadError } = await supabase.storage
-                .from('generated-content')
-                .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
-              if (ttsUploadError) {
-                console.error('TTS upload error (HF):', ttsUploadError);
-                throw new Error('Failed to upload synthesized audio to storage');
-              }
+              .upload(audioFileName, audioArrayBuffer, { contentType: 'audio/wav' });
+              
+            if (!ttsUploadError) {
               const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
                 .from('generated-content')
-                .getPublicUrl(ttsFileName);
+                .getPublicUrl(audioFileName);
               audioUrl = ttsPublicUrl;
-              console.log('TTS audio (HF) generated and uploaded. URL:', audioUrl);
-            } else {
-              const errText = await ttsResponse.text();
-              console.error('Hugging Face TTS generation failed:', errText);
+              console.log('ElevenLabs TTS audio generated and uploaded:', audioUrl);
             }
           }
         } catch (e) {
-          console.error('Hugging Face TTS generation error:', e);
+          console.error('ElevenLabs TTS error:', e);
+        }
+      }
+
+      // Fallback to Hugging Face if ElevenLabs failed
+      if (!audioUrl) {
+        const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
+        if (hfToken) {
+          try {
+            console.log('Using Hugging Face TTS fallback...');
+            const ttsResponse = await fetch('https://api-inference.huggingface.co/models/microsoft/speecht5_tts', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${hfToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ inputs: finalPrompt })
+            });
+            
+            if (ttsResponse.ok) {
+              const ttsArrayBuffer = await ttsResponse.arrayBuffer();
+              const ttsFileName = `higgsfield-tts-hf-${Date.now()}.wav`;
+              
+              const { error: ttsUploadError } = await supabase.storage
+                .from('generated-content')
+                .upload(ttsFileName, ttsArrayBuffer, { contentType: 'audio/wav' });
+                
+              if (!ttsUploadError) {
+                const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
+                  .from('generated-content')
+                  .getPublicUrl(ttsFileName);
+                audioUrl = ttsPublicUrl;
+                console.log('Hugging Face TTS audio generated and uploaded:', audioUrl);
+              }
+            }
+          } catch (e) {
+            console.error('Hugging Face TTS error:', e);
+          }
         }
       }
     }
 
-    // Validate required params for Speak v2
+    // Validate required inputs
     if (!input_image_url) {
-      console.error('Missing required input_image_url');
       return new Response(
         JSON.stringify({ success: false, error: 'input_image_url is required for speech-to-video generation' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
+    
     if (!audioUrl) {
-      console.error('Missing required input_audio (no audio provided or synthesized)');
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Audio input required in WAV format. Please upload a .wav file or provide text for WAV TTS synthesis.' 
+          error: 'Audio input required. Please provide audio_url, base64 audio, or text for TTS synthesis.' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    // Compose request body per Speak v2 spec
-    const params: Record<string, unknown> = {
-      prompt: finalPrompt,
-      quality,
-      enhance_prompt,
-      seed: typeof seed === 'number' ? seed : Math.floor(Math.random() * 1000),
-      duration
+    // Prepare HiggsField API request with webhook support
+    const requestBody: any = {
+      params: {
+        prompt: finalPrompt,
+        quality,
+        enhance_prompt,
+        seed: typeof seed === 'number' ? seed : Math.floor(Math.random() * 1000),
+        duration,
+        input_image: { type: 'image_url', image_url: input_image_url },
+        input_audio: { type: 'audio_url', audio_url: audioUrl }
+      }
     };
-    if (input_image_url) {
-      // Optional image input
-      (params as any).input_image = { type: 'image_url', image_url: input_image_url };
-    }
-    if (audioUrl) {
-      // Optional audio input
-      (params as any).input_audio = { type: 'audio_url', audio_url: audioUrl };
+
+    // Add webhook configuration if provided
+    if (webhook_url && webhook_secret) {
+      requestBody.webhook = {
+        url: webhook_url,
+        secret: webhook_secret
+      };
+      console.log('Webhook configured for async processing');
     }
 
-    // Use the speak/higgsfield endpoint for speech-to-video generation
-    console.log('Calling HiggsField speak endpoint...', {
-      hasImage: !!input_image_url,
-      hasAudio: !!audioUrl,
-      duration,
-      quality,
-    });
+    console.log('Calling HiggsField v1/speak/higgsfield endpoint...');
     const createResponse = await fetch('https://platform.higgsfield.ai/v1/speak/higgsfield', {
       method: 'POST',
       headers: {
@@ -301,7 +214,7 @@ serve(async (req) => {
         'hf-secret': higgsFieldSecret,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ params }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!createResponse.ok) {
@@ -313,85 +226,104 @@ serve(async (req) => {
     const createData = await createResponse.json();
     const jobSetId = createData.id;
     
-    console.log('HiggsField job set created:', jobSetId);
+    console.log('HiggsField job created:', jobSetId);
 
-    // Poll for completion using job-sets endpoint
+    // If webhook is configured, return immediately with job ID
+    if (webhook_url && webhook_secret) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          jobSetId: jobSetId,
+          status: 'processing',
+          message: 'Generation started. You will receive a webhook notification when complete.',
+          prompt: finalPrompt,
+          audioUrlUsed: audioUrl,
+          input_image_url: input_image_url
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Otherwise, poll for completion (legacy behavior)
+    console.log('Polling for completion...');
     let completed = false;
     let attempts = 0;
-    const maxAttempts = 120; // 10 minutes timeout for speech generation
+    const maxAttempts = 60; // 5 minutes timeout
     
     while (!completed && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
       
-      const statusResponse = await fetch(`https://platform.higgsfield.ai/v1/job-sets/${jobSetId}`, {
-        headers: {
-          'hf-api-key': higgsFieldApiKey,
-          'hf-secret': higgsFieldSecret,
-        },
-      });
+      try {
+        const statusResponse = await fetch(`https://platform.higgsfield.ai/v1/job-sets/${jobSetId}`, {
+          headers: {
+            'hf-api-key': higgsFieldApiKey,
+            'hf-secret': higgsFieldSecret,
+          },
+        });
 
-      if (!statusResponse.ok) {
-        console.error('Status check failed:', statusResponse.status);
-        attempts++;
-        continue;
-      }
-
-      const statusData = await statusResponse.json();
-      console.log('Status check:', statusData);
-      
-      // Check if all jobs are completed
-      const allJobsCompleted = statusData.jobs && statusData.jobs.every(job => 
-        job.status === 'completed' || job.status === 'failed'
-      );
-      
-      if (allJobsCompleted) {
-        completed = true;
-        
-        // Find the first successful job with results
-        const successfulJob = statusData.jobs.find(job => 
-          job.status === 'completed' && job.results && job.results.raw
-        );
-        
-        if (!successfulJob) {
-          throw new Error('No successful video generation found');
-        }
-        
-        // Supabase client already initialized above
-
-        // Download and upload video to Supabase Storage
-        const videoResponse = await fetch(successfulJob.results.raw.url);
-        const videoBlob = await videoResponse.blob();
-        const videoArrayBuffer = await videoBlob.arrayBuffer();
-        
-        const fileName = `higgsfield-speech-${Date.now()}.mp4`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('generated-content')
-          .upload(fileName, videoArrayBuffer, {
-            contentType: 'video/mp4',
-          });
-
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          throw new Error('Failed to upload video to storage');
+        if (!statusResponse.ok) {
+          console.error('Status check failed:', statusResponse.status);
+          attempts++;
+          continue;
         }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('generated-content')
-          .getPublicUrl(fileName);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            videoUrl: publicUrl,
-            jobSetId: jobSetId,
-            prompt: finalPrompt,
-            audioUrlUsed: audioUrl ?? null,
-            input_image_url: input_image_url ?? null
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        const statusData = await statusResponse.json();
+        console.log(`Status check (attempt ${attempts + 1}):`, statusData.jobs?.length ? `${statusData.jobs.length} jobs` : 'No jobs');
+        
+        // Check if all jobs are completed
+        const allJobsCompleted = statusData.jobs && statusData.jobs.every(job => 
+          job.status === 'completed' || job.status === 'failed'
         );
-      } else if (statusData.jobs && statusData.jobs.some(job => job.status === 'failed')) {
-        throw new Error('Speech-to-video generation failed');
+        
+        if (allJobsCompleted) {
+          completed = true;
+          
+          // Find the first successful job with results
+          const successfulJob = statusData.jobs.find(job => 
+            job.status === 'completed' && job.results && job.results.raw
+          );
+          
+          if (!successfulJob) {
+            throw new Error('No successful video generation found');
+          }
+          
+          console.log('Downloading and uploading video...');
+          const videoResponse = await fetch(successfulJob.results.raw.url);
+          const videoBlob = await videoResponse.blob();
+          const videoArrayBuffer = await videoBlob.arrayBuffer();
+          
+          const fileName = `higgsfield-speech-${Date.now()}.mp4`;
+          const { error: uploadError } = await supabase.storage
+            .from('generated-content')
+            .upload(fileName, videoArrayBuffer, {
+              contentType: 'video/mp4',
+            });
+
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            throw new Error('Failed to upload video to storage');
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('generated-content')
+            .getPublicUrl(fileName);
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              videoUrl: publicUrl,
+              jobSetId: jobSetId,
+              prompt: finalPrompt,
+              audioUrlUsed: audioUrl,
+              input_image_url: input_image_url
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else if (statusData.jobs && statusData.jobs.some(job => job.status === 'failed')) {
+          throw new Error('Speech-to-video generation failed');
+        }
+      } catch (pollError) {
+        console.error('Polling error:', pollError);
       }
       
       attempts++;
