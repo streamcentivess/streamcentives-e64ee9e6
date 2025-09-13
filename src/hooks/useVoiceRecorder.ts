@@ -92,8 +92,6 @@ export const useVoiceRecorder = (): UseVoiceRecorderReturn => {
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          sampleRate: 44100, // Professional quality for Neumann U87
-          channelCount: 1,
           echoCancellation: false, // Disable for pro mics
           noiseSuppression: false, // Disable for pro mics  
           autoGainControl: false // Disable for pro mics
@@ -104,13 +102,8 @@ export const useVoiceRecorder = (): UseVoiceRecorderReturn => {
       
       audioChunksRef.current = [];
       
-      // Try WAV first, fallback to WebM if not supported
-      let mimeType = 'audio/wav';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = 'audio/webm;codecs=opus';
-        console.log('WAV not supported, using WebM - will convert to WAV later');
-      }
-      
+      // Use WebM as it's more widely supported, we'll convert to WAV later
+      const mimeType = 'audio/webm;codecs=opus';
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       
       mediaRecorderRef.current = mediaRecorder;

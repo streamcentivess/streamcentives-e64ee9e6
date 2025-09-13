@@ -83,59 +83,64 @@ serve(async (req) => {
       }
     }
 
-    // Only use OpenAI TTS for reliable audio generation
+    // Use ElevenLabs TTS for reliable audio generation
     if (!audioUrl && finalPrompt) {
-      console.log('Generating TTS audio from text using OpenAI...');
+      console.log('Generating TTS audio from text using ElevenLabs...');
       
-      const oaiKey = Deno.env.get('OPENAI_API_KEY');
-      if (!oaiKey) {
-        throw new Error('OpenAI API key not configured');
+      const elevenLabsKey = Deno.env.get('ELEVENLABS_API_KEY');
+      if (!elevenLabsKey) {
+        throw new Error('ElevenLabs API key not configured');
       }
       
       try {
+        // Choose voice based on input or default to Aria
         const voiceStr = (voice && typeof voice === 'string') ? String(voice).toLowerCase() : '';
-        const openaiVoice = voiceStr.includes('female') ? 'nova' : 'alloy';
+        let voiceId = '9BWtsMINqrJLrRacOk9x'; // Aria (default)
         
-        const oaiRes = await fetch('https://api.openai.com/v1/audio/speech', {
+        // Map common voice requests to ElevenLabs voices
+        if (voiceStr.includes('male') || voiceStr.includes('man')) {
+          voiceId = 'CwhRBWXzGAHq8TQ4Fs17'; // Roger
+        } else if (voiceStr.includes('sarah')) {
+          voiceId = 'EXAVITQu4vr4xnSDxMaL'; // Sarah
+        } else if (voiceStr.includes('charlie')) {
+          voiceId = 'IKne3meq5aSn9XLyUdCD'; // Charlie
+        }
+        
+        const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${oaiKey}`,
+            'xi-api-key': elevenLabsKey,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'tts-1-hd', // Use HD model for better quality
-            input: finalPrompt,
-            voice: openaiVoice,
-            response_format: 'wav', // Explicitly request WAV format
-            speed: 1.0 // Ensure consistent speed
+            text: finalPrompt,
+            model_id: 'eleven_turbo_v2_5', // Fast, high quality model
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.8,
+              style: 0.2,
+              use_speaker_boost: true
+            }
           })
         });
 
-        if (!oaiRes.ok) {
-          const errorText = await oaiRes.text();
-          throw new Error(`OpenAI TTS failed: ${oaiRes.status} ${errorText}`);
+        if (!elevenLabsResponse.ok) {
+          const errorText = await elevenLabsResponse.text();
+          throw new Error(`ElevenLabs TTS failed: ${elevenLabsResponse.status} ${errorText}`);
         }
 
-        const ttsArrayBuffer = await oaiRes.arrayBuffer();
+        const ttsArrayBuffer = await elevenLabsResponse.arrayBuffer();
         if (ttsArrayBuffer.byteLength === 0) {
-          throw new Error('OpenAI TTS returned empty audio');
+          throw new Error('ElevenLabs TTS returned empty audio');
         }
         
-        // Validate WAV format by checking file header
-        const audioBytes = new Uint8Array(ttsArrayBuffer);
-        const wavHeader = String.fromCharCode(...audioBytes.slice(0, 4));
-        if (wavHeader !== 'RIFF') {
-          console.error('Invalid WAV header detected:', wavHeader);
-          throw new Error('OpenAI TTS did not return valid WAV format');
-        }
+        console.log('ElevenLabs audio generated, size:', ttsArrayBuffer.byteLength, 'bytes');
         
-        console.log('Valid WAV audio generated, size:', ttsArrayBuffer.byteLength, 'bytes');
-        
-        const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
+        const ttsFileName = `higgsfield-elevenlabs-tts-${Date.now()}.mp3`;
         const { error: ttsUploadError } = await supabase.storage
           .from('generated-content')
           .upload(ttsFileName, ttsArrayBuffer, { 
-            contentType: 'audio/wav',
+            contentType: 'audio/mpeg',
             cacheControl: '3600',
             upsert: false
           });
@@ -149,9 +154,9 @@ serve(async (req) => {
           .getPublicUrl(ttsFileName);
         audioUrl = ttsPublicUrl;
         
-        console.log('OpenAI TTS audio generated and uploaded successfully:', audioUrl);
+        console.log('ElevenLabs TTS audio generated and uploaded successfully:', audioUrl);
       } catch (e) {
-        console.error('OpenAI TTS error:', e);
+        console.error('ElevenLabs TTS error:', e);
         throw new Error(`TTS generation failed: ${e.message}`);
       }
     }
