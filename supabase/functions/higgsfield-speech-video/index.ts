@@ -59,23 +59,20 @@ serve(async (req) => {
       const audioBytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) audioBytes[i] = binaryString.charCodeAt(i);
       
-      // Check for WAV header (should start with "RIFF")
+      // Try to detect WAV header ("RIFF"); if absent, proceed anyway and let HiggsField validate
       const header = new TextDecoder().decode(audioBytes.slice(0, 4));
-      if (header !== 'RIFF') {
-        console.error('Audio format validation failed: Expected WAV format');
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: 'HiggsField requires WAV audio format. Please upload a .wav file or use text-to-speech.' 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-        );
+      const isWavHeader = header === 'RIFF';
+      if (!isWavHeader) {
+        console.warn('Base64 audio does not appear to be WAV (no RIFF header). Proceeding without blocking.');
       }
       
-      const audioFileName = `higgsfield-input-audio-${Date.now()}.wav`;
+      const audioExt = isWavHeader ? 'wav' : 'mp3';
+      const audioContentType = isWavHeader ? 'audio/wav' : 'audio/mpeg';
+      
+      const audioFileName = `higgsfield-input-audio-${Date.now()}.${audioExt}`;
       const { error: audioUploadError } = await supabase.storage
         .from('generated-content')
-        .upload(audioFileName, audioBytes, { contentType: 'audio/wav' });
+        .upload(audioFileName, audioBytes, { contentType: audioContentType });
       if (audioUploadError) {
         console.error('Audio upload error:', audioUploadError);
         throw new Error('Failed to upload input audio to storage');
@@ -84,7 +81,7 @@ serve(async (req) => {
         .from('generated-content')
         .getPublicUrl(audioFileName);
       audioUrl = uploadedAudioUrl;
-      console.log('WAV audio uploaded. URL:', audioUrl);
+      console.log('Input audio uploaded. URL:', audioUrl);
     }
 
     // If still no audio but we have text, synthesize TTS (prefer ElevenLabs, fallback to Hugging Face)
@@ -120,23 +117,26 @@ serve(async (req) => {
 
           const tryUploadWavAudio = async (res: Response, label: string) => {
             if (!res.ok) return false;
-            const ct = res.headers.get('content-type') || '';
+            const ct = (res.headers.get('content-type') || '').toLowerCase();
             console.log(`ElevenLabs ${label} content-type:`, ct);
             
-            // Only accept WAV format for HiggsField compatibility
-            const isWav = ct.includes('wav');
+            const isWav = ct.includes('wav') || ct.includes('wave') || ct.includes('x-wav');
+            const isMpeg = ct.includes('mpeg') || ct.includes('mp3');
+            const isOctet = ct.includes('octet-stream') || ct === '';
             
-            if (!isWav) {
-              console.warn(`ElevenLabs ${label} returned non-WAV content-type:`, ct);
-              return false;
+            if (!isWav && !isMpeg && !isOctet) {
+              console.warn(`ElevenLabs ${label} returned unexpected content-type:`, ct);
+              // Proceed anyway and let downstream validate
             }
             
             const audioArrayBuffer = await res.arrayBuffer();
-            const audioFileName = `higgsfield-tts-${Date.now()}.wav`;
+            const ext = isWav ? 'wav' : isMpeg ? 'mp3' : 'wav';
+            const contentType = isWav ? 'audio/wav' : isMpeg ? 'audio/mpeg' : 'application/octet-stream';
+            const audioFileName = `higgsfield-tts-${Date.now()}.${ext}`;
             
             const { error: ttsUploadError } = await supabase.storage
               .from('generated-content')
-              .upload(audioFileName, audioArrayBuffer, { contentType: 'audio/wav' });
+              .upload(audioFileName, audioArrayBuffer, { contentType });
             if (ttsUploadError) {
               console.error('TTS upload error (ElevenLabs):', ttsUploadError);
               throw new Error('Failed to upload synthesized audio to storage');
@@ -145,16 +145,15 @@ serve(async (req) => {
               .from('generated-content')
               .getPublicUrl(audioFileName);
             audioUrl = ttsPublicUrl;
-            console.log(`TTS WAV audio (${label}) generated and uploaded. URL:`, audioUrl);
+            console.log(`TTS audio (${label}) generated and uploaded. URL:`, audioUrl);
             return true;
           };
 
-          const gotAudio = await tryUploadWavAudio(elevenRes, 'WAV Format');
+          const gotAudio = await tryUploadWavAudio(elevenRes, 'Preferred Format');
 
           if (!gotAudio) {
             const errText = await elevenRes.text();
-            console.error('ElevenLabs TTS failed to produce WAV format. Response:', errText);
-            console.warn('HiggsField speech-to-video requires WAV audio format. ElevenLabs TTS failed to provide WAV.');
+            console.error('ElevenLabs TTS did not return usable audio. Response:', errText);
           }
         } else {
           console.warn('ELEVENLABS_API_KEY not configured; will try Hugging Face.');
@@ -248,7 +247,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Audio input required in WAV format. Please upload a .wav file or provide text for WAV TTS synthesis.' 
+          error: 'Audio input required. Please upload an audio file (WAV/MP3) or provide text for TTS synthesis.' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
@@ -272,6 +271,12 @@ serve(async (req) => {
     }
 
     // Use the speak/higgsfield endpoint for speech-to-video generation
+    console.log('Calling HiggsField speak endpoint...', {
+      hasImage: !!input_image_url,
+      hasAudio: !!audioUrl,
+      duration,
+      quality,
+    });
     const createResponse = await fetch('https://platform.higgsfield.ai/v1/speak/higgsfield', {
       method: 'POST',
       headers: {
