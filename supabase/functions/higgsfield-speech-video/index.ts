@@ -25,12 +25,11 @@ serve(async (req) => {
       throw new Error('Text is required for speech-to-video generation');
     }
 
-    console.log('Starting text2image_soul generation with HiggsField...');
+    console.log('Starting speech video generation with HiggsField...');
     console.log('Text input:', text);
 
-    // For speech-to-video, we'll use text2image_soul for now since the docs show that endpoint
-    // This creates an avatar-style video from text
-    const createResponse = await fetch('https://platform.higgsfield.ai/v1/text2image_soul', {
+    // Use the speak/higgsfield endpoint for speech-to-video generation
+    const createResponse = await fetch('https://platform.higgsfield.ai/v1/speak/higgsfield', {
       method: 'POST',
       headers: {
         'hf-api-key': higgsFieldApiKey,
@@ -39,11 +38,11 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         params: {
-          prompt: `Create a speaking avatar video saying: "${text}"`,
-          voice_style: voice,
-          speech_style: style,
+          prompt: text,
+          quality: 'high',
           enhance_prompt: true,
-          check_nsfw: true
+          seed: Math.floor(Math.random() * 1000),
+          duration: 5
         }
       }),
     });
