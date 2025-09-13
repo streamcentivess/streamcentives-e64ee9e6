@@ -42,6 +42,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { PhotoEditor } from './PhotoEditor';
 import { CarouselUpload } from './CarouselUpload';
+import { VideoEditor } from './VideoEditor';
 
 interface ContentAssistantProps {
   profile?: any;
@@ -95,6 +96,9 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const [selectedMotionId, setSelectedMotionId] = useState<string>('');
   const [uploadedImage, setUploadedImage] = useState<string>('');
   const [selectedMotionCategory, setSelectedMotionCategory] = useState<string>('camera');
+  const [showVideoEditor, setShowVideoEditor] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
+  const [apiErrors, setApiErrors] = useState<{[key: string]: string}>({});
 
   // Motion templates library
   const motionTemplates = {
@@ -362,6 +366,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
     }
 
     setIsProcessingMotion(true);
+    setApiErrors(prev => ({ ...prev, motion: '' }));
 
     try {
       console.log('Adding motion to image:', targetImageUrl, 'with motion ID:', selectedMotionId);
@@ -377,7 +382,14 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
 
       if (error) {
         console.error('Error adding motion:', error);
-        toast.error('Failed to add motion to image. Please try again.');
+        
+        // Check if it's a HiggsField API timeout
+        if (error.message?.includes('522') || error.message?.includes('timeout')) {
+          setApiErrors(prev => ({ ...prev, motion: 'HiggsField service is temporarily unavailable. Please try again later.' }));
+          toast.error('Motion service is temporarily down. Please try again in a few minutes.');
+        } else {
+          toast.error('Failed to add motion to image. Please try again.');
+        }
         return;
       }
 
@@ -395,7 +407,8 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       }
     } catch (error) {
       console.error('Exception during motion generation:', error);
-      toast.error('An unexpected error occurred while adding motion.');
+      setApiErrors(prev => ({ ...prev, motion: 'Service temporarily unavailable. Please try again later.' }));
+      toast.error('Motion service is currently unavailable. Please try again later.');
     } finally {
       setIsProcessingMotion(false);
     }
@@ -1114,6 +1127,16 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                     />
                   </div>
 
+                  {/* API Error Message */}
+                  {apiErrors.motion && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <p className="text-sm text-destructive">{apiErrors.motion}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        The HiggsField service may be experiencing high traffic. Try again in a few minutes.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Generate Motion Button */}
                   <Button
                     onClick={() => handleMotionEdit()}
@@ -1166,6 +1189,17 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                                   >
                                     <Download className="h-3 w-3 mr-1" />
                                     Download
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedVideoUrl(video.videoUrl);
+                                      setShowVideoEditor(true);
+                                    }}
+                                  >
+                                    <Edit3 className="h-3 w-3 mr-1" />
+                                    Edit
                                   </Button>
                                   <Button
                                     size="sm"
@@ -1309,6 +1343,17 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                                 </Button>
                                 <Button
                                   size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedVideoUrl(video.videoUrl);
+                                    setShowVideoEditor(true);
+                                  }}
+                                >
+                                  <Edit3 className="h-3 w-3 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
                                   onClick={() => {
                                     const videoContent: GeneratedContent = {
                                       id: crypto.randomUUID(),
@@ -1364,6 +1409,33 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
             }}
             onClose={() => setShowCarouselUpload(false)}
             applyProBoost={isProSubscriber}
+          />
+        )}
+
+        {/* Video Editor Modal */}
+        {showVideoEditor && (
+          <VideoEditor
+            videoUrl={selectedVideoUrl}
+            onSave={(editedVideoUrl) => {
+              // Add edited video to motion videos or speech videos based on source
+              const videoContent: GeneratedContent = {
+                id: crypto.randomUUID(),
+                type: 'video_idea',
+                title: 'Edited Video',
+                content: 'Video edited with custom effects and filters',
+                videoUrl: editedVideoUrl,
+                created_at: new Date().toISOString()
+              };
+              
+              setGeneratedContent(prev => [videoContent, ...prev]);
+              setShowVideoEditor(false);
+              setSelectedVideoUrl('');
+              toast.success('Video saved to library!');
+            }}
+            onClose={() => {
+              setShowVideoEditor(false);
+              setSelectedVideoUrl('');
+            }}
           />
         )}
       </DialogContent>
