@@ -97,6 +97,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const [speechVideos, setSpeechVideos] = useState<any[]>([]);
   const [selectedMotionId, setSelectedMotionId] = useState<string>('');
   const [uploadedImage, setUploadedImage] = useState<string>('');
+  const [persistedMotionVideos, setPersistedMotionVideos] = useState<any[]>([]);
   const [selectedMotionCategory, setSelectedMotionCategory] = useState<string>('camera');
   const [showVideoEditor, setShowVideoEditor] = useState(false);
   const [selectedVideoUrl, setSelectedVideoUrl] = useState<string>('');
@@ -116,6 +117,80 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const checkProSubscription = async () => {
     if (!user) return;
     
+    try {
+      const { data } = await supabase
+        .from('ai_tool_subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('tool_name', 'creator_pro')
+        .eq('status', 'active')
+        .single();
+
+      setIsProSubscriber(!!data);
+    } catch (error) {
+      setIsProSubscriber(false);
+    }
+  };
+
+  // Load persisted motion videos on component mount
+  useEffect(() => {
+    loadPersistedMotionVideos();
+  }, [user]);
+
+  const loadPersistedMotionVideos = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('ai_generated_content')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('type', 'motion_video')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading persisted motion videos:', error);
+        return;
+      }
+
+      setPersistedMotionVideos(data || []);
+    } catch (error) {
+      console.error('Error loading persisted motion videos:', error);
+    }
+  };
+
+  const saveMotionVideoToDatabase = async (videoData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('ai_generated_content')
+        .insert({
+          user_id: user?.id,
+          type: 'motion_video',
+          title: `Motion Video - ${videoData.motionId || 'Custom'}`,
+          content: `Generated motion video with ${videoData.motionId || 'custom'} effect`,
+          download_url: videoData.videoUrl,
+          image_url: videoData.originalImage,
+          metadata: {
+            motionId: videoData.motionId,
+            originalImage: videoData.originalImage,
+            jobSetId: videoData.jobSetId,
+            generatedAt: new Date().toISOString()
+          }
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving motion video to database:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error saving motion video to database:', error);
+      return null;
+    }
+  };
     try {
       const { data, error } = await supabase
         .from('ai_tool_subscriptions')
@@ -369,13 +444,19 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
 
       // If function returned the video immediately (rare), handle it
       if (data?.videoUrl) {
-        setMotionVideos(prev => [...prev, {
+        const videoData = {
           ...data,
           motionId: selectedMotionId,
           originalImage: targetImageUrl
-        }]);
+        };
+        
+        setMotionVideos(prev => [...prev, videoData]);
         setActiveTab('library');
         toast.success('Motion video generated!');
+        
+        // Save to database for persistence
+        await saveMotionVideoToDatabase(videoData);
+        await loadPersistedMotionVideos();
         return;
       }
 
@@ -403,14 +484,20 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
         }
 
         if (statusData?.status === 'completed' && statusData?.videoUrl) {
-          setMotionVideos(prev => [...prev, {
+          const videoData = {
             ...statusData,
             jobSetId,
             motionId: selectedMotionId,
             originalImage: targetImageUrl
-          }]);
+          };
+          
+          setMotionVideos(prev => [...prev, videoData]);
           setActiveTab('library');
           toast.success('Motion video ready!');
+          
+          // Save to database for persistence
+          await saveMotionVideoToDatabase(videoData);
+          await loadPersistedMotionVideos();
           return;
         }
 
@@ -1433,7 +1520,7 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                       <h3 className="text-sm font-medium mb-3">Generated Motion Videos</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {motionVideos.map((video, index) => (
-                           <Card key={index} className="overflow-hidden">
+                          <Card key={index} className="overflow-hidden">
                             <CardContent className="p-0">
                               <div 
                                 className="relative cursor-pointer group"
@@ -1456,6 +1543,146 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                                   </div>
                                 </div>
                               </div>
+                              <div className="p-3 space-y-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {video.motionId || 'Custom Motion'}
+                                </Badge>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const a = document.createElement('a');
+                                      a.href = video.videoUrl;
+                                      a.download = `motion-video-${video.motionId}-${Date.now()}.mp4`;
+                                      a.click();
+                                    }}
+                                  >
+                                    <Download className="h-3 w-3 mr-1" />
+                                    Download
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedVideoUrl(video.videoUrl);
+                                      setShowVideoEditor(true);
+                                    }}
+                                  >
+                                    <Edit3 className="h-3 w-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      // Convert video to content format and post
+                                      const videoContent: GeneratedContent = {
+                                        id: crypto.randomUUID(),
+                                        type: 'video_idea',
+                                        title: `Motion Video - ${video.motionId}`,
+                                        content: `Generated motion video with ${video.motionId} effect`,
+                                        videoUrl: video.videoUrl,
+                                        created_at: new Date().toISOString()
+                                      };
+                                      postToProfile(videoContent);
+                                    }}
+                                  >
+                                    <Share2 className="h-3 w-3 mr-1" />
+                                    Post
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Persisted Motion Videos */}
+                  {persistedMotionVideos.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium mb-3">Saved Motion Videos</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {persistedMotionVideos.map((video) => (
+                          <Card key={video.id} className="overflow-hidden">
+                            <CardContent className="p-0">
+                              <div 
+                                className="relative cursor-pointer group"
+                                onClick={() => {
+                                  setSelectedVideoUrl(video.download_url);
+                                  setShowVideoModal(true);
+                                }}
+                              >
+                                <video
+                                  className="w-full h-32 object-cover"
+                                  preload="metadata"
+                                  muted
+                                >
+                                  <source src={video.download_url} type="video/mp4" />
+                                  Your browser does not support the video tag.
+                                </video>
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                  <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Play className="w-6 h-6 text-gray-800 ml-0.5" fill="currentColor" />
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="p-3 space-y-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {video.metadata?.motionId || 'Saved Motion'}
+                                </Badge>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const a = document.createElement('a');
+                                      a.href = video.download_url;
+                                      a.download = `motion-video-${video.metadata?.motionId || 'saved'}-${Date.now()}.mp4`;
+                                      a.click();
+                                    }}
+                                  >
+                                    <Download className="h-3 w-3 mr-1" />
+                                    Download
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedVideoUrl(video.download_url);
+                                      setShowVideoEditor(true);
+                                    }}
+                                  >
+                                    <Edit3 className="h-3 w-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      // Convert video to content format and post
+                                      const videoContent: GeneratedContent = {
+                                        id: crypto.randomUUID(),
+                                        type: 'video_idea',
+                                        title: video.title,
+                                        content: video.content,
+                                        videoUrl: video.download_url,
+                                        created_at: new Date().toISOString()
+                                      };
+                                      postToProfile(videoContent);
+                                    }}
+                                  >
+                                    <Share2 className="h-3 w-3 mr-1" />
+                                    Post
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                               <div className="p-3 space-y-2">
                                 <Badge variant="outline" className="text-xs">
                                   {video.motionId || 'Custom Motion'}
@@ -1828,3 +2055,5 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
     </Dialog>
   );
 };
+
+export default ContentAssistant;
