@@ -104,34 +104,44 @@ serve(async (req) => {
             }),
           });
 
-          const tryUploadIfWav = async (res: Response, label: string) => {
+          const tryUploadAudio = async (res: Response, label: string) => {
             if (!res.ok) return false;
             const ct = res.headers.get('content-type') || '';
-            if (!ct.includes('wav')) {
-              console.warn(`ElevenLabs ${label} returned non-WAV content-type:`, ct);
+            console.log(`ElevenLabs ${label} content-type:`, ct);
+            
+            // Accept both WAV and MP3 formats
+            const isWav = ct.includes('wav');
+            const isMp3 = ct.includes('mpeg') || ct.includes('mp3');
+            
+            if (!isWav && !isMp3) {
+              console.warn(`ElevenLabs ${label} returned unsupported content-type:`, ct);
               return false;
             }
-            const wavArrayBuffer = await res.arrayBuffer();
-            const wavFileName = `higgsfield-tts-${Date.now()}.wav`;
+            
+            const audioArrayBuffer = await res.arrayBuffer();
+            const extension = isWav ? 'wav' : 'mp3';
+            const mimeType = isWav ? 'audio/wav' : 'audio/mpeg';
+            const audioFileName = `higgsfield-tts-${Date.now()}.${extension}`;
+            
             const { error: ttsUploadError } = await supabase.storage
               .from('generated-content')
-              .upload(wavFileName, wavArrayBuffer, { contentType: 'audio/wav' });
+              .upload(audioFileName, audioArrayBuffer, { contentType: mimeType });
             if (ttsUploadError) {
               console.error('TTS upload error (ElevenLabs):', ttsUploadError);
               throw new Error('Failed to upload synthesized audio to storage');
             }
             const { data: { publicUrl: ttsPublicUrl } } = supabase.storage
               .from('generated-content')
-              .getPublicUrl(wavFileName);
+              .getPublicUrl(audioFileName);
             audioUrl = ttsPublicUrl;
             console.log(`TTS audio (${label}) generated and uploaded. URL:`, audioUrl);
             return true;
           };
 
-          let gotWav = await tryUploadIfWav(elevenRes, 'STREAM pcm_16000');
+          let gotAudio = await tryUploadAudio(elevenRes, 'STREAM pcm_16000');
 
           // Fallback 1: STREAM with plain WAV container
-          if (!gotWav) {
+          if (!gotAudio) {
             const paramsWav = new URLSearchParams({ output_format: 'wav' });
             elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?${paramsWav.toString()}`, {
               method: 'POST',
@@ -142,11 +152,11 @@ serve(async (req) => {
               },
               body: JSON.stringify({ text: finalPrompt, model_id: 'eleven_turbo_v2_5' }),
             });
-            gotWav = await tryUploadIfWav(elevenRes, 'STREAM wav');
+            gotAudio = await tryUploadAudio(elevenRes, 'STREAM wav');
           }
 
           // Fallback 2: Non-stream endpoint with PCM
-          if (!gotWav) {
+          if (!gotAudio) {
             elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
               method: 'POST',
               headers: {
@@ -156,12 +166,26 @@ serve(async (req) => {
               },
               body: JSON.stringify({ text: finalPrompt, model_id: 'eleven_turbo_v2_5', output_format: 'pcm_16000' }),
             });
-            gotWav = await tryUploadIfWav(elevenRes, 'PCM 16000');
+            gotAudio = await tryUploadAudio(elevenRes, 'PCM 16000');
           }
 
-          if (!gotWav) {
+          // Fallback 3: Accept default MP3 format
+          if (!gotAudio) {
+            elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+              method: 'POST',
+              headers: {
+                'xi-api-key': xiApiKey,
+                'Content-Type': 'application/json',
+                'Accept': 'audio/mpeg',
+              },
+              body: JSON.stringify({ text: finalPrompt, model_id: 'eleven_turbo_v2_5' }),
+            });
+            gotAudio = await tryUploadAudio(elevenRes, 'Default MP3');
+          }
+
+          if (!gotAudio) {
             const errText = await elevenRes.text();
-            console.warn('ElevenLabs TTS could not provide WAV after fallbacks. Last response:', errText);
+            console.warn('ElevenLabs TTS failed with all formats. Last response:', errText);
           }
         } else {
           console.warn('ELEVENLABS_API_KEY not configured; will try Hugging Face.');
@@ -178,19 +202,45 @@ serve(async (req) => {
             console.warn('HUGGING_FACE_ACCESS_TOKEN not configured; cannot synthesize audio from text.');
           } else {
             console.log('Generating TTS audio from text using Hugging Face...');
-            const ttsResponse = await fetch('https://api-inference.huggingface.co/models/espnet/kan-bayashi_ljspeech_vits', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${hfToken}`,
-                'Content-Type': 'application/json',
-                'Accept': 'audio/wav',
-                'x-wait-for-model': 'true',
-                'x-use-cache': 'false'
-              },
-              body: JSON.stringify({ inputs: finalPrompt })
-            });
+            
+            // Try multiple TTS models as fallbacks
+            const models = [
+              'microsoft/speecht5_tts',
+              'suno/bark',
+              'facebook/mms-tts-eng'
+            ];
+            
+            let ttsResponse: Response | null = null;
+            
+            for (const model of models) {
+              try {
+                console.log(`Trying HF model: ${model}`);
+                ttsResponse = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${hfToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'audio/wav',
+                    'x-wait-for-model': 'true',
+                    'x-use-cache': 'false'
+                  },
+                  body: JSON.stringify({ inputs: finalPrompt })
+                });
+                
+                if (ttsResponse.ok) {
+                  console.log(`Successfully got response from ${model}`);
+                  break;
+                } else {
+                  console.log(`Model ${model} failed with status:`, ttsResponse.status);
+                  ttsResponse = null;
+                }
+              } catch (e) {
+                console.log(`Error with model ${model}:`, e);
+                ttsResponse = null;
+              }
+            }
 
-            if (ttsResponse.ok) {
+            if (ttsResponse && ttsResponse.ok) {
               const ttsArrayBuffer = await ttsResponse.arrayBuffer();
               const ttsFileName = `higgsfield-tts-${Date.now()}.wav`;
               const { error: ttsUploadError } = await supabase.storage
