@@ -39,7 +39,8 @@ import {
   Eye,
   X,
   User,
-  ChevronDown
+  ChevronDown,
+  CheckCircle
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
@@ -379,21 +380,52 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
 
   const handleImageUpload = async (file: File) => {
     try {
+      // Validate file type and size
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload a valid image file');
+        return;
+      }
+
+      if (file.size > 20 * 1024 * 1024) { // 20MB limit
+        toast.error('Image file must be smaller than 20MB');
+        return;
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}/motion/${Date.now()}.${fileExt}`;
+      
+      console.log('Uploading image:', fileName, 'Size:', file.size, 'Type:', file.type);
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('posts')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       const { data } = supabase.storage.from('posts').getPublicUrl(fileName);
-      setUploadedImage(data.publicUrl);
-      toast.success('Image uploaded successfully!');
+      const imageUrl = data.publicUrl;
+      
+      console.log('Image uploaded successfully. URL:', imageUrl);
+      
+      // Validate that the URL is accessible
+      try {
+        const response = await fetch(imageUrl, { method: 'HEAD' });
+        if (!response.ok) {
+          throw new Error(`Image not accessible: ${response.status}`);
+        }
+      } catch (e) {
+        console.warn('Image accessibility check failed:', e);
+        // Continue anyway - the image might still work with HiggsField
+      }
+
+      setUploadedImage(imageUrl);
+      toast.success('Image uploaded and ready for speech-to-video!');
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
+      toast.error('Failed to upload image. Please try again.');
     }
   };
 
@@ -685,37 +717,55 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
       return;
     }
 
+    // Validate image URL format
+    if (!uploadedImage.startsWith('http')) {
+      toast.error('Invalid image URL. Please re-upload your image.');
+      console.error('Invalid image URL:', uploadedImage);
+      return;
+    }
+
     setIsProcessingSpeech(true);
 
     try {
-      console.log('Generating speech-to-video with mode:', audioMode);
+      console.log('🎬 Starting speech-to-video generation...');
+      console.log('📸 Image URL:', uploadedImage);
+      console.log('🎵 Audio mode:', audioMode);
+      console.log('⏱️ Duration:', speechDuration, 'seconds');
+      console.log('🎯 Quality:', speechQuality);
       
       const requestBody: any = {
         input_image_url: uploadedImage,
         duration: speechDuration,
         quality: speechQuality,
+        enhance_prompt: true,
+        seed: Math.floor(Math.random() * 1000)
       };
 
       if (audioMode === 'tts') {
         requestBody.text = speechText;
         requestBody.voice = selectedVoice;
+        console.log('💬 Text for TTS:', speechText);
+        console.log('🎤 Selected voice:', selectedVoice);
       } else {
         requestBody.input_audio_url = uploadedAudioFile;
         requestBody.prompt = speechText || 'Speech-to-video animation';
+        console.log('🔊 Audio file URL:', uploadedAudioFile);
       }
+
+      console.log('📤 Sending request to HiggsField speech-video function:', requestBody);
       
       const { data, error } = await supabase.functions.invoke('higgsfield-speech-video', {
         body: requestBody
       });
 
       if (error) {
-        console.error('Error generating speech video:', error);
+        console.error('❌ Error from speech-video function:', error);
         
         // Provide specific error messages based on error content
         if (error.message?.includes('WAV') || error.message?.includes('wav')) {
           toast.error('Audio format error: Please use WAV format audio or try text-to-speech mode.');
-        } else if (error.message?.includes('image')) {
-          toast.error('Image error: Please upload a valid image file.');
+        } else if (error.message?.includes('image') || error.message?.includes('Image')) {
+          toast.error('Image error: Please upload a valid image file and ensure it\'s accessible.');
         } else if (error.message?.includes('timeout') || error.message?.includes('522')) {
           toast.error('Generation timed out. Please try again with a shorter duration.');
         } else {
@@ -1409,37 +1459,48 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                         id="motion-image-upload"
                       />
                       
-                       {uploadedImage ? (
-                         <div className="relative w-full max-w-md mx-auto">
-                           <div className="aspect-square w-full overflow-hidden rounded-lg border-2 border-muted">
-                             <img
-                               src={uploadedImage}
-                               alt="Uploaded for motion"
-                               className="w-full h-full object-contain bg-muted"
-                             />
-                           </div>
-                           <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center group">
-                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                               <Button
-                                 size="sm"
-                                 variant="secondary"
-                                 onClick={() => document.getElementById('motion-image-upload')?.click()}
-                               >
-                                 <Upload className="h-4 w-4 mr-1" />
-                                 Replace
-                               </Button>
-                               <Button
-                                 size="sm"
-                                 variant="destructive"
-                                 onClick={() => setUploadedImage('')}
-                               >
-                                 <Trash2 className="h-4 w-4 mr-1" />
-                                 Remove
-                               </Button>
-                             </div>
-                           </div>
-                         </div>
-                       ) : (
+                        {uploadedImage ? (
+                          <div className="relative w-full max-w-md mx-auto">
+                            <div className="aspect-square w-full overflow-hidden rounded-lg border-2 border-success">
+                              <img
+                                src={uploadedImage}
+                                alt="Uploaded for motion"
+                                className="w-full h-full object-contain bg-muted"
+                              />
+                            </div>
+                            {/* Success indicator */}
+                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-success rounded-full flex items-center justify-center">
+                              <CheckCircle className="h-4 w-4 text-success-foreground" />
+                            </div>
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center group">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => document.getElementById('motion-image-upload')?.click()}
+                                >
+                                  <Upload className="h-4 w-4 mr-1" />
+                                  Replace
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => setUploadedImage('')}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                            {/* Status text */}
+                            <div className="mt-2 text-center">
+                              <p className="text-sm text-success flex items-center justify-center gap-1">
+                                <CheckCircle className="h-4 w-4" />
+                                Ready for motion generation
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
                          <label
                            htmlFor="motion-image-upload"
                            className="flex flex-col items-center justify-center w-full aspect-square max-w-md mx-auto border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
@@ -1919,53 +1980,64 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                       className="hidden"
                       id="speech-image-upload"
                     />
-                    <div className="relative">
-                      {uploadedImage ? (
-                        <div className="relative w-full max-w-md mx-auto">
-                          <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-                            <img
-                              src={uploadedImage}
-                              alt="Uploaded for animation"
-                              className="w-full h-full object-contain bg-muted"
-                            />
-                          </div>
-                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center group">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                onClick={() => document.getElementById('speech-image-upload')?.click()}
-                              >
-                                <Upload className="h-4 w-4 mr-1" />
-                                Replace
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => setUploadedImage('')}
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Remove
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <label
-                          htmlFor="speech-image-upload"
-                          className="flex flex-col items-center justify-center w-full aspect-square max-w-md mx-auto border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
-                        >
-                          <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-                          <p className="text-sm text-muted-foreground text-center mb-2">
-                            Click to upload image
-                          </p>
-                          <p className="text-xs text-muted-foreground/70 text-center px-4">
-                            JPG, PNG, WebP • 1024x1024+ recommended<br />
-                            Maximum file size: 20MB
-                          </p>
-                        </label>
-                      )}
-                    </div>
+                     <div className="relative">
+                       {uploadedImage ? (
+                         <div className="relative w-full max-w-md mx-auto">
+                           <div className="aspect-square rounded-lg overflow-hidden bg-muted border-2 border-success">
+                             <img
+                               src={uploadedImage}
+                               alt="Uploaded for animation"
+                               className="w-full h-full object-contain bg-muted"
+                             />
+                           </div>
+                           {/* Success indicator */}
+                           <div className="absolute -top-2 -right-2 w-6 h-6 bg-success rounded-full flex items-center justify-center">
+                             <CheckCircle className="h-4 w-4 text-success-foreground" />
+                           </div>
+                           <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center group">
+                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                               <Button
+                                 size="sm"
+                                 variant="secondary"
+                                 onClick={() => document.getElementById('speech-image-upload')?.click()}
+                               >
+                                 <Upload className="h-4 w-4 mr-1" />
+                                 Replace
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="destructive"
+                                 onClick={() => setUploadedImage('')}
+                               >
+                                 <Trash2 className="h-4 w-4 mr-1" />
+                                 Remove
+                               </Button>
+                             </div>
+                           </div>
+                           {/* Status text */}
+                           <div className="mt-2 text-center">
+                             <p className="text-sm text-success flex items-center justify-center gap-1">
+                               <CheckCircle className="h-4 w-4" />
+                               Ready for speech-to-video generation
+                             </p>
+                           </div>
+                         </div>
+                       ) : (
+                         <label
+                           htmlFor="speech-image-upload"
+                           className="flex flex-col items-center justify-center w-full aspect-square max-w-md mx-auto border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
+                         >
+                           <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                           <p className="text-sm text-muted-foreground text-center mb-2">
+                             Click to upload image
+                           </p>
+                           <p className="text-xs text-muted-foreground/70 text-center px-4">
+                             JPG, PNG, WebP • 1024x1024+ recommended<br />
+                             Maximum file size: 20MB
+                           </p>
+                         </label>
+                       )}
+                     </div>
                   </div>
 
                   <div>
