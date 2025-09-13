@@ -48,6 +48,7 @@ import { toast } from 'sonner';
 import { PhotoEditor } from './PhotoEditor';
 import { CarouselUpload } from './CarouselUpload';
 import { VideoEditor } from './VideoEditor';
+import { VoiceRecorder } from './VoiceRecorder';
 
 interface ContentAssistantProps {
   profile?: any;
@@ -1796,6 +1797,26 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                   <CardTitle className="text-sm">Speech-to-Video Generation</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Voice Recording</label>
+                    <VoiceRecorder
+                      onTranscription={(text) => setSpeechText(text)}
+                      placeholder="Record your voice to convert to speech video..."
+                      showTranscription={true}
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or type manually
+                      </span>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="text-sm font-medium mb-2 block">Speech Text</label>
                     <Textarea

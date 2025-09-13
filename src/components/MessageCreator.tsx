@@ -5,7 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Coins } from 'lucide-react';
+import { Send, Coins, Mic, Type } from 'lucide-react';
+import { VoiceMessageRecorder } from './VoiceMessageRecorder';
 
 interface MessageCreatorProps {
   recipientId: string;
@@ -33,6 +34,8 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
   const [messageCost, setMessageCost] = useState<MessageCost | null>(null);
   const [userXP, setUserXP] = useState<number>(0);
   const [hasPendingMessage, setHasPendingMessage] = useState(false);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
 
   useEffect(() => {
     fetchMessageCost();
@@ -91,8 +94,8 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
     setHasPendingMessage(!!data);
   };
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || !messageCost) return;
+  const sendMessage = async (messageContent: string) => {
+    if (!messageContent.trim() || !messageCost) return;
 
     if (userXP < messageCost.xp_cost) {
       toast({
@@ -108,7 +111,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
     try {
       const { data, error } = await supabase.rpc('send_message_with_xp', {
         recipient_id_param: recipientId,
-        content_param: message.trim(),
+        content_param: messageContent.trim(),
         xp_cost_param: messageCost.xp_cost
       });
 
@@ -117,7 +120,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
       // Trigger AI analysis
       const messageId = data;
       await supabase.functions.invoke('analyze-message-sentiment', {
-        body: { message: message.trim(), messageId }
+        body: { message: messageContent.trim(), messageId }
       });
 
       toast({
@@ -127,6 +130,8 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
 
       setMessage('');
       setHasPendingMessage(true);
+      setShowVoiceRecorder(false);
+      setMessageMode('text');
       fetchUserXP(); // Refresh XP balance
       onMessageSent?.();
 
@@ -139,6 +144,21 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleVoiceMessage = async (transcription: string, audioBlob?: Blob) => {
+    // Automatically send the voice message using the transcription
+    await sendMessage(transcription);
+  };
+
+  const toggleMessageMode = () => {
+    if (messageMode === 'text') {
+      setMessageMode('voice');
+      setShowVoiceRecorder(true);
+    } else {
+      setMessageMode('text');
+      setShowVoiceRecorder(false);
     }
   };
 
@@ -190,27 +210,70 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
           </div>
         </div>
 
-        <Textarea
-          placeholder="Write your message here..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          maxLength={500}
-          rows={4}
-        />
-
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {message.length}/500 characters
-          </p>
+        {/* Message Mode Toggle */}
+        <div className="flex gap-2">
           <Button
-            onClick={handleSendMessage}
-            disabled={!message.trim() || isLoading || userXP < messageCost.xp_cost}
-            className="flex items-center gap-2"
+            variant={messageMode === 'text' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setMessageMode('text');
+              setShowVoiceRecorder(false);
+            }}
+            disabled={isLoading}
           >
-            <Send className="h-4 w-4" />
-            {isLoading ? 'Sending...' : `Send (${messageCost.xp_cost} XP)`}
+            <Type className="h-4 w-4 mr-1" />
+            Text Message
+          </Button>
+          <Button
+            variant={messageMode === 'voice' ? 'default' : 'outline'}
+            size="sm"
+            onClick={toggleMessageMode}
+            disabled={isLoading || userXP < messageCost.xp_cost}
+          >
+            <Mic className="h-4 w-4 mr-1" />
+            Voice Message
           </Button>
         </div>
+
+        {/* Voice Recorder */}
+        {messageMode === 'voice' && showVoiceRecorder && (
+          <VoiceMessageRecorder
+            onSendVoiceMessage={handleVoiceMessage}
+            onCancel={() => {
+              setShowVoiceRecorder(false);
+              setMessageMode('text');
+            }}
+            disabled={isLoading || userXP < messageCost.xp_cost}
+          />
+        )}
+
+        {/* Text Message Input */}
+        {messageMode === 'text' && !showVoiceRecorder && (
+          <>
+            <Textarea
+              placeholder="Write your message here..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              maxLength={500}
+              rows={4}
+              disabled={isLoading}
+            />
+
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {message.length}/500 characters
+              </p>
+              <Button
+                onClick={() => sendMessage(message)}
+                disabled={!message.trim() || isLoading || userXP < messageCost.xp_cost}
+                className="flex items-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                {isLoading ? 'Sending...' : `Send (${messageCost.xp_cost} XP)`}
+              </Button>
+            </div>
+          </>
+        )}
 
         <p className="text-xs text-muted-foreground">
           Your message will be reviewed by AI for content moderation before being delivered.
