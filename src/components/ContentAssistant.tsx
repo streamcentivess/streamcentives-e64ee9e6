@@ -1900,70 +1900,71 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
             </div>
           </TabsContent>
 
-          <TabsContent value="speechvideo" className="overflow-auto">
-            <div className="space-y-4">
+          <TabsContent value="speechvideo" className="flex-1 overflow-auto">
+            <div className="space-y-6 p-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">Speech-to-Video Generation</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mic className="h-5 w-5" />
+                    Speech-to-Video Generator
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Image Upload Section */}
+                <CardContent className="space-y-6">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Upload Image to Animate</label>
-                    <div className="relative w-full">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
-                        className="hidden"
-                        id="speech-image-upload"
-                      />
-                      
-                       {uploadedImage ? (
-                         <div className="relative w-full max-w-md mx-auto">
-                           <div className="aspect-square w-full overflow-hidden rounded-lg border-2 border-muted">
-                             <img
-                               src={uploadedImage}
-                               alt="Uploaded for animation"
-                               className="w-full h-full object-contain bg-muted"
-                             />
-                           </div>
-                           <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center group">
-                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                               <Button
-                                 size="sm"
-                                 variant="secondary"
-                                 onClick={() => document.getElementById('speech-image-upload')?.click()}
-                               >
-                                 <Upload className="h-4 w-4 mr-1" />
-                                 Replace
-                               </Button>
-                               <Button
-                                 size="sm"
-                                 variant="destructive"
-                                 onClick={() => setUploadedImage('')}
-                               >
-                                 <Trash2 className="h-4 w-4 mr-1" />
-                                 Remove
-                               </Button>
-                             </div>
-                           </div>
-                         </div>
-                       ) : (
-                         <label
-                           htmlFor="speech-image-upload"
-                           className="flex flex-col items-center justify-center w-full aspect-square max-w-md mx-auto border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
-                         >
-                           <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-                           <p className="text-sm text-muted-foreground text-center mb-2">
-                             Click to upload image
-                           </p>
-                           <p className="text-xs text-muted-foreground/70 text-center px-4">
-                             JPG, PNG, WebP • 1024x1024+ recommended<br />
-                             Maximum file size: 20MB
-                           </p>
-                         </label>
-                       )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                      className="hidden"
+                      id="speech-image-upload"
+                    />
+                    <div className="relative">
+                      {uploadedImage ? (
+                        <div className="relative w-full max-w-md mx-auto">
+                          <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                            <img
+                              src={uploadedImage}
+                              alt="Uploaded for animation"
+                              className="w-full h-full object-contain bg-muted"
+                            />
+                          </div>
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center group">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => document.getElementById('speech-image-upload')?.click()}
+                              >
+                                <Upload className="h-4 w-4 mr-1" />
+                                Replace
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => setUploadedImage('')}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor="speech-image-upload"
+                          className="flex flex-col items-center justify-center w-full aspect-square max-w-md mx-auto border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors border-muted-foreground/25 hover:border-primary"
+                        >
+                          <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                          <p className="text-sm text-muted-foreground text-center mb-2">
+                            Click to upload image
+                          </p>
+                          <p className="text-xs text-muted-foreground/70 text-center px-4">
+                            JPG, PNG, WebP • 1024x1024+ recommended<br />
+                            Maximum file size: 20MB
+                          </p>
+                        </label>
+                      )}
                     </div>
                   </div>
 
@@ -2144,18 +2145,6 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                     )}
                   </Button>
 
-                  {(audioMode === 'tts' && !speechText.trim()) && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      Enter text to enable speech-to-video generation
-                    </p>
-                  )}
-
-                  {(audioMode === 'upload' && !uploadedAudioFile) && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      Upload a WAV audio file to enable generation
-                    </p>
-                  )}
-
                   {isProcessingSpeech && (
                     <Card className="border-primary/20 bg-primary/5">
                       <CardContent className="p-4">
@@ -2325,100 +2314,9 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
                         ))}
                       </div>
                     </div>
-                   )}
-                 </CardContent>
-               </Card>
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    const a = document.createElement('a');
-                                    a.href = video.videoUrl;
-                                    a.download = `speech-video-${Date.now()}.mp4`;
-                                    a.click();
-                                  }}
-                                >
-                                  <Download className="h-3 w-3 mr-1" />
-                                  Download
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedVideoUrl(video.videoUrl);
-                                    setShowVideoEditor(true);
-                                  }}
-                                >
-                                  <Edit3 className="h-3 w-3 mr-1" />
-                                  Edit
-                                </Button>
-                                <DropdownMenu>
-                                     <DropdownMenuTrigger asChild>
-                                       <Button size="sm">
-                                         <Share2 className="h-3 w-3 mr-1" />
-                                         Post
-                                         <ChevronDown className="h-3 w-3 ml-1" />
-                                       </Button>
-                                     </DropdownMenuTrigger>
-                                     <DropdownMenuContent>
-                                       <DropdownMenuItem
-                                         onClick={() => {
-                                           const videoContent: GeneratedContent = {
-                                             id: crypto.randomUUID(),
-                                             type: 'video_idea',
-                                             title: 'AI Speech Video',
-                                             content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
-                                             videoUrl: video.videoUrl,
-                                             created_at: new Date().toISOString()
-                                           };
-                                           postToProfile(videoContent, undefined, 'profile');
-                                         }}
-                                       >
-                                         <User className="h-4 w-4 mr-2" />
-                                         Post to Profile
-                                       </DropdownMenuItem>
-                                       <DropdownMenuItem
-                                         onClick={() => {
-                                           const videoContent: GeneratedContent = {
-                                             id: crypto.randomUUID(),
-                                             type: 'video_idea',
-                                             title: 'AI Speech Video',
-                                             content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
-                                             videoUrl: video.videoUrl,
-                                             created_at: new Date().toISOString()
-                                           };
-                                           postToProfile(videoContent, undefined, 'community');
-                                         }}
-                                       >
-                                         <Users className="h-4 w-4 mr-2" />
-                                         Post to Community
-                                       </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          onClick={() => {
-                                            const videoContent: GeneratedContent = {
-                                              id: crypto.randomUUID(),
-                                              type: 'video_idea',
-                                              title: 'AI Speech Video',
-                                              content: speechText.slice(0, 100) + (speechText.length > 100 ? '...' : ''),
-                                              videoUrl: video.videoUrl,
-                                              created_at: new Date().toISOString()
-                                            };
-                                            postToProfile(videoContent, undefined, 'both');
-                                          }}
-                                        >
-                                          <Share2 className="h-4 w-4 mr-2" />
-                                          Post to Both
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                               </div>
-                             </CardContent>
-                           </Card>
-                         ))}
-                       </div>
-                     </div>
-                   )}
-                 </CardContent>
-               </Card>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
