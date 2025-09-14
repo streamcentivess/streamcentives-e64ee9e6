@@ -386,7 +386,7 @@ const UniversalProfile = () => {
     try {
       // First get hater IDs
       const { data: haterIds, error: haterError } = await supabase
-        .from('user_haters')
+        .from('user_haters' as any)
         .select('hater_id')
         .eq('user_id', targetUserId)
         .order('created_at', { ascending: false });
@@ -402,7 +402,7 @@ const UniversalProfile = () => {
       }
 
       // Then get profile data for those haters
-      const ids = haterIds.map(item => item.hater_id);
+      const ids = haterIds.map((item: any) => item.hater_id);
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('user_id, username, display_name, avatar_url, bio, location, interests')
@@ -553,7 +553,7 @@ const UniversalProfile = () => {
 
     try {
       const { error } = await supabase
-        .from('user_haters')
+        .from('user_haters' as any)
         .insert([{
           user_id: user.id,
           hater_id: confirmAddHater.profile.user_id
