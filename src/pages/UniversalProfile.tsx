@@ -1164,20 +1164,71 @@ const UniversalProfile = () => {
     }
   };
   const connectSpotify = async () => {
-    const {
-      error
-    } = await supabase.auth.signInWithOAuth({
-      provider: 'spotify',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: 'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private'
+    try {
+      // Detect if user is on mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Use linkIdentity to connect Spotify to existing account
+      const { data, error } = await supabase.auth.linkIdentity({
+        provider: 'spotify',
+        options: {
+          redirectTo: `${window.location.origin}/universal-profile`,
+          scopes: 'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private',
+          skipBrowserRedirect: isMobile ? false : true,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: 'Connection Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
       }
-    });
-    if (error) {
+
+      // Only handle popup flow for desktop
+      if (!isMobile) {
+        const url = data?.url;
+        if (url) {
+          // Open OAuth flow in a popup window
+          const popup = window.open(
+            url,
+            'spotify-connect',
+            'width=500,height=600,scrollbars=yes,resizable=yes'
+          );
+          
+          if (!popup) {
+            toast({
+              title: 'Popup Blocked',
+              description: 'Please allow popups for Spotify connection to work.',
+              variant: 'destructive',
+            });
+          } else {
+            // Listen for popup close to refresh data
+            const checkClosed = setInterval(() => {
+              if (popup.closed) {
+                clearInterval(checkClosed);
+                // Refresh profile data after connection
+                window.location.reload();
+              }
+            }, 1000);
+          }
+        } else {
+          toast({
+            title: 'Connection Error',
+            description: 'Could not start Spotify connection flow.',
+            variant: 'destructive',
+          });
+        }
+      }
+      // For mobile, the browser will handle the redirect automatically
+    } catch (error) {
+      console.error('Spotify connection error:', error);
       toast({
-        title: "Connection Failed",
-        description: error.message,
-        variant: "destructive"
+        title: 'Connection Error',
+        description: 'Failed to connect with Spotify',
+        variant: 'destructive',
       });
     }
   };

@@ -18,7 +18,7 @@ import { AICampaignBuilder } from '@/components/AICampaignBuilder';
 import { ContentAssistant } from '@/components/ContentAssistant';
 
 const CreatorDashboard = () => {
-  const { user, signOut, signInWithSpotify } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -188,15 +188,126 @@ const CreatorDashboard = () => {
     }
   };
 
+  // Handle Spotify connection for existing users
+  const handleConnectSpotify = async () => {
+    try {
+      // Detect if user is on mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Use linkIdentity to connect Spotify to existing account
+      const { data, error } = await supabase.auth.linkIdentity({
+        provider: 'spotify',
+        options: {
+          redirectTo: `${window.location.origin}/creator-dashboard`,
+          scopes: 'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private',
+          skipBrowserRedirect: isMobile ? false : true,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: 'Connection Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Only handle popup flow for desktop
+      if (!isMobile) {
+        const url = data?.url;
+        if (url) {
+          // Open OAuth flow in a popup window
+          const popup = window.open(
+            url,
+            'spotify-connect',
+            'width=500,height=600,scrollbars=yes,resizable=yes'
+          );
+          
+          if (!popup) {
+            toast({
+              title: 'Popup Blocked',
+              description: 'Please allow popups for Spotify connection to work.',
+              variant: 'destructive',
+            });
+          } else {
+            // Listen for popup close to refresh data
+            const checkClosed = setInterval(() => {
+              if (popup.closed) {
+                clearInterval(checkClosed);
+                // Refresh profile data after connection
+                window.location.reload();
+              }
+            }, 1000);
+          }
+        } else {
+          toast({
+            title: 'Connection Error',
+            description: 'Could not start Spotify connection flow.',
+            variant: 'destructive',
+          });
+        }
+      }
+      // For mobile, the browser will handle the redirect automatically
+    } catch (error) {
+      console.error('Spotify connection error:', error);
+      toast({
+        title: 'Connection Error',
+        description: 'Failed to connect with Spotify',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Handle Spotify disconnection
   const handleDisconnectSpotify = async () => {
     try {
-      await supabase.from('spotify_accounts').delete().eq('user_id', user?.id);
-      await supabase.from('profiles').update({ spotify_connected: false } as any).eq('user_id', user?.id);
-      toast({ title: 'Disconnected', description: 'Spotify has been disconnected.' });
+      // Get current user identities
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Find Spotify identity
+      const spotifyIdentity = user.identities?.find(identity => identity.provider === 'spotify');
+      if (!spotifyIdentity) {
+        toast({
+          title: 'No Spotify Connection',
+          description: 'No Spotify account found to disconnect.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Unlink the Spotify identity
+      const { error } = await supabase.auth.unlinkIdentity(spotifyIdentity);
+      if (error) {
+        toast({
+          title: 'Disconnection Error', 
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Update profile to reflect disconnection
+      await supabase
+        .from('profiles')
+        .update({ spotify_connected: false })
+        .eq('user_id', user.id);
+
+      toast({
+        title: 'Spotify Disconnected',
+        description: 'Your Spotify account has been disconnected.',
+      });
+
+      // Refresh the profile data
       fetchProfile();
     } catch (error) {
-      console.error('Error disconnecting Spotify:', error);
-      toast({ title: 'Error', description: 'Failed to disconnect Spotify', variant: 'destructive' });
+      console.error('Spotify disconnect error:', error);
+      toast({
+        title: 'Disconnection Error',
+        description: 'Failed to disconnect Spotify',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -589,7 +700,7 @@ const CreatorDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">Connect to enable real-time stream tracking and fan leaderboards.</p>
-                    <Button className="w-full bg-gradient-primary hover:opacity-90" onClick={signInWithSpotify}>
+                    <Button className="w-full bg-gradient-primary hover:opacity-90" onClick={handleConnectSpotify}>
                       Connect Spotify
                     </Button>
                   </div>
