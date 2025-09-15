@@ -615,7 +615,7 @@ const CreatorDashboard = () => {
                   <BarChart3 className="h-4 w-4 mr-2" />
                   View All Campaigns
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={() => navigate('/profile/edit')}>
                   <Settings className="h-4 w-4 mr-2" />
                   Account Settings
                 </Button>
