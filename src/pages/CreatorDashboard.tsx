@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCreatorRealtimeData } from '@/hooks/useCreatorRealtimeData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,22 +36,18 @@ const CreatorDashboard = () => {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
-  // Real data based on actual user activity - will be 0 until they engage
-  const [metrics, setMetrics] = useState({
-    totalFans: 0,
-    totalXPDistributed: 0,
-    activeCampaigns: 0,
-    totalRevenue: 0,
-    conversionRate: 0,
-    newFansThisWeek: 0,
-    streamsGenerated: 0,
-    socialShares: 0
-  });
+  // Real-time data hook
+  const { 
+    metrics, 
+    activeCampaigns: realActiveCampaigns, 
+    recentActivity, 
+    weeklyPerformance, 
+    loading: realtimeLoading 
+  } = useCreatorRealtimeData();
 
   useEffect(() => {
     if (user) {
       fetchProfile();
-      fetchMetrics();
     }
   }, [user]);
   useEffect(() => {
@@ -117,59 +114,6 @@ const CreatorDashboard = () => {
     }
   };
 
-  const fetchMetrics = async () => {
-    if (!user) return;
-    
-    try {
-      // Get real metrics from database
-      const [fansData, campaignsData, xpData, revenueData] = await Promise.all([
-        // Count followers (when follow system is implemented)
-        supabase.from('creator_fan_leaderboards')
-          .select('fan_user_id', { count: 'exact', head: true })
-          .eq('creator_user_id', user.id),
-        
-        // Count active campaigns
-        supabase.from('campaigns')
-          .select('*', { count: 'exact', head: true })
-          .eq('creator_id', user.id)
-          .eq('status', 'active'),
-        
-        // Sum XP distributed
-        supabase.from('creator_fan_leaderboards')
-          .select('total_xp_earned')
-          .eq('creator_user_id', user.id),
-        
-        // Revenue from campaigns (when implemented)
-        supabase.from('campaigns')
-          .select('cash_reward')
-          .eq('creator_id', user.id)
-          .eq('status', 'completed')
-      ]);
-
-      const totalFans = fansData.count || 0;
-      const activeCampaigns = campaignsData.count || 0;
-      
-      const totalXPDistributed = xpData.data?.reduce((sum, entry) => 
-        sum + (entry.total_xp_earned || 0), 0) || 0;
-      
-      const totalRevenue = revenueData.data?.reduce((sum, entry) => 
-        sum + (entry.cash_reward || 0), 0) || 0;
-
-      setMetrics({
-        totalFans,
-        totalXPDistributed,
-        activeCampaigns,
-        totalRevenue,
-        conversionRate: totalFans > 0 ? ((activeCampaigns / totalFans) * 100) : 0,
-        newFansThisWeek: 0, // Calculate from recent data
-        streamsGenerated: 0, // From spotify_listens table
-        socialShares: 0 // From future social sharing tracking
-      });
-    } catch (error) {
-      console.error('Error fetching metrics:', error);
-      // Keep metrics at 0 if there's an error
-    }
-  };
 
   const handleConnectMerchStore = async () => {
     try {
@@ -361,7 +305,11 @@ const CreatorDashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {metrics.activeCampaigns === 0 ? (
+                {realtimeLoading ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Loading campaigns...</p>
+                  </div>
+                ) : realActiveCampaigns.length === 0 ? (
                   <div className="text-center py-12">
                     <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-muted-foreground mb-2">No Active Campaigns</h3>
@@ -375,22 +323,33 @@ const CreatorDashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Sample Campaign - This should be replaced with real campaigns */}
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-surface border">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-                          <Music className="h-5 w-5 text-white" />
+                    {realActiveCampaigns.map((campaign) => {
+                      const participantCount = campaign.campaign_participants?.length || 0;
+                      const daysLeft = campaign.end_date 
+                        ? Math.max(0, Math.ceil((new Date(campaign.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+                        : null;
+                      
+                      return (
+                        <div key={campaign.id} className="flex items-center justify-between p-4 rounded-lg bg-surface border hover:bg-surface/80 transition-colors cursor-pointer" onClick={() => navigate(`/campaigns`)}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+                              <Music className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{campaign.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {participantCount} participants
+                                {daysLeft !== null && ` • ${daysLeft} days left`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <Badge className="bg-success/20 text-success">Active</Badge>
+                            <p className="text-sm text-muted-foreground mt-1">{campaign.current_progress || 0} progress</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">Stream "New Album" Campaign</p>
-                          <p className="text-sm text-muted-foreground">647 participants • 4 days left</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge className="bg-success/20 text-success">Active</Badge>
-                        <p className="text-sm text-muted-foreground mt-1">12.4k XP distributed</p>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -463,7 +422,7 @@ const CreatorDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Top Contributors */}
+            {/* Top Contributors - Now using real leaderboard data */}
             <Card className="card-modern">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -472,29 +431,36 @@ const CreatorDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {['SuperFan23', 'MusicLover99', 'StreamKing', 'FanGirl47', 'MelodyMaster'].map((fan, index) => (
-                    <div 
-                      key={fan} 
-                      className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
-                      onClick={() => navigate('/universal-profile')}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
-                          {index + 1}
+                {loadingLeaderboard ? (
+                  <p className="text-sm text-muted-foreground">Loading contributors...</p>
+                ) : leaderboard.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No contributors yet. As fans engage with your campaigns, they'll appear here.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {leaderboard.slice(0, 5).map((entry, index) => (
+                      <div 
+                        key={entry.fan_user_id} 
+                        className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
+                        onClick={() => navigate(`/universal-profile?userId=${entry.fan_user_id}`)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
+                            {entry.rank_position ?? index + 1}
+                          </div>
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={entry.profile?.avatar_url || undefined} alt={`${entry.profile?.display_name || entry.profile?.username || 'Fan'} avatar`} />
+                            <AvatarFallback>{(entry.profile?.display_name || entry.profile?.username || 'FN').slice(0,2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{entry.profile?.display_name || entry.profile?.username || entry.fan_user_id.slice(0,8)}</span>
                         </div>
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>{fan.slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{fan}</span>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">{entry.total_xp_earned} XP</p>
+                          <p className="text-xs text-muted-foreground">{entry.total_listens} listens</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-primary">{(2500 - index * 300)} XP</p>
-                        <p className="text-xs text-muted-foreground">{15 - index * 2} campaigns</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -678,10 +644,18 @@ const CreatorDashboard = () => {
                 >
                   ✨ Content Assistant
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigate('/shoutout-generator')}
+                >
                   🎤 Shoutout Generator
                 </Button>
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigate('/sentiment-analysis')}
+                >
                   📊 Sentiment Analysis
                 </Button>
               </CardContent>
@@ -693,24 +667,38 @@ const CreatorDashboard = () => {
                 <CardTitle>Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-success rounded-full"></div>
-                    <span>New fan joined campaign</span>
+                {realtimeLoading ? (
+                  <p className="text-sm text-muted-foreground">Loading activity...</p>
+                ) : recentActivity.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">No recent activity yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Activity will appear here as fans engage with your campaigns</p>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <span>1,250 XP distributed</span>
+                ) : (
+                  <div className="space-y-3">
+                    {recentActivity.slice(0, 8).map((activity) => {
+                      const getActivityColor = (type: string) => {
+                        switch (type) {
+                          case 'campaign_join': return 'bg-success';
+                          case 'campaign_complete': return 'bg-primary';
+                          case 'share': return 'bg-brand-accent';
+                          case 'xp_earned': return 'bg-warning';
+                          default: return 'bg-muted-foreground';
+                        }
+                      };
+
+                      return (
+                        <div key={activity.id} className="flex items-center gap-2 text-sm">
+                          <div className={`w-2 h-2 rounded-full ${getActivityColor(activity.type)}`}></div>
+                          <span className="flex-1">{activity.description}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(activity.timestamp).toLocaleDateString()}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-brand-accent rounded-full"></div>
-                    <span>Campaign milestone reached</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-warning rounded-full"></div>
-                    <span>Reward inventory low</span>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -720,24 +708,34 @@ const CreatorDashboard = () => {
                 <CardTitle>This Week</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Fan Growth</span>
-                    <span className="text-sm font-medium text-success">+12.5%</span>
+                {realtimeLoading ? (
+                  <p className="text-sm text-muted-foreground">Loading performance data...</p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Fan Growth</span>
+                      <span className={`text-sm font-medium ${weeklyPerformance.fanGrowth >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {weeklyPerformance.fanGrowth >= 0 ? '+' : ''}{weeklyPerformance.fanGrowth}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Engagement</span>
+                      <span className={`text-sm font-medium ${weeklyPerformance.engagement >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {weeklyPerformance.engagement >= 0 ? '+' : ''}{weeklyPerformance.engagement}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">XP Efficiency</span>
+                      <span className="text-sm font-medium text-primary">{weeklyPerformance.xpEfficiency}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Revenue</span>
+                      <span className={`text-sm font-medium ${weeklyPerformance.revenue >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {weeklyPerformance.revenue >= 0 ? '+' : ''}${Math.abs(weeklyPerformance.revenue).toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Engagement</span>
-                    <span className="text-sm font-medium text-success">+8.3%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">XP Efficiency</span>
-                    <span className="text-sm font-medium text-primary">94.2%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Revenue</span>
-                    <span className="text-sm font-medium text-success">+15.7%</span>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>

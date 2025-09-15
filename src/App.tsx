@@ -34,6 +34,8 @@ import TermsConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AwardXP from "./pages/AwardXP";
 import BulkXPUpdate from "./pages/BulkXPUpdate";
+import ShoutoutGenerator from "./pages/ShoutoutGenerator";
+import SentimentAnalysis from "./pages/SentimentAnalysis";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -129,6 +131,16 @@ const App = () => (
             <Route path="/feed" element={
               <ProtectedRoute>
                 <Feed />
+              </ProtectedRoute>
+            } />
+            <Route path="/shoutout-generator" element={
+              <ProtectedRoute>
+                <ShoutoutGenerator />
+              </ProtectedRoute>
+            } />
+            <Route path="/sentiment-analysis" element={
+              <ProtectedRoute>
+                <SentimentAnalysis />
               </ProtectedRoute>
             } />
             
