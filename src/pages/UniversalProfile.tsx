@@ -1271,7 +1271,7 @@ const UniversalProfile = () => {
       </div>
     )}
     
-      <div className="w-full max-w-4xl mx-auto space-y-6 px-2 sm:px-4" style={{ paddingTop: pullDistance > 0 ? `${pullDistance}px` : '0px' }}>
+      <div className="w-full max-w-4xl mx-auto space-y-6 px-2 sm:px-4 pt-4" style={{ paddingTop: pullDistance > 0 ? `${pullDistance}px` : '16px' }}>
         {/* Header - Instagram Style */}
         <div className="flex justify-between items-center gap-2 py-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
