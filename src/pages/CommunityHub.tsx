@@ -10,12 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Users, MessageSquare, Calendar, MapPin, Plus, Heart, Share, Pin, Crown } from 'lucide-react';
+import { CommunityDetail } from '@/components/CommunityDetail';
 
 const CommunityHub = () => {
   const { user } = useAuth();
   const [showCommunityDialog, setShowCommunityDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
+  const [selectedCommunity, setSelectedCommunity] = useState<number | null>(null);
 
   // Mock data
   const communities = [
@@ -89,15 +91,22 @@ const CommunityHub = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Community Hub
-            </h1>
-            <p className="text-muted-foreground">Build and manage your fan communities</p>
-          </div>
-        </div>
+        {selectedCommunity ? (
+          <CommunityDetail 
+            communityId={selectedCommunity} 
+            onBack={() => setSelectedCommunity(null)} 
+          />
+        ) : (
+          <>
+            {/* Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Community Hub
+                </h1>
+                <p className="text-muted-foreground">Build and manage your fan communities</p>
+              </div>
+            </div>
 
         <Tabs defaultValue="communities" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4">
@@ -178,8 +187,23 @@ const CommunityHub = () => {
                         <span>{community.recentActivity}</span>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">View</Button>
-                        <Button variant="outline" size="sm">Manage</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setSelectedCommunity(community.id)}
+                        >
+                          View
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            // Navigate to community management page - placeholder for now
+                            console.log('Manage community:', community.id);
+                          }}
+                        >
+                          Manage
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -400,6 +424,8 @@ const CommunityHub = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </div>
     </div>
   );

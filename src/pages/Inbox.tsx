@@ -10,7 +10,8 @@ import { InboxMessage } from '@/components/InboxMessage';
 import CreatorInbox from '@/components/CreatorInbox';
 import MessageSettings from '@/components/MessageSettings';
 import ConversationThread from '@/components/ConversationThread';
-import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings, User, ArrowLeft, Trash2 } from 'lucide-react';
+import MessageCreator from '@/components/MessageCreator';
+import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings, User, ArrowLeft, Trash2, Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -47,6 +48,10 @@ const Inbox: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'denied'>('all');
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+  const [showNewMessageDialog, setShowNewMessageDialog] = useState(false);
+  const [searchUserQuery, setSearchUserQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedRecipient, setSelectedRecipient] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -78,6 +83,35 @@ const Inbox: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
+  };
+
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('public_profiles' as any)
+        .select('user_id, username, display_name, avatar_url')
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .limit(10);
+
+      if (error) {
+        console.error('Error searching users:', error);
+        return;
+      }
+
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error('Error in searchUsers:', error);
+    }
+  };
+
+  const handleUserSearch = (query: string) => {
+    setSearchUserQuery(query);
+    searchUsers(query);
   };
 
   const fetchSentMessages = async () => {
@@ -210,16 +244,26 @@ const Inbox: React.FC = () => {
             <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Manage your messages and messaging settings</p>
           </div>
         </div>
-        {!isMobile && (
+        <div className="flex items-center gap-3">
           <Button
-            variant="outline"
-            onClick={() => navigate('/universal-profile')}
-            className="flex items-center gap-2"
+            onClick={() => setShowNewMessageDialog(true)}
+            className="bg-gradient-primary hover:opacity-90"
+            size={isMobile ? "sm" : "default"}
           >
-            <User className="h-4 w-4" />
-            My Profile
+            <Plus className="h-4 w-4 mr-2" />
+            New Message
           </Button>
-        )}
+          {!isMobile && (
+            <Button
+              variant="outline"
+              onClick={() => navigate('/universal-profile')}
+              className="flex items-center gap-2"
+            >
+              <User className="h-4 w-4" />
+              My Profile
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Global Search Bar */}
@@ -392,6 +436,97 @@ const Inbox: React.FC = () => {
           <MessageSettings />
         </TabsContent>
       </Tabs>
+
+      {/* New Message Dialog */}
+      <Dialog open={showNewMessageDialog} onOpenChange={setShowNewMessageDialog}>
+        <DialogContent className={`max-w-2xl max-h-[90vh] overflow-y-auto ${isMobile ? 'h-[85vh] rounded-t-lg rounded-b-none m-0 w-full fixed bottom-0 left-0 right-0' : ''}`}>
+          <DialogHeader>
+            <DialogTitle>Send New Message</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {!selectedRecipient ? (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Search Users</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by username or display name..."
+                      value={searchUserQuery}
+                      onChange={(e) => handleUserSearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                
+                {searchResults.length > 0 && (
+                  <div className="border rounded-lg max-h-48 overflow-y-auto">
+                    {searchResults.map((user) => (
+                      <div
+                        key={user.user_id}
+                        className="flex items-center space-x-3 p-3 hover:bg-accent cursor-pointer border-b last:border-b-0"
+                        onClick={() => setSelectedRecipient(user)}
+                      >
+                        <div className="h-10 w-10 bg-muted rounded-full flex items-center justify-center">
+                          {user.avatar_url ? (
+                            <img src={user.avatar_url} alt="" className="h-10 w-10 rounded-full" />
+                          ) : (
+                            <User className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{user.display_name || user.username}</p>
+                          <p className="text-sm text-muted-foreground">@{user.username}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 p-3 bg-accent rounded-lg">
+                  <div className="h-10 w-10 bg-muted rounded-full flex items-center justify-center">
+                    {selectedRecipient.avatar_url ? (
+                      <img src={selectedRecipient.avatar_url} alt="" className="h-10 w-10 rounded-full" />
+                    ) : (
+                      <User className="h-5 w-5" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">{selectedRecipient.display_name || selectedRecipient.username}</p>
+                    <p className="text-sm text-muted-foreground">@{selectedRecipient.username}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedRecipient(null);
+                      setSearchUserQuery('');
+                      setSearchResults([]);
+                    }}
+                  >
+                    Change
+                  </Button>
+                </div>
+                
+                <MessageCreator
+                  recipientId={selectedRecipient.user_id}
+                  recipientName={selectedRecipient.display_name || selectedRecipient.username}
+                  onMessageSent={() => {
+                    setShowNewMessageDialog(false);
+                    setSelectedRecipient(null);
+                    setSearchUserQuery('');
+                    setSearchResults([]);
+                    // Refresh the inbox
+                    fetchSentMessages();
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1770,12 +1770,12 @@ const UniversalProfile = () => {
 
         {/* Tabs Section */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="w-full flex md:grid md:grid-cols-5 overflow-x-auto">
-            <TabsTrigger value="posts" className="whitespace-nowrap flex-shrink-0">Posts</TabsTrigger>
-            <TabsTrigger value="campaigns" className="whitespace-nowrap flex-shrink-0">Campaigns</TabsTrigger> 
-            <TabsTrigger value="rewards" className="whitespace-nowrap flex-shrink-0">Rewards</TabsTrigger>
-            <TabsTrigger value="supporters" className="whitespace-nowrap flex-shrink-0">Supporters</TabsTrigger>
-            <TabsTrigger value="haters" className="whitespace-nowrap flex-shrink-0">Haters</TabsTrigger>
+          <TabsList className="w-full flex md:grid md:grid-cols-5 overflow-x-auto gap-1">
+            <TabsTrigger value="posts" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Posts</TabsTrigger>
+            <TabsTrigger value="campaigns" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Campaigns</TabsTrigger> 
+            <TabsTrigger value="rewards" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Rewards</TabsTrigger>
+            <TabsTrigger value="supporters" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Supporters</TabsTrigger>
+            <TabsTrigger value="haters" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Haters</TabsTrigger>
           </TabsList>
           
           <TabsContent value="posts" className="mt-6">

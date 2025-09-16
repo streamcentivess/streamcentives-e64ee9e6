@@ -34,7 +34,7 @@ const MobileNavigation = () => {
     },
     {
       icon: Store,
-      label: 'Shop',
+      label: 'Shop',  
       path: '/marketplace',
     },
     {
