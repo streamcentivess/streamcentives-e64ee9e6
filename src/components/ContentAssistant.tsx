@@ -50,6 +50,9 @@ import { PhotoEditor } from './PhotoEditor';
 import { CarouselUpload } from './CarouselUpload';
 import { VideoEditor } from './VideoEditor';
 import { VoiceRecorder } from './VoiceRecorder';
+import { ImagePreviewModal } from './ImagePreviewModal';
+import { ImageFormatSelector, ImageFormat, IMAGE_FORMATS } from './ImageFormatSelector';
+import { SubscriptionGate } from './SubscriptionGate';
 
 interface ContentAssistantProps {
   profile?: any;
@@ -116,6 +119,8 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
   const [loadingMotions, setLoadingMotions] = useState(false);
   const [selectedTemplateForPreview, setSelectedTemplateForPreview] = useState<any | null>(null);
   const [showTemplatePreview, setShowTemplatePreview] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{url: string; title: string} | null>(null);
+  const [selectedFormat, setSelectedFormat] = useState<ImageFormat>(IMAGE_FORMATS[0]);
 
   useEffect(() => {
     checkProSubscription();
@@ -2587,6 +2592,15 @@ const [motionVideos, setMotionVideos] = useState<any[]>([]);
           </Dialog>
         )}
       </DialogContent>
+      
+      {previewImage && (
+        <ImagePreviewModal
+          isOpen={!!previewImage}
+          onClose={() => setPreviewImage(null)}
+          imageUrl={previewImage.url}
+          title={previewImage.title}
+        />
+      )}
     </Dialog>
   );
 };
