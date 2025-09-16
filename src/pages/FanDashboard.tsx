@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trophy, Star, Gift, Target, Music, Users, Calendar, TrendingUp, Plus } from 'lucide-react';
+import { Trophy, Star, Gift, Target, Music, Users, Calendar, TrendingUp, Plus, Award, Medal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FanRewardsTab from '@/components/FanRewardsTab';
 import { FanShoutouts } from '@/components/FanShoutouts';
+import { LeaderboardPosition } from '@/components/LeaderboardPosition';
+import { XPRewardAnimation } from '@/components/XPRewardAnimation';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
@@ -31,6 +33,9 @@ const FanDashboard = () => {
   const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [topArtists, setTopArtists] = useState<any[]>([]);
+  const [leaderboardPositions, setLeaderboardPositions] = useState<Record<string, any>>({});
+  const [showXPAnimation, setShowXPAnimation] = useState(false);
+  const [xpAnimationAmount, setXpAnimationAmount] = useState(0);
 
   // Tier system
   const nextTierXP = 2000;
@@ -43,12 +48,12 @@ const FanDashboard = () => {
     }
   }, [user]);
 
-  // Set up real-time XP balance updates
+  // Set up real-time XP balance updates and leaderboard changes
   useEffect(() => {
     if (!user?.id) return;
     
     const channel = supabase
-      .channel('xp-balance-updates-fan')
+      .channel('fan-dashboard-realtime')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -57,11 +62,63 @@ const FanDashboard = () => {
       }, (payload: any) => {
         console.log('Fan Dashboard XP balance updated:', payload);
         if (payload.new && typeof payload.new.current_xp === 'number') {
+          const oldXP = metrics.xpBalance;
+          const newXP = payload.new.current_xp;
+          const xpGained = newXP - oldXP;
+          
+          if (xpGained > 0) {
+            setXpAnimationAmount(xpGained);
+            setShowXPAnimation(true);
+          }
+          
           setMetrics(prev => ({
             ...prev,
-            xpBalance: payload.new.current_xp,
+            xpBalance: newXP,
             totalXPEarned: payload.new.total_earned_xp || prev.totalXPEarned
           }));
+        }
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'creator_fan_leaderboards',
+        filter: `fan_user_id=eq.${user.id}`
+      }, (payload: any) => {
+        console.log('Leaderboard position updated:', payload);
+        if (payload.new) {
+          setLeaderboardPositions(prev => ({
+            ...prev,
+            [payload.new.creator_user_id]: {
+              position: payload.new.rank_position,
+              totalXP: payload.new.total_xp_earned,
+              loading: false
+            }
+          }));
+          
+          // Add to recent activity
+          setRecentActivity(prev => [{
+            type: 'leaderboard',
+            message: `Moved to position #${payload.new.rank_position} on leaderboard`,
+            timestamp: new Date().toISOString(),
+            xp: payload.new.total_xp_earned
+          }, ...prev.slice(0, 4)]);
+        }
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'campaign_participants',
+        filter: `user_id=eq.${user.id}`
+      }, (payload: any) => {
+        console.log('Campaign participation updated:', payload);
+        if (payload.new && payload.new.status === 'completed' && payload.old?.status !== 'completed') {
+          // Add campaign completion to recent activity
+          setRecentActivity(prev => [{
+            type: 'campaign_complete',
+            message: `Completed campaign and earned ${payload.new.xp_earned || 0} XP!`,
+            timestamp: new Date().toISOString(),
+            xp: payload.new.xp_earned || 0
+          }, ...prev.slice(0, 4)]);
         }
       })
       .subscribe();
@@ -69,7 +126,7 @@ const FanDashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, metrics.xpBalance]);
 
   const fetchFanMetrics = async () => {
     if (!user) return;
@@ -184,6 +241,23 @@ const FanDashboard = () => {
           });
           
           setTopArtists(artistsWithData);
+          
+          // Get leaderboard positions for top artists
+          const { data: leaderboardData } = await supabase
+            .from('creator_fan_leaderboards')
+            .select('creator_user_id, rank_position, total_xp_earned')
+            .eq('fan_user_id', user.id)
+            .in('creator_user_id', topArtistIds);
+            
+          const positions: Record<string, any> = {};
+          (leaderboardData || []).forEach(lb => {
+            positions[lb.creator_user_id] = {
+              position: lb.rank_position,
+              totalXP: lb.total_xp_earned,
+              loading: false
+            };
+          });
+          setLeaderboardPositions(positions);
         }
       }
 
@@ -429,23 +503,35 @@ const FanDashboard = () => {
                       <div className="text-center py-8">
                         <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                         <p className="text-sm text-muted-foreground">
-                          No recent activity. Start engaging to see your activity here!
+                          Your activity will appear here as you engage with campaigns and streams
                         </p>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         {recentActivity.map((activity, index) => (
-                          <div key={index} className="flex items-center justify-between py-2">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                activity.type === 'stream' ? 'bg-primary' : 
-                                activity.type === 'campaign' ? 'bg-success' : 'bg-brand-accent'
-                              }`}></div>
-                              <span className="text-sm">{activity.message}</span>
+                          <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-surface border">
+                            <div className="flex-shrink-0 mt-1">
+                              {activity.type === 'stream' ? (
+                                <Music className="h-4 w-4 text-primary" />
+                              ) : activity.type === 'leaderboard' ? (
+                                <Trophy className="h-4 w-4 text-yellow-500" />
+                              ) : activity.type === 'campaign_complete' ? (
+                                <Award className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <Target className="h-4 w-4 text-primary" />
+                              )}
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(activity.timestamp).toLocaleDateString()}
-                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm">{activity.message}</p>
+                              {activity.xp && (
+                                <Badge className="bg-primary/20 text-primary mt-1">
+                                  +{activity.xp} XP
+                                </Badge>
+                              )}
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {activity.timestamp ? new Date(activity.timestamp).toLocaleDateString() : 'Recently'}
+                              </p>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -477,44 +563,66 @@ const FanDashboard = () => {
                   </CardContent>
                 </Card>
 
-                {/* Top Artists */}
-                <Card className="card-modern">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Music className="h-5 w-5" />
-                      Top Supported Artists
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {topArtists.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                        <p className="text-sm text-muted-foreground">
-                          Start streaming music to see your top supported artists here!
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {topArtists.map((artist, index) => (
-                          <div key={artist.user_id || index} className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={artist.avatar_url} />
-                                <AvatarFallback>
-                                  {(artist.display_name || artist.username || 'AR').slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm font-medium">
-                                {artist.display_name || artist.username || 'Unknown Artist'}
-                              </span>
+                  {/* Top Supported Artists with Leaderboard Positions */}
+                  <Card className="card-modern">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Music className="h-5 w-5" />
+                        Top Supported Artists
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {topArtists.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                          <h3 className="text-lg font-medium text-muted-foreground mb-2">No Artists Yet</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Start streaming to discover and support artists
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {topArtists.map((artist, index) => (
+                            <div key={artist.user_id || index} className="space-y-3 p-3 rounded-lg bg-surface/50 border">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage src={artist.avatar_url} />
+                                    <AvatarFallback>
+                                      {(artist.display_name || artist.username || 'A').slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium">
+                                      {artist.display_name || artist.username || 'Unknown Artist'}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {artist.streams} streams • {artist.xp} XP earned
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="flex items-center gap-1">
+                                  <Trophy className="h-3 w-3" />
+                                  #{index + 1}
+                                </Badge>
+                              </div>
+                              
+                              {/* Leaderboard Position */}
+                              {artist.user_id && (
+                                <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                                  <span className="text-xs text-muted-foreground">Your leaderboard position:</span>
+                                  <LeaderboardPosition 
+                                    creatorId={artist.user_id} 
+                                    className="text-xs"
+                                  />
+                                </div>
+                              )}
                             </div>
-                            <span className="text-sm text-primary">{artist.xp} XP</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
                 {/* Achievements */}
                 <Card className="card-modern">
@@ -558,6 +666,13 @@ const FanDashboard = () => {
             <FanShoutouts />
           </TabsContent>
         </Tabs>
+        
+        {/* XP Reward Animation */}
+        <XPRewardAnimation
+          xpAmount={xpAnimationAmount}
+          show={showXPAnimation}
+          onComplete={() => setShowXPAnimation(false)}
+        />
       </div>
     </div>
   );
