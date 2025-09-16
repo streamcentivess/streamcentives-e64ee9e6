@@ -46,7 +46,7 @@ import TermsConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ShoutoutGenerator from "./pages/ShoutoutGenerator";
 import SentimentAnalysis from "./pages/SentimentAnalysis";
-import { EnhancedPurchaseXP } from "./pages/EnhancedPurchaseXP";
+
 
 const queryClient = new QueryClient();
 
@@ -69,7 +69,7 @@ const App = () => {
               <Route path="/pitch" element={<PitchDeck />} />
               <Route path="/team" element={<Team />} />
               <Route path="/purchase-xp" element={<PurchaseXP />} />
-              <Route path="/enhanced-purchase-xp" element={<EnhancedPurchaseXP />} />
+              
               <Route path="/xp-purchase-success" element={<XPPurchaseSuccess />} />
               <Route path="/terms-conditions" element={<TermsConditions />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
