@@ -1782,27 +1782,20 @@ const UniversalProfile = () => {
                 />
               </div>
 
-              {/* Connect Spotify Button */}
-              {!profile.spotify_connected && isOwnProfile && <Button onClick={connectSpotify} className="w-full mt-3 bg-[#1db954] hover:bg-[#1ed760] text-white">
-                  <Music className="h-4 w-4 mr-2" />
-                    Connect Spotify
-                  </Button>}
             </div>
           </CardContent>
         </Card>
 
         {/* Tabs Section */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className={`w-full flex md:grid overflow-x-auto gap-1 ${isOwnProfile ? 'md:grid-cols-6' : 'md:grid-cols-5'}`}>
+          <TabsList className={`w-full flex md:grid overflow-x-auto gap-1 md:grid-cols-6`}>
             <TabsTrigger value="posts" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Posts</TabsTrigger>
             <TabsTrigger value="campaigns" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Campaigns</TabsTrigger> 
             <TabsTrigger value="rewards" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Rewards</TabsTrigger>
-            {isOwnProfile && (
-              <TabsTrigger value="smart-links" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">
-                <Link2 className="h-4 w-4 mr-1" />
-                Smart Links
-              </TabsTrigger>
-            )}
+            <TabsTrigger value="smart-links" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">
+              <Link2 className="h-4 w-4 mr-1" />
+              Smart Links
+            </TabsTrigger>
             <TabsTrigger value="supporters" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Supporters</TabsTrigger>
             <TabsTrigger value="haters" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Haters</TabsTrigger>
           </TabsList>
@@ -1955,11 +1948,22 @@ const UniversalProfile = () => {
           </TabsContent>
           
           {/* Smart Links Tab - Available for Everyone */}
-          {isOwnProfile && (
-            <TabsContent value="smart-links" className="mt-6">
+          <TabsContent value="smart-links" className="mt-6">
+            {isOwnProfile ? (
               <SmartLinkManager />
-            </TabsContent>
-          )}
+            ) : (
+              <div className="text-center py-12">
+                <Link2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Smart Links</h3>
+                <p className="text-muted-foreground mb-6">
+                  This user hasn't created any public smart links yet.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Smart Links allow creators to share all their content and social media in one place, with XP rewards for fans who engage.
+                </p>
+              </div>
+            )}
+          </TabsContent>
           
           <TabsContent value="supporters" className="mt-6">
             <Card className="card-modern">
