@@ -1332,20 +1332,9 @@ const UniversalProfile = () => {
             </h1>
           </div>
           <div className="flex gap-1 flex-shrink-0">
-            <Button onClick={() => navigate('/feed')} variant="ghost" size="sm" className="p-2">
-              <Search className="h-5 w-5" />
-            </Button>
             {!isOwnProfile && <Button onClick={() => navigate('/universal-profile')} variant="ghost" size="sm" className="p-2">
                 <Users className="h-5 w-5" />
               </Button>}
-            <Button onClick={() => navigate('/inbox')} variant="ghost" size="sm" className="relative p-2">
-              <Mail className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </div>
-              )}
-            </Button>
             <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-gradient-primary hover:opacity-90 px-2 text-xs">
