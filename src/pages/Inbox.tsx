@@ -439,7 +439,7 @@ const Inbox: React.FC = () => {
 
       {/* New Message Dialog */}
       <Dialog open={showNewMessageDialog} onOpenChange={setShowNewMessageDialog}>
-        <DialogContent className={`max-w-2xl max-h-[90vh] overflow-y-auto ${isMobile ? 'h-[85vh] rounded-t-lg rounded-b-none m-0 w-full fixed bottom-0 left-0 right-0' : ''}`}>
+        <DialogContent className={`${isMobile ? 'h-[95vh] max-h-[95vh] w-[95vw] max-w-[95vw] p-4 rounded-lg m-auto top-[2.5vh] left-[2.5vw] translate-x-0 translate-y-0' : 'max-w-2xl max-h-[90vh]'} overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle>Send New Message</DialogTitle>
           </DialogHeader>
