@@ -867,12 +867,9 @@ const CreatorDashboard = () => {
             </Card>
           </div>
         </div>
-
-        {/* Enhanced Earnings Dashboard */}
-        <CreatorEarningsDashboard />
       </div>
       
-      <AICampaignBuilder 
+      <AICampaignBuilder
         isOpen={showAICampaignBuilder} 
         onClose={() => setShowAICampaignBuilder(false)} 
       />
