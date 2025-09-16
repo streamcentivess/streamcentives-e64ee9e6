@@ -8,7 +8,6 @@ import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle, Bot
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import VideoModal from "@/components/VideoModal";
-import html2pdf from 'html2pdf.js';
 const logoUrl = "/lovable-uploads/5a716900-ec0d-4859-849e-c5116c76c7e1.png";
 const Website = () => {
   const [email, setEmail] = useState("");
@@ -18,60 +17,6 @@ const Website = () => {
   const {
     toast
   } = useToast();
-  const handlePitchDeckPDF = async () => {
-    const { toast } = useToast();
-    
-    try {
-      // Navigate to pitch deck page to capture content
-      const pitchWindow = window.open('/pitch', '_blank');
-      if (!pitchWindow) {
-        toast({
-          title: "Error",
-          description: "Please allow popups to download the pitch deck PDF",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Wait for the page to load, then generate PDF
-      setTimeout(async () => {
-        try {
-          const element = pitchWindow.document.body;
-          const opt = {
-            margin: 0.5,
-            filename: 'Streamcentives-Pitch-Deck.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-          };
-          
-          await html2pdf().set(opt).from(element).save();
-          pitchWindow.close();
-          
-          toast({
-            title: "Success!",
-            description: "Pitch deck PDF has been downloaded"
-          });
-        } catch (error) {
-          console.error('PDF generation error:', error);
-          toast({
-            title: "Error",
-            description: "Failed to generate PDF. Please try again.",
-            variant: "destructive"
-          });
-          pitchWindow.close();
-        }
-      }, 3000);
-      
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate PDF. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
@@ -231,21 +176,11 @@ const Website = () => {
               <img src={logoUrl} alt="Streamcentives" className="w-8 h-8 rounded-full" />
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 order-1 sm:order-2">
-                <Link to="/pitch">
-                  <Button variant="ghost" size="sm">
-                    Investor Pitch
-                  </Button>
-                </Link>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handlePitchDeckPDF}
-                  className="text-blue-400 hover:text-blue-300"
-                >
-                  Download PDF
+              <Link to="/pitch" className="order-1 sm:order-2">
+                <Button variant="ghost" size="sm">
+                  Investor Pitch
                 </Button>
-              </div>
+              </Link>
               <Link to="/team" className="order-2 sm:order-1">
                 <Button variant="ghost" size="sm">
                   Team
