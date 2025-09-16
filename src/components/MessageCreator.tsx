@@ -5,8 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Coins, Mic, Type } from 'lucide-react';
+import { Send, Coins, Mic, Type, MessageSquare } from 'lucide-react';
 import { VoiceMessageRecorder } from './VoiceMessageRecorder';
+import MessageTemplateManager from './MessageTemplateManager';
 
 interface MessageCreatorProps {
   recipientId: string;
@@ -36,6 +37,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
   const [hasPendingMessage, setHasPendingMessage] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
+  const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
     fetchMessageCost();
@@ -218,6 +220,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
             onClick={() => {
               setMessageMode('text');
               setShowVoiceRecorder(false);
+              setShowTemplates(false);
             }}
             disabled={isLoading}
           >
@@ -233,7 +236,34 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
             <Mic className="h-4 w-4 mr-1" />
             Voice Message
           </Button>
+          <Button
+            variant={showTemplates ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setShowTemplates(!showTemplates);
+              setMessageMode('text');
+              setShowVoiceRecorder(false);
+            }}
+            disabled={isLoading}
+          >
+            <MessageSquare className="h-4 w-4 mr-1" />
+            Templates
+          </Button>
         </div>
+
+        {/* Templates */}
+        {showTemplates && (
+          <div className="space-y-3">
+            <h4 className="font-medium text-sm">Choose a template:</h4>
+            <MessageTemplateManager
+              mode="select"
+              onSelectTemplate={(template) => {
+                setMessage(template.template_content);
+                setShowTemplates(false);
+              }}
+            />
+          </div>
+        )}
 
         {/* Voice Recorder */}
         {messageMode === 'voice' && showVoiceRecorder && (
@@ -248,7 +278,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
         )}
 
         {/* Text Message Input */}
-        {messageMode === 'text' && !showVoiceRecorder && (
+        {messageMode === 'text' && !showVoiceRecorder && !showTemplates && (
           <>
             <Textarea
               placeholder="Write your message here..."

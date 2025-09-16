@@ -1042,6 +1042,39 @@ export type Database = {
         }
         Relationships: []
       }
+      message_templates: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          is_active: boolean
+          template_content: string
+          template_name: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_active?: boolean
+          template_content: string
+          template_name: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_active?: boolean
+          template_content?: string
+          template_name?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           analysis_status: string | null
@@ -1107,6 +1140,50 @@ export type Database = {
           },
         ]
       }
+      notification_deliveries: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          delivery_method: string
+          delivery_status: string
+          error_message: string | null
+          external_id: string | null
+          id: string
+          notification_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          delivery_method: string
+          delivery_status?: string
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          notification_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          delivery_method?: string
+          delivery_status?: string
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          notification_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -1141,6 +1218,51 @@ export type Database = {
           push_enabled?: boolean
           slack_webhook_url?: string | null
           sms_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          data: Json | null
+          expires_at: string | null
+          id: string
+          is_read: boolean
+          message: string
+          priority: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          priority?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          priority?: string | null
+          title?: string
+          type?: string
           updated_at?: string
           user_id?: string
         }
@@ -1798,6 +1920,39 @@ export type Database = {
         }
         Relationships: []
       }
+      social_interactions: {
+        Row: {
+          content_type: string | null
+          created_at: string
+          id: string
+          interaction_type: string
+          metadata: Json | null
+          target_content_id: string | null
+          target_user_id: string | null
+          user_id: string
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          interaction_type: string
+          metadata?: Json | null
+          target_content_id?: string | null
+          target_user_id?: string | null
+          user_id: string
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          metadata?: Json | null
+          target_content_id?: string | null
+          target_user_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_media_credentials: {
         Row: {
           access_token: string | null
@@ -2378,6 +2533,18 @@ export type Database = {
         Args: { campaign_id_param: string; interaction_data_param?: Json }
         Returns: Json
       }
+      create_notification: {
+        Args: {
+          action_url_param?: string
+          data_param?: Json
+          message_param: string
+          priority_param?: string
+          title_param: string
+          type_param: string
+          user_id_param: string
+        }
+        Returns: string
+      }
       enhanced_redeem_reward: {
         Args: {
           amount_paid_param?: number
@@ -2417,6 +2584,13 @@ export type Database = {
           username: string
         }[]
       }
+      get_social_counts: {
+        Args: { content_type_param: string; target_content_id_param: string }
+        Returns: {
+          count: number
+          interaction_type: string
+        }[]
+      }
       handle_post_share: {
         Args: {
           platform_param?: string
@@ -2447,6 +2621,10 @@ export type Database = {
           xp_type_param?: Database["public"]["Enums"]["xp_type"]
         }
         Returns: Json
+      }
+      mark_notifications_read: {
+        Args: { notification_ids: string[] }
+        Returns: number
       }
       process_marketplace_transaction: {
         Args: {
