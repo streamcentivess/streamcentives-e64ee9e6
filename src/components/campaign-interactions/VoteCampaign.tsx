@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Vote, Check, Users } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Vote, Check, Users, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { XPRewardAnimation } from '@/components/XPRewardAnimation';
 
 interface VoteCampaignProps {
   campaign: any;
@@ -18,6 +20,9 @@ export const VoteCampaign = ({ campaign, onComplete }: VoteCampaignProps) => {
   const [completed, setCompleted] = useState(false);
   const [pollData, setPollData] = useState<any>(null);
   const [voteResults, setVoteResults] = useState<any[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [showXPAnimation, setShowXPAnimation] = useState(false);
+  const [xpAwarded, setXpAwarded] = useState(0);
 
   useEffect(() => {
     fetchPollData();
@@ -64,6 +69,17 @@ export const VoteCampaign = ({ campaign, onComplete }: VoteCampaignProps) => {
     }
 
     setVoting(true);
+    
+    // Show progress animation
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) {
+          clearInterval(progressInterval);
+          return 95;
+        }
+        return prev + 5;
+      });
+    }, 100);
     try {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
@@ -95,6 +111,9 @@ export const VoteCampaign = ({ campaign, onComplete }: VoteCampaignProps) => {
       const result = data as { success: boolean; xp_awarded: number; error?: string };
       if (result.success) {
         setCompleted(true);
+        setXpAwarded(result.xp_awarded);
+        setShowXPAnimation(true);
+        
         toast({
           title: "Vote Submitted!",
           description: `You've earned ${result.xp_awarded} XP for participating in this poll!`
@@ -113,6 +132,7 @@ export const VoteCampaign = ({ campaign, onComplete }: VoteCampaignProps) => {
       });
     } finally {
       setVoting(false);
+      setProgress(100);
     }
   };
 
@@ -184,6 +204,19 @@ export const VoteCampaign = ({ campaign, onComplete }: VoteCampaignProps) => {
             {getTotalVotes()} {getTotalVotes() === 1 ? 'vote' : 'votes'} so far
           </div>
 
+          {voting && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>Processing vote...</span>
+                <span className="flex items-center gap-1">
+                  <Star className="h-3 w-3 text-yellow-500" />
+                  +{campaign.xp_reward} XP
+                </span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+
           <Button 
             onClick={handleVote}
             disabled={voting || !selectedOption}
@@ -198,6 +231,12 @@ export const VoteCampaign = ({ campaign, onComplete }: VoteCampaignProps) => {
           </Button>
         </CardContent>
       </Card>
+      
+      <XPRewardAnimation 
+        xpAmount={xpAwarded}
+        show={showXPAnimation}
+        onComplete={() => setShowXPAnimation(false)}
+      />
     </div>
   );
 };

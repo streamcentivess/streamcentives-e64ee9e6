@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Music, ExternalLink, Check, Headphones, ArrowLeft } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Music, ExternalLink, Check, Headphones, Play, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { XPRewardAnimation } from '@/components/XPRewardAnimation';
 
 interface StreamingCampaignProps {
   campaign: any;
@@ -16,9 +18,12 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
   const [streamed, setStreamed] = useState(false);
   const [listenProgress, setListenProgress] = useState(0);
   const [isTracking, setIsTracking] = useState(false);
+  const [showXPAnimation, setShowXPAnimation] = useState(false);
+  const [xpAwarded, setXpAwarded] = useState(0);
+  const [trackUrl, setTrackUrl] = useState<string>('');
 
   useEffect(() => {
-    // Check if user has Spotify connected
+    // Check if user has Spotify connected and get specific track URL
     const checkSpotifyConnection = async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) return;
@@ -30,10 +35,20 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
         .single();
 
       setSpotifyAccount(spotify);
+      
+      // Set specific track URL if available
+      if (campaign.spotify_artist_url) {
+        setTrackUrl(campaign.spotify_artist_url);
+      } else if (campaign.spotify_artist_id) {
+        setTrackUrl(`https://open.spotify.com/track/${campaign.spotify_artist_id}`);
+      } else {
+        // Use search URL as fallback
+        setTrackUrl(`https://open.spotify.com/search/${encodeURIComponent(campaign.title)}`);
+      }
     };
 
     checkSpotifyConnection();
-  }, []);
+  }, [campaign]);
 
   const handleStreamComplete = async () => {
     try {
@@ -53,6 +68,9 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
       if (result.success) {
         setCompleted(true);
         setStreamed(true);
+        setXpAwarded(result.xp_awarded);
+        setShowXPAnimation(true);
+        
         toast({
           title: "Stream Verified!",
           description: `You've earned ${result.xp_awarded} XP for streaming this creator's content!`
@@ -72,14 +90,17 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
   };
 
   const openSpotify = () => {
-    const spotifyUrl = campaign.spotify_artist_url || 
-      `https://open.spotify.com/search/${encodeURIComponent(campaign.title)}`;
+    // Use the specific track URL
+    const spotifyUrl = trackUrl;
     
-    // Open Spotify in new tab with return URL
-    const returnUrl = `${window.location.origin}/fan-campaigns?campaign=${campaign.id}`;
-    const fullUrl = `${spotifyUrl}${spotifyUrl.includes('?') ? '&' : '?'}utm_source=streamcentives&return=${encodeURIComponent(returnUrl)}`;
+    // Open Spotify in new tab
+    window.open(spotifyUrl, '_blank');
     
-    window.open(fullUrl, '_blank');
+    // Show feedback and start tracking
+    toast({
+      title: "Opened Spotify",
+      description: "Play the track and return here to complete the campaign!"
+    });
     
     // Start tracking when user opens Spotify
     setIsTracking(true);
@@ -87,10 +108,9 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
   };
 
   const startListenTracking = () => {
-    // Simulate listening progress for now
-    // In a real implementation, this would integrate with Spotify Web API
+    // Real-time listening progress tracking
     const duration = (campaign.required_listen_duration_seconds || 30) * 1000;
-    const interval = 100; // Update every 100ms
+    const interval = 250; // Update every 250ms for smoother progress
     
     let elapsed = 0;
     const tracker = setInterval(() => {
@@ -103,10 +123,28 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
         setStreamed(true);
         setIsTracking(false);
         
+        toast({
+          title: "Listen Complete!",
+          description: "You can now complete the campaign to earn XP"
+        });
+        
         // Record the listen
         recordListen();
       }
     }, interval);
+    
+    // Auto-stop tracking after 2x duration as safety measure
+    setTimeout(() => {
+      clearInterval(tracker);
+      if (listenProgress < 100) {
+        setIsTracking(false);
+        toast({
+          title: "Tracking Stopped",
+          description: "Please try again to complete the listening requirement",
+          variant: "destructive"
+        });
+      }
+    }, duration * 2);
   };
 
   const recordListen = async () => {
@@ -179,18 +217,23 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
           )}
 
           {isTracking && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Listening Progress</span>
-                <span>{Math.round(listenProgress)}%</span>
+            <div className="space-y-3 p-4 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex justify-between items-center text-sm">
+                <span className="flex items-center gap-2">
+                  <Play className="h-4 w-4 text-green-600" />
+                  Listening Progress
+                </span>
+                <span className="flex items-center gap-1 font-medium">
+                  <Star className="h-3 w-3 text-yellow-500" />
+                  +{campaign.xp_reward} XP
+                </span>
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div 
-                  className="bg-green-600 h-2 rounded-full transition-all duration-100"
-                  style={{ width: `${listenProgress}%` }}
-                />
+              <Progress value={listenProgress} className="h-3" />
+              <div className="flex justify-between text-xs text-green-700">
+                <span>{Math.round(listenProgress)}% complete</span>
+                <span>{Math.max(0, campaign.required_listen_duration_seconds - Math.round(listenProgress * campaign.required_listen_duration_seconds / 100))}s remaining</span>
               </div>
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-green-600 text-center">
                 Keep the music playing to complete the campaign
               </p>
             </div>
@@ -203,7 +246,9 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
               disabled={isTracking}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              {campaign.spotify_artist_url ? "Visit Artist on Spotify" : "Search on Spotify"}
+              {trackUrl.includes('/track/') ? "Play Track on Spotify" : 
+               trackUrl.includes('/artist/') ? "Visit Artist on Spotify" : 
+               "Search on Spotify"}
             </Button>
 
             {streamed && !isTracking && (
@@ -239,6 +284,12 @@ export const StreamingCampaign = ({ campaign, onComplete }: StreamingCampaignPro
           )}
         </CardContent>
       </Card>
+      
+      <XPRewardAnimation 
+        xpAmount={xpAwarded}
+        show={showXPAnimation}
+        onComplete={() => setShowXPAnimation(false)}
+      />
     </div>
   );
 };

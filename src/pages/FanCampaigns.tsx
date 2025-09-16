@@ -16,6 +16,8 @@ import { StreamingCampaign } from '@/components/campaign-interactions/StreamingC
 import { VoteCampaign } from '@/components/campaign-interactions/VoteCampaign';
 import { ShareCampaign } from '@/components/campaign-interactions/ShareCampaign';
 import { UploadCampaign } from '@/components/campaign-interactions/UploadCampaign';
+import { LeaderboardPosition } from '@/components/LeaderboardPosition';
+import { useRealtimeXP } from '@/hooks/useRealtimeXP';
 
 interface Campaign {
   id: string;
@@ -48,6 +50,7 @@ const FanCampaigns = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const highlightCampaignId = searchParams.get('highlight');
+  const { xpBalance } = useRealtimeXP();
   
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -239,6 +242,10 @@ const FanCampaigns = () => {
     
     setJoinLoading(campaignId);
     try {
+      // Get campaign details for creator_id
+      const campaign = campaigns.find(c => c.id === campaignId);
+      if (!campaign) throw new Error('Campaign not found');
+
       const { error } = await supabase
         .from('campaign_participants')
         .insert({
@@ -259,9 +266,26 @@ const FanCampaigns = () => {
           throw error;
         }
       } else {
+        // Auto-add to creator's leaderboard when joining campaign
+        const { error: leaderboardError } = await supabase
+          .from('creator_fan_leaderboards')
+          .upsert({
+            creator_user_id: campaign.creator_id,
+            fan_user_id: user.id,
+            total_listens: 0,
+            total_xp_earned: 0,
+            last_activity_at: new Date().toISOString()
+          }, {
+            onConflict: 'creator_user_id,fan_user_id'
+          });
+
+        if (leaderboardError) {
+          console.error('Error adding to leaderboard:', leaderboardError);
+        }
+
         toast({
           title: "Success!",
-          description: "You've successfully joined the campaign!"
+          description: "You've joined the campaign and been added to the creator's leaderboard!"
         });
         // Refresh campaigns to update join status
         fetchCampaigns();
@@ -340,6 +364,13 @@ const FanCampaigns = () => {
                 Browse Campaigns
               </h1>
               <p className="text-muted-foreground">Discover and join exciting campaigns from your favorite creators</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-muted-foreground">Your XP Balance</div>
+            <div className="text-2xl font-bold text-primary flex items-center gap-1">
+              <Star className="h-5 w-5" />
+              {xpBalance}
             </div>
           </div>
         </div>
@@ -525,9 +556,23 @@ const FanCampaigns = () => {
       <Dialog open={!!selectedCampaign} onOpenChange={() => setSelectedCampaign(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {selectedCampaign && getCampaignTypeIcon(selectedCampaign.type)}
-              {selectedCampaign?.title}
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {selectedCampaign && getCampaignTypeIcon(selectedCampaign.type)}
+                {selectedCampaign?.title}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-sm text-muted-foreground">Your XP</div>
+                  <div className="text-lg font-bold text-primary">{xpBalance}</div>
+                </div>
+                {selectedCampaign && (
+                  <LeaderboardPosition 
+                    creatorId={selectedCampaign.creator_id}
+                    className="text-sm"
+                  />
+                )}
+              </div>
             </DialogTitle>
           </DialogHeader>
           {selectedCampaign && (
