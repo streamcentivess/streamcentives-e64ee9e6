@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Building, 
@@ -18,144 +18,259 @@ import {
   BarChart3,
   DollarSign,
   TrendingUp,
-  Activity
+  Activity,
+  Eye
 } from 'lucide-react';
-import { useMobileCapabilities } from '@/hooks/useMobileCapabilities';
-import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface Organization {
   id: string;
   name: string;
-  slug: string;
-  memberCount: number;
-  plan: 'basic' | 'pro' | 'enterprise';
-  logo?: string;
+  description?: string;
+  organization_type: string;
+  settings: any;
+  created_at: string;
+  memberCount?: number;
 }
 
 interface Member {
   id: string;
-  name: string;
-  email: string;
-  role: 'owner' | 'admin' | 'manager' | 'member';
-  joinedAt: string;
-  lastActive: string;
-  avatar?: string;
-}
-
-interface TeamMetric {
-  label: string;
-  value: string;
-  change: string;
-  trend: 'up' | 'down' | 'neutral';
+  user_id: string;
+  role: string;
+  status: string;
+  joined_at: string;
+  profiles?: {
+    display_name: string;
+    username: string;
+    avatar_url?: string;
+  };
 }
 
 const OrganizationManager = () => {
-  const { hapticImpact } = useMobileCapabilities();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
-  const [orgName, setOrgName] = useState('');
-  const [orgDescription, setOrgDescription] = useState('');
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<string>('member');
 
-  const organizations: Organization[] = [
-    {
-      id: '1',
-      name: 'StreamCentives Pro',
-      slug: 'streamcentives-pro',
-      memberCount: 8,
-      plan: 'enterprise'
-    },
-    {
-      id: '2',
-      name: 'Independent Artists',
-      slug: 'independent-artists',
-      memberCount: 3,
-      plan: 'pro'
+  const [newOrgForm, setNewOrgForm] = useState({
+    name: '',
+    description: '',
+    type: 'label'
+  });
+
+  const [inviteForm, setInviteForm] = useState({
+    email: '',
+    role: 'member'
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchOrganizations();
     }
-  ];
+  }, [user]);
 
-  const members: Member[] = [
-    {
-      id: '1',
-      name: 'John Creator',
-      email: 'john@example.com',
-      role: 'owner',
-      joinedAt: '6 months ago',
-      lastActive: '2 hours ago'
-    },
-    {
-      id: '2',
-      name: 'Sarah Manager',
-      email: 'sarah@example.com',
-      role: 'admin',
-      joinedAt: '4 months ago',
-      lastActive: '1 day ago'
-    },
-    {
-      id: '3',
-      name: 'Mike Artist',
-      email: 'mike@example.com',
-      role: 'member',
-      joinedAt: '2 months ago',
-      lastActive: '3 hours ago'
+  useEffect(() => {
+    if (selectedOrg) {
+      fetchMembers();
     }
-  ];
+  }, [selectedOrg]);
 
-  const teamMetrics: TeamMetric[] = [
-    { label: 'Total Revenue', value: '$12,450', change: '+15%', trend: 'up' },
-    { label: 'Active Campaigns', value: '24', change: '+8%', trend: 'up' },
-    { label: 'Team XP Earned', value: '145K', change: '+22%', trend: 'up' },
-    { label: 'Fan Engagement', value: '89%', change: '-2%', trend: 'down' }
-  ];
+  const fetchOrganizations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('organization_members')
+        .select(`
+          organizations (
+            id,
+            name,
+            description,
+            organization_type,
+            settings,
+            created_at
+          )
+        `)
+        .eq('user_id', user?.id)
+        .eq('status', 'active');
 
-  const handleCreateOrg = async () => {
-    await hapticImpact();
-    toast.success('Organization created successfully!');
-    setShowCreateDialog(false);
-    setOrgName('');
-    setOrgDescription('');
+      if (error) throw error;
+
+      const orgs = data?.map(item => item.organizations).filter(Boolean) || [];
+      setOrganizations(orgs as Organization[]);
+      
+      if (orgs.length > 0 && !selectedOrg) {
+        setSelectedOrg(orgs[0] as Organization);
+      }
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleInviteMember = async () => {
-    await hapticImpact();
-    toast.success('Invitation sent successfully!');
-    setShowInviteDialog(false);
-    setInviteEmail('');
-    setInviteRole('member');
+  const fetchMembers = async () => {
+    if (!selectedOrg) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('organization_members')
+        .select(`
+          id,
+          user_id,
+          role,
+          status,
+          joined_at,
+          profiles (
+            display_name,
+            username,
+            avatar_url
+          )
+        `)
+        .eq('organization_id', selectedOrg.id)
+        .eq('status', 'active');
+
+      if (error) throw error;
+
+      setMembers(data || []);
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    }
   };
 
-  const handleChangeRole = async (memberId: string, newRole: string) => {
-    await hapticImpact();
-    toast.success('Member role updated successfully!');
+  const createOrganization = async () => {
+    if (!newOrgForm.name.trim()) return;
+
+    setIsCreating(true);
+    try {
+      const { data: org, error: orgError } = await supabase
+        .from('organizations')
+        .insert({
+          name: newOrgForm.name,
+          description: newOrgForm.description,
+          organization_type: newOrgForm.type,
+          owner_id: user?.id,
+          settings: {}
+        })
+        .select()
+        .single();
+
+      if (orgError) throw orgError;
+
+      // Add creator as owner
+      const { error: memberError } = await supabase
+        .from('organization_members')
+        .insert({
+          organization_id: org.id,
+          user_id: user?.id,
+          role: 'owner',
+          status: 'active'
+        });
+
+      if (memberError) throw memberError;
+
+      toast({
+        title: "Organization created",
+        description: `${newOrgForm.name} has been created successfully.`,
+      });
+
+      setNewOrgForm({ name: '', description: '', type: 'label' });
+      setShowCreateDialog(false);
+      fetchOrganizations();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create organization",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const inviteMember = async () => {
+    if (!inviteForm.email.trim() || !selectedOrg) return;
+
+    try {
+      // Check if user exists
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', inviteForm.email)
+        .single();
+
+      if (profileError) {
+        toast({
+          title: "User not found",
+          description: "No user found with that email address.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Add member
+      const { error } = await supabase
+        .from('organization_members')
+        .insert({
+          organization_id: selectedOrg.id,
+          user_id: profile.user_id,
+          role: inviteForm.role,
+          status: 'active'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Member invited",
+        description: `User has been added to ${selectedOrg.name}.`,
+      });
+
+      setInviteForm({ email: '', role: 'member' });
+      setShowInviteDialog(false);
+      fetchMembers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to invite member",
+        variant: "destructive",
+      });
+    }
   };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'owner': return Crown;
-      case 'admin': return Shield;
-      case 'manager': return Settings;
-      default: return Users;
+      case 'owner':
+        return <Crown className="h-4 w-4 text-yellow-500" />;
+      case 'admin':
+        return <Shield className="h-4 w-4 text-blue-500" />;
+      case 'moderator':
+        return <Eye className="h-4 w-4 text-green-500" />;
+      default:
+        return <Users className="h-4 w-4 text-gray-500" />;
     }
   };
 
-  const getRoleColor = (role: string) => {
+  const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'owner': return 'text-yellow-600';
-      case 'admin': return 'text-blue-600';
-      case 'manager': return 'text-green-600';
-      default: return 'text-muted-foreground';
+      case 'owner':
+        return 'default';
+      case 'admin':
+        return 'secondary';
+      case 'moderator':
+        return 'outline';
+      default:
+        return 'outline';
     }
   };
 
-  const getPlanColor = (plan: string) => {
-    switch (plan) {
-      case 'enterprise': return 'text-purple-600';
-      case 'pro': return 'text-blue-600';
-      default: return 'text-green-600';
-    }
-  };
+  if (loading) {
+    return <div className="flex items-center justify-center h-64">Loading organizations...</div>;
+  }
 
   return (
     <div className="space-y-6">
