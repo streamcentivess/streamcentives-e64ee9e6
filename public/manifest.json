@@ -1,0 +1,71 @@
+{
+  "name": "StreamCentives",
+  "short_name": "StreamCentives",
+  "description": "The ultimate platform for creators to engage with fans and build their community through campaigns, rewards, and social interactions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "categories": ["entertainment", "social", "music"],
+  "icons": [
+    {
+      "src": "/lovable-uploads/streamcentives-logo-round.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/streamcentives-logo-round.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Creator Dashboard",
+      "short_name": "Dashboard",
+      "description": "Access your creator dashboard",
+      "url": "/creator-dashboard",
+      "icons": [
+        {
+          "src": "/lovable-uploads/streamcentives-logo-round.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Fan Dashboard",
+      "short_name": "Fan Hub",
+      "description": "Explore campaigns and activities",
+      "url": "/fan-dashboard",
+      "icons": [
+        {
+          "src": "/lovable-uploads/streamcentives-logo-round.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Marketplace",
+      "short_name": "Shop",
+      "description": "Browse rewards and collectibles",
+      "url": "/marketplace",
+      "icons": [
+        {
+          "src": "/lovable-uploads/streamcentives-logo-round.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/lovable-uploads/streamcentivesloveable.PNG",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}
