@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, UserX, MessageCircle, Search, Share2, Mail, Heart, DollarSign } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, UserX, MessageCircle, Search, Share2, Mail, Heart, DollarSign, Link2 } from 'lucide-react';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { supabase } from '@/integrations/supabase/client';
 import { PostsGrid } from '@/components/PostsGrid';
@@ -20,6 +20,7 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { HeartAnimation } from '@/components/ui/heart-animation';
 import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { SmartLinkManager } from '@/components/SmartLinkManager';
 interface Profile {
   id?: string;
   user_id: string;
@@ -1761,10 +1762,16 @@ const UniversalProfile = () => {
 
         {/* Tabs Section */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="w-full flex md:grid md:grid-cols-5 overflow-x-auto gap-1">
+          <TabsList className={`w-full flex md:grid overflow-x-auto gap-1 ${isOwnProfile && userRole === 'creator' ? 'md:grid-cols-6' : 'md:grid-cols-5'}`}>
             <TabsTrigger value="posts" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Posts</TabsTrigger>
             <TabsTrigger value="campaigns" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Campaigns</TabsTrigger> 
             <TabsTrigger value="rewards" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Rewards</TabsTrigger>
+            {isOwnProfile && userRole === 'creator' && (
+              <TabsTrigger value="smart-links" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">
+                <Link2 className="h-4 w-4 mr-1" />
+                Smart Links
+              </TabsTrigger>
+            )}
             <TabsTrigger value="supporters" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Supporters</TabsTrigger>
             <TabsTrigger value="haters" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Haters</TabsTrigger>
           </TabsList>
@@ -1915,6 +1922,13 @@ const UniversalProfile = () => {
               </CardContent>
             </Card>
           </TabsContent>
+          
+          {/* Smart Links Tab - Creator Only */}
+          {isOwnProfile && userRole === 'creator' && (
+            <TabsContent value="smart-links" className="mt-6">
+              <SmartLinkManager />
+            </TabsContent>
+          )}
           
           <TabsContent value="supporters" className="mt-6">
             <Card className="card-modern">
