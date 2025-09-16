@@ -10,6 +10,7 @@ import { Gift, ShoppingCart, Package, DollarSign, Sparkles } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useOptimizedRealtime } from '@/hooks/useOptimizedRealtime';
+import EnhancedRewardRedemption from '@/components/EnhancedRewardRedemption';
 
 interface Reward {
   id: string;
@@ -208,84 +209,11 @@ const FanRewardsTab = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {availableRewards.map((reward) => (
-                <Card key={reward.id} className="card-modern group hover:scale-105 transition-all duration-300">
-                  <CardHeader className="p-0">
-                    <div className="aspect-video bg-muted rounded-t-xl relative overflow-hidden">
-                      {reward.image_url ? (
-                        <img 
-                          src={reward.image_url} 
-                          alt={reward.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-surface">
-                          <Sparkles className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="absolute top-2 left-2">
-                        <Badge className={getRarityColor(reward.rarity)}>
-                          {reward.rarity}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="p-4 space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-                        {reward.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {reward.description || 'No description available'}
-                      </p>
-                      <p className="text-xs text-primary mt-1">
-                        By {reward.profiles?.display_name || 'Creator'}
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        {reward.xp_cost && (
-                          <span className="text-sm font-bold text-primary">
-                            {reward.xp_cost.toLocaleString()} XP
-                          </span>
-                        )}
-                        {reward.cash_price && (
-                          <span className="text-sm font-bold text-success">
-                            ${reward.cash_price}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      {reward.xp_cost && (
-                        <Button 
-                          className="flex-1 text-xs h-8"
-                          onClick={() => redeemReward(reward, 'xp')}
-                          disabled={userXP < reward.xp_cost}
-                        >
-                          <ShoppingCart className="h-3 w-3 mr-1" />
-                          Redeem XP
-                        </Button>
-                      )}
-                      {reward.cash_price && (
-                        <Button 
-                          className="flex-1 text-xs h-8"
-                          variant="outline"
-                          onClick={() => redeemReward(reward, 'cash')}
-                        >
-                          <DollarSign className="h-3 w-3 mr-1" />
-                          Buy
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <EnhancedRewardRedemption
+              rewards={availableRewards as any}
+              userXP={userXP}
+              onRedemptionSuccess={fetchRewardsData}
+            />
           )}
         </TabsContent>
 

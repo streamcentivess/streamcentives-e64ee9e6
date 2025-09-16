@@ -54,6 +54,10 @@ const ManageRewards = () => {
     cover_photo_url: '',
     rarity: 'common',
     tags: '',
+    delivery_type: 'manual',
+    instant_delivery: false,
+    creator_xp_only: false,
+    external_url: '',
   });
 
   useEffect(() => {
@@ -204,6 +208,10 @@ const ManageRewards = () => {
       cover_photo_url: '',
       rarity: 'common',
       tags: '',
+      delivery_type: 'manual',
+      instant_delivery: false,
+      creator_xp_only: false,
+      external_url: '',
     });
     setShowCreateForm(false);
     setEditingReward(null);
@@ -242,6 +250,10 @@ const ManageRewards = () => {
         rarity: formData.rarity,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : null,
         creator_id: user?.id,
+        delivery_type: formData.delivery_type,
+        instant_delivery: formData.delivery_type !== 'manual',
+        creator_xp_only: formData.creator_xp_only,
+        external_url: formData.external_url || null,
       };
 
       let error;
@@ -289,6 +301,10 @@ const ManageRewards = () => {
       cover_photo_url: reward.cover_photo_url || '',
       rarity: reward.rarity,
       tags: reward.tags?.join(', ') || '',
+      delivery_type: (reward as any).delivery_type || 'manual',
+      instant_delivery: (reward as any).instant_delivery || false,
+      creator_xp_only: (reward as any).creator_xp_only || false,
+      external_url: (reward as any).external_url || '',
     });
     setEditingReward(reward);
     setShowCreateForm(true);
@@ -477,6 +493,53 @@ const ManageRewards = () => {
                         <SelectItem value="rare">Rare</SelectItem>
                         <SelectItem value="epic">Epic</SelectItem>
                         <SelectItem value="legendary">Legendary</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                <div>
+                  <Label htmlFor="external_url">External URL (for redirects)</Label>
+                  <Input
+                    id="external_url"
+                    value={formData.external_url}
+                    onChange={(e) => handleInputChange('external_url', e.target.value)}
+                    placeholder="https://example.com/store"
+                    disabled={formData.delivery_type !== 'external_redirect'}
+                  />
+                  {formData.delivery_type === 'external_redirect' && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Fans will be redirected to this URL when they redeem the reward
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="creator_xp_only"
+                    checked={formData.creator_xp_only}
+                    onChange={(e) => handleInputChange('creator_xp_only', e.target.checked.toString())}
+                    className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <Label htmlFor="creator_xp_only">Require Creator-Specific XP</Label>
+                </div>
+                {formData.creator_xp_only && (
+                  <p className="text-xs text-muted-foreground">
+                    Fans must use XP earned specifically from your content
+                  </p>
+                )}
+
+                <div className="space-y-2">
+                    <Label htmlFor="delivery_type">Delivery Type</Label>
+                    <Select value={formData.delivery_type || 'manual'} onValueChange={(value) => handleInputChange('delivery_type', value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="manual">Manual Processing</SelectItem>
+                        <SelectItem value="follow">Instant Follow</SelectItem>
+                        <SelectItem value="code">Redemption Code</SelectItem>
+                        <SelectItem value="external_redirect">External Link</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

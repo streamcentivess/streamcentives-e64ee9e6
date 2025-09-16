@@ -1,8 +1,8 @@
 import React from 'react';
-import { EnhancedMarketplace } from '@/components/EnhancedMarketplace';
+import { EnhancedMarketplaceV2 } from '@/components/EnhancedMarketplaceV2';
 
 const Marketplace = () => {
-  return <EnhancedMarketplace />;
+  return <EnhancedMarketplaceV2 />;
 };
 
 export default Marketplace;

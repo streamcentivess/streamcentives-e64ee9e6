@@ -812,6 +812,50 @@ export type Database = {
         }
         Relationships: []
       }
+      instant_redemptions: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          is_processed: boolean | null
+          processed_at: string | null
+          redemption_data: Json | null
+          redemption_id: string | null
+          redemption_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_processed?: boolean | null
+          processed_at?: string | null
+          redemption_data?: Json | null
+          redemption_id?: string | null
+          redemption_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_processed?: boolean | null
+          processed_at?: string | null
+          redemption_data?: Json | null
+          redemption_id?: string | null
+          redemption_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instant_redemptions_redemption_id_fkey"
+            columns: ["redemption_id"]
+            isOneToOne: false
+            referencedRelation: "reward_redemptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_listings: {
         Row: {
           asking_price_cents: number
@@ -864,6 +908,68 @@ export type Database = {
             columns: ["reward_redemption_id"]
             isOneToOne: false
             referencedRelation: "reward_redemptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_transactions: {
+        Row: {
+          buyer_fee_cents: number
+          buyer_id: string
+          completed_at: string | null
+          created_at: string | null
+          creator_royalty_cents: number
+          id: string
+          listing_id: string | null
+          net_seller_amount_cents: number
+          payment_method: string
+          seller_fee_cents: number
+          seller_id: string
+          status: string | null
+          streamcentives_fee_cents: number
+          total_amount_cents: number
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_fee_cents?: number
+          buyer_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          creator_royalty_cents?: number
+          id?: string
+          listing_id?: string | null
+          net_seller_amount_cents?: number
+          payment_method?: string
+          seller_fee_cents?: number
+          seller_id: string
+          status?: string | null
+          streamcentives_fee_cents?: number
+          total_amount_cents: number
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_fee_cents?: number
+          buyer_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          creator_royalty_cents?: number
+          id?: string
+          listing_id?: string | null
+          net_seller_amount_cents?: number
+          payment_method?: string
+          seller_fee_cents?: number
+          seller_id?: string
+          status?: string | null
+          streamcentives_fee_cents?: number
+          total_amount_cents?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_transactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -1532,6 +1638,7 @@ export type Database = {
           delivery_metadata: Json | null
           delivery_type: string | null
           description: string | null
+          external_url: string | null
           id: string
           image_url: string | null
           instant_delivery: boolean | null
@@ -1555,6 +1662,7 @@ export type Database = {
           delivery_metadata?: Json | null
           delivery_type?: string | null
           description?: string | null
+          external_url?: string | null
           id?: string
           image_url?: string | null
           instant_delivery?: boolean | null
@@ -1578,6 +1686,7 @@ export type Database = {
           delivery_metadata?: Json | null
           delivery_type?: string | null
           description?: string | null
+          external_url?: string | null
           id?: string
           image_url?: string | null
           instant_delivery?: boolean | null
