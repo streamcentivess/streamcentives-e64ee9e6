@@ -30,7 +30,7 @@ const MobileNavigation = () => {
     {
       icon: Search,
       label: 'Discover',
-      path: '/campaigns',
+      path: '/community-hub',
     },
     {
       icon: Store,

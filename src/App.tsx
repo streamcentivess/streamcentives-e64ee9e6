@@ -147,6 +147,11 @@ const App = () => {
                   <ManageRewards />
                 </ProtectedRoute>
               } />
+              <Route path="/community-hub" element={
+                <ProtectedRoute>
+                  <CommunityHub />
+                </ProtectedRoute>
+              } />
               <Route path="/inbox" element={
                 <ProtectedRoute>
                   <Inbox />

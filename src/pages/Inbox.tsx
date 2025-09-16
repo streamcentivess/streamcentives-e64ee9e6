@@ -15,6 +15,7 @@ import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   id: string;
@@ -39,6 +40,7 @@ interface Message {
 const Inbox: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [sentMessages, setSentMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -196,30 +198,32 @@ const Inbox: React.FC = () => {
   const sentCounts = getStatusCounts(sentMessages);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className={`container mx-auto px-4 py-8 max-w-4xl ${isMobile ? 'px-2' : ''}`}>
       {/* Header with Search and Profile Button */}
-      <div className="flex items-center justify-between mb-6">
+      <div className={`flex items-center justify-between mb-6 ${isMobile ? 'mb-4' : ''}`}>
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
             <InboxIcon className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Message Center</h1>
-            <p className="text-muted-foreground">Manage your messages and messaging settings</p>
+            <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Message Center</h1>
+            <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Manage your messages and messaging settings</p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => navigate('/universal-profile')}
-          className="flex items-center gap-2"
-        >
-          <User className="h-4 w-4" />
-          My Profile
-        </Button>
+        {!isMobile && (
+          <Button
+            variant="outline"
+            onClick={() => navigate('/universal-profile')}
+            className="flex items-center gap-2"
+          >
+            <User className="h-4 w-4" />
+            My Profile
+          </Button>
+        )}
       </div>
 
       {/* Global Search Bar */}
-      <Card className="mb-6">
+      <Card className={`mb-6 ${isMobile ? 'mb-4' : ''}`}>
         <CardContent className="p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -227,25 +231,27 @@ const Inbox: React.FC = () => {
               placeholder="Search messages by user name or content..."
               value={globalSearchQuery}
               onChange={(e) => setGlobalSearchQuery(e.target.value)}
-              className="pl-10"
+              className={`pl-10 ${isMobile ? 'text-base' : ''}`}
             />
           </div>
         </CardContent>
       </Card>
 
       <Tabs defaultValue="inbox" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-3'}`}>
           <TabsTrigger value="inbox" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            Inbox
+            {isMobile ? 'Inbox' : 'Inbox'}
           </TabsTrigger>
-          <TabsTrigger value="sent" className="flex items-center gap-2">
-            <Send className="h-4 w-4" />
-            Sent
-            <Badge variant="outline" className="ml-1">
-              {sentCounts.all}
-            </Badge>
-          </TabsTrigger>
+          {!isMobile && (
+            <TabsTrigger value="sent" className="flex items-center gap-2">
+              <Send className="h-4 w-4" />
+              Sent
+              <Badge variant="outline" className="ml-1">
+                {sentCounts.all}
+              </Badge>
+            </TabsTrigger>
+          )}
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Settings

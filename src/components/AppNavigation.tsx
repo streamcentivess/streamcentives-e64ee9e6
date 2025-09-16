@@ -43,7 +43,6 @@ const AppNavigation = () => {
     { name: 'Feed', href: '/feed', icon: Rss },
     { name: 'Campaigns', href: '/campaigns', icon: Target },
     { name: 'Marketplace', href: '/marketplace', icon: Gift },
-    { name: 'Inbox', href: '/inbox', icon: Mail },
     { name: 'Leaderboards', href: '/leaderboards', icon: Trophy },
   ];
 
@@ -88,14 +87,6 @@ const AppNavigation = () => {
                 >
                   <item.icon className="h-4 w-4 mr-2" />
                   {item.name}
-                  {item.name === 'Inbox' && unreadCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="ml-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                    >
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </Badge>
-                  )}
                 </Link>
               ))}
             </div>
@@ -203,14 +194,6 @@ const AppNavigation = () => {
                 >
                   <item.icon className="h-4 w-4 mr-2" />
                   {item.name}
-                  {item.name === 'Inbox' && unreadCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="ml-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                    >
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </Badge>
-                  )}
                 </Link>
               ))}
               
