@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import AppNavigation from '@/components/AppNavigation';
 import CommunityUpload from '@/components/CommunityUpload';
 import UserProfileSearch from '@/components/UserProfileSearch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { 
   Heart, 
@@ -861,7 +861,36 @@ const Feed = () => {
           </TabsList>
 
           <TabsContent value="community" className="space-y-6">
-            <CommunityUpload onUploadComplete={() => fetchPosts(0, true)} />
+            {/* Compact Upload Button - Always show at top */}
+            <div className="flex justify-center">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-dashed border-primary/30 hover:border-primary/50 bg-primary/5 hover:bg-primary/10 transition-all duration-300"
+                  >
+                    <UserPlus className="h-5 w-5 text-primary" />
+                    <span className="font-medium text-primary">Upload to Feed</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      Share with Community
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="mt-4">
+                    <CommunityUpload onUploadComplete={() => {
+                      fetchPosts(0, true);
+                      // Close the dialog after successful upload
+                      const closeButton = document.querySelector('[data-dialog-close]') as HTMLButtonElement;
+                      closeButton?.click();
+                    }} />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             
             {posts.length === 0 ? (
               <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-dashed border-primary/20">
@@ -871,13 +900,6 @@ const Feed = () => {
                   <p className="text-muted-foreground mb-6">
                     Be the first to share something amazing! 🚀
                   </p>
-                  <Button 
-                    onClick={() => navigate('/universal-profile')} 
-                    className="bg-gradient-primary hover:opacity-90 text-white font-semibold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Create First Post
-                  </Button>
                 </CardContent>
               </Card>
             ) : (
@@ -1096,7 +1118,7 @@ const Feed = () => {
                     )}
                   </CardContent>
                 </Card>
-              ))
+                ))
             )}
             
             {/* Loading more indicator */}
