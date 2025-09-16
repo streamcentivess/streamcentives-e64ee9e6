@@ -3608,6 +3608,41 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_link_action_completions: {
+        Row: {
+          action_id: string
+          completed_at: string
+          created_at: string
+          id: string
+          user_id: string
+          verification_data: Json | null
+        }
+        Insert: {
+          action_id: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          user_id: string
+          verification_data?: Json | null
+        }
+        Update: {
+          action_id?: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          verification_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_action_completions_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "smart_link_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smart_link_actions: {
         Row: {
           action_label: string

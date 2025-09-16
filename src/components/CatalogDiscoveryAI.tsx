@@ -58,10 +58,7 @@ export const CatalogDiscoveryAI: React.FC = () => {
       // Load trending campaigns
       const { data: campaigns } = await supabase
         .from('campaigns')
-        .select(`
-          *,
-          profiles:creator_id(username, display_name, avatar_url)
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('boost_score', { ascending: false })
         .limit(10);
@@ -69,42 +66,57 @@ export const CatalogDiscoveryAI: React.FC = () => {
       // Load popular smart links
       const { data: smartLinks } = await supabase
         .from('smart_links')
-        .select(`
-          *,
-          profiles:creator_id(username, display_name, avatar_url)
-        `)
+        .select('*')
         .eq('is_active', true)
         .order('total_clicks', { ascending: false })
         .limit(5);
 
       const trendingItems: DiscoveryItem[] = [];
 
-      // Add campaigns
+      // Add campaigns with creator info
       if (campaigns) {
-        trendingItems.push(...campaigns.map(campaign => ({
-          id: campaign.id,
-          type: 'campaign' as const,
-          title: campaign.title,
-          subtitle: `by ${campaign.profiles?.display_name || campaign.profiles?.username}`,
-          imageUrl: campaign.image_url,
-          score: campaign.boost_score || 0,
-          tags: campaign.tags || [],
-          xpReward: campaign.xp_reward,
-          metadata: campaign
-        })));
+        for (const campaign of campaigns) {
+          // Get creator profile
+          const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('username, display_name, avatar_url')
+            .eq('user_id', campaign.creator_id)
+            .single();
+
+          trendingItems.push({
+            id: campaign.id,
+            type: 'campaign' as const,
+            title: campaign.title,
+            subtitle: `by ${creatorProfile?.display_name || creatorProfile?.username || 'Unknown'}`,
+            imageUrl: campaign.image_url,
+            score: campaign.boost_score || 0,
+            tags: campaign.tags || [],
+            xpReward: campaign.xp_reward,
+            metadata: campaign
+          });
+        }
       }
 
-      // Add smart links
+      // Add smart links with creator info
       if (smartLinks) {
-        trendingItems.push(...smartLinks.map(link => ({
-          id: link.id,
-          type: 'smart_link' as const,
-          title: link.title,
-          subtitle: `by ${link.profiles?.display_name || link.profiles?.username}`,
-          score: link.total_clicks,
-          tags: [],
-          metadata: link
-        })));
+        for (const link of smartLinks) {
+          // Get creator profile
+          const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('username, display_name, avatar_url')
+            .eq('user_id', link.creator_id)
+            .single();
+
+          trendingItems.push({
+            id: link.id,
+            type: 'smart_link' as const,
+            title: link.title,
+            subtitle: `by ${creatorProfile?.display_name || creatorProfile?.username || 'Unknown'}`,
+            score: link.total_clicks,
+            tags: [],
+            metadata: link
+          });
+        }
       }
 
       // Sort by score and take top items
@@ -194,10 +206,7 @@ export const CatalogDiscoveryAI: React.FC = () => {
     // Search campaigns
     let campaignQuery = supabase
       .from('campaigns')
-      .select(`
-        *,
-        profiles:creator_id(username, display_name, avatar_url)
-      `)
+      .select('*')
       .eq('status', 'active');
 
     if (query) {
@@ -207,31 +216,36 @@ export const CatalogDiscoveryAI: React.FC = () => {
     const { data: campaigns } = await campaignQuery.limit(10);
 
     if (campaigns) {
-      items.push(...campaigns
-        .filter(campaign => {
-          if (tags.length === 0) return true;
-          return campaign.tags?.some((tag: string) => tags.includes(tag));
-        })
-        .map(campaign => ({
+      for (const campaign of campaigns) {
+        if (tags.length > 0 && !campaign.tags?.some((tag: string) => tags.includes(tag))) {
+          continue;
+        }
+
+        // Get creator profile
+        const { data: creatorProfile } = await supabase
+          .from('profiles')
+          .select('username, display_name, avatar_url')
+          .eq('user_id', campaign.creator_id)
+          .single();
+
+        items.push({
           id: campaign.id,
           type: 'campaign' as const,
           title: campaign.title,
-          subtitle: `by ${campaign.profiles?.display_name || campaign.profiles?.username}`,
+          subtitle: `by ${creatorProfile?.display_name || creatorProfile?.username || 'Unknown'}`,
           imageUrl: campaign.image_url,
           score: calculateRelevanceScore(campaign, preferences),
           tags: campaign.tags || [],
           xpReward: campaign.xp_reward,
           metadata: campaign
-        })));
+        });
+      }
     }
 
     // Search smart links
     let linkQuery = supabase
       .from('smart_links')
-      .select(`
-        *,
-        profiles:creator_id(username, display_name, avatar_url)
-      `)
+      .select('*')
       .eq('is_active', true);
 
     if (query) {
@@ -241,15 +255,24 @@ export const CatalogDiscoveryAI: React.FC = () => {
     const { data: smartLinks } = await linkQuery.limit(8);
 
     if (smartLinks) {
-      items.push(...smartLinks.map(link => ({
-        id: link.id,
-        type: 'smart_link' as const,
-        title: link.title,
-        subtitle: `by ${link.profiles?.display_name || link.profiles?.username}`,
-        score: calculateRelevanceScore(link, preferences),
-        tags: [],
-        metadata: link
-      })));
+      for (const link of smartLinks) {
+        // Get creator profile
+        const { data: creatorProfile } = await supabase
+          .from('profiles')
+          .select('username, display_name, avatar_url')
+          .eq('user_id', link.creator_id)
+          .single();
+
+        items.push({
+          id: link.id,
+          type: 'smart_link' as const,
+          title: link.title,
+          subtitle: `by ${creatorProfile?.display_name || creatorProfile?.username || 'Unknown'}`,
+          score: calculateRelevanceScore(link, preferences),
+          tags: [],
+          metadata: link
+        });
+      }
     }
 
     // Sort by relevance score

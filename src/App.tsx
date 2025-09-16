@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,8 +20,6 @@ import CommunityHub from "./pages/CommunityHub";
 import { useIsMobile } from "./hooks/use-mobile";
 import Index from "./pages/Index";
 import PitchDeck from "./pages/PitchDeck";
-import Team from "./pages/Team";
-import Website from "./pages/Website";
 import Inbox from "./pages/Inbox";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/auth/SignIn";
@@ -40,20 +39,24 @@ import ManageRewards from "./pages/ManageRewards";
 import RoleSelection from "./pages/RoleSelection";
 import ProfileSetup from "./pages/ProfileSetup";
 import Feed from "./pages/Feed";
-import PurchaseXP from "./pages/PurchaseXP";
-import XPPurchaseSuccess from "./pages/XPPurchaseSuccess";
+import Website from "./pages/Website";
+import Team from "./pages/Team";
+import OrganizationPage from "./pages/OrganizationPage";
 import TermsConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import PurchaseXP from "./pages/PurchaseXP";
+import XPPurchaseSuccess from "./pages/XPPurchaseSuccess";
 import ShoutoutGenerator from "./pages/ShoutoutGenerator";
+import MessageTemplates from "./pages/MessageTemplates";
 import SentimentAnalysis from "./pages/SentimentAnalysis";
 import SmartLinkPage from "./pages/SmartLinkPage";
-
+import { NavigationIntegration } from "./components/NavigationIntegration";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const isMobile = useIsMobile();
-  
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -61,162 +64,170 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <ErrorBoundary>
-              <OfflineIndicator />
-              <PWAInstallPrompt />
-            <Routes>
-              {/* ... keep existing routes ... */}
-              <Route path="/" element={<Index />} />
-              <Route path="/pitch" element={<PitchDeck />} />
-              <Route path="/team" element={<Team />} />
-              <Route path="/purchase-xp" element={<PurchaseXP />} />
-              
-              <Route path="/xp-purchase-success" element={<XPPurchaseSuccess />} />
-              <Route path="/terms-conditions" element={<TermsConditions />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              
-              {/* Auth Routes */}
-              <Route path="/auth/signin" element={<SignIn />} />
-              <Route path="/auth/signup" element={<SignUp />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/auth/confirm" element={<EmailConfirmation />} />
-              <Route path="/role-selection" element={
-                <ProtectedRoute>
-                  <RoleSelection />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile-setup" element={
-                <ProtectedRoute>
-                  <ProfileSetup />
-                </ProtectedRoute>
-              } />
-              
-              {/* Protected Routes */}
-              <Route path="/universal-profile" element={
-                <ProtectedRoute>
-                  <UniversalProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile/edit" element={
-                <ProtectedRoute>
-                  <EditProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/billing-payments" element={
-                <ProtectedRoute>
-                  <BillingPayments />
-                </ProtectedRoute>
-              } />
-              <Route path="/fan-dashboard" element={
-                <ProtectedRoute>
-                  <FanDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/fan-campaigns" element={
-                <ProtectedRoute>
-                  <FanCampaigns />
-                </ProtectedRoute>
-              } />
-              <Route path="/creator-dashboard" element={
-                <ProtectedRoute>
-                  <CreatorDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/campaigns" element={
-                <ProtectedRoute>
-                  <Campaigns />
-                </ProtectedRoute>
-              } />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/leaderboards" element={
-                <ProtectedRoute>
-                  <Leaderboards />
-                </ProtectedRoute>
-              } />
-              <Route path="/manage-rewards" element={
-                <ProtectedRoute>
-                  <ManageRewards />
-                </ProtectedRoute>
-              } />
-              <Route path="/community-hub" element={
-                <ProtectedRoute>
-                  <CommunityHub />
-                </ProtectedRoute>
-              } />
-              <Route path="/inbox" element={
-                <ProtectedRoute>
-                  <Inbox />
-                </ProtectedRoute>
-              } />
-              <Route path="/feed" element={
-                <ProtectedRoute>
-                  <Feed />
-                </ProtectedRoute>
-              } />
-              <Route path="/shoutout-generator" element={
-                <ProtectedRoute>
-                  <ShoutoutGenerator />
-                </ProtectedRoute>
-              } />
-              <Route path="/sentiment-analysis" element={
-                <ProtectedRoute>
-                  <SentimentAnalysis />
-                </ProtectedRoute>
-              } />
-              <Route path="/social-integrations" element={
-                <ProtectedRoute>
-                  <SocialIntegrationsPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/security" element={
-                <ProtectedRoute>
-                  <SecurityDashboardPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/advanced-analytics" element={
-                <ProtectedRoute>
-                  <AdvancedAnalytics />
-                </ProtectedRoute>
-              } />
-              <Route path="/communication-hub" element={
-                <ProtectedRoute>
-                  <CommunicationHub />
-                </ProtectedRoute>
-              } />
-              <Route path="/monetization-tools" element={
-                <ProtectedRoute>
-                  <MonetizationTools />
-                </ProtectedRoute>
-              } />
-              <Route path="/content-creator-studio" element={
-                <ProtectedRoute>
-                  <ContentCreatorStudio />
-                </ProtectedRoute>
-              } />
-              <Route path="/community-hub" element={
-                <ProtectedRoute>
-                  <CommunityHub />
-                </ProtectedRoute>
-              } />
-              <Route path="/security" element={
-                <ProtectedRoute>
-                  <SecurityDashboardPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/social-integrations" element={
-                <ProtectedRoute>
-                  <SocialIntegrationsPage />
-                </ProtectedRoute>
-              } />
-              
-              {/* Smart Link Public Landing */}
-              <Route path="/link/:slug" element={<SmartLinkPage />} />
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            {isMobile && <MobileNavigation />}
-            </ErrorBoundary>
+            <NavigationIntegration>
+              <ErrorBoundary>
+                <div className="min-h-screen bg-background">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/pitch-deck" element={<PitchDeck />} />
+                    <Route path="/website" element={<Website />} />
+                    <Route path="/auth/signin" element={<SignIn />} />
+                    <Route path="/auth/signup" element={<SignUp />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="/auth/email-confirmation" element={<EmailConfirmation />} />
+                    <Route path="/terms" element={<TermsConditions />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/team" element={<Team />} />
+                    <Route path="/role-selection" element={
+                      <ProtectedRoute>
+                        <RoleSelection />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/profile-setup" element={
+                      <ProtectedRoute>
+                        <ProfileSetup />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/universal-profile" element={
+                      <ProtectedRoute>
+                        <UniversalProfile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/profile/edit" element={
+                      <ProtectedRoute>
+                        <EditProfile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/billing-payments" element={
+                      <ProtectedRoute>
+                        <BillingPayments />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/fan-dashboard" element={
+                      <ProtectedRoute>
+                        <FanDashboard />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/fan-campaigns" element={
+                      <ProtectedRoute>
+                        <FanCampaigns />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/creator-dashboard" element={
+                      <ProtectedRoute>
+                        <CreatorDashboard />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/campaigns" element={
+                      <ProtectedRoute>
+                        <Campaigns />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/marketplace" element={<Marketplace />} />
+                    <Route path="/leaderboards" element={
+                      <ProtectedRoute>
+                        <Leaderboards />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/manage-rewards" element={
+                      <ProtectedRoute>
+                        <ManageRewards />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/feed" element={
+                      <ProtectedRoute>
+                        <Feed />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/inbox" element={
+                      <ProtectedRoute>
+                        <Inbox />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/organization" element={
+                      <ProtectedRoute>
+                        <OrganizationPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/purchase-xp" element={
+                      <ProtectedRoute>
+                        <PurchaseXP />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/xp-purchase-success" element={
+                      <ProtectedRoute>
+                        <XPPurchaseSuccess />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/shoutout-generator" element={
+                      <ProtectedRoute>
+                        <ShoutoutGenerator />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/message-templates" element={
+                      <ProtectedRoute>
+                        <MessageTemplates />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/sentiment-analysis" element={
+                      <ProtectedRoute>
+                        <SentimentAnalysis />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/social-integrations" element={
+                      <ProtectedRoute>
+                        <SocialIntegrationsPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/security" element={
+                      <ProtectedRoute>
+                        <SecurityDashboardPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/advanced-analytics" element={
+                      <ProtectedRoute>
+                        <AdvancedAnalytics />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/communication-hub" element={
+                      <ProtectedRoute>
+                        <CommunicationHub />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/monetization-tools" element={
+                      <ProtectedRoute>
+                        <MonetizationTools />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/content-creator-studio" element={
+                      <ProtectedRoute>
+                        <ContentCreatorStudio />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/community-hub" element={
+                      <ProtectedRoute>
+                        <CommunityHub />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Smart Link Public Landing */}
+                    <Route path="/link/:slug" element={<SmartLinkPage />} />
+                    
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  
+                  {/* Mobile-only components */}
+                  {isMobile && (
+                    <>
+                      <MobileNavigation />
+                      <OfflineIndicator />
+                      <PWAInstallPrompt />
+                    </>
+                  )}
+                </div>
+              </ErrorBoundary>
+            </NavigationIntegration>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
