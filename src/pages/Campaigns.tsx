@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Search, Calendar, Users, Trophy, DollarSign, Edit, Trash2, Play, Pause, BarChart3, Target, Eye, Gift, Upload, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, Search, Calendar, Users, Trophy, DollarSign, Edit, Trash2, Play, Pause, BarChart3, Target, Eye, Gift, Upload, Image as ImageIcon, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useOptimizedRealtime } from '@/hooks/useOptimizedRealtime';
 import { useDebounced } from '@/hooks/useDebounced';
@@ -83,7 +83,7 @@ const Campaigns = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'streaming',
+      type: 'share',
     xp_reward: '',
     cash_reward: '',
     target_metric: '',
@@ -103,6 +103,39 @@ const Campaigns = () => {
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [contentFile, setContentFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  
+  // Share campaign specific states
+  const [shareContentSource, setShareContentSource] = useState<'existing' | 'upload'>('existing');
+  const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [selectedPostId, setSelectedPostId] = useState<string>('');
+  const [loadingPosts, setLoadingPosts] = useState(false);
+
+  // Fetch user's posts for share campaigns
+  const fetchUserPosts = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoadingPosts(true);
+      const { data, error } = await supabase
+        .from('posts')
+        .select('id, caption, content_url, content_type, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+      setUserPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your posts.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingPosts(false);
+    }
+  }, [user?.id, toast]);
 
   // Optimized campaign fetching with better performance
   const fetchCampaigns = useCallback(async () => {
@@ -270,7 +303,7 @@ const Campaigns = () => {
     setFormData({
       title: '',
       description: '',
-      type: 'streaming',
+      type: 'share',
       xp_reward: '',
       cash_reward: '',
       target_metric: '',
@@ -289,6 +322,8 @@ const Campaigns = () => {
     setContentFile(null);
     setShowCreateForm(false);
     setEditingCampaign(null);
+    setShareContentSource('existing');
+    setSelectedPostId('');
   };
 
   // File upload handlers
@@ -453,8 +488,7 @@ const Campaigns = () => {
         campaignResult = { data };
       }
 
-      // Store content URL if uploaded
-      if (contentUrl && campaignResult.data) {
+      if (contentUrl && campaignResult.data && formData.type !== 'share') {
         await supabase
           .from('campaign_assets')
           .insert({
@@ -861,7 +895,7 @@ const Campaigns = () => {
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="streaming">Streaming</SelectItem>
-                <SelectItem value="social">Social Media</SelectItem>
+                <SelectItem value="share">Share</SelectItem>
                 <SelectItem value="vote">Voting</SelectItem>
                 <SelectItem value="merchandise">Merchandise</SelectItem>
                 <SelectItem value="upload">Upload</SelectItem>
@@ -921,12 +955,12 @@ const Campaigns = () => {
                           Streaming Campaign
                         </div>
                       </SelectItem>
-                      <SelectItem value="social">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
-                          Social Media Campaign
-                        </div>
-                      </SelectItem>
+                       <SelectItem value="share">
+                         <div className="flex items-center gap-2">
+                           <Share className="h-4 w-4" />
+                           Share Campaign
+                         </div>
+                       </SelectItem>
                       <SelectItem value="vote">
                         <div className="flex items-center gap-2">
                           <BarChart3 className="h-4 w-4" />
@@ -1135,6 +1169,83 @@ const Campaigns = () => {
                         onChange={(e) => handleInputChange('merch_discount_code', e.target.value)}
                         placeholder="e.g., FAN20 for 20% off"
                       />
+                    </div>
+                  </div>
+                )}
+
+                {/* Share Campaign Fields */}
+                {formData.type === 'share' && (
+                  <div className="col-span-2 space-y-4 p-4 border border-primary/20 rounded-lg bg-primary/5">
+                    <h4 className="font-medium text-primary flex items-center gap-2">
+                      <Share className="h-4 w-4" />
+                      Share Content Options
+                    </h4>
+                    
+                    <div className="space-y-4">
+                      <div className="flex gap-4">
+                        <Button
+                          type="button"
+                          variant={shareContentSource === 'existing' ? 'default' : 'outline'}
+                          onClick={() => {
+                            setShareContentSource('existing');
+                            if (shareContentSource !== 'existing') {
+                              fetchUserPosts();
+                            }
+                          }}
+                          className="flex-1"
+                        >
+                          Select Existing Post
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={shareContentSource === 'upload' ? 'default' : 'outline'}
+                          onClick={() => setShareContentSource('upload')}
+                          className="flex-1"
+                        >
+                          Upload New Content
+                        </Button>
+                      </div>
+
+                      {shareContentSource === 'existing' && (
+                        <div className="space-y-2">
+                          <Label>Select a post to be shared</Label>
+                          {loadingPosts ? (
+                            <div className="flex items-center justify-center p-4">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                            </div>
+                          ) : userPosts.length > 0 ? (
+                            <Select value={selectedPostId} onValueChange={setSelectedPostId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choose a post to share" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {userPosts.map((post) => (
+                                  <SelectItem key={post.id} value={post.id}>
+                                    <div className="flex items-center gap-2">
+                                      <div className="text-sm truncate max-w-[200px]">
+                                        {post.caption || `${post.content_type} post from ${new Date(post.created_at).toLocaleDateString()}`}
+                                      </div>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="text-sm text-muted-foreground p-4 border rounded-lg">
+                              No posts found. Create some posts first or upload new content instead.
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {shareContentSource === 'upload' && (
+                        <div className="space-y-2">
+                          <Label>Upload content for sharing</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Upload new content that your fans can share/repost
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
