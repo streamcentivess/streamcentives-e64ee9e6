@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AICampaignBuilder } from '@/components/AICampaignBuilder';
 import { ContentAssistant } from '@/components/ContentAssistant';
+import { IntegrationsHub } from '@/components/IntegrationsHub';
 import { CreatorEarningsDashboard } from '@/components/CreatorEarningsDashboard';
 import CreatorAnalyticsDashboard from '@/components/CreatorAnalyticsDashboard';
 import CreatorEarningsTracker from '@/components/CreatorEarningsTracker';
@@ -603,60 +604,7 @@ const CreatorDashboard = () => {
           {/* Right Column */}
           <div className="space-y-6">
             {/* All Integrations Hub */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Link className="h-5 w-5" />
-                  Integrations Hub
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Manage all your platform connections in one place
-                </p>
-                
-                {/* Integration Status Overview */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Music className="h-4 w-4 text-green-500" />
-                      <span className="text-sm">Spotify</span>
-                    </div>
-                    <Badge variant={profile?.spotify_connected ? "default" : "secondary"}>
-                      {profile?.spotify_connected ? "Connected" : "Not Connected"}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Store className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm">Merch Store</span>
-                    </div>
-                    <Badge variant={profile?.merch_store_connected ? "default" : "secondary"}>
-                      {profile?.merch_store_connected ? "Connected" : "Not Connected"}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Share className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm">Social Media</span>
-                    </div>
-                    <Badge variant="secondary">
-                      Available
-                    </Badge>
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={() => navigate('/social-integrations')} 
-                  className="w-full bg-gradient-primary hover:opacity-90"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage All Integrations
-                </Button>
-              </CardContent>
-            </Card>
+            <IntegrationsHub userRole="creator" />
 
             {/* Quick Actions */}
             <Card className="card-modern">

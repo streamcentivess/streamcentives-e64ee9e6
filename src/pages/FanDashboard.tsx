@@ -16,6 +16,7 @@ import { LeaderboardPosition } from '@/components/LeaderboardPosition';
 import { XPRewardAnimation } from '@/components/XPRewardAnimation';
 import { EnhancedXPBalance } from '@/components/EnhancedXPBalance';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { IntegrationsHub } from '@/components/IntegrationsHub';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
@@ -308,10 +309,11 @@ const FanDashboard = () => {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3 h-12' : 'grid-cols-3'}`}>
+          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-4 h-12' : 'grid-cols-4'}`}>
             <TabsTrigger value="overview" className={isMobile ? 'text-xs' : ''}>Overview</TabsTrigger>
             <TabsTrigger value="rewards" className={isMobile ? 'text-xs' : ''}>Rewards</TabsTrigger>
             <TabsTrigger value="activity" className={isMobile ? 'text-xs' : ''}>Activity</TabsTrigger>
+            <TabsTrigger value="integrations" className={isMobile ? 'text-xs' : ''}>Integrations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6">
@@ -674,8 +676,8 @@ const FanDashboard = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="activity" className="mt-6">
-            <FanShoutouts />
+          <TabsContent value="integrations" className="mt-6">
+            <IntegrationsHub userRole="fan" />
           </TabsContent>
         </Tabs>
         

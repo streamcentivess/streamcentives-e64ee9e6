@@ -21,6 +21,7 @@ import { HeartAnimation } from '@/components/ui/heart-animation';
 import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SmartLinkManager } from '@/components/SmartLinkManager';
+import { SmartLinkButton } from '@/components/SmartLinkButton';
 interface Profile {
   id?: string;
   user_id: string;
@@ -1762,11 +1763,11 @@ const UniversalProfile = () => {
 
         {/* Tabs Section */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className={`w-full flex md:grid overflow-x-auto gap-1 ${isOwnProfile && userRole === 'creator' ? 'md:grid-cols-6' : 'md:grid-cols-5'}`}>
+          <TabsList className={`w-full flex md:grid overflow-x-auto gap-1 ${isOwnProfile ? 'md:grid-cols-6' : 'md:grid-cols-5'}`}>
             <TabsTrigger value="posts" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Posts</TabsTrigger>
             <TabsTrigger value="campaigns" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Campaigns</TabsTrigger> 
             <TabsTrigger value="rewards" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">Rewards</TabsTrigger>
-            {isOwnProfile && userRole === 'creator' && (
+            {isOwnProfile && (
               <TabsTrigger value="smart-links" className="whitespace-nowrap flex-shrink-0 min-w-[80px]">
                 <Link2 className="h-4 w-4 mr-1" />
                 Smart Links
@@ -1923,8 +1924,8 @@ const UniversalProfile = () => {
             </Card>
           </TabsContent>
           
-          {/* Smart Links Tab - Creator Only */}
-          {isOwnProfile && userRole === 'creator' && (
+          {/* Smart Links Tab - Available for Everyone */}
+          {isOwnProfile && (
             <TabsContent value="smart-links" className="mt-6">
               <SmartLinkManager />
             </TabsContent>
