@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones } from 'lucide-react';
+import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AICampaignBuilder } from '@/components/AICampaignBuilder';
@@ -602,133 +602,59 @@ const CreatorDashboard = () => {
 
           {/* Right Column */}
           <div className="space-y-6">
-            {/* Merch Store Integration */}
+            {/* All Integrations Hub */}
             <Card className="card-modern">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Store className="h-5 w-5" />
-                  Merch Store
+                  <Link className="h-5 w-5" />
+                  Integrations Hub
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {profile?.merch_store_connected ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
-                      <CheckCircle className="h-4 w-4 text-success" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-success">Connected</p>
-                        <p className="text-xs text-muted-foreground capitalize">
-                          {profile.merch_store_platform} Store
-                        </p>
-                      </div>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Manage all your platform connections in one place
+                </p>
+                
+                {/* Integration Status Overview */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Music className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">Spotify</span>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => window.open(profile.merch_store_url, '_blank')}
-                      className="w-full"
-                    >
-                      <Link className="h-4 w-4 mr-2" />
-                      View Store
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleDisconnectMerchStore}
-                      className="w-full text-destructive hover:text-destructive"
-                    >
-                      Disconnect
-                    </Button>
+                    <Badge variant={profile?.spotify_connected ? "default" : "secondary"}>
+                      {profile?.spotify_connected ? "Connected" : "Not Connected"}
+                    </Badge>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      Connect your merch store to create merchandise campaigns
-                    </p>
-                    <Dialog open={showMerchDialog} onOpenChange={setShowMerchDialog}>
-                      <DialogTrigger asChild>
-                        <Button className="w-full bg-gradient-primary hover:opacity-90">
-                          <Store className="h-4 w-4 mr-2" />
-                          Connect Store
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Connect Merch Store</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="platform">Platform</Label>
-                            <Select 
-                              value={merchStoreData.platform} 
-                              onValueChange={(value) => setMerchStoreData(prev => ({ ...prev, platform: value }))}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="shopify">Shopify</SelectItem>
-                                <SelectItem value="woocommerce">WooCommerce</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="url">Store URL</Label>
-                            <Input
-                              id="url"
-                              value={merchStoreData.url}
-                              onChange={(e) => setMerchStoreData(prev => ({ ...prev, url: e.target.value }))}
-                              placeholder="https://your-store.com"
-                            />
-                          </div>
-                          <Button onClick={handleConnectMerchStore} className="w-full">
-                            Connect Store
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Spotify Integration */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Music className="h-5 w-5" />
-                  Spotify for Artists
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {profile?.spotify_connected ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
-                      <CheckCircle className="h-4 w-4 text-success" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-success">Connected</p>
-                        <p className="text-xs text-muted-foreground">Listening events will update your leaderboard in real time</p>
-                      </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Store className="h-4 w-4 text-purple-500" />
+                      <span className="text-sm">Merch Store</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" size="sm" onClick={() => navigate('/leaderboards')}>
-                        <Trophy className="h-4 w-4 mr-2" />
-                        View Leaderboard
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={handleDisconnectSpotify} className="text-destructive hover:text-destructive">
-                        Disconnect
-                      </Button>
+                    <Badge variant={profile?.merch_store_connected ? "default" : "secondary"}>
+                      {profile?.merch_store_connected ? "Connected" : "Not Connected"}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Share className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm">Social Media</span>
                     </div>
+                    <Badge variant="secondary">
+                      Available
+                    </Badge>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground">Connect to enable real-time stream tracking and fan leaderboards.</p>
-                    <Button className="w-full bg-gradient-primary hover:opacity-90" onClick={handleConnectSpotify}>
-                      Connect Spotify
-                    </Button>
-                  </div>
-                )}
+                </div>
+                
+                <Button 
+                  onClick={() => navigate('/social-integrations')} 
+                  className="w-full bg-gradient-primary hover:opacity-90"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage All Integrations
+                </Button>
               </CardContent>
             </Card>
 
