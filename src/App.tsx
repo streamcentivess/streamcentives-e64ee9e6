@@ -126,11 +126,7 @@ const App = () => {
                   <Campaigns />
                 </ProtectedRoute>
               } />
-              <Route path="/marketplace" element={
-                <ProtectedRoute>
-                  <Marketplace />
-                </ProtectedRoute>
-              } />
+              <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/leaderboards" element={
                 <ProtectedRoute>
                   <Leaderboards />
