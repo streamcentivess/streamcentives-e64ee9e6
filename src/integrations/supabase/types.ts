@@ -2269,6 +2269,17 @@ export type Database = {
         Args: { campaign_id_param: string; interaction_data_param?: Json }
         Returns: Json
       }
+      enhanced_redeem_reward: {
+        Args: {
+          amount_paid_param?: number
+          payment_method_param: string
+          reward_id_param: string
+          user_id_param: string
+          xp_spent_param?: number
+          xp_type_param?: Database["public"]["Enums"]["xp_type"]
+        }
+        Returns: Json
+      }
       generate_redemption_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -2325,6 +2336,15 @@ export type Database = {
           user_id_param: string
           xp_amount_param: number
           xp_type_param?: Database["public"]["Enums"]["xp_type"]
+        }
+        Returns: Json
+      }
+      process_marketplace_transaction: {
+        Args: {
+          amount_param: number
+          buyer_id_param: string
+          listing_id_param: string
+          payment_method_param: string
         }
         Returns: Json
       }
