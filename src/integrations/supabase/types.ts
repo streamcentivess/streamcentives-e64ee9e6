@@ -665,11 +665,14 @@ export type Database = {
           created_at: string
           creator_id: string
           earnings_type: string
+          fee_breakdown: Json | null
           id: string
+          net_amount_cents: number | null
           payout_method: string | null
           payout_reference: string | null
           payout_status: string | null
           source_transaction_id: string | null
+          transaction_reference: string | null
           updated_at: string
         }
         Insert: {
@@ -677,11 +680,14 @@ export type Database = {
           created_at?: string
           creator_id: string
           earnings_type: string
+          fee_breakdown?: Json | null
           id?: string
+          net_amount_cents?: number | null
           payout_method?: string | null
           payout_reference?: string | null
           payout_status?: string | null
           source_transaction_id?: string | null
+          transaction_reference?: string | null
           updated_at?: string
         }
         Update: {
@@ -689,11 +695,14 @@ export type Database = {
           created_at?: string
           creator_id?: string
           earnings_type?: string
+          fee_breakdown?: Json | null
           id?: string
+          net_amount_cents?: number | null
           payout_method?: string | null
           payout_reference?: string | null
           payout_status?: string | null
           source_transaction_id?: string | null
+          transaction_reference?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -730,6 +739,54 @@ export type Database = {
           rank_position?: number | null
           total_listens?: number
           total_xp_earned?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      creator_payout_requests: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          creator_id: string
+          fee_cents: number
+          id: string
+          net_amount_cents: number
+          payout_details: Json
+          payout_method: string
+          processed_at: string | null
+          requested_at: string
+          status: string
+          stripe_payout_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          creator_id: string
+          fee_cents: number
+          id?: string
+          net_amount_cents: number
+          payout_details: Json
+          payout_method: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          stripe_payout_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          creator_id?: string
+          fee_cents?: number
+          id?: string
+          net_amount_cents?: number
+          payout_details?: Json
+          payout_method?: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          stripe_payout_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1470,10 +1527,14 @@ export type Database = {
           cover_photo_url: string | null
           created_at: string
           creator_id: string
+          creator_xp_only: boolean | null
           currency: string | null
+          delivery_metadata: Json | null
+          delivery_type: string | null
           description: string | null
           id: string
           image_url: string | null
+          instant_delivery: boolean | null
           is_active: boolean
           quantity_available: number
           quantity_redeemed: number
@@ -1489,10 +1550,14 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           creator_id: string
+          creator_xp_only?: boolean | null
           currency?: string | null
+          delivery_metadata?: Json | null
+          delivery_type?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
+          instant_delivery?: boolean | null
           is_active?: boolean
           quantity_available?: number
           quantity_redeemed?: number
@@ -1508,10 +1573,14 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           creator_id?: string
+          creator_xp_only?: boolean | null
           currency?: string | null
+          delivery_metadata?: Json | null
+          delivery_type?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
+          instant_delivery?: boolean | null
           is_active?: boolean
           quantity_available?: number
           quantity_redeemed?: number
@@ -1893,6 +1962,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_xp_detailed_balances: {
+        Row: {
+          created_at: string
+          creator_id: string | null
+          current_xp: number
+          id: string
+          total_earned_xp: number
+          total_spent_xp: number
+          updated_at: string
+          user_id: string
+          xp_type: Database["public"]["Enums"]["xp_type"]
+        }
+        Insert: {
+          created_at?: string
+          creator_id?: string | null
+          current_xp?: number
+          id?: string
+          total_earned_xp?: number
+          total_spent_xp?: number
+          updated_at?: string
+          user_id: string
+          xp_type: Database["public"]["Enums"]["xp_type"]
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string | null
+          current_xp?: number
+          id?: string
+          total_earned_xp?: number
+          total_spent_xp?: number
+          updated_at?: string
+          user_id?: string
+          xp_type?: Database["public"]["Enums"]["xp_type"]
+        }
+        Relationships: []
+      }
       webhook_deliveries: {
         Row: {
           delivered_at: string
@@ -1964,6 +2069,48 @@ export type Database = {
           updated_at?: string
           user_id?: string
           webhook_url?: string
+        }
+        Relationships: []
+      }
+      xp_purchase_transactions: {
+        Row: {
+          created_at: string
+          creator_id: string | null
+          creator_share_cents: number | null
+          id: string
+          payment_amount_cents: number
+          status: string
+          streamcentives_fee_cents: number
+          stripe_payment_intent_id: string | null
+          user_id: string
+          xp_amount: number
+          xp_type: Database["public"]["Enums"]["xp_type"]
+        }
+        Insert: {
+          created_at?: string
+          creator_id?: string | null
+          creator_share_cents?: number | null
+          id?: string
+          payment_amount_cents: number
+          status?: string
+          streamcentives_fee_cents: number
+          stripe_payment_intent_id?: string | null
+          user_id: string
+          xp_amount: number
+          xp_type?: Database["public"]["Enums"]["xp_type"]
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string | null
+          creator_share_cents?: number | null
+          id?: string
+          payment_amount_cents?: number
+          status?: string
+          streamcentives_fee_cents?: number
+          stripe_payment_intent_id?: string | null
+          user_id?: string
+          xp_amount?: number
+          xp_type?: Database["public"]["Enums"]["xp_type"]
         }
         Relationships: []
       }
@@ -2171,6 +2318,16 @@ export type Database = {
         Args: { user_id_param: string; xp_amount_param: number }
         Returns: undefined
       }
+      handle_xp_purchase_with_revenue_sharing: {
+        Args: {
+          creator_id_param?: string
+          payment_amount_cents_param: number
+          user_id_param: string
+          xp_amount_param: number
+          xp_type_param?: Database["public"]["Enums"]["xp_type"]
+        }
+        Returns: Json
+      }
       purchase_reward_with_revenue_sharing: {
         Args: {
           payment_method_param: string
@@ -2202,7 +2359,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      xp_type: "platform" | "creator_specific" | "transferable"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2329,6 +2486,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      xp_type: ["platform", "creator_specific", "transferable"],
+    },
   },
 } as const
