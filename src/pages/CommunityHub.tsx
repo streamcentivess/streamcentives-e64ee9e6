@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Users, MessageSquare, Calendar, MapPin, Plus, Heart, Share, Pin, Crown } from 'lucide-react';
 import { CommunityDetail } from '@/components/CommunityDetail';
+import AppNavigation from '@/components/AppNavigation';
 
 const CommunityHub = () => {
   const { user } = useAuth();
@@ -89,8 +90,10 @@ const CommunityHub = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background">
+      <AppNavigation />
+      
+      <div className="max-w-7xl mx-auto p-4 space-y-6">
         {selectedCommunity ? (
           <CommunityDetail 
             communityId={selectedCommunity} 
@@ -99,31 +102,44 @@ const CommunityHub = () => {
         ) : (
           <>
             {/* Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   Community Hub
                 </h1>
-                <p className="text-muted-foreground">Build and manage your fan communities</p>
+                <p className="text-sm sm:text-base text-muted-foreground">Build and manage your fan communities</p>
               </div>
             </div>
 
         <Tabs defaultValue="communities" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="communities">My Communities</TabsTrigger>
-            <TabsTrigger value="posts">Community Posts</TabsTrigger>
-            <TabsTrigger value="events">Fan Events</TabsTrigger>
-            <TabsTrigger value="collaboration">Creator Collaboration</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-10">
+            <TabsTrigger value="communities" className="text-xs sm:text-sm p-2 sm:p-3">
+              <span className="hidden sm:inline">My Communities</span>
+              <span className="sm:hidden">Communities</span>
+            </TabsTrigger>
+            <TabsTrigger value="posts" className="text-xs sm:text-sm p-2 sm:p-3">
+              <span className="hidden sm:inline">Community Posts</span>
+              <span className="sm:hidden">Posts</span>
+            </TabsTrigger>
+            <TabsTrigger value="events" className="text-xs sm:text-sm p-2 sm:p-3">
+              <span className="hidden sm:inline">Fan Events</span>
+              <span className="sm:hidden">Events</span>
+            </TabsTrigger>
+            <TabsTrigger value="collaboration" className="text-xs sm:text-sm p-2 sm:p-3">
+              <span className="hidden sm:inline">Creator Collaboration</span>
+              <span className="sm:hidden">Collab</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="communities" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <h3 className="text-lg font-semibold">Your Communities</h3>
               <Dialog open={showCommunityDialog} onOpenChange={setShowCommunityDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:opacity-90">
+                  <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Community
+                    <span className="hidden sm:inline">Create Community</span>
+                    <span className="sm:hidden">Create</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -186,25 +202,27 @@ const CommunityHub = () => {
                         <span>{community.members.toLocaleString()} members</span>
                         <span>{community.recentActivity}</span>
                       </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSelectedCommunity(community.id)}
-                        >
-                          View
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            // Navigate to community management page - placeholder for now
-                            console.log('Manage community:', community.id);
-                          }}
-                        >
-                          Manage
-                        </Button>
-                      </div>
+                       <div className="flex flex-col sm:flex-row gap-2">
+                         <Button 
+                           variant="outline" 
+                           size="sm"
+                           onClick={() => setSelectedCommunity(community.id)}
+                           className="w-full sm:w-auto"
+                         >
+                           View
+                         </Button>
+                         <Button 
+                           variant="outline" 
+                           size="sm"
+                           onClick={() => {
+                             // Navigate to community management page - placeholder for now
+                             console.log('Manage community:', community.id);
+                           }}
+                           className="w-full sm:w-auto"
+                         >
+                           Manage
+                         </Button>
+                       </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -213,13 +231,14 @@ const CommunityHub = () => {
           </TabsContent>
 
           <TabsContent value="posts" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <h3 className="text-lg font-semibold">Recent Community Posts</h3>
               <Dialog open={showPostDialog} onOpenChange={setShowPostDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:opacity-90">
+                  <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Post
+                    <span className="hidden sm:inline">Create Post</span>
+                    <span className="sm:hidden">Create</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -293,13 +312,14 @@ const CommunityHub = () => {
           </TabsContent>
 
           <TabsContent value="events" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <h3 className="text-lg font-semibold">Fan Events</h3>
               <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:opacity-90">
+                  <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Event
+                    <span className="hidden sm:inline">Create Event</span>
+                    <span className="sm:hidden">Create</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -386,10 +406,10 @@ const CommunityHub = () => {
                             <Badge variant="secondary">${event.ticketPrice}</Badge>
                           )}
                         </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">View Details</Button>
-                          <Button variant="outline" size="sm">Manage</Button>
-                        </div>
+                         <div className="flex flex-col sm:flex-row gap-2">
+                           <Button variant="outline" size="sm" className="w-full sm:w-auto">View Details</Button>
+                           <Button variant="outline" size="sm" className="w-full sm:w-auto">Manage</Button>
+                         </div>
                       </div>
                     </div>
                   </CardContent>
