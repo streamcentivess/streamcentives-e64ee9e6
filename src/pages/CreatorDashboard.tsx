@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy } from 'lucide-react';
+import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AICampaignBuilder } from '@/components/AICampaignBuilder';
@@ -328,13 +328,21 @@ const CreatorDashboard = () => {
             <p className="text-muted-foreground text-sm sm:text-base">Manage your campaigns and engage with fans</p>
           </div>
           <div className={`flex gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
-            <Button onClick={() => setShowAnalyticsDashboard(true)} variant="outline" size="sm">
+            <Button onClick={() => navigate('/advanced-analytics')} variant="outline" size="sm">
               <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics
+              Analytics Hub
             </Button>
             <Button onClick={() => setShowEarningsTracker(true)} variant="outline" size="sm">
               <DollarSign className="h-4 w-4 mr-2" />
               Earnings
+            </Button>
+            <Button onClick={() => navigate('/monetization-tools')} variant="outline" size="sm">
+              <DollarSign className="h-4 w-4 mr-2" />
+              Monetization
+            </Button>
+            <Button onClick={() => navigate('/communication-hub')} variant="outline" size="sm">
+              <Mail className="h-4 w-4 mr-2" />
+              Communications
             </Button>
             <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
               <Plus className="h-4 w-4 mr-2" />
@@ -727,24 +735,51 @@ const CreatorDashboard = () => {
             {/* Quick Actions */}
             <Card className="card-modern">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Quick Actions
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full bg-gradient-primary hover:opacity-90" onClick={() => navigate('/campaigns?create=true')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Campaign
+                <Button 
+                  onClick={() => setShowAICampaignBuilder(true)} 
+                  variant="outline" 
+                  className="w-full justify-start"
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  AI Campaign Builder
                 </Button>
-                <Button className="w-full" variant="outline" onClick={() => navigate('/manage-rewards')}>
+                <Button 
+                  onClick={() => setShowContentAssistant(true)} 
+                  variant="outline" 
+                  className="w-full justify-start"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Content Assistant
+                </Button>
+                <Button 
+                  onClick={() => navigate('/content-creator-studio')} 
+                  variant="outline" 
+                  className="w-full justify-start"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Content Studio
+                </Button>
+                <Button 
+                  onClick={() => navigate('/social-integrations')} 
+                  variant="outline" 
+                  className="w-full justify-start"
+                >
+                  <Link className="h-4 w-4 mr-2" />
+                  Social Integrations
+                </Button>
+                <Button 
+                  onClick={() => navigate('/manage-rewards')} 
+                  variant="outline" 
+                  className="w-full justify-start"
+                >
                   <Gift className="h-4 w-4 mr-2" />
                   Manage Rewards
-                </Button>
-                <Button className="w-full" variant="outline" onClick={() => navigate('/campaigns')}>
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  View All Campaigns
-                </Button>
-                <Button className="w-full" variant="outline" onClick={() => navigate('/profile/edit')}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Account Settings
                 </Button>
               </CardContent>
             </Card>

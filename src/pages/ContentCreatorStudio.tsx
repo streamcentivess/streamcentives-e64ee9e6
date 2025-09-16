@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Upload, Palette, Users, Clock, Plus, FileText, Image, Video } from 'lucide-react';
+import { Calendar, Upload, Palette, Clock, Plus, FileText, Image, Video } from 'lucide-react';
 
 const ContentCreatorStudio = () => {
   const { user } = useAuth();
@@ -37,12 +37,6 @@ const ContentCreatorStudio = () => {
     { id: 4, name: 'Custom Font', type: 'font', size: '1.8 MB', isPrimary: false }
   ];
 
-  const teamMembers = [
-    { id: 1, name: 'Sarah Johnson', role: 'Content Manager', permissions: ['create', 'edit', 'schedule'], status: 'active' },
-    { id: 2, name: 'Mike Chen', role: 'Graphic Designer', permissions: ['create', 'edit'], status: 'active' },
-    { id: 3, name: 'Emma Wilson', role: 'Social Media Coordinator', permissions: ['schedule', 'view'], status: 'active' }
-  ];
-
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -52,16 +46,15 @@ const ContentCreatorStudio = () => {
             <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Content Creator Studio
             </h1>
-            <p className="text-muted-foreground">Streamline your content creation and collaboration workflow</p>
+            <p className="text-muted-foreground">Streamline your content creation workflow</p>
           </div>
         </div>
 
         <Tabs defaultValue="scheduler" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="scheduler">Content Scheduler</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="assets">Brand Assets</TabsTrigger>
-            <TabsTrigger value="team">Team Collaboration</TabsTrigger>
             <TabsTrigger value="bulk">Bulk Upload</TabsTrigger>
           </TabsList>
 
@@ -322,72 +315,55 @@ const ContentCreatorStudio = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="team" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Team Members</h3>
-              <Button className="bg-gradient-primary hover:opacity-90">
-                <Plus className="h-4 w-4 mr-2" />
-                Invite Member
-              </Button>
-            </div>
-
-            <div className="grid gap-4">
-              {teamMembers.map((member) => (
-                <Card key={member.id} className="card-modern">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                          <Users className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{member.name}</p>
-                          <p className="text-sm text-muted-foreground">{member.role}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex gap-1">
-                          {member.permissions.map((permission) => (
-                            <Badge key={permission} variant="outline" className="text-xs">
-                              {permission}
-                            </Badge>
-                          ))}
-                        </div>
-                        <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
-                          {member.status}
-                        </Badge>
-                        <Button variant="outline" size="sm">Manage</Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
           <TabsContent value="bulk" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Bulk Upload</h3>
+            </div>
+
             <Card className="card-modern">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  Bulk Content Upload
+                  Upload Multiple Files
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    Upload multiple pieces of content at once and schedule them across different platforms.
-                  </p>
                   <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
                     <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-lg font-medium mb-2">Drop your files here</p>
+                    <h4 className="text-lg font-medium mb-2">Drop files here or click to browse</h4>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Support for images, videos, and CSV schedules
+                      Upload multiple images, videos, or documents at once
                     </p>
                     <Button className="bg-gradient-primary hover:opacity-90">
                       Select Files
                     </Button>
                   </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="bulk-tags">Tags (comma-separated)</Label>
+                      <Input id="bulk-tags" placeholder="tag1, tag2, tag3" />
+                    </div>
+                    <div>
+                      <Label htmlFor="bulk-category">Category</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="social">Social Media</SelectItem>
+                          <SelectItem value="marketing">Marketing</SelectItem>
+                          <SelectItem value="branding">Branding</SelectItem>
+                          <SelectItem value="content">Content</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <Button className="w-full bg-gradient-primary hover:opacity-90" disabled>
+                    Upload Files
+                  </Button>
                 </div>
               </CardContent>
             </Card>
