@@ -25,7 +25,7 @@ const MobileNavigation = () => {
     {
       icon: Home,
       label: 'Home',
-      path: user ? '/feed' : '/',
+      path: '/feed',
     },
     {
       icon: Search,

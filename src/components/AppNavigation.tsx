@@ -39,7 +39,7 @@ const AppNavigation = () => {
   const unreadCount = useUnreadMessages();
 
   const navigationItems = [
-    { name: 'Home', href: '/universal-profile', icon: Home },
+    { name: 'Home', href: '/feed', icon: Home },
     { name: 'Feed', href: '/feed', icon: Rss },
     { name: 'Campaigns', href: '/campaigns', icon: Target },
     { name: 'Marketplace', href: '/marketplace', icon: Gift },
