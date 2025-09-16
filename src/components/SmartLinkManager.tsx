@@ -480,31 +480,77 @@ export const SmartLinkManager: React.FC = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              Configure what actions fans can take to earn XP rewards
+              Add or update the destination URLs so fans land on your real pages.
             </div>
-            
-            {currentActions.map((action) => (
+            {currentActions.map((action, idx) => (
               <Card key={action.id} className="p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     {getActionIcon(action.action_type)}
                     <div>
                       <div className="font-medium">{action.action_label}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {action.xp_reward} XP • {action.bonus_multiplier}x multiplier
-                      </div>
+                      <div className="text-xs text-muted-foreground">{action.action_type} • {action.xp_reward} XP</div>
                     </div>
                   </div>
                   <Badge variant={action.is_active ? "default" : "secondary"}>
                     {action.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">Destination URL</label>
+                  <Input
+                    value={action.action_url || ''}
+                    placeholder={
+                      action.action_type.startsWith('spotify')
+                        ? 'https://open.spotify.com/artist/xxxxxxxxxxxxxxxxxxxxxx'
+                        : action.action_type.startsWith('youtube')
+                        ? 'https://youtube.com/@yourchannel or https://youtube.com/channel/UCxxxx'
+                        : 'https://example.com/your-link'
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCurrentActions(prev => prev.map(a => a.id === action.id ? { ...a, action_url: val } : a));
+                    }}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(action.action_url, '_blank')}
+                      disabled={!action.action_url}
+                    >
+                      Preview
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-gradient-primary"
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from('smart_link_actions')
+                            .update({ action_url: action.action_url })
+                            .eq('id', action.id);
+                          if (error) throw error;
+                          toast.success('Action saved');
+                          // Refresh actions from DB
+                          const { data } = await supabase
+                            .from('smart_link_actions')
+                            .select('*')
+                            .eq('smart_link_id', selectedLinkId)
+                            .order('order_index');
+                          setCurrentActions(data || []);
+                        } catch (err) {
+                          console.error(err);
+                          toast.error('Failed to save action');
+                        }
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
               </Card>
             ))}
-            
-            <div className="text-center text-sm text-muted-foreground">
-              Action management interface coming soon. For now, actions are auto-generated.
-            </div>
           </div>
         </DialogContent>
       </Dialog>

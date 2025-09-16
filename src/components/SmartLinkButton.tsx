@@ -168,7 +168,27 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
     }
   };
 
+  const isPlaceholderUrl = (url?: string, type?: string) => {
+    if (!url) return true;
+    const lowered = url.toLowerCase();
+    if (lowered.includes('your-artist-id') || lowered.includes('@your-channel') || lowered.includes('your-handle')) return true;
+    if (type?.startsWith('spotify')) return !/^https?:\/\/open\.spotify\.com\/(artist|track|album)\//.test(lowered);
+    if (type?.startsWith('youtube')) return !/^https?:\/\/(www\.)?youtube\.com\/(?:@|channel\/|watch\?v=)/.test(lowered);
+    return !/^https?:\/\//.test(lowered);
+  };
+
   const handleActionClick = async (action: Action) => {
+    // If action not configured, route owner to setup or inform viewer
+    if (isPlaceholderUrl(action.action_url, action.action_type)) {
+      if (isOwnProfile) {
+        setShowDialog(false);
+        window.location.href = '/universal-profile?tab=smart-links';
+      } else {
+        toast.info('This link is not configured yet.');
+      }
+      return;
+    }
+
     // Track the click
     if (smartLink) {
       await supabase
@@ -179,11 +199,9 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
 
     // Open the action URL
     if (action.action_url.startsWith('/')) {
-      // Internal route
       window.location.href = action.action_url;
     } else {
-      // External URL
-      window.open(action.action_url, '_blank');
+      (window.top || window).open(action.action_url, '_blank', 'noopener,noreferrer');
     }
 
     // Award XP if user is authenticated and it's not their own link
@@ -200,7 +218,6 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
       }
     }
   };
-
   if (loading) {
     return (
       <Button disabled className="w-full" variant="outline">
@@ -222,6 +239,10 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
   if (!smartLink) {
     return null; // Don't show anything if no smart link exists for other users
   }
+
+  const displayedActions = isOwnProfile
+    ? actions
+    : actions.filter((a) => !isPlaceholderUrl(a.action_url, a.action_type));
 
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -249,24 +270,34 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
           )}
           
           <div className="space-y-2">
-            {actions.map((action) => (
-              <Button
-                key={action.id}
-                variant="outline"
-                className="w-full justify-start h-12"
-                onClick={() => handleActionClick(action)}
-              >
-                <div className="flex items-center gap-3">
-                  {getActionIcon(action.action_type)}
-                  <div className="flex-1 text-left">
-                    <div className="font-medium">{action.action_label}</div>
-                    <div className="text-xs text-muted-foreground">
-                      +{action.xp_reward} XP
+            {displayedActions.length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                No actions available yet.
+              </div>
+            ) : (
+              displayedActions.map((action) => {
+                const notConfigured = isPlaceholderUrl(action.action_url, action.action_type);
+                return (
+                  <Button
+                    key={action.id}
+                    variant="outline"
+                    className="w-full justify-start h-12"
+                    onClick={() => handleActionClick(action)}
+                    disabled={isOwnProfile && notConfigured}
+                  >
+                    <div className="flex items-center gap-3">
+                      {getActionIcon(action.action_type)}
+                      <div className="flex-1 text-left">
+                        <div className="font-medium">{action.action_label}</div>
+                        <div className="text-xs text-muted-foreground">
+                          +{action.xp_reward} XP {isOwnProfile && notConfigured ? ' • Setup required' : ''}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </Button>
-            ))}
+                  </Button>
+                );
+              })
+            )}
           </div>
           
           {isOwnProfile && (
