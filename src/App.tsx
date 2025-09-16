@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import MobileNavigation from "./components/MobileNavigation";
 import OfflineIndicator from "./components/OfflineIndicator";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import ErrorBoundary from "./components/ErrorBoundary";
 import SocialIntegrationsPage from "./pages/SocialIntegrationsPage";
 import SecurityDashboardPage from "./pages/SecurityDashboardPage";
 import OrganizationPage from "./pages/OrganizationPage";
@@ -56,10 +57,11 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <OfflineIndicator />
-        <PWAInstallPrompt />
         <BrowserRouter>
           <AuthProvider>
+            <ErrorBoundary>
+              <OfflineIndicator />
+              <PWAInstallPrompt />
             <Routes>
               {/* ... keep existing routes ... */}
               <Route path="/" element={<Index />} />
@@ -180,6 +182,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             {isMobile && <MobileNavigation />}
+            </ErrorBoundary>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
