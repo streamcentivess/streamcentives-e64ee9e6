@@ -25,7 +25,7 @@ const MobileNavigation = () => {
     {
       icon: Home,
       label: 'Home',
-      path: user ? (user.user_metadata?.role === 'creator' ? '/creator-dashboard' : '/fan-dashboard') : '/',
+      path: user ? '/feed' : '/',
     },
     {
       icon: Search,
