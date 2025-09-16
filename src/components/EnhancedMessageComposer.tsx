@@ -68,11 +68,11 @@ export const EnhancedMessageComposer: React.FC<EnhancedMessageComposerProps> = (
     try {
       const { data } = await supabase
         .from('user_xp_balances')
-        .select('xp_balance')
+        .select('current_xp')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      setUserXP(data?.xp_balance || 0);
+      setUserXP(data?.current_xp || 0);
     } catch (error) {
       console.error('Error fetching user XP:', error);
     }
