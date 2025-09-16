@@ -207,6 +207,16 @@ const App = () => {
                   <CommunityHub />
                 </ProtectedRoute>
               } />
+              <Route path="/security" element={
+                <ProtectedRoute>
+                  <SecurityDashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/social-integrations" element={
+                <ProtectedRoute>
+                  <SocialIntegrationsPage />
+                </ProtectedRoute>
+              } />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

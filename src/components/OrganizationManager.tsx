@@ -8,19 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Building, 
-  Users, 
-  Crown, 
-  Shield, 
-  UserPlus, 
-  Settings,
-  BarChart3,
-  DollarSign,
-  TrendingUp,
-  Activity,
-  Eye
-} from 'lucide-react';
+import { Building, Users, Crown, Shield, UserPlus, Settings, Eye, TrendingUp, Activity } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -29,22 +17,22 @@ interface Organization {
   id: string;
   name: string;
   description?: string;
-  organization_type: string;
+  slug: string;
+  plan_type: string;
   settings: any;
   created_at: string;
-  memberCount?: number;
 }
 
 interface Member {
   id: string;
   user_id: string;
   role: string;
-  status: string;
   joined_at: string;
   profiles?: {
     display_name: string;
     username: string;
     avatar_url?: string;
+    email?: string;
   };
 }
 
@@ -70,6 +58,14 @@ const OrganizationManager = () => {
     role: 'member'
   });
 
+  // Mock data for demonstration
+  const teamMetrics = [
+    { label: 'Total Revenue', value: '$12,450', change: '+15%', trend: 'up' as const },
+    { label: 'Active Campaigns', value: '24', change: '+8%', trend: 'up' as const },
+    { label: 'Team XP Earned', value: '145K', change: '+22%', trend: 'up' as const },
+    { label: 'Fan Engagement', value: '89%', change: '-2%', trend: 'down' as const }
+  ];
+
   useEffect(() => {
     if (user) {
       fetchOrganizations();
@@ -91,13 +87,13 @@ const OrganizationManager = () => {
             id,
             name,
             description,
-            organization_type,
+            slug,
+            plan_type,
             settings,
             created_at
           )
         `)
-        .eq('user_id', user?.id)
-        .eq('status', 'active');
+        .eq('user_id', user?.id);
 
       if (error) throw error;
 
@@ -120,24 +116,23 @@ const OrganizationManager = () => {
     try {
       const { data, error } = await supabase
         .from('organization_members')
-        .select(`
-          id,
-          user_id,
-          role,
-          status,
-          joined_at,
-          profiles (
-            display_name,
-            username,
-            avatar_url
-          )
-        `)
-        .eq('organization_id', selectedOrg.id)
-        .eq('status', 'active');
+        .select('id, user_id, role, joined_at')
+        .eq('organization_id', selectedOrg.id);
 
       if (error) throw error;
 
-      setMembers(data || []);
+      // For now, set members without profile data
+      const membersWithMockProfiles = (data || []).map(member => ({
+        ...member,
+        profiles: {
+          display_name: 'Team Member',
+          username: `user_${member.user_id.slice(0, 8)}`,
+          avatar_url: undefined,
+          email: undefined
+        }
+      }));
+
+      setMembers(membersWithMockProfiles);
     } catch (error) {
       console.error('Error fetching members:', error);
     }
@@ -148,13 +143,16 @@ const OrganizationManager = () => {
 
     setIsCreating(true);
     try {
+      // Generate slug from name
+      const slug = newOrgForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      
       const { data: org, error: orgError } = await supabase
         .from('organizations')
         .insert({
           name: newOrgForm.name,
           description: newOrgForm.description,
-          organization_type: newOrgForm.type,
-          owner_id: user?.id,
+          slug: slug,
+          plan_type: newOrgForm.type,
           settings: {}
         })
         .select()
@@ -168,8 +166,7 @@ const OrganizationManager = () => {
         .insert({
           organization_id: org.id,
           user_id: user?.id,
-          role: 'owner',
-          status: 'active'
+          role: 'owner'
         });
 
       if (memberError) throw memberError;
@@ -219,8 +216,7 @@ const OrganizationManager = () => {
         .insert({
           organization_id: selectedOrg.id,
           user_id: profile.user_id,
-          role: inviteForm.role,
-          status: 'active'
+          role: inviteForm.role
         });
 
       if (error) throw error;
@@ -237,6 +233,30 @@ const OrganizationManager = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to invite member",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleChangeRole = async (memberId: string, newRole: string) => {
+    try {
+      const { error } = await supabase
+        .from('organization_members')
+        .update({ role: newRole })
+        .eq('id', memberId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Role updated",
+        description: "Member role has been updated successfully.",
+      });
+
+      fetchMembers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update role",
         variant: "destructive",
       });
     }
@@ -268,219 +288,277 @@ const OrganizationManager = () => {
     }
   };
 
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'owner':
+        return 'text-yellow-600';
+      case 'admin':
+        return 'text-blue-600';
+      case 'moderator':
+        return 'text-green-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  const getPlanColor = (plan: string) => {
+    switch (plan) {
+      case 'enterprise':
+        return 'text-purple-600';
+      case 'pro':
+        return 'text-blue-600';
+      default:
+        return 'text-green-600';
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-64">Loading organizations...</div>;
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Organizations</h1>
-          <p className="text-muted-foreground">Manage your teams and collaborations</p>
+          <h2 className="text-3xl font-bold">Organization Management</h2>
+          <p className="text-muted-foreground">Manage your team and resources</p>
         </div>
-        
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-primary text-white">
-              <Building className="h-4 w-4 mr-1" />
+            <Button>
+              <Building className="h-4 w-4 mr-2" />
               Create Organization
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Organization</DialogTitle>
+              <DialogDescription>
+                Set up a new organization to manage your team and resources.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="org-name">Organization Name</Label>
                 <Input
                   id="org-name"
-                  placeholder="Enter organization name"
-                  value={orgName}
-                  onChange={(e) => setOrgName(e.target.value)}
+                  value={newOrgForm.name}
+                  onChange={(e) => setNewOrgForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="My Music Label"
                 />
               </div>
               <div>
                 <Label htmlFor="org-description">Description</Label>
                 <Textarea
                   id="org-description"
-                  placeholder="Describe your organization..."
-                  value={orgDescription}
-                  onChange={(e) => setOrgDescription(e.target.value)}
+                  value={newOrgForm.description}
+                  onChange={(e) => setNewOrgForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="A brief description of your organization"
                 />
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleCreateOrg} className="flex-1">
-                  Create Organization
-                </Button>
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
+              <div>
+                <Label htmlFor="org-type">Organization Type</Label>
+                <Select value={newOrgForm.type} onValueChange={(value) => setNewOrgForm(prev => ({ ...prev, type: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="label">Music Label</SelectItem>
+                    <SelectItem value="agency">Talent Agency</SelectItem>
+                    <SelectItem value="collective">Artist Collective</SelectItem>
+                    <SelectItem value="company">Company</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+            <DialogFooter>
+              <Button
+                onClick={createOrganization}
+                disabled={isCreating || !newOrgForm.name.trim()}
+              >
+                {isCreating ? "Creating..." : "Create Organization"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Organizations List */}
-      <div className="grid gap-4">
-        {organizations.map((org) => (
-          <Card key={org.id} className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center">
-                    <Building className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{org.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {org.memberCount} members
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className={getPlanColor(org.plan)}>
-                    {org.plan}
-                  </Badge>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
+      {organizations.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-8">
+            <Building className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold mb-2">No Organizations</h3>
+            <p className="text-muted-foreground mb-4">
+              Create an organization to manage your team and collaborate effectively.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Organization List */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Organizations</CardTitle>
+              <CardDescription>Select an organization to manage</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {organizations.map((org) => (
+                  <div
+                    key={org.id}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                      selectedOrg?.id === org.id
+                        ? 'bg-accent text-accent-foreground'
+                        : 'hover:bg-accent/50'
+                    }`}
                     onClick={() => setSelectedOrg(org)}
                   >
-                    Manage
-                  </Button>
-                </div>
+                    <div className="flex items-center space-x-3">
+                      <Building className="h-5 w-5" />
+                      <div>
+                        <p className="font-medium">{org.name}</p>
+                        <p className="text-sm text-muted-foreground">{org.plan_type}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {/* Organization Management */}
-      {selectedOrg && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5" />
-              {selectedOrg.name}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="members">Members</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
+          {/* Organization Details */}
+          {selectedOrg && (
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>{selectedOrg.name}</CardTitle>
+                      <CardDescription>{selectedOrg.description || 'No description provided'}</CardDescription>
+                    </div>
+                    <Badge variant="outline" className={getPlanColor(selectedOrg.plan_type)}>
+                      {selectedOrg.plan_type}
+                    </Badge>
+                  </div>
+                </CardHeader>
+              </Card>
 
-              <TabsContent value="overview" className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {teamMetrics.map((metric, index) => (
-                    <Card key={index}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
+              <Tabs defaultValue="overview" className="space-y-4">
+                <TabsList>
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="members">Members</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {teamMetrics.map((metric, index) => (
+                      <Card key={index}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-muted-foreground">{metric.label}</p>
+                              <p className="text-xl font-bold">{metric.value}</p>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm">
+                              {metric.trend === 'up' ? (
+                                <TrendingUp className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <Activity className="h-4 w-4 text-red-600" />
+                              )}
+                              <span className={metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}>
+                                {metric.change}
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="members" className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold">Team Members</h3>
+                    
+                    <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+                      <DialogTrigger asChild>
+                        <Button size="sm">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Invite Member
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Invite Team Member</DialogTitle>
+                          <DialogDescription>
+                            Add a new member to {selectedOrg.name}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
                           <div>
-                            <p className="text-sm text-muted-foreground">{metric.label}</p>
-                            <p className="text-xl font-bold">{metric.value}</p>
+                            <Label htmlFor="invite-email">Email Address</Label>
+                            <Input
+                              id="invite-email"
+                              type="email"
+                              value={inviteForm.email}
+                              onChange={(e) => setInviteForm(prev => ({ ...prev, email: e.target.value }))}
+                              placeholder="user@example.com"
+                            />
                           </div>
-                          <div className="flex items-center gap-1 text-sm">
-                            {metric.trend === 'up' ? (
-                              <TrendingUp className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <Activity className="h-4 w-4 text-red-600" />
-                            )}
-                            <span className={metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}>
-                              {metric.change}
-                            </span>
+                          <div>
+                            <Label htmlFor="invite-role">Role</Label>
+                            <Select value={inviteForm.role} onValueChange={(value) => setInviteForm(prev => ({ ...prev, role: value }))}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="member">Member</SelectItem>
+                                <SelectItem value="moderator">Moderator</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="members" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-semibold">Team Members</h3>
-                  
-                  <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <UserPlus className="h-4 w-4 mr-1" />
-                        Invite Member
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Invite Team Member</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="invite-email">Email Address</Label>
-                          <Input
-                            id="invite-email"
-                            type="email"
-                            placeholder="Enter email address"
-                            value={inviteEmail}
-                            onChange={(e) => setInviteEmail(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="invite-role">Role</Label>
-                          <Select value={inviteRole} onValueChange={setInviteRole}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="member">Member</SelectItem>
-                              <SelectItem value="manager">Manager</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button onClick={handleInviteMember} className="flex-1">
+                        <DialogFooter>
+                          <Button onClick={inviteMember} disabled={!inviteForm.email.trim()}>
                             Send Invitation
                           </Button>
-                          <Button variant="outline" onClick={() => setShowInviteDialog(false)}>
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
 
-                <div className="space-y-3">
-                  {members.map((member) => {
-                    const RoleIcon = getRoleIcon(member.role);
-                    return (
+                  <div className="space-y-3">
+                    {members.map((member) => (
                       <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                            <Users className="h-5 w-5" />
+                        <div className="flex items-center space-x-3">
+                          <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center">
+                            {member.profiles?.avatar_url ? (
+                              <img 
+                                src={member.profiles.avatar_url} 
+                                alt={member.profiles.display_name}
+                                className="h-8 w-8 rounded-full"
+                              />
+                            ) : (
+                              <Users className="h-4 w-4" />
+                            )}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="font-medium">{member.name}</p>
-                              <RoleIcon className={`h-4 w-4 ${getRoleColor(member.role)}`} />
+                              <p className="font-medium">{member.profiles?.display_name || 'Unknown User'}</p>
+                              {getRoleIcon(member.role)}
                             </div>
-                            <p className="text-sm text-muted-foreground">{member.email}</p>
+                            <p className="text-sm text-muted-foreground">@{member.profiles?.username}</p>
                             <p className="text-xs text-muted-foreground">
-                              Joined {member.joinedAt} • Active {member.lastActive}
+                              Joined {new Date(member.joined_at).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getRoleColor(member.role)}>
-                            {member.role}
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={getRoleBadgeVariant(member.role) as any}>
+                            <span className={getRoleColor(member.role)}>{member.role}</span>
                           </Badge>
                           {member.role !== 'owner' && (
                             <Select 
@@ -492,40 +570,46 @@ const OrganizationManager = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="member">Member</SelectItem>
-                                <SelectItem value="manager">Manager</SelectItem>
+                                <SelectItem value="moderator">Moderator</SelectItem>
                                 <SelectItem value="admin">Admin</SelectItem>
                               </SelectContent>
                             </Select>
                           )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </TabsContent>
+                    ))}
+                    {members.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No members yet</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
 
-              <TabsContent value="analytics" className="space-y-4">
-                <div className="text-center py-8">
-                  <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">Advanced Analytics</h3>
-                  <p className="text-muted-foreground">
-                    Detailed team performance metrics and insights coming soon.
-                  </p>
-                </div>
-              </TabsContent>
+                <TabsContent value="analytics" className="space-y-4">
+                  <div className="text-center py-8">
+                    <Settings className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold mb-2">Analytics Coming Soon</h3>
+                    <p className="text-muted-foreground">
+                      Detailed organization analytics will be available soon.
+                    </p>
+                  </div>
+                </TabsContent>
 
-              <TabsContent value="settings" className="space-y-4">
-                <div className="text-center py-8">
-                  <Settings className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">Organization Settings</h3>
-                  <p className="text-muted-foreground">
-                    Configure organization preferences and permissions.
-                  </p>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+                <TabsContent value="settings" className="space-y-4">
+                  <div className="text-center py-8">
+                    <Settings className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold mb-2">Organization Settings</h3>
+                    <p className="text-muted-foreground">
+                      Configure organization preferences and permissions.
+                    </p>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
