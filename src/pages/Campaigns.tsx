@@ -70,6 +70,8 @@ const Campaigns = () => {
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [activeTab, setActiveTab] = useState('all');
+  const [hasCreatorPro, setHasCreatorPro] = useState(false);
+  const [checkingProStatus, setCheckingProStatus] = useState(true);
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -167,11 +169,34 @@ const Campaigns = () => {
     enabled: !!user?.id,
   });
 
+  // Check Creator Pro status
+  const checkCreatorProStatus = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('ai_tool_subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('tool_name', 'creator_pro')
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setHasCreatorPro(!!data);
+    } catch (error) {
+      console.error('Error checking Creator Pro status:', error);
+    } finally {
+      setCheckingProStatus(false);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     if (user) {
       fetchCampaigns();
+      checkCreatorProStatus();
     }
-  }, [user, fetchCampaigns]);
+  }, [user, fetchCampaigns, checkCreatorProStatus]);
 
   // Check URL parameter to auto-show create form
   useEffect(() => {
@@ -344,14 +369,19 @@ const Campaigns = () => {
   };
 
   const uploadFile = async (file: File, bucketName: string, folder: string) => {
+    if (!user?.id) throw new Error('User not authenticated');
+    
     const fileExt = file.name.split('.').pop();
-    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const fileName = `${user.id}/${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
     
     const { error: uploadError } = await supabase.storage
       .from(bucketName)
       .upload(fileName, file);
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
 
     const { data: { publicUrl } } = supabase.storage
       .from(bucketName)
@@ -464,11 +494,21 @@ const Campaigns = () => {
       });
 
       fetchCampaigns();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving campaign:', error);
+      let errorMessage = "Failed to save campaign. Please try again.";
+      
+      if (error.message?.includes('Upload failed')) {
+        errorMessage = `File upload error: ${error.message}`;
+      } else if (error.message?.includes('row-level security')) {
+        errorMessage = "Permission denied. Please check your account status.";
+      } else if (error.code === '23505') {
+        errorMessage = "A campaign with this title already exists.";
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to save campaign. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -729,6 +769,51 @@ const Campaigns = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Creator Pro Status Section */}
+      {!checkingProStatus && (
+        <Card className="mb-6 border-l-4 border-l-primary">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <Trophy className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  {hasCreatorPro ? (
+                    <>
+                      <h3 className="font-semibold text-lg flex items-center gap-2">
+                        Creator Pro Active
+                        <Badge variant="default" className="bg-gradient-to-r from-purple-500 to-pink-500">
+                          PRO
+                        </Badge>
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Enjoy unlimited campaigns, advanced analytics, and priority support!
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="font-semibold text-lg">Want to create campaigns faster?</h3>
+                      <p className="text-muted-foreground">
+                        Upgrade to Creator Pro for unlimited campaigns, advanced analytics, AI-powered insights, and priority support!
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+              {!hasCreatorPro && (
+                <Button 
+                  onClick={() => navigate('/purchase-xp')}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  Upgrade to Creator Pro
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">My Campaigns</h1>
