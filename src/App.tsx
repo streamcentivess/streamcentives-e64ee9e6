@@ -7,6 +7,11 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import MobileNavigation from "./components/MobileNavigation";
 import OfflineIndicator from "./components/OfflineIndicator";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import SocialIntegrationsPage from "./pages/SocialIntegrationsPage";
+import SecurityDashboardPage from "./pages/SecurityDashboardPage";
+import OrganizationPage from "./pages/OrganizationPage";
+import EnhancedMarketplaceV3 from "./components/EnhancedMarketplaceV3";
 import { useIsMobile } from "./hooks/use-mobile";
 import Index from "./pages/Index";
 import PitchDeck from "./pages/PitchDeck";
@@ -52,6 +57,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <OfflineIndicator />
+        <PWAInstallPrompt />
         <BrowserRouter>
           <AuthProvider>
             <Routes>
@@ -152,6 +158,21 @@ const App = () => {
               <Route path="/sentiment-analysis" element={
                 <ProtectedRoute>
                   <SentimentAnalysis />
+                </ProtectedRoute>
+              } />
+              <Route path="/social-integrations" element={
+                <ProtectedRoute>
+                  <SocialIntegrationsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/security" element={
+                <ProtectedRoute>
+                  <SecurityDashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/organizations" element={
+                <ProtectedRoute>
+                  <OrganizationPage />
                 </ProtectedRoute>
               } />
               
