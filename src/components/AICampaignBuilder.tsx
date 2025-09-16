@@ -32,7 +32,8 @@ export const AICampaignBuilder: React.FC<AICampaignBuilderProps> = ({ isOpen, on
     { id: 'streams', label: '🎵 Increase Streams', icon: TrendingUp, desc: 'Boost plays & listens' },
     { id: 'followers', label: '👥 Grow Fanbase', icon: Users, desc: 'Gain new followers' },
     { id: 'revenue', label: '💰 Generate Revenue', icon: DollarSign, desc: 'Drive sales & earnings' },
-    { id: 'engagement', label: '❤️ Boost Engagement', icon: Target, desc: 'Increase interactions' }
+    { id: 'engagement', label: '❤️ Boost Engagement', icon: Target, desc: 'Increase interactions' },
+    { id: 'catalog_discovery', label: '🎵 Deep Catalog Discovery', icon: Star, desc: 'Combat saturation with catalog discovery' }
   ];
 
   const timeframes = [

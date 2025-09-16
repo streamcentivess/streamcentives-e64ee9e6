@@ -46,6 +46,7 @@ import TermsConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ShoutoutGenerator from "./pages/ShoutoutGenerator";
 import SentimentAnalysis from "./pages/SentimentAnalysis";
+import SmartLinkPage from "./pages/SmartLinkPage";
 
 
 const queryClient = new QueryClient();
@@ -207,6 +208,9 @@ const App = () => {
                   <SocialIntegrationsPage />
                 </ProtectedRoute>
               } />
+              
+              {/* Smart Link Public Landing */}
+              <Route path="/link/:slug" element={<SmartLinkPage />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

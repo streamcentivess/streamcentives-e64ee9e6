@@ -379,6 +379,42 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_initiation_quests: {
+        Row: {
+          bonus_xp_reward: number | null
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          quest_name: string
+          total_xp_reward: number
+          updated_at: string | null
+        }
+        Insert: {
+          bonus_xp_reward?: number | null
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          quest_name: string
+          total_xp_reward?: number
+          updated_at?: string | null
+        }
+        Update: {
+          bonus_xp_reward?: number | null
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          quest_name?: string
+          total_xp_reward?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       auto_post_schedules: {
         Row: {
           content_id: string | null
@@ -1588,6 +1624,42 @@ export type Database = {
           schedule_config?: Json | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      discovery_funnel_analytics: {
+        Row: {
+          content_id: string | null
+          content_type: string | null
+          created_at: string | null
+          creator_id: string
+          funnel_stage: string
+          id: string
+          metadata: Json | null
+          source_platform: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          creator_id: string
+          funnel_stage: string
+          id?: string
+          metadata?: Json | null
+          source_platform?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          creator_id?: string
+          funnel_stage?: string
+          id?: string
+          metadata?: Json | null
+          source_platform?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -3016,6 +3088,53 @@ export type Database = {
         }
         Relationships: []
       }
+      quest_steps: {
+        Row: {
+          action_data: Json
+          action_type: string
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          quest_id: string
+          step_description: string | null
+          step_number: number
+          step_title: string
+          xp_reward: number
+        }
+        Insert: {
+          action_data?: Json
+          action_type: string
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          quest_id: string
+          step_description?: string | null
+          step_number: number
+          step_title: string
+          xp_reward?: number
+        }
+        Update: {
+          action_data?: Json
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          quest_id?: string
+          step_description?: string | null
+          step_number?: number
+          step_title?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quest_steps_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "artist_initiation_quests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reposts: {
         Row: {
           created_at: string
@@ -3486,6 +3605,140 @@ export type Database = {
           shoutout_text?: string
           tone?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      smart_link_actions: {
+        Row: {
+          action_label: string
+          action_type: string
+          action_url: string
+          bonus_multiplier: number | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          order_index: number | null
+          smart_link_id: string
+          xp_reward: number
+        }
+        Insert: {
+          action_label: string
+          action_type: string
+          action_url: string
+          bonus_multiplier?: number | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          smart_link_id: string
+          xp_reward?: number
+        }
+        Update: {
+          action_label?: string
+          action_type?: string
+          action_url?: string
+          bonus_multiplier?: number | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          smart_link_id?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_actions_smart_link_id_fkey"
+            columns: ["smart_link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_link_interactions: {
+        Row: {
+          action_id: string | null
+          created_at: string | null
+          id: string
+          interaction_type: string
+          metadata: Json | null
+          smart_link_id: string
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          action_id?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_type: string
+          metadata?: Json | null
+          smart_link_id: string
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          action_id?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_type?: string
+          metadata?: Json | null
+          smart_link_id?: string
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_interactions_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "smart_link_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_link_interactions_smart_link_id_fkey"
+            columns: ["smart_link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_links: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          slug: string
+          title: string
+          total_clicks: number | null
+          total_xp_awarded: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          slug: string
+          title: string
+          total_clicks?: number | null
+          total_xp_awarded?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          slug?: string
+          title?: string
+          total_clicks?: number | null
+          total_xp_awarded?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -4125,6 +4378,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_quest_progress: {
+        Row: {
+          completed_at: string | null
+          id: string
+          metadata: Json | null
+          quest_id: string
+          step_id: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          metadata?: Json | null
+          quest_id: string
+          step_id: string
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          metadata?: Json | null
+          quest_id?: string
+          step_id?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_quest_progress_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "artist_initiation_quests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_quest_progress_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "quest_steps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_sessions: {
         Row: {
