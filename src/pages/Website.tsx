@@ -19,54 +19,96 @@ const Website = () => {
     toast
   } = useToast();
   const handlePitchDeckPDF = async () => {
-    const { toast } = useToast();
-    
     try {
-      // Navigate to pitch deck page to capture content
-      const pitchWindow = window.open('/pitch', '_blank');
-      if (!pitchWindow) {
-        toast({
-          title: "Error",
-          description: "Please allow popups to download the pitch deck PDF",
-          variant: "destructive"
-        });
-        return;
-      }
+      toast({
+        title: "Generating PDF...",
+        description: "Please wait while we prepare your pitch deck PDF",
+      });
       
-      // Wait for the page to load, then generate PDF
-      setTimeout(async () => {
+      // Create a temporary iframe to load the pitch deck
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'absolute';
+      iframe.style.left = '-9999px';
+      iframe.style.width = '1200px';
+      iframe.style.height = '800px';
+      iframe.src = '/pitch';
+      
+      document.body.appendChild(iframe);
+      
+      // Wait for iframe to load
+      iframe.onload = async () => {
         try {
-          const element = pitchWindow.document.body;
-          const opt = {
-            margin: 0.5,
-            filename: 'Streamcentives-Pitch-Deck.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-          };
-          
-          await html2pdf().set(opt).from(element).save();
-          pitchWindow.close();
-          
-          toast({
-            title: "Success!",
-            description: "Pitch deck PDF has been downloaded"
-          });
+          // Wait a bit more for content to fully render
+          setTimeout(async () => {
+            try {
+              const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+              if (!iframeDoc) {
+                throw new Error('Cannot access iframe content');
+              }
+              
+              const element = iframeDoc.body;
+              const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: 'Streamcentives-Pitch-Deck.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { 
+                  scale: 1.5, 
+                  useCORS: true,
+                  allowTaint: true,
+                  backgroundColor: '#000000'
+                },
+                jsPDF: { 
+                  unit: 'in', 
+                  format: 'letter', 
+                  orientation: 'landscape' 
+                }
+              };
+              
+              await html2pdf().set(opt).from(element).save();
+              
+              // Clean up
+              document.body.removeChild(iframe);
+              
+              toast({
+                title: "Success!",
+                description: "Pitch deck PDF has been downloaded successfully"
+              });
+            } catch (error) {
+              console.error('PDF generation error:', error);
+              document.body.removeChild(iframe);
+              toast({
+                title: "Error",
+                description: "Failed to generate PDF. Please try viewing the pitch deck directly.",
+                variant: "destructive"
+              });
+            }
+          }, 2000);
         } catch (error) {
-          console.error('PDF generation error:', error);
+          console.error('Error in iframe load:', error);
+          document.body.removeChild(iframe);
           toast({
             title: "Error",
-            description: "Failed to generate PDF. Please try again.",
+            description: "Failed to load pitch deck content.",
             variant: "destructive"
           });
-          pitchWindow.close();
         }
-      }, 3000);
+      };
+      
+      // Handle iframe load error
+      iframe.onerror = () => {
+        document.body.removeChild(iframe);
+        toast({
+          title: "Error",
+          description: "Failed to load pitch deck. Please try viewing it directly.",
+          variant: "destructive"
+        });
+      };
       
     } catch (error) {
+      console.error('PDF generation error:', error);
       toast({
         title: "Error",
-        description: "Failed to generate PDF. Please try again.",
+        description: "Failed to generate PDF. Please try again or view the pitch deck directly.",
         variant: "destructive"
       });
     }
