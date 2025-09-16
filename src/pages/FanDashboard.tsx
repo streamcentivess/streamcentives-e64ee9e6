@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FanRewardsTab from '@/components/FanRewardsTab';
+import { FanShoutouts } from '@/components/FanShoutouts';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
@@ -554,15 +555,7 @@ const FanDashboard = () => {
           </TabsContent>
 
           <TabsContent value="activity" className="mt-6">
-            <Card className="card-modern">
-              <CardContent className="p-8 text-center">
-                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Activity History</h3>
-                <p className="text-muted-foreground">
-                  Your complete activity history will be shown here.
-                </p>
-              </CardContent>
-            </Card>
+            <FanShoutouts />
           </TabsContent>
         </Tabs>
       </div>

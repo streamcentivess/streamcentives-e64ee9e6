@@ -1560,6 +1560,66 @@ export type Database = {
         }
         Relationships: []
       }
+      shoutouts: {
+        Row: {
+          achievement_text: string
+          achievements_data: Json | null
+          created_at: string
+          creator_id: string
+          fan_display_name: string
+          fan_id: string
+          fan_username: string | null
+          id: string
+          is_read: boolean
+          is_sent: boolean
+          read_at: string | null
+          reward_data: Json | null
+          reward_id: string | null
+          sent_at: string | null
+          shoutout_text: string
+          tone: string
+          updated_at: string
+        }
+        Insert: {
+          achievement_text: string
+          achievements_data?: Json | null
+          created_at?: string
+          creator_id: string
+          fan_display_name: string
+          fan_id: string
+          fan_username?: string | null
+          id?: string
+          is_read?: boolean
+          is_sent?: boolean
+          read_at?: string | null
+          reward_data?: Json | null
+          reward_id?: string | null
+          sent_at?: string | null
+          shoutout_text: string
+          tone?: string
+          updated_at?: string
+        }
+        Update: {
+          achievement_text?: string
+          achievements_data?: Json | null
+          created_at?: string
+          creator_id?: string
+          fan_display_name?: string
+          fan_id?: string
+          fan_username?: string | null
+          id?: string
+          is_read?: boolean
+          is_sent?: boolean
+          read_at?: string | null
+          reward_data?: Json | null
+          reward_id?: string | null
+          sent_at?: string | null
+          shoutout_text?: string
+          tone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_media_credentials: {
         Row: {
           access_token: string | null
