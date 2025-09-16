@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import VideoModal from "@/components/VideoModal";
 import html2pdf from 'html2pdf.js';
-import PptxGenJS from 'pptxgenjs';
 const logoUrl = "/lovable-uploads/5a716900-ec0d-4859-849e-c5116c76c7e1.png";
 const Website = () => {
   const [email, setEmail] = useState("");
@@ -19,350 +18,55 @@ const Website = () => {
   const {
     toast
   } = useToast();
-  const handlePitchDeckDownload = async (format: 'pdf' | 'pptx') => {
+  const handlePitchDeckPDF = async () => {
+    const { toast } = useToast();
+    
     try {
-      toast({
-        title: `Generating ${format.toUpperCase()}...`,
-        description: "Please wait while we prepare your pitch deck",
-      });
-      
-      if (format === 'pptx') {
-        await generatePowerPoint();
-      } else {
-        await generateMultiPagePDF();
+      // Navigate to pitch deck page to capture content
+      const pitchWindow = window.open('/pitch', '_blank');
+      if (!pitchWindow) {
+        toast({
+          title: "Error",
+          description: "Please allow popups to download the pitch deck PDF",
+          variant: "destructive"
+        });
+        return;
       }
       
+      // Wait for the page to load, then generate PDF
+      setTimeout(async () => {
+        try {
+          const element = pitchWindow.document.body;
+          const opt = {
+            margin: 0.5,
+            filename: 'Streamcentives-Pitch-Deck.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+          };
+          
+          await html2pdf().set(opt).from(element).save();
+          pitchWindow.close();
+          
+          toast({
+            title: "Success!",
+            description: "Pitch deck PDF has been downloaded"
+          });
+        } catch (error) {
+          console.error('PDF generation error:', error);
+          toast({
+            title: "Error",
+            description: "Failed to generate PDF. Please try again.",
+            variant: "destructive"
+          });
+          pitchWindow.close();
+        }
+      }, 3000);
+      
     } catch (error) {
-      console.error('Download error:', error);
       toast({
         title: "Error",
-        description: `Failed to generate ${format.toUpperCase()}. Please try again.`,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const generatePowerPoint = async () => {
-    const pptx = new PptxGenJS();
-    
-    // Set presentation properties
-    pptx.author = 'Streamcentives';
-    pptx.company = 'Streamcentives';
-    pptx.title = 'Streamcentives Pitch Deck';
-    pptx.subject = 'Investor Presentation';
-    
-    // Slide data (titles and key points for each scene)
-    const slideData = [
-      {
-        title: "The Problem",
-        points: [
-          "Fans support creators but receive no recognition",
-          "Creators struggle to build engaged communities", 
-          "Current platforms don't reward fan loyalty",
-          "Disconnect between fan engagement and creator success"
-        ]
-      },
-      {
-        title: "The Solution", 
-        points: [
-          "Streamcentives bridges fans and creators",
-          "Gamified engagement system with XP rewards",
-          "Real rewards for fan activities",
-          "Data-driven insights for creators"
-        ]
-      },
-      {
-        title: "How It Works",
-        points: [
-          "Fans earn XP for streaming, sharing, engaging",
-          "XP unlocks exclusive rewards and experiences", 
-          "Creators gain powerful analytics and tools",
-          "AI-powered campaign management"
-        ]
-      },
-      {
-        title: "AI Co-Pilot",
-        points: [
-          "AI Campaign Builder - idea to campaign in seconds",
-          "AI Content Assistant - beat creative block forever",
-          "AI Shoutout Generator - personalized fan recognition",
-          "Smart sentiment analysis and moderation"
-        ]
-      },
-      {
-        title: "Market Opportunity",
-        points: [
-          "$184B global music streaming market",
-          "2.8B music streaming users worldwide",
-          "Creator economy growing 23% annually",
-          "Fan engagement platforms underserved"
-        ]
-      },
-      {
-        title: "Business Model",
-        points: [
-          "Platform fees on transactions",
-          "Premium subscriptions for creators",
-          "Data insights and analytics services",
-          "Sponsored campaigns and partnerships"
-        ]
-      },
-      {
-        title: "Go-to-Market Strategy",
-        points: [
-          "Phase 1: Partner with emerging artists",
-          "Phase 2: Scale to established creators",
-          "Phase 3: Enterprise solutions for labels",
-          "Strategic partnerships with streaming platforms"
-        ]
-      },
-      {
-        title: "Competition",
-        points: [
-          "Discord - limited monetization, no rewards",
-          "Patreon - subscription-only, no gamification", 
-          "Bandcamp - music sales only, no engagement",
-          "Streamcentives - comprehensive fan engagement platform"
-        ]
-      },
-      {
-        title: "The Team",
-        points: [
-          "Experienced team in music and technology",
-          "Deep understanding of creator economy",
-          "Proven track record in platform development",
-          "Advisory board of industry experts"
-        ]
-      },
-      {
-        title: "The Ask",
-        points: [
-          "Seeking $2M seed funding",
-          "Product development and team expansion",
-          "Marketing and user acquisition",
-          "Technology infrastructure scaling"
-        ]
-      },
-      {
-        title: "Let's Build Together",
-        points: [
-          "Join us in revolutionizing fan engagement",
-          "Email: team@streamcentives.com",
-          "Website: streamcentives.com",
-          "Together we create the future of music"
-        ]
-      }
-    ];
-
-    // Create slides
-    slideData.forEach((slide, index) => {
-      const pptxSlide = pptx.addSlide();
-      
-      // Add title
-      pptxSlide.addText(slide.title, {
-        x: 1,
-        y: 0.5,
-        w: 8,
-        h: 1,
-        fontSize: 36,
-        bold: true,
-        color: '363636',
-        align: 'center'
-      });
-      
-      // Add bullet points
-      slide.points.forEach((point, pointIndex) => {
-        pptxSlide.addText(`• ${point}`, {
-          x: 1,
-          y: 2 + (pointIndex * 0.8),
-          w: 8,
-          h: 0.6,
-          fontSize: 18,
-          color: '666666'
-        });
-      });
-      
-      // Add slide number
-      pptxSlide.addText(`${index + 1}`, {
-        x: 9,
-        y: 6.5,
-        w: 0.5,
-        h: 0.3,
-        fontSize: 12,
-        color: '999999',
-        align: 'center'
-      });
-    });
-    
-    // Save the presentation
-    await pptx.writeFile({ fileName: 'Streamcentives-Pitch-Deck.pptx' });
-    
-    toast({
-      title: "Success!",
-      description: "PowerPoint presentation has been downloaded successfully"
-    });
-  };
-
-  const generateMultiPagePDF = async () => {
-    // For now, let's create a simple PDF with slide titles
-    // This is more reliable than trying to capture the React components
-    const pdf = html2pdf();
-    
-    // Create a simple HTML structure with all slide content
-    const slideContent = `
-      <div style="font-family: Arial, sans-serif; background: #000; color: #fff; padding: 40px;">
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">The Problem</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Fans support creators but receive no recognition</li>
-            <li>Creators struggle to build engaged communities</li>
-            <li>Current platforms don't reward fan loyalty</li>
-            <li>Disconnect between fan engagement and creator success</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">The Solution</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Streamcentives bridges fans and creators</li>
-            <li>Gamified engagement system with XP rewards</li>
-            <li>Real rewards for fan activities</li>
-            <li>Data-driven insights for creators</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">How It Works</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Fans earn XP for streaming, sharing, engaging</li>
-            <li>XP unlocks exclusive rewards and experiences</li>
-            <li>Creators gain powerful analytics and tools</li>
-            <li>AI-powered campaign management</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">AI Co-Pilot</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>AI Campaign Builder - idea to campaign in seconds</li>
-            <li>AI Content Assistant - beat creative block forever</li>
-            <li>AI Shoutout Generator - personalized fan recognition</li>
-            <li>Smart sentiment analysis and moderation</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">Market Opportunity</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>$184B global music streaming market</li>
-            <li>2.8B music streaming users worldwide</li>
-            <li>Creator economy growing 23% annually</li>
-            <li>Fan engagement platforms underserved</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">Business Model</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Platform fees on transactions</li>
-            <li>Premium subscriptions for creators</li>
-            <li>Data insights and analytics services</li>
-            <li>Sponsored campaigns and partnerships</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">Go-to-Market Strategy</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Phase 1: Partner with emerging artists</li>
-            <li>Phase 2: Scale to established creators</li>
-            <li>Phase 3: Enterprise solutions for labels</li>
-            <li>Strategic partnerships with streaming platforms</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">Competition</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Discord - limited monetization, no rewards</li>
-            <li>Patreon - subscription-only, no gamification</li>
-            <li>Bandcamp - music sales only, no engagement</li>
-            <li>Streamcentives - comprehensive fan engagement platform</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">The Team</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Experienced team in music and technology</li>
-            <li>Deep understanding of creator economy</li>
-            <li>Proven track record in platform development</li>
-            <li>Advisory board of industry experts</li>
-          </ul>
-        </div>
-        
-        <div style="page-break-after: always; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">The Ask</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Seeking $2M seed funding</li>
-            <li>Product development and team expansion</li>
-            <li>Marketing and user acquisition</li>
-            <li>Technology infrastructure scaling</li>
-          </ul>
-        </div>
-        
-        <div style="min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-          <h1 style="font-size: 48px; margin-bottom: 40px;">Let's Build Together</h1>
-          <ul style="font-size: 24px; line-height: 1.8; text-align: left;">
-            <li>Join us in revolutionizing fan engagement</li>
-            <li>Email: team@streamcentives.com</li>
-            <li>Website: streamcentives.com</li>
-            <li>Together we create the future of music</li>
-          </ul>
-        </div>
-      </div>
-    `;
-    
-    // Create a temporary div with the content
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = slideContent;
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
-    document.body.appendChild(tempDiv);
-    
-    try {
-      const opt = {
-        margin: [0.5, 0.5, 0.5, 0.5],
-        filename: 'Streamcentives-Pitch-Deck.pdf',
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { 
-          scale: 1.5, 
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#000000'
-        },
-        jsPDF: { 
-          unit: 'in', 
-          format: 'letter', 
-          orientation: 'landscape' 
-        }
-      };
-      
-      await html2pdf().set(opt).from(tempDiv).save();
-      
-      // Clean up
-      document.body.removeChild(tempDiv);
-      
-      toast({
-        title: "Success!",
-        description: "Multi-page PDF has been downloaded successfully"
-      });
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      document.body.removeChild(tempDiv);
-      toast({
-        title: "Error", 
-        description: "Failed to generate PDF. Please try the PowerPoint version.",
+        description: "Failed to generate PDF. Please try again.",
         variant: "destructive"
       });
     }
@@ -536,16 +240,8 @@ const Website = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => handlePitchDeckDownload('pptx')}
+                  onClick={handlePitchDeckPDF}
                   className="text-blue-400 hover:text-blue-300"
-                >
-                  Download PowerPoint
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => handlePitchDeckDownload('pdf')}
-                  className="text-green-400 hover:text-green-300"
                 >
                   Download PDF
                 </Button>
