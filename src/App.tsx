@@ -36,6 +36,8 @@ import AwardXP from "./pages/AwardXP";
 import BulkXPUpdate from "./pages/BulkXPUpdate";
 import ShoutoutGenerator from "./pages/ShoutoutGenerator";
 import SentimentAnalysis from "./pages/SentimentAnalysis";
+import { EnhancedPurchaseXP } from "./pages/EnhancedPurchaseXP";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -50,6 +52,7 @@ const App = () => (
             <Route path="/pitch" element={<PitchDeck />} />
             <Route path="/team" element={<Team />} />
             <Route path="/purchase-xp" element={<PurchaseXP />} />
+            <Route path="/enhanced-purchase-xp" element={<EnhancedPurchaseXP />} />
             <Route path="/xp-purchase-success" element={<XPPurchaseSuccess />} />
             <Route path="/award-xp" element={<ProtectedRoute><AwardXP /></ProtectedRoute>} />
             <Route path="/bulk-xp-update" element={<ProtectedRoute><BulkXPUpdate /></ProtectedRoute>} />

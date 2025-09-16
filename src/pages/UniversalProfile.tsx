@@ -1705,7 +1705,7 @@ const UniversalProfile = () => {
                         variant="link"
                         size="sm"
                         className="h-auto p-0 text-xs text-green-600 hover:text-green-700 font-medium"
-                        onClick={() => navigate('/purchase-xp')}
+                        onClick={() => navigate('/enhanced-purchase-xp')}
                       >
                         <DollarSign className="h-3 w-3 mr-1" />
                         Buy XP

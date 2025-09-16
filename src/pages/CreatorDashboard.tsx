@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AICampaignBuilder } from '@/components/AICampaignBuilder';
 import { ContentAssistant } from '@/components/ContentAssistant';
+import { CreatorEarningsDashboard } from '@/components/CreatorEarningsDashboard';
 
 const CreatorDashboard = () => {
   const { user, signOut } = useAuth();
@@ -851,6 +852,9 @@ const CreatorDashboard = () => {
             </Card>
           </div>
         </div>
+
+        {/* Enhanced Earnings Dashboard */}
+        <CreatorEarningsDashboard />
       </div>
       
       <AICampaignBuilder 

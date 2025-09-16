@@ -14,6 +14,7 @@ import FanRewardsTab from '@/components/FanRewardsTab';
 import { FanShoutouts } from '@/components/FanShoutouts';
 import { LeaderboardPosition } from '@/components/LeaderboardPosition';
 import { XPRewardAnimation } from '@/components/XPRewardAnimation';
+import { EnhancedXPBalance } from '@/components/EnhancedXPBalance';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
@@ -659,7 +660,14 @@ const FanDashboard = () => {
           </TabsContent>
 
           <TabsContent value="rewards" className="mt-6">
-            <FanRewardsTab />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <FanRewardsTab />
+              </div>
+              <div>
+                <EnhancedXPBalance />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="activity" className="mt-6">

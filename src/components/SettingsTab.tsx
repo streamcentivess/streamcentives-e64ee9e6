@@ -243,7 +243,7 @@ export default function SettingsTab() {
               </div>
               <Button 
                 variant="outline" 
-                onClick={() => navigate('/purchase-xp')}
+                onClick={() => navigate('/enhanced-purchase-xp')}
                 className="flex items-center gap-2"
               >
                 <CreditCard className="h-4 w-4" />
@@ -258,7 +258,7 @@ export default function SettingsTab() {
                   <p className="text-sm text-muted-foreground mb-4">
                     You haven't made any XP purchases yet. Start by purchasing your first XP package!
                   </p>
-                  <Button onClick={() => navigate('/purchase-xp')}>
+                  <Button onClick={() => navigate('/enhanced-purchase-xp')}>
                     <CreditCard className="h-4 w-4 mr-2" />
                     Purchase XP
                   </Button>
