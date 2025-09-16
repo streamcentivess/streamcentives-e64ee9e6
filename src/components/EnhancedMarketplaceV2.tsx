@@ -21,7 +21,9 @@ import {
   Star,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Gift,
+  Sparkles
 } from 'lucide-react';
 
 interface MarketplaceListing {
@@ -43,6 +45,24 @@ interface MarketplaceListing {
   seller_name?: string;
   seller_avatar?: string;
   original_creator_name?: string;
+}
+
+interface CreatorReward {
+  id: string;
+  title: string;
+  description?: string;
+  image_url?: string;
+  xp_cost: number;
+  cash_price?: number;
+  rarity: string;
+  delivery_type: string;
+  instant_delivery: boolean;
+  is_active: boolean;
+  quantity_available?: number;
+  creator_id: string;
+  creator_name?: string;
+  creator_avatar?: string;
+  created_at: string;
 }
 
 interface UserRedemption {
@@ -71,6 +91,7 @@ export function EnhancedMarketplaceV2() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
+  const [creatorRewards, setCreatorRewards] = useState<CreatorReward[]>([]);
   const [userRedemptions, setUserRedemptions] = useState<UserRedemption[]>([]);
   const [userListings, setUserListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +102,7 @@ export function EnhancedMarketplaceV2() {
   const [selectedRedemption, setSelectedRedemption] = useState<string>('');
   const [listingPrice, setListingPrice] = useState('');
   const [listingDescription, setListingDescription] = useState('');
-  const [activeTab, setActiveTab] = useState('browse');
+  const [activeTab, setActiveTab] = useState('creator-rewards');
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
 
   useEffect(() => {
@@ -93,6 +114,48 @@ export function EnhancedMarketplaceV2() {
   const fetchMarketplaceData = async () => {
     try {
       setLoading(true);
+
+      // Fetch creator rewards (direct from creators)
+      const { data: rewardsData, error: rewardsError } = await supabase
+        .from('rewards')
+        .select(`
+          id,
+          title,
+          description,
+          image_url,
+          xp_cost,
+          cash_price,
+          rarity,
+          delivery_type,
+          instant_delivery,
+          is_active,
+          quantity_available,
+          creator_id,
+          created_at
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (rewardsError) throw rewardsError;
+
+      // Get creator profiles separately
+      const creatorIds = [...new Set(rewardsData?.map(r => r.creator_id) || [])];
+      const { data: creatorsData } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, username, avatar_url')
+        .in('user_id', creatorIds);
+
+      // Transform creator rewards data
+      const enrichedCreatorRewards = rewardsData?.map(reward => {
+        const creator = creatorsData?.find(c => c.user_id === reward.creator_id);
+        return {
+          ...reward,
+          creator_name: creator?.display_name || creator?.username || 'Creator',
+          creator_avatar: creator?.avatar_url
+        };
+      }) || [];
+
+      setCreatorRewards(enrichedCreatorRewards as CreatorReward[]);
 
       // Fetch active marketplace listings with enhanced data
       const { data: listingsData, error: listingsError } = await supabase
@@ -154,7 +217,7 @@ export function EnhancedMarketplaceV2() {
             reward_instant_delivery: redemption?.rewards?.instant_delivery,
             seller_name: seller?.display_name || seller?.username,
             seller_avatar: seller?.avatar_url,
-            original_creator_name: 'Creator' // We'll fetch this separately if needed
+            original_creator_name: 'Creator'
           };
         });
 
@@ -261,6 +324,46 @@ export function EnhancedMarketplaceV2() {
     }
   };
 
+  const handlePurchaseCreatorReward = async (reward: CreatorReward) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to purchase rewards",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setPurchaseLoading(reward.id);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('enhanced-reward-purchase', {
+        body: {
+          rewardId: reward.id,
+          paymentMethod: reward.cash_price ? 'mixed' : 'xp_only'
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Reward Purchased Successfully!",
+        description: `You've purchased ${reward.title}! ${reward.instant_delivery ? 'Check your rewards for instant access.' : 'Your reward will be processed soon.'}`,
+      });
+
+      fetchMarketplaceData(); // Refresh data
+    } catch (error) {
+      console.error('Error purchasing reward:', error);
+      toast({
+        title: "Purchase Failed",
+        description: error instanceof Error ? error.message : "Failed to purchase reward",
+        variant: "destructive"
+      });
+    } finally {
+      setPurchaseLoading(null);
+    }
+  };
+
   const handlePurchase = async (listing: MarketplaceListing) => {
     if (!user) {
       toast({
@@ -351,6 +454,26 @@ export function EnhancedMarketplaceV2() {
     }
   };
 
+  const getFilteredCreatorRewards = () => {
+    return creatorRewards.filter(reward => {
+      const matchesSearch = !searchTerm || 
+        reward.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reward.creator_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reward.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesRarity = !rarityFilter || reward.rarity === rarityFilter;
+      
+      return matchesSearch && matchesRarity;
+    }).sort((a, b) => {
+      if (priceSort === 'price_asc') return (a.cash_price || 0) - (b.cash_price || 0);
+      if (priceSort === 'price_desc') return (b.cash_price || 0) - (a.cash_price || 0);
+      if (priceSort === 'xp_asc') return a.xp_cost - b.xp_cost;
+      if (priceSort === 'xp_desc') return b.xp_cost - a.xp_cost;
+      if (priceSort === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      return 0;
+    });
+  };
+
   const getFilteredListings = () => {
     return listings.filter(listing => {
       const matchesSearch = !searchTerm || 
@@ -426,9 +549,9 @@ export function EnhancedMarketplaceV2() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Enhanced Marketplace
+            StreamCentives Marketplace
           </h1>
-          <p className="text-muted-foreground">Buy and sell rewards with secure transactions</p>
+          <p className="text-muted-foreground">Buy creator rewards directly or trade with other fans</p>
         </div>
         
         <Dialog open={createListingDialogOpen} onOpenChange={setCreateListingDialogOpen}>
@@ -531,12 +654,154 @@ export function EnhancedMarketplaceV2() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="browse">Browse Marketplace</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="creator-rewards">Creator Rewards</TabsTrigger>
+          <TabsTrigger value="marketplace">Fan Trading</TabsTrigger>
           <TabsTrigger value="my_listings">My Listings ({userListings.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="browse" className="space-y-6">
+        <TabsContent value="creator-rewards" className="space-y-6">
+          {/* Creator Rewards Filters */}
+          <Card className="card-modern">
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search creator rewards..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <Select value={rarityFilter} onValueChange={setRarityFilter}>
+                  <SelectTrigger className="w-full md:w-48">
+                    <SelectValue placeholder="Filter by rarity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Rarities</SelectItem>
+                    <SelectItem value="common">Common</SelectItem>
+                    <SelectItem value="rare">Rare</SelectItem>
+                    <SelectItem value="epic">Epic</SelectItem>
+                    <SelectItem value="legendary">Legendary</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={priceSort} onValueChange={setPriceSort}>
+                  <SelectTrigger className="w-full md:w-48">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Default</SelectItem>
+                    <SelectItem value="xp_asc">XP: Low to High</SelectItem>
+                    <SelectItem value="xp_desc">XP: High to Low</SelectItem>
+                    <SelectItem value="price_asc">Cash: Low to High</SelectItem>
+                    <SelectItem value="price_desc">Cash: High to Low</SelectItem>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Creator Rewards Grid */}
+          {getFilteredCreatorRewards().length === 0 ? (
+            <Card className="card-modern">
+              <CardContent className="p-8 text-center">
+                <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Creator Rewards Found</h3>
+                <p className="text-muted-foreground">
+                  {searchTerm || rarityFilter 
+                    ? "Try adjusting your filters to see more rewards."
+                    : "No active rewards available right now. Check back later!"}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {getFilteredCreatorRewards().map((reward) => (
+                <Card key={reward.id} className="card-modern group hover:scale-105 transition-all duration-300">
+                  {reward.image_url && (
+                    <div className="aspect-video overflow-hidden rounded-t-xl">
+                      <img 
+                        src={reward.image_url} 
+                        alt={reward.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <CardHeader className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg line-clamp-1">{reward.title}</CardTitle>
+                      <Badge className={getRarityColor(reward.rarity)}>
+                        {reward.rarity}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="h-3 w-3" />
+                      <span>By {reward.creator_name}</span>
+                      {getDeliveryTypeIcon(reward.delivery_type, reward.instant_delivery)}
+                      <span className="text-xs">
+                        {reward.instant_delivery ? 'Instant' : 'Manual'} delivery
+                      </span>
+                    </div>
+                    {reward.quantity_available && reward.quantity_available > 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        {reward.quantity_available} left in stock
+                      </div>
+                    )}
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-3">
+                    {reward.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {reward.description}
+                      </p>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-lg font-bold text-primary">
+                          <Sparkles className="h-4 w-4" />
+                          {reward.xp_cost} XP
+                        </div>
+                        {reward.cash_price && reward.cash_price > 0 && (
+                          <div className="text-lg font-bold text-green-600">
+                            + ${reward.cash_price}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {reward.cash_price && reward.cash_price > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          Mixed payment: XP + Cash
+                        </div>
+                      )}
+                    </div>
+
+                    <Button 
+                      onClick={() => handlePurchaseCreatorReward(reward)}
+                      disabled={purchaseLoading === reward.id || (reward.quantity_available !== null && reward.quantity_available <= 0)}
+                      className="w-full"
+                    >
+                      {purchaseLoading === reward.id ? (
+                        <Clock className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Gift className="h-4 w-4 mr-2" />
+                      )}
+                      {reward.quantity_available !== null && reward.quantity_available <= 0 
+                        ? "Out of Stock" 
+                        : `Redeem${reward.cash_price ? ` for ${reward.xp_cost} XP + $${reward.cash_price}` : ` for ${reward.xp_cost} XP`}`}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="marketplace" className="space-y-6">
           {/* Filters */}
           <Card className="card-modern">
             <CardContent className="pt-6">
