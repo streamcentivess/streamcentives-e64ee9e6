@@ -15,10 +15,12 @@ import { FanShoutouts } from '@/components/FanShoutouts';
 import { LeaderboardPosition } from '@/components/LeaderboardPosition';
 import { XPRewardAnimation } from '@/components/XPRewardAnimation';
 import { EnhancedXPBalance } from '@/components/EnhancedXPBalance';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Real data state - starts at 0 until engagement
   const [metrics, setMetrics] = useState({
@@ -283,36 +285,38 @@ const FanDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className={`min-h-screen bg-background ${isMobile ? 'p-2 pb-20' : 'p-4'}`}>
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}>
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold bg-gradient-primary bg-clip-text text-transparent`}>
               Fan Dashboard
             </h1>
-            <p className="text-muted-foreground">Welcome back, {user?.user_metadata?.full_name || user?.email}</p>
+            <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Welcome back, {user?.user_metadata?.full_name || user?.email}</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/universal-profile')}>
-              Profile
-            </Button>
-            <Button variant="outline" onClick={signOut}>
-              Sign Out
-            </Button>
-          </div>
+          {!isMobile && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/universal-profile')}>
+                Profile
+              </Button>
+              <Button variant="outline" onClick={signOut}>
+                Sign Out
+              </Button>
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="rewards">Rewards</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3 h-12' : 'grid-cols-3'}`}>
+            <TabsTrigger value="overview" className={isMobile ? 'text-xs' : ''}>Overview</TabsTrigger>
+            <TabsTrigger value="rewards" className={isMobile ? 'text-xs' : ''}>Rewards</TabsTrigger>
+            <TabsTrigger value="activity" className={isMobile ? 'text-xs' : ''}>Activity</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6">
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'}`}>
               <Card className="card-modern">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -393,7 +397,7 @@ const FanDashboard = () => {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 lg:grid-cols-3 gap-6'}`}>
               {/* Left Column */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Progress to Next Tier */}

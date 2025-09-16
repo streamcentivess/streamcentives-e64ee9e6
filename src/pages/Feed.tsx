@@ -14,6 +14,7 @@ import CommunityUpload from '@/components/CommunityUpload';
 import UserProfileSearch from '@/components/UserProfileSearch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Heart, 
   MessageCircle, 
@@ -77,6 +78,7 @@ const Feed = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [posts, setPosts] = useState<Post[]>([]);
   const [reposts, setReposts] = useState<Repost[]>([]);
   const [loading, setLoading] = useState(true);

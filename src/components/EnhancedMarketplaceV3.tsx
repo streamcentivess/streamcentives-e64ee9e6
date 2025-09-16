@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Eye, ShoppingCart, Tag, Filter, Search, Star, TrendingUp } from 'lucide-react';
 import { useMobileCapabilities } from '@/hooks/useMobileCapabilities';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 
 interface MarketplaceItem {
@@ -30,6 +31,7 @@ interface MarketplaceItem {
 
 const EnhancedMarketplaceV3 = () => {
   const { hapticImpact } = useMobileCapabilities();
+  const isMobile = useIsMobile();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
@@ -109,16 +111,16 @@ const EnhancedMarketplaceV3 = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={`${isMobile ? 'space-y-4 pb-20 px-2' : 'space-y-6'}`}>
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold mb-2">Enhanced Marketplace</h1>
-        <p className="text-muted-foreground">Discover exclusive items from your favorite creators</p>
+        <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-2`}>Enhanced Marketplace</h1>
+        <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Discover exclusive items from your favorite creators</p>
       </div>
 
       {/* Search and Filters */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className={`${isMobile ? 'p-3' : 'p-4'}`}>
           <div className="flex flex-col gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -126,7 +128,7 @@ const EnhancedMarketplaceV3 = () => {
                 placeholder="Search marketplace..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className={`pl-10 ${isMobile ? 'text-base' : ''}`}
               />
             </div>
             
@@ -139,7 +141,7 @@ const EnhancedMarketplaceV3 = () => {
                   onClick={() => setSelectedCategory(category.id)}
                   className="whitespace-nowrap"
                 >
-                  {category.name}
+                  {isMobile ? category.name.split(' ')[0] : category.name}
                   <Badge variant="secondary" className="ml-1">
                     {category.count}
                   </Badge>
@@ -147,9 +149,9 @@ const EnhancedMarketplaceV3 = () => {
               ))}
             </div>
 
-            <div className="flex gap-2">
+            <div className={`flex ${isMobile ? 'flex-col' : ''} gap-2`}>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className={isMobile ? 'w-full' : 'w-40'}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -161,7 +163,7 @@ const EnhancedMarketplaceV3 = () => {
                 </SelectContent>
               </Select>
               
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className={isMobile ? 'w-full' : ''}>
                 <Filter className="h-4 w-4 mr-1" />
                 More Filters
               </Button>
@@ -176,7 +178,7 @@ const EnhancedMarketplaceV3 = () => {
           <TrendingUp className="h-5 w-5" />
           Featured Items
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 md:grid-cols-2 gap-4'}`}>
           {items.filter(item => item.featured).map((item) => (
             <Card key={item.id} className="overflow-hidden">
               <div className="relative">
@@ -263,7 +265,7 @@ const EnhancedMarketplaceV3 = () => {
 
       {/* Make Offer Dialog */}
       <Dialog open={showOfferDialog} onOpenChange={setShowOfferDialog}>
-        <DialogContent>
+        <DialogContent className={isMobile ? 'w-[95vw] max-w-[95vw] h-auto max-h-[90vh] overflow-y-auto' : ''}>
           <DialogHeader>
             <DialogTitle>Make an Offer</DialogTitle>
           </DialogHeader>

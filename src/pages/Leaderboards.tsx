@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Trophy, Crown, Medal, Star, Search, ArrowLeft, Users, Target, ShoppingBag, Music, Share, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LeaderboardEntry {
   id: string;
@@ -57,6 +58,7 @@ const Leaderboards = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const [selectedPeriod, setSelectedPeriod] = useState('weekly');
   const [searchTerm, setSearchTerm] = useState('');
@@ -359,33 +361,35 @@ const Leaderboards = () => {
   }, [creatorLeaderboards, selectedCreator]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${isMobile ? 'pb-20' : ''}`}>
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
-        <div className="max-w-7xl mx-auto p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(-1)}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
+        <div className={`max-w-7xl mx-auto ${isMobile ? 'p-2' : 'p-4'}`}>
+          <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'}`}>
+            <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-4'}`}>
+              {!isMobile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(-1)}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              )}
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold bg-gradient-primary bg-clip-text text-transparent`}>
                   Leaderboards
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
                   Real-time fan rankings across all creators and categories
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className={`flex items-center ${isMobile ? 'justify-end' : 'gap-4'}`}>
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className={isMobile ? 'w-28 h-8 text-xs' : 'w-32'}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -400,7 +404,7 @@ const Leaderboards = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 space-y-6">
+      <div className={`max-w-7xl mx-auto ${isMobile ? 'p-2 space-y-4' : 'p-4 space-y-6'}`}>
         {/* Current User Stats */}
         {user && currentUserStats && (
           <Card className="card-modern">
@@ -435,18 +439,18 @@ const Leaderboards = () => {
         {/* Creator Search */}
         <Card className="card-modern">
           <CardContent className="p-4">
-            <div className="flex items-center gap-4">
+            <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center gap-4'}`}>
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search creators..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className={`pl-10 ${isMobile ? 'text-base' : ''}`}
                 />
               </div>
               <Select value={selectedCreator} onValueChange={setSelectedCreator}>
-                <SelectTrigger className="w-64">
+                <SelectTrigger className={isMobile ? 'w-full' : 'w-64'}>
                   <SelectValue placeholder="Select a creator" />
                 </SelectTrigger>
                 <SelectContent>
@@ -473,9 +477,9 @@ const Leaderboards = () => {
 
         {/* Leaderboard Tabs */}
         <Tabs defaultValue="global" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-            <TabsTrigger value="global">Global Rankings</TabsTrigger>
-            <TabsTrigger value="creators">By Creator</TabsTrigger>
+          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-12' : 'max-w-md mx-auto grid-cols-2'}`}>
+            <TabsTrigger value="global" className={isMobile ? 'text-xs' : ''}>Global Rankings</TabsTrigger>
+            <TabsTrigger value="creators" className={isMobile ? 'text-xs' : ''}>By Creator</TabsTrigger>
           </TabsList>
           
           {/* Global Leaderboard */}

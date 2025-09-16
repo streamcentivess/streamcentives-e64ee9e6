@@ -19,6 +19,7 @@ import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { HeartAnimation } from '@/components/ui/heart-animation';
 import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
+import { useIsMobile } from '@/hooks/use-mobile';
 interface Profile {
   id?: string;
   user_id: string;
@@ -36,6 +37,7 @@ const UniversalProfile = () => {
   } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isMobile = useIsMobile();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
