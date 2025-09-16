@@ -44,8 +44,6 @@ import PurchaseXP from "./pages/PurchaseXP";
 import XPPurchaseSuccess from "./pages/XPPurchaseSuccess";
 import TermsConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import AwardXP from "./pages/AwardXP";
-import BulkXPUpdate from "./pages/BulkXPUpdate";
 import ShoutoutGenerator from "./pages/ShoutoutGenerator";
 import SentimentAnalysis from "./pages/SentimentAnalysis";
 import { EnhancedPurchaseXP } from "./pages/EnhancedPurchaseXP";
@@ -73,8 +71,6 @@ const App = () => {
               <Route path="/purchase-xp" element={<PurchaseXP />} />
               <Route path="/enhanced-purchase-xp" element={<EnhancedPurchaseXP />} />
               <Route path="/xp-purchase-success" element={<XPPurchaseSuccess />} />
-              <Route path="/award-xp" element={<ProtectedRoute><AwardXP /></ProtectedRoute>} />
-              <Route path="/bulk-xp-update" element={<ProtectedRoute><BulkXPUpdate /></ProtectedRoute>} />
               <Route path="/terms-conditions" element={<TermsConditions />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               
