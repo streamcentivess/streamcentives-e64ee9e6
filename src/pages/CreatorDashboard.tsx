@@ -17,6 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 import { AICampaignBuilder } from '@/components/AICampaignBuilder';
 import { ContentAssistant } from '@/components/ContentAssistant';
 import { CreatorEarningsDashboard } from '@/components/CreatorEarningsDashboard';
+import CreatorAnalyticsDashboard from '@/components/CreatorAnalyticsDashboard';
+import CreatorEarningsTracker from '@/components/CreatorEarningsTracker';
 
 const CreatorDashboard = () => {
   const { user, signOut } = useAuth();
@@ -29,6 +31,8 @@ const CreatorDashboard = () => {
   const [showMerchDialog, setShowMerchDialog] = useState(false);
   const [showAICampaignBuilder, setShowAICampaignBuilder] = useState(false);
   const [showContentAssistant, setShowContentAssistant] = useState(false);
+  const [showAnalyticsDashboard, setShowAnalyticsDashboard] = useState(false);
+  const [showEarningsTracker, setShowEarningsTracker] = useState(false);
   const [merchStoreData, setMerchStoreData] = useState({
     url: '',
     platform: 'shopify'
@@ -324,6 +328,14 @@ const CreatorDashboard = () => {
             <p className="text-muted-foreground text-sm sm:text-base">Manage your campaigns and engage with fans</p>
           </div>
           <div className={`flex gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
+            <Button onClick={() => setShowAnalyticsDashboard(true)} variant="outline" size="sm">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics
+            </Button>
+            <Button onClick={() => setShowEarningsTracker(true)} variant="outline" size="sm">
+              <DollarSign className="h-4 w-4 mr-2" />
+              Earnings
+            </Button>
             <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
               <Plus className="h-4 w-4 mr-2" />
               Create Campaign

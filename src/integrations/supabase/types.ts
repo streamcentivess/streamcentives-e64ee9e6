@@ -113,6 +113,39 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       automation_executions: {
         Row: {
           automation_rule_id: string
@@ -656,6 +689,57 @@ export type Database = {
           is_active?: boolean | null
           metadata?: Json | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      creator_analytics: {
+        Row: {
+          active_campaigns: number
+          created_at: string
+          creator_id: string
+          date: string
+          engagement_rate: number | null
+          id: string
+          new_fans: number
+          total_campaigns: number
+          total_cash_awarded: number
+          total_fans: number
+          total_message_revenue_cents: number
+          total_messages_received: number
+          total_xp_awarded: number
+          updated_at: string
+        }
+        Insert: {
+          active_campaigns?: number
+          created_at?: string
+          creator_id: string
+          date?: string
+          engagement_rate?: number | null
+          id?: string
+          new_fans?: number
+          total_campaigns?: number
+          total_cash_awarded?: number
+          total_fans?: number
+          total_message_revenue_cents?: number
+          total_messages_received?: number
+          total_xp_awarded?: number
+          updated_at?: string
+        }
+        Update: {
+          active_campaigns?: number
+          created_at?: string
+          creator_id?: string
+          date?: string
+          engagement_rate?: number | null
+          id?: string
+          new_fans?: number
+          total_campaigns?: number
+          total_cash_awarded?: number
+          total_fans?: number
+          total_message_revenue_cents?: number
+          total_messages_received?: number
+          total_xp_awarded?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2151,6 +2235,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_engagement_metrics: {
+        Row: {
+          campaigns_participated: number
+          created_at: string
+          date: string
+          id: string
+          last_active_at: string | null
+          messages_sent: number
+          posts_liked: number
+          posts_shared: number
+          sessions_count: number
+          total_session_duration_minutes: number
+          updated_at: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          campaigns_participated?: number
+          created_at?: string
+          date?: string
+          id?: string
+          last_active_at?: string | null
+          messages_sent?: number
+          posts_liked?: number
+          posts_shared?: number
+          sessions_count?: number
+          total_session_duration_minutes?: number
+          updated_at?: string
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          campaigns_participated?: number
+          created_at?: string
+          date?: string
+          id?: string
+          last_active_at?: string | null
+          messages_sent?: number
+          posts_liked?: number
+          posts_shared?: number
+          sessions_count?: number
+          total_session_duration_minutes?: number
+          updated_at?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       user_haters: {
         Row: {
           created_at: string
@@ -2528,6 +2660,10 @@ export type Database = {
       calculate_campaign_visibility_score: {
         Args: { campaign_id_param: string }
         Returns: number
+      }
+      calculate_creator_daily_analytics: {
+        Args: { creator_user_id: string; target_date?: string }
+        Returns: undefined
       }
       complete_campaign_interaction: {
         Args: { campaign_id_param: string; interaction_data_param?: Json }
