@@ -3189,8 +3189,11 @@ export type Database = {
       reward_redemptions: {
         Row: {
           amount_paid: number | null
+          can_be_listed: boolean | null
           created_at: string
           id: string
+          is_listed_on_marketplace: boolean | null
+          marketplace_listing_id: string | null
           payment_method: string
           reward_id: string
           status: string
@@ -3200,8 +3203,11 @@ export type Database = {
         }
         Insert: {
           amount_paid?: number | null
+          can_be_listed?: boolean | null
           created_at?: string
           id?: string
+          is_listed_on_marketplace?: boolean | null
+          marketplace_listing_id?: string | null
           payment_method: string
           reward_id: string
           status?: string
@@ -3211,8 +3217,11 @@ export type Database = {
         }
         Update: {
           amount_paid?: number | null
+          can_be_listed?: boolean | null
           created_at?: string
           id?: string
+          is_listed_on_marketplace?: boolean | null
+          marketplace_listing_id?: string | null
           payment_method?: string
           reward_id?: string
           status?: string
@@ -3221,6 +3230,13 @@ export type Database = {
           xp_spent?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_marketplace_listing_id_fkey"
+            columns: ["marketplace_listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reward_redemptions_reward_id_fkey"
             columns: ["reward_id"]

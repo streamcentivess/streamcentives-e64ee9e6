@@ -110,17 +110,11 @@ serve(async (req) => {
       const creatorFee = Math.floor(listing.asking_price_xp * (creatorFeePercent / 100));
       const sellerAmount = listing.asking_price_xp - streamcentivesFee - creatorFee;
 
-      // Execute transaction
-      const { error: transactionError } = await supabaseService.rpc('execute_marketplace_purchase_xp', {
-        buyer_id: user.id,
-        seller_id: listing.seller_id,
-        creator_id: listing.reward_redemptions.rewards.creator_id,
-        listing_id: listingId,
-        redemption_id: listing.reward_redemption_id,
-        total_xp: listing.asking_price_xp,
-        seller_xp: sellerAmount,
-        streamcentives_fee: streamcentivesFee,
-        creator_fee: creatorFee
+      // Execute transaction using the database function
+      const { data: result, error: transactionError } = await supabaseService.rpc('execute_marketplace_purchase_xp', {
+        listing_id_param: listingId,
+        buyer_id_param: user.id,
+        xp_amount_param: listing.asking_price_xp
       });
 
       if (transactionError) throw transactionError;
