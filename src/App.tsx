@@ -13,6 +13,11 @@ import SocialIntegrationsPage from "./pages/SocialIntegrationsPage";
 import SecurityDashboardPage from "./pages/SecurityDashboardPage";
 import OrganizationPage from "./pages/OrganizationPage";
 import EnhancedMarketplaceV3 from "./components/EnhancedMarketplaceV3";
+import AdvancedAnalytics from "./pages/AdvancedAnalytics";
+import CommunicationHub from "./pages/CommunicationHub";
+import MonetizationTools from "./pages/MonetizationTools";
+import ContentCreatorStudio from "./pages/ContentCreatorStudio";
+import CommunityHub from "./pages/CommunityHub";
 import { useIsMobile } from "./hooks/use-mobile";
 import Index from "./pages/Index";
 import PitchDeck from "./pages/PitchDeck";
@@ -175,6 +180,31 @@ const App = () => {
               <Route path="/organizations" element={
                 <ProtectedRoute>
                   <OrganizationPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/advanced-analytics" element={
+                <ProtectedRoute>
+                  <AdvancedAnalytics />
+                </ProtectedRoute>
+              } />
+              <Route path="/communication-hub" element={
+                <ProtectedRoute>
+                  <CommunicationHub />
+                </ProtectedRoute>
+              } />
+              <Route path="/monetization-tools" element={
+                <ProtectedRoute>
+                  <MonetizationTools />
+                </ProtectedRoute>
+              } />
+              <Route path="/content-creator-studio" element={
+                <ProtectedRoute>
+                  <ContentCreatorStudio />
+                </ProtectedRoute>
+              } />
+              <Route path="/community-hub" element={
+                <ProtectedRoute>
+                  <CommunityHub />
                 </ProtectedRoute>
               } />
               
