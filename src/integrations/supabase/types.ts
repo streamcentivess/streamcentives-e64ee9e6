@@ -5177,6 +5177,22 @@ export type Database = {
         }
         Returns: string
       }
+      search_public_profiles: {
+        Args: {
+          limit_count?: number
+          offset_count?: number
+          search_query: string
+        }
+        Returns: {
+          avatar_url: string
+          bio: string
+          country_name: string
+          created_at: string
+          display_name: string
+          user_id: string
+          username: string
+        }[]
+      }
       send_message_with_xp: {
         Args: {
           content_param: string

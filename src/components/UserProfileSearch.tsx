@@ -79,15 +79,15 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
   const loadProfiles = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('public_profiles')
-        .select('*')
-        .neq('user_id', user?.id || '')
-        .order('display_name', { ascending: true })
-        .limit(24);
+      // Use the secure RPC function to get public profiles
+      const { data, error } = await supabase.rpc('search_public_profiles', {
+        search_query: '',  // Empty query returns all profiles
+        limit_count: 24,
+        offset_count: 0
+      });
 
       if (error) throw error;
-      setProfiles((data as any) || []);
+      setProfiles(data || []);
     } catch (error) {
       console.error('Error loading profiles:', error);
       setProfiles([]);
@@ -99,16 +99,15 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
   const searchProfiles = async (term: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('public_profiles')
-        .select('*')
-        .neq('user_id', user?.id || '')
-        .or(`username.ilike.%${term}%,display_name.ilike.%${term}%`)
-        .order('display_name', { ascending: true })
-        .limit(24);
+      // Use the secure RPC function to search public profiles
+      const { data, error } = await supabase.rpc('search_public_profiles', {
+        search_query: term,
+        limit_count: 24,
+        offset_count: 0
+      });
 
       if (error) throw error;
-      setProfiles((data as any) || []);
+      setProfiles(data || []);
     } catch (error) {
       console.error('Error searching profiles:', error);
       setProfiles([]);
