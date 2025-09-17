@@ -94,8 +94,9 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
           id: 'youtube',
           name: 'YouTube',
           icon: Youtube,
-          connected: false, // Will be connected via API
-          verified: false
+          connected: profileData?.youtube_connected || false,
+          username: profileData?.youtube_username,
+          verified: true
         },
         {
           id: 'instagram',

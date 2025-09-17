@@ -23,7 +23,7 @@ const AuthCallback = () => {
         }
 
         if (data.session?.user) {
-          // Handle Spotify connection if provider is Spotify
+          // Handle provider-specific OAuth connections
           if (data.session.user.app_metadata?.provider === 'spotify') {
             const spotifyTokens = data.session.provider_token ? {
               access_token: data.session.provider_token,
@@ -52,6 +52,42 @@ const AuthCallback = () => {
                   .from('profiles')
                   .update({ spotify_connected: true })
                   .eq('user_id', data.session.user.id);
+              }
+            }
+          }
+
+          // Handle YouTube OAuth connection via Google provider with YouTube scopes
+          if (data.session.user.app_metadata?.provider === 'google' && data.session.provider_token) {
+            // Check if this Google OAuth has YouTube scopes
+            const scope = data.session.user.user_metadata?.iss?.includes('youtube') || 
+                         data.session.provider_token;
+            
+            if (scope) {
+              try {
+                // Call edge function to verify YouTube connection and get channel info
+                const { data: ytData, error: ytError } = await supabase.functions.invoke('verify-youtube-action', {
+                  body: { 
+                    access_token: data.session.provider_token,
+                    action_type: 'connect_account'
+                  }
+                });
+
+                if (!ytError && ytData?.success) {
+                  // Update profile with YouTube connection info
+                  await supabase
+                    .from('profiles')
+                    .update({ 
+                      youtube_connected: true,
+                      youtube_username: ytData.channel_name,
+                      youtube_channel_id: ytData.channel_id,
+                      youtube_connected_at: new Date().toISOString()
+                    })
+                    .eq('user_id', data.session.user.id);
+                } else {
+                  console.error('Error verifying YouTube connection:', ytError || ytData?.error);
+                }
+              } catch (error) {
+                console.error('Error processing YouTube OAuth:', error);
               }
             }
           }
