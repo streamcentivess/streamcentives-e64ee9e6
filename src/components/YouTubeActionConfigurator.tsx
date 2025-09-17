@@ -142,44 +142,25 @@ export const YouTubeActionConfigurator: React.FC = () => {
         return;
       }
 
-      const googleButtonHtml = `<!-- Google Official YouTube Subscribe Button with XP Tracking -->
+      // Google official button WITHOUT XP tracking (complies with YouTube Terms of Service)
+      const googleButtonHtml = `<!-- Google Official YouTube Subscribe Button (No XP - Complies with YouTube Terms) -->
 <script src="https://apis.google.com/js/platform.js"></script>
-<div style="display: inline-block; position: relative;">
-  <div 
-    class="g-ytsubscribe" 
-    data-channel="${channelId}" 
-    data-layout="${action.google_layout}" 
-    data-count="${action.google_count}"
-    onclick="trackYouTubeAction('${selectedLink.slug}', ${action.xp_reward})"
-  ></div>
-  <div style="
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #10B981;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: bold;
-  ">
-    +${action.xp_reward} XP
-  </div>
+<div class="g-ytsubscribe" 
+     data-channel="${channelId}" 
+     data-layout="${action.google_layout}" 
+     data-count="${action.google_count}">
 </div>
 
-<script>
-function trackYouTubeAction(linkSlug, xpReward) {
-  // Track the action with StreamCentives
-  fetch('${window.location.origin}/link/' + linkSlug, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'youtube_subscribe', xp: xpReward })
-  }).catch(err => console.log('XP tracking:', err));
-}
-</script>`;
+<!-- 
+Note: This button complies with YouTube's Terms of Service by:
+- Not offering rewards/XP for subscribing
+- Not tracking user interactions
+- Using official YouTube branding only as authorized
+-->`;
 
       setEmbedCode(googleButtonHtml);
     } else {
+      // Custom button that can offer XP since it doesn't use YouTube's official branding
       const customButtonHtml = `<!-- StreamCentives Custom YouTube Action Button -->
 <button 
   onclick="window.open('${window.location.origin}/link/${selectedLink.slug}', '_blank')"
@@ -414,8 +395,14 @@ function trackYouTubeAction(linkSlug, xpReward) {
                         max="100"
                         value={action.xp_reward}
                         onChange={(e) => setAction(prev => ({ ...prev, xp_reward: parseInt(e.target.value) || 0 }))}
+                        disabled={action.button_style === 'google_official'}
                       />
                     </div>
+                    {action.button_style === 'google_official' && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        XP rewards disabled for Google official buttons (YouTube Terms compliance)
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -428,10 +415,15 @@ function trackYouTubeAction(linkSlug, xpReward) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="google_official">Google Official Widget</SelectItem>
-                        <SelectItem value="youtube">YouTube Red</SelectItem>
-                        <SelectItem value="default">Default Gradient</SelectItem>
-                        <SelectItem value="custom">Custom Color</SelectItem>
+                        <SelectItem value="google_official">
+                          <div className="space-y-1">
+                            <div>Google Official Widget</div>
+                            <div className="text-xs text-muted-foreground">No XP rewards (YouTube Terms compliance)</div>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="youtube">YouTube Red Style + XP</SelectItem>
+                        <SelectItem value="default">Default Gradient + XP</SelectItem>
+                        <SelectItem value="custom">Custom Color + XP</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -509,13 +501,13 @@ function trackYouTubeAction(linkSlug, xpReward) {
                 <h3 className="text-lg font-semibold">Button Preview</h3>
                 <div className="p-8 bg-muted rounded-lg">
                   {action.button_style === 'google_official' && action.action_type === 'youtube_subscribe' ? (
-                    <div className="inline-block relative">
+                    <div className="inline-block">
                       <div className="bg-white border border-gray-300 rounded px-3 py-2 text-sm font-medium text-gray-700 flex items-center gap-2">
                         <Youtube className="h-4 w-4 text-red-500" />
                         Subscribe {action.google_count === 'default' && '• 1.2M'}
                       </div>
-                      <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                        +{action.xp_reward} XP
+                      <div className="text-xs text-orange-600 mt-2 font-medium">
+                        ⚠️ No XP rewards (YouTube Terms compliance)
                       </div>
                     </div>
                   ) : (
@@ -538,9 +530,21 @@ function trackYouTubeAction(linkSlug, xpReward) {
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p><strong>Action:</strong> {getActionTypeLabel(action.action_type)}</p>
                   <p><strong>URL:</strong> {action.action_url || 'Not set'}</p>
-                  <p><strong>XP Reward:</strong> {action.xp_reward} points</p>
-                  <p><strong>Button Style:</strong> {action.button_style === 'google_official' ? 'Google Official Widget' : 'Custom Button'}</p>
+                  {action.button_style !== 'google_official' && (
+                    <p><strong>XP Reward:</strong> {action.xp_reward} points</p>
+                  )}
+                  <p><strong>Button Style:</strong> {action.button_style === 'google_official' ? 'Google Official Widget (Terms Compliant)' : 'Custom Button with XP'}</p>
                 </div>
+                
+                {action.button_style === 'google_official' && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-sm">
+                    <h4 className="font-semibold text-orange-800 mb-2">YouTube Terms Compliance</h4>
+                    <p className="text-orange-700">
+                      This button complies with YouTube's API Terms of Service by not offering rewards 
+                      or tracking user interactions. For XP rewards, use custom button styles instead.
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -565,9 +569,27 @@ function trackYouTubeAction(linkSlug, xpReward) {
                   <ol className="text-sm text-blue-800 space-y-1">
                     <li>1. Copy the embed code above</li>
                     <li>2. Paste it into your website HTML where you want the button to appear</li>
-                    <li>3. The button will automatically track clicks and award XP to users</li>
-                    <li>4. Users need to be logged in to StreamCentives to receive XP rewards</li>
+                    {action.button_style === 'google_official' ? (
+                      <>
+                        <li>3. The official YouTube button complies with their Terms of Service</li>
+                        <li>4. No XP tracking is included to comply with YouTube's policies</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>3. The button will automatically track clicks and award XP to users</li>
+                        <li>4. Users need to be logged in to StreamCentives to receive XP rewards</li>
+                      </>
+                    )}
                   </ol>
+                  
+                  {action.button_style === 'google_official' && (
+                    <div className="mt-4 p-3 bg-orange-100 border border-orange-300 rounded">
+                      <p className="text-xs text-orange-800">
+                        <strong>YouTube Terms Compliance:</strong> This button does not offer rewards or track user data, 
+                        in accordance with YouTube's API Terms of Service.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>
