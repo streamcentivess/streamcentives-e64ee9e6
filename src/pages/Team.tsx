@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const logoUrl = "/lovable-uploads/5a716900-ec0d-4859-849e-c5116c76c7e1.png";
+const logoUrl = "/lovable-uploads/streamcentives-logo-optimized.webp";
 
 const Team = () => {
   // Placeholder team data - you'll replace with actual data and uploaded photos

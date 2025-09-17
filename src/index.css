@@ -1,9 +1,11 @@
+/* Import Google Fonts - Must be first */
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Streamcentives Design System - Cinematic Tech Startup */
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {

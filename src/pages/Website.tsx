@@ -8,7 +8,7 @@ import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle, Bot
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import VideoModal from "@/components/VideoModal";
-const logoUrl = "/lovable-uploads/5a716900-ec0d-4859-849e-c5116c76c7e1.png";
+const logoUrl = "/lovable-uploads/streamcentives-logo-optimized.webp";
 const Website = () => {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -202,7 +202,7 @@ const Website = () => {
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex justify-center mb-8">
-              <img src={logoUrl} alt="Streamcentives" className="w-[300px] h-[300px] rounded-full animate-pulse" />
+              <img src={logoUrl} alt="Streamcentives" className="w-[300px] h-[300px] rounded-full animate-pulse" fetchPriority="high" />
             </div>
             <div className="relative">
               <Badge variant="outline" className="mb-6 text-2xl px-6 py-3 bg-transparent border-transparent font-exo font-bold">

@@ -53,7 +53,7 @@ const ClosingScene = () => {
           <div className="flex justify-center mb-8">
             <div className="logo-s w-20 h-20">
               <img 
-                src="/lovable-uploads/5a716900-ec0d-4859-849e-c5116c76c7e1.png" 
+                src="/lovable-uploads/streamcentives-logo-optimized.webp" 
                 alt="Your Logo" 
                 className="w-full h-full object-contain"
               />
