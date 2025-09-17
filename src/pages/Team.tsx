@@ -32,26 +32,11 @@ const Team = () => {
       social: {
         linkedin: "",
         twitter: "",
+        github: "",
         email: ""
       },
       education: "B.A. in Entertainment Business, Minor in Marketing at Los Angeles Film School",
       previousRoles: ["Project Manager at Merched Out", "Artist Management & A&R", "Military Veteran"]
-    },
-    {
-      id: 2,
-      name: "Trev Case",
-      title: "Co-Founder",
-      bio: "Trev Case is a seasoned producer, songwriter, and audio engineer with over 20 years of experience across the music, broadcasting, and multimedia industries. He has collaborated with an impressive roster of artists including Young Thug, Ty Dolla $ign, T.I., P-LO, Clyde Carson, Big K.R.I.T., Young Dro, Kap G, Ktlyn, Too Short, Prince Royce, Pia Mia, Marc E. Bassy, Bobby Brackins, Mann, and many more. Beyond the studio, Trev's work has been featured by major brands and platforms such as PlayStation, Ubisoft, NFL, MLB, Hulu, the Los Angeles Rams, CW Network, Apple TV+, and the Oprah Winfrey Network, showcasing his versatility and industry reach.",
-      image: "/lovable-uploads/5897885b-dc57-41a0-b75a-5fd38b676bad.png",
-      resume: "",
-      skills: ["Music Production", "Audio Engineering", "Broadcasting", "Multimedia", "Artist Collaboration", "Brand Partnerships", "Studio Management", "Songwriting"],
-      social: {
-        linkedin: "",
-        github: "",
-        email: ""
-      },
-      education: "20+ years in Music, Broadcasting & Multimedia",
-      previousRoles: ["Producer & Audio Engineer", "Collaborated with 50+ Major Artists", "Featured on PlayStation, NFL, MLB, Apple TV+"]
     },
     {
       id: 3,
@@ -63,6 +48,8 @@ const Team = () => {
       skills: ["Financial Strategy", "Contract Negotiation", "Investment Management", "Capital Structure"],
       social: {
         linkedin: "",
+        twitter: "",
+        github: "",
         email: ""
       },
       education: "Dual certifications as broker and investment advisor",
@@ -113,11 +100,14 @@ const Team = () => {
     },
     {
       id: 9,
-      name: "Industry Advisor",
+      name: "Trev Case",
       title: "Music Industry Advisor",
-      status: "Hiring",
-      skills: ["Music Industry Relations", "Artist Development", "Label Partnerships"],
-      description: "Seeking experienced music industry professional with 15+ years in operations, artist relations, and strategic partnerships."
+      status: "Team Member",
+      image: "/lovable-uploads/5897885b-dc57-41a0-b75a-5fd38b676bad.png",
+      bio: "Trev Case is a seasoned producer, songwriter, and audio engineer with over 20 years of experience across the music, broadcasting, and multimedia industries. He has collaborated with an impressive roster of artists including Young Thug, Ty Dolla $ign, T.I., P-LO, Clyde Carson, Big K.R.I.T., Young Dro, Kap G, Ktlyn, Too Short, Prince Royce, Pia Mia, Marc E. Bassy, Bobby Brackins, Mann, and many more. Beyond the studio, Trev's work has been featured by major brands and platforms such as PlayStation, Ubisoft, NFL, MLB, Hulu, the Los Angeles Rams, CW Network, Apple TV+, and the Oprah Winfrey Network, showcasing his versatility and industry reach.",
+      skills: ["Music Production", "Audio Engineering", "Broadcasting", "Multimedia", "Artist Collaboration", "Brand Partnerships", "Studio Management", "Songwriting"],
+      education: "20+ years in Music, Broadcasting & Multimedia",
+      description: "Seasoned producer and audio engineer with extensive experience in music industry operations, artist relations, and strategic partnerships."
     }
   ];
 
