@@ -349,9 +349,13 @@ export default function SettingsTab() {
                 <p className="text-sm text-muted-foreground">
                   Manage your account security and privacy
                 </p>
-                <Button variant="outline" className="w-full justify-start" disabled>
-                  <Lock className="h-4 w-4 mr-2" />
-                  Two-Factor Authentication (Coming Soon)
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => navigate('/security')}
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Security Dashboard
                 </Button>
               </div>
             </CardContent>
