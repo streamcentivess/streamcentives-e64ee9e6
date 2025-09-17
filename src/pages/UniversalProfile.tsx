@@ -185,9 +185,22 @@ const UniversalProfile = () => {
     try {
       let profileRes: any;
       if (finalUsername) {
+        // For username lookup, still use direct query since RLS allows it for current user
         profileRes = await supabase.from('profiles').select('*').eq('username', finalUsername).maybeSingle();
       } else {
-        profileRes = await supabase.from('profiles').select('*').eq('user_id', targetUserId as string).maybeSingle();
+        // For user ID lookup, use the secure RPC function if not own profile
+        if (isOwnProfile) {
+          profileRes = await supabase.from('profiles').select('*').eq('user_id', targetUserId as string).maybeSingle();
+        } else {
+          // Use secure RPC function for other users' profiles
+          const { data: rpcData, error: rpcError } = await supabase.rpc('get_public_profile_safe', { 
+            target_user_id: targetUserId 
+          });
+          profileRes = { 
+            data: rpcData?.[0] || null, 
+            error: rpcError 
+          };
+        }
       }
       const {
         data,
