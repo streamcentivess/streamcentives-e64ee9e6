@@ -88,11 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Detect if user is on mobile device
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const redirectUrl = getRedirectUrl();
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'spotify',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
           scopes: 'user-read-email user-read-private user-top-read user-read-recently-played playlist-modify-public playlist-modify-private',
           skipBrowserRedirect: isMobile ? false : true, // Use direct redirect on mobile, popup on desktop
         },
@@ -144,12 +145,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Helper function to get the correct redirect URL
+  const getRedirectUrl = () => {
+    const currentHost = window.location.hostname;
+    
+    // For production domains, use the main domain
+    if (currentHost.includes('streamcentives.io') || currentHost.includes('streamcentives.com')) {
+      return 'https://www.streamcentives.io/auth/callback';
+    }
+    
+    // For development/preview domains
+    if (currentHost.includes('lovable.app')) {
+      return `${window.location.origin}/auth/callback`;
+    }
+    
+    // Default fallback
+    return `${window.location.origin}/auth/callback`;
+  };
+
   const signInWithGoogle = async () => {
     try {
+      const redirectUrl = getRedirectUrl();
+      console.log('Google OAuth redirect URL:', redirectUrl);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
         }
       });
 
@@ -172,10 +194,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithFacebook = async () => {
     try {
+      const redirectUrl = getRedirectUrl();
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
         }
       });
 
@@ -198,10 +222,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithApple = async () => {
     try {
+      const redirectUrl = getRedirectUrl();
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
         }
       });
 
@@ -290,11 +316,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   const signUpWithEmail = async (email: string, password: string) => {
     try {
+      const redirectUrl = getRedirectUrl();
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: redirectUrl
         }
       });
 
@@ -322,8 +350,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resetPassword = async (email: string) => {
     try {
       console.log('Password reset initiated for:', email);
+      const redirectUrl = getRedirectUrl();
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
       });
 
       if (error) {
