@@ -288,27 +288,43 @@ const UniversalProfile = () => {
   };
   const checkFollowStatus = async () => {
     if (!user || !profile || isOwnProfile) return;
+    
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('follows').select('id').eq('follower_id', user.id).eq('following_id', profile.user_id).single();
+      const { data, error } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', user.id)
+        .eq('following_id', profile.user_id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error checking follow status:', error);
+        setFollowing(false);
+        return;
+      }
+      
       setFollowing(!!data);
     } catch (error) {
-      // No follow relationship exists
+      console.error('Error in checkFollowStatus:', error);
       setFollowing(false);
     }
   };
   const handleFollowToggle = async () => {
     if (!user || !profile || isOwnProfile) return;
+    
     setFollowLoading(true);
+    
     try {
       if (following) {
         // Unfollow
-        const {
-          error
-        } = await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', profile.user_id);
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', profile.user_id);
+        
         if (error) throw error;
+        
         setFollowing(false);
         // Update userFollowStates if this user is in the current list
         setUserFollowStates(prev => ({
@@ -323,13 +339,30 @@ const UniversalProfile = () => {
         });
       } else {
         // Follow
-        const {
-          error
-        } = await supabase.from('follows').insert([{
-          follower_id: user.id,
-          following_id: profile.user_id
-        }]);
-        if (error) throw error;
+        const { error } = await supabase
+          .from('follows')
+          .insert([{
+            follower_id: user.id,
+            following_id: profile.user_id
+          }]);
+        
+        if (error) {
+          // Handle duplicate key constraint (already following)
+          if (error.code === '23505') {
+            setFollowing(true);
+            setUserFollowStates(prev => ({
+              ...prev,
+              [profile.user_id]: true
+            }));
+            toast({
+              title: "Already Following",
+              description: "You're already following this user"
+            });
+            return;
+          }
+          throw error;
+        }
+        
         setFollowing(true);
         // Update userFollowStates if this user is in the current list
         setUserFollowStates(prev => ({
@@ -344,9 +377,10 @@ const UniversalProfile = () => {
         });
       }
     } catch (error: any) {
+      console.error('Error toggling follow:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to update follow status",
         variant: "destructive"
       });
     } finally {
@@ -724,7 +758,15 @@ const UniversalProfile = () => {
             follower_id: user.id,
             following_id: userId
           }]);
-        if (error) throw error;
+        
+        if (error) {
+          // Handle duplicate key constraint (already following)
+          if (error.code === '23505') {
+            setUserFollowStates(prev => ({ ...prev, [userId]: true }));
+            return; // Silently handle - user is already following
+          }
+          throw error;
+        }
         
         setUserFollowStates(prev => ({ ...prev, [userId]: true }));
       }
@@ -740,6 +782,7 @@ const UniversalProfile = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to update follow status",
+        variant: "destructive"
       });
     }
   };
