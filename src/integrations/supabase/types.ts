@@ -4872,7 +4872,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_profiles_view: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          country_name: string | null
+          created_at: string | null
+          display_name: string | null
+          merch_store_connected: boolean | null
+          spotify_connected: boolean | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          country_name?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          merch_store_connected?: boolean | null
+          spotify_connected?: boolean | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          country_name?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          merch_store_connected?: boolean | null
+          spotify_connected?: boolean | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       apply_creator_pro_boost: {
@@ -4962,6 +4997,28 @@ export type Database = {
           total_xp_distributed: number
         }[]
       }
+      get_my_complete_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          age: string
+          avatar_url: string
+          bio: string
+          country_code: string
+          country_name: string
+          created_at: string
+          display_name: string
+          email: string
+          interests: string
+          location: string
+          merch_store_connected: boolean
+          merch_store_platform: string
+          merch_store_url: string
+          spotify_connected: boolean
+          updated_at: string
+          user_id: string
+          username: string
+        }[]
+      }
       get_public_profile_data: {
         Args: { profile_user_id: string }
         Returns: {
@@ -4977,22 +5034,7 @@ export type Database = {
         }[]
       }
       get_public_profile_safe: {
-        Args: { profile_user_id: string }
-        Returns: {
-          avatar_url: string
-          bio: string
-          country_name: string
-          created_at: string
-          display_name: string
-          merch_store_connected: boolean
-          merch_store_url: string
-          spotify_connected: boolean
-          user_id: string
-          username: string
-        }[]
-      }
-      get_safe_public_profile: {
-        Args: { profile_user_id: string }
+        Args: { target_user_id: string }
         Returns: {
           avatar_url: string
           bio: string
