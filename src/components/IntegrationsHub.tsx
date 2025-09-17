@@ -194,8 +194,46 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
   };
 
   const handleYouTubeConnect = async () => {
-    // YouTube API integration will be implemented
-    toast.info('YouTube verification will be implemented with API integration');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    try {
+      if (isMobile) {
+        // Mobile: redirect to YouTube/Google OAuth
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+              scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl'
+            }
+          }
+        });
+        
+        if (error) throw error;
+      } else {
+        // Desktop: open popup for Google OAuth with YouTube scopes
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+              scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl'
+            }
+          }
+        });
+        
+        if (error) throw error;
+      }
+      
+      toast.success('YouTube connection initiated! Complete the process in the popup/redirect.');
+    } catch (error) {
+      console.error('YouTube connection error:', error);
+      toast.error('Failed to connect YouTube. Please ensure Google OAuth is enabled in Supabase.');
+    }
   };
 
   const handleDisconnect = async (integrationId: string) => {
