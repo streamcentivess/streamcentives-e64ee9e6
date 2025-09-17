@@ -195,45 +195,31 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
   };
 
   const handleYouTubeConnect = async () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
     try {
-      if (isMobile) {
-        // Mobile: redirect to YouTube/Google OAuth
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-              scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl'
-            }
-          }
-        });
-        
-        if (error) throw error;
-      } else {
-        // Desktop: open popup for Google OAuth with YouTube scopes
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-              scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl'
-            }
-          }
-        });
-        
-        if (error) throw error;
+      // Generate state parameter for OAuth security
+      const state = btoa(JSON.stringify({ 
+        user_id: user!.id,
+        timestamp: Date.now()
+      }));
+      
+      // Get YouTube OAuth URL from our edge function
+      const { data: authData, error: authError } = await supabase.functions.invoke('youtube-oauth', {
+        body: { 
+          action: 'get_auth_url',
+          state: state
+        }
+      });
+      
+      if (authError || !authData?.auth_url) {
+        throw new Error('Failed to generate YouTube OAuth URL');
       }
       
-      toast.success('YouTube connection initiated! Complete the process in the popup/redirect.');
+      // Redirect to YouTube OAuth
+      window.location.href = authData.auth_url;
+      
     } catch (error) {
       console.error('YouTube connection error:', error);
-      toast.error('Failed to connect YouTube. Please ensure Google OAuth is enabled in Supabase.');
+      toast.error('Failed to connect YouTube. Please try again.');
     }
   };
 
@@ -260,8 +246,26 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
           toast.success('Spotify disconnected');
           loadIntegrationsData();
           break;
-        default:
-          toast.info('Disconnect functionality coming soon!');
+        case 'youtube':
+          // Disconnect YouTube identity and tokens
+          await supabase
+            .from('youtube_accounts')
+            .delete()
+            .eq('user_id', user!.id);
+          
+          await supabase
+            .from('profiles')
+            .update({ 
+              youtube_connected: false,
+              youtube_username: null,
+              youtube_channel_id: null,
+              youtube_connected_at: null
+            })
+            .eq('user_id', user!.id);
+          
+          toast.success('YouTube disconnected');
+          loadIntegrationsData();
+          break;
       }
     } catch (error) {
       console.error('Error disconnecting:', error);

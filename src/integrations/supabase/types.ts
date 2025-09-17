@@ -2970,6 +2970,10 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string | null
+          youtube_channel_id: string | null
+          youtube_connected: boolean | null
+          youtube_connected_at: string | null
+          youtube_username: string | null
         }
         Insert: {
           age?: string | null
@@ -2994,6 +2998,10 @@ export type Database = {
           updated_at?: string
           user_id: string
           username?: string | null
+          youtube_channel_id?: string | null
+          youtube_connected?: boolean | null
+          youtube_connected_at?: string | null
+          youtube_username?: string | null
         }
         Update: {
           age?: string | null
@@ -3018,6 +3026,10 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+          youtube_channel_id?: string | null
+          youtube_connected?: boolean | null
+          youtube_connected_at?: string | null
+          youtube_username?: string | null
         }
         Relationships: []
       }
@@ -4867,6 +4879,42 @@ export type Database = {
           stripe_session_id?: string
           user_id?: string
           xp_amount?: number
+        }
+        Relationships: []
+      }
+      youtube_accounts: {
+        Row: {
+          access_token: string
+          created_at: string
+          id: string
+          refresh_token: string
+          scope: string | null
+          token_expires_at: string
+          updated_at: string
+          user_id: string
+          youtube_channel_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          id?: string
+          refresh_token: string
+          scope?: string | null
+          token_expires_at: string
+          updated_at?: string
+          user_id: string
+          youtube_channel_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          id?: string
+          refresh_token?: string
+          scope?: string | null
+          token_expires_at?: string
+          updated_at?: string
+          user_id?: string
+          youtube_channel_id?: string
         }
         Relationships: []
       }

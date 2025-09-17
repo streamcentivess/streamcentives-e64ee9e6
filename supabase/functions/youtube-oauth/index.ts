@@ -12,14 +12,37 @@ serve(async (req) => {
   }
 
   try {
-    const { action, code, state } = await req.json();
-    
     const YOUTUBE_CLIENT_ID = Deno.env.get('YOUTUBE_CLIENT_ID');
     const YOUTUBE_CLIENT_SECRET = Deno.env.get('YOUTUBE_CLIENT_SECRET');
     
     if (!YOUTUBE_CLIENT_ID || !YOUTUBE_CLIENT_SECRET) {
       throw new Error('YouTube OAuth credentials not configured');
     }
+
+    // Handle GET request (OAuth callback from YouTube)
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      const code = url.searchParams.get('code');
+      const error = url.searchParams.get('error');
+      
+      if (error) {
+        // Redirect back to app with error
+        const redirectUrl = `${url.origin}/youtube/callback?error=${encodeURIComponent(error)}`;
+        return Response.redirect(redirectUrl, 302);
+      }
+      
+      if (code) {
+        // Redirect back to app with code for processing
+        const state = url.searchParams.get('state') || '';
+        const redirectUrl = `${url.origin}/youtube/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
+        return Response.redirect(redirectUrl, 302);
+      }
+      
+      return new Response('Invalid callback', { status: 400 });
+    }
+
+    // Handle POST requests (API calls from frontend)
+    const { action, code, state } = await req.json();
 
     if (action === 'get_auth_url') {
       // Generate YouTube OAuth URL
