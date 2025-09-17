@@ -296,13 +296,27 @@ export const SmartLinkManager: React.FC = () => {
           </p>
         </div>
         
+        <div className="flex gap-2">
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-primary">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Smart Link
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+          
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.href = '/youtube-configurator'}
+            className="flex items-center gap-2"
+          >
+            <Youtube className="h-4 w-4 text-red-500" />
+            YouTube Actions
+          </Button>
+        </div>
+        
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-primary">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Smart Link
-            </Button>
-          </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Smart Link</DialogTitle>

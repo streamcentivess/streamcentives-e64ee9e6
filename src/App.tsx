@@ -12,6 +12,7 @@ import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useIsMobile } from "./hooks/use-mobile";
 const YouTubeCallback = lazy(() => import("./pages/YouTubeCallback"));
+const YouTubeActionConfiguratorPage = lazy(() => import("./pages/YouTubeActionConfiguratorPage"));
 const SocialIntegrationsPage = lazy(() => import("./pages/SocialIntegrationsPage"));
 const SecurityDashboardPage = lazy(() => import("./pages/SecurityDashboardPage"));
 const AdvancedAnalytics = lazy(() => import("./pages/AdvancedAnalytics"));
@@ -76,8 +77,13 @@ const App = () => {
                       <Route path="/website" element={<Website />} />
                       <Route path="/auth/signin" element={<SignIn />} />
                       <Route path="/auth/signup" element={<SignUp />} />
-                       <Route path="/auth/callback" element={<AuthCallback />} />
-                       <Route path="/youtube/callback" element={<YouTubeCallback />} />
+                        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/youtube/callback" element={<YouTubeCallback />} />
+        <Route path="/youtube-configurator" element={
+          <ProtectedRoute>
+            <YouTubeActionConfiguratorPage />
+          </ProtectedRoute>
+        } />
                        <Route path="/auth/email-confirmation" element={<EmailConfirmation />} />
                       <Route path="/terms" element={<TermsConditions />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
