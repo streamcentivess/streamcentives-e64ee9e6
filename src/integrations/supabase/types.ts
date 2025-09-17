@@ -690,13 +690,6 @@ export type Database = {
             foreignKeyName: "campaign_boosts_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "boosted_campaigns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "campaign_boosts_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -789,13 +782,6 @@ export type Database = {
             foreignKeyName: "campaign_merchandise_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "boosted_campaigns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "campaign_merchandise_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -845,13 +831,6 @@ export type Database = {
           xp_earned?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "campaign_participants_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "boosted_campaigns"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "campaign_participants_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -944,13 +923,6 @@ export type Database = {
           xp_earned?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "campaign_purchases_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "boosted_campaigns"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "campaign_purchases_campaign_id_fkey"
             columns: ["campaign_id"]
@@ -4248,13 +4220,6 @@ export type Database = {
             foreignKeyName: "team_campaigns_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "boosted_campaigns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "team_campaigns_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
@@ -4907,109 +4872,7 @@ export type Database = {
       }
     }
     Views: {
-      boosted_campaigns: {
-        Row: {
-          boost_amount: number | null
-          boost_expires: string | null
-          boost_expires_at: string | null
-          boost_multiplier: number | null
-          boost_score: number | null
-          cash_reward: number | null
-          created_at: string | null
-          creator_id: string | null
-          current_progress: number | null
-          currently_boosted: boolean | null
-          description: string | null
-          end_date: string | null
-          id: string | null
-          image_url: string | null
-          is_boosted: boolean | null
-          is_featured: boolean | null
-          max_participants: number | null
-          required_listen_duration_seconds: number | null
-          requirements: string | null
-          spotify_artist_id: string | null
-          spotify_artist_url: string | null
-          start_date: string | null
-          status: string | null
-          tags: string[] | null
-          target_metric: string | null
-          target_value: number | null
-          title: string | null
-          type: string | null
-          updated_at: string | null
-          visibility_score: number | null
-          xp_reward: number | null
-        }
-        Relationships: []
-      }
-      conversation_participants: {
-        Row: {
-          conversation_id: string | null
-          user1_id: string | null
-          user2_id: string | null
-        }
-        Relationships: []
-      }
-      public_profiles: {
-        Row: {
-          age: string | null
-          avatar_url: string | null
-          bio: string | null
-          country_code: string | null
-          country_name: string | null
-          created_at: string | null
-          display_name: string | null
-          interests: string | null
-          location: string | null
-          merch_store_connected: boolean | null
-          merch_store_url: string | null
-          spotify_connected: boolean | null
-          user_id: string | null
-          username: string | null
-        }
-        Insert: {
-          age?: string | null
-          avatar_url?: string | null
-          bio?: string | null
-          country_code?: string | null
-          country_name?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          interests?: string | null
-          location?: string | null
-          merch_store_connected?: boolean | null
-          merch_store_url?: string | null
-          spotify_connected?: boolean | null
-          user_id?: string | null
-          username?: string | null
-        }
-        Update: {
-          age?: string | null
-          avatar_url?: string | null
-          bio?: string | null
-          country_code?: string | null
-          country_name?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          interests?: string | null
-          location?: string | null
-          merch_store_connected?: boolean | null
-          merch_store_url?: string | null
-          spotify_connected?: boolean | null
-          user_id?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
-      user_follow_stats: {
-        Row: {
-          followers_count: number | null
-          following_count: number | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       apply_creator_pro_boost: {
@@ -5055,6 +4918,40 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_boosted_campaigns_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          boost_expires_at: string
+          boost_multiplier: number
+          boost_score: number
+          cash_reward: number
+          created_at: string
+          creator_id: string
+          current_progress: number
+          currently_boosted: boolean
+          description: string
+          end_date: string
+          id: string
+          image_url: string
+          is_boosted: boolean
+          is_featured: boolean
+          max_participants: number
+          required_listen_duration_seconds: number
+          requirements: string
+          spotify_artist_id: string
+          spotify_artist_url: string
+          start_date: string
+          status: string
+          tags: string[]
+          target_metric: string
+          target_value: number
+          title: string
+          type: string
+          updated_at: string
+          visibility_score: number
+          xp_reward: number
+        }[]
+      }
       get_campaign_stats: {
         Args: { campaign_id_param: string }
         Returns: {
@@ -5079,11 +4976,34 @@ export type Database = {
           username: string
         }[]
       }
+      get_public_profile_safe: {
+        Args: { profile_user_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          country_name: string
+          created_at: string
+          display_name: string
+          merch_store_connected: boolean
+          merch_store_url: string
+          spotify_connected: boolean
+          user_id: string
+          username: string
+        }[]
+      }
       get_social_counts: {
         Args: { content_type_param: string; target_content_id_param: string }
         Returns: {
           count: number
           interaction_type: string
+        }[]
+      }
+      get_user_follow_stats_safe: {
+        Args: { target_user_id: string }
+        Returns: {
+          followers_count: number
+          following_count: number
+          user_id: string
         }[]
       }
       handle_post_share: {
