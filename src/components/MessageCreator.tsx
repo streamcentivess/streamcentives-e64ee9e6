@@ -102,11 +102,11 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
   const sendMessage = async (messageContent: string) => {
     if (!messageContent.trim() || !messageCost) return;
 
-    // On mobile, allow free messages to go to requests
-    const isFreeMobileMessage = isMobile && !isPriorityMessage;
-    const actualXPCost = isFreeMobileMessage ? 0 : messageCost.xp_cost;
+    // Allow free messages to go to requests for all users
+    const isFreeMessage = !isPriorityMessage;
+    const actualXPCost = isFreeMessage ? 0 : messageCost.xp_cost;
 
-    if (!isFreeMobileMessage && userXP < messageCost.xp_cost) {
+    if (!isFreeMessage && userXP < messageCost.xp_cost) {
       toast({
         title: "Insufficient XP",
         description: `You need ${messageCost.xp_cost} XP to send this message, but you only have ${userXP} XP.`,
@@ -119,7 +119,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
 
     try {
       // Create message with appropriate status
-      const messageStatus = isFreeMobileMessage ? 'pending' : 'pending'; // Both go to pending initially
+      const messageStatus = isFreeMessage ? 'pending' : 'pending'; // Both go to pending initially
       const messageXPCost = actualXPCost;
 
       const { data, error } = await supabase
@@ -137,7 +137,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
       if (error) throw error;
 
       // Only deduct XP if it's a priority message
-      if (!isFreeMobileMessage && actualXPCost > 0) {
+      if (!isFreeMessage && actualXPCost > 0) {
         const { error: xpError } = await supabase.rpc('send_message_with_xp', {
           recipient_id_param: recipientId,
           content_param: messageContent.trim(),
@@ -153,7 +153,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
         body: { message: messageContent.trim(), messageId }
       });
 
-      const messageDestination = isFreeMobileMessage ? 'request inbox' : 'inbox';
+      const messageDestination = isFreeMessage ? 'request inbox' : 'inbox';
       toast({
         title: "Message sent!",
         description: `Your message has been sent to ${recipientName}'s ${messageDestination}.`,
@@ -231,14 +231,9 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Send Message to {recipientName}</h3>
           <div className="flex items-center gap-2">
-            {isMobile && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                📱 Mobile Free
-              </Badge>
-            )}
             <Badge variant="secondary" className="flex items-center gap-1">
               <Coins className="h-3 w-3" />
-              Cost: {isPriorityMessage ? messageCost.xp_cost : (isMobile ? 'Free' : messageCost.xp_cost)} {!isMobile || isPriorityMessage ? 'XP' : ''}
+              Cost: {isPriorityMessage ? messageCost.xp_cost : 'Free'} {isPriorityMessage ? 'XP' : ''}
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               <Coins className="h-3 w-3" />
@@ -247,28 +242,26 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
           </div>
         </div>
 
-        {/* Mobile Priority Toggle */}
-        {isMobile && (
-          <div className="flex items-center gap-4">
-            <Button
-              variant={!isPriorityMessage ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setIsPriorityMessage(false)}
-              disabled={isLoading}
-            >
-              📨 Free Request
-            </Button>
-            <Button
-              variant={isPriorityMessage ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setIsPriorityMessage(true)}
-              disabled={isLoading || userXP < messageCost.xp_cost}
-            >
-              <Zap className="h-4 w-4 mr-1" />
-              Priority ({messageCost.xp_cost} XP)
-            </Button>
-          </div>
-        )}
+        {/* Priority Toggle - Available for all users */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant={!isPriorityMessage ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setIsPriorityMessage(false)}
+            disabled={isLoading}
+          >
+            📨 Free Request
+          </Button>
+          <Button
+            variant={isPriorityMessage ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setIsPriorityMessage(true)}
+            disabled={isLoading || userXP < messageCost.xp_cost}
+          >
+            <Zap className="h-4 w-4 mr-1" />
+            Priority ({messageCost.xp_cost} XP)
+          </Button>
+        </div>
 
         {/* Message Mode Toggle */}
         <div className="flex gap-2">
@@ -289,7 +282,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
             variant={messageMode === 'voice' ? 'default' : 'outline'}
             size="sm"
             onClick={toggleMessageMode}
-            disabled={isLoading || (!isMobile && !isPriorityMessage && userXP < messageCost.xp_cost)}
+            disabled={isLoading || (!isPriorityMessage ? false : userXP < messageCost.xp_cost)}
           >
             <Mic className="h-4 w-4 mr-1" />
             Voice Message
@@ -331,7 +324,7 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
               setShowVoiceRecorder(false);
               setMessageMode('text');
             }}
-            disabled={isLoading || (!isMobile && !isPriorityMessage && userXP < messageCost.xp_cost)}
+            disabled={isLoading || (!isPriorityMessage ? false : userXP < messageCost.xp_cost)}
           />
         )}
 
@@ -354,13 +347,12 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
               </p>
               <Button
                 onClick={() => sendMessage(message)}
-                disabled={!message.trim() || isLoading || (!isMobile && !isPriorityMessage && userXP < messageCost.xp_cost)}
+                disabled={!message.trim() || isLoading || (!isPriorityMessage ? false : userXP < messageCost.xp_cost)}
                 className="flex items-center gap-2"
               >
                 <Send className="h-4 w-4" />
                 {isLoading ? 'Sending...' : 
-                  isMobile ? (isPriorityMessage ? `Send Priority (${messageCost.xp_cost} XP)` : 'Send Free') : 
-                  `Send (${messageCost.xp_cost} XP)`
+                  isPriorityMessage ? `Send Priority (${messageCost.xp_cost} XP)` : 'Send Free Request'
                 }
               </Button>
             </div>
@@ -368,12 +360,9 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
         )}
 
         <p className="text-xs text-muted-foreground">
-          {isMobile ? 
-            (isPriorityMessage ? 
-              'Priority messages go directly to inbox and cost XP.' : 
-              'Free messages go to request inbox for approval.'
-            ) :
-            'Your message will be reviewed by AI for content moderation before being delivered.'
+          {isPriorityMessage ? 
+            'Priority messages go directly to inbox and cost XP.' : 
+            'Free requests go to request inbox for approval.'
           }
         </p>
       </CardContent>
