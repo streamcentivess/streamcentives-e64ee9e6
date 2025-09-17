@@ -5076,6 +5076,20 @@ export type Database = {
           username: string
         }[]
       }
+      get_safe_profile: {
+        Args: { target_user_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          country_name: string
+          created_at: string
+          display_name: string
+          merch_store_connected: boolean
+          spotify_connected: boolean
+          user_id: string
+          username: string
+        }[]
+      }
       get_social_counts: {
         Args: { content_type_param: string; target_content_id_param: string }
         Returns: {
