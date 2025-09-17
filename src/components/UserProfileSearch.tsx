@@ -79,15 +79,27 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
   const loadProfiles = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Try primary table first
+      let { data, error } = await supabase
         .from('profiles')
         .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
         .neq('user_id', user?.id || '') // Exclude current user
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
-      setProfiles(data || []);
+      // Fallback to public view if needed
+      if (error) {
+        console.warn('profiles query failed, falling back to public_profiles:', error);
+        const fallback = await supabase
+          .from('public_profiles')
+          .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
+          .neq('user_id', user?.id || '')
+          .limit(20);
+        if (fallback.error) throw fallback.error;
+        data = fallback.data as any;
+      }
+
+      setProfiles((data as any) || []);
     } catch (error) {
       console.error('Error loading profiles:', error);
     } finally {
@@ -98,7 +110,8 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
   const searchProfiles = async (term: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Try primary table first
+      let { data, error } = await supabase
         .from('profiles')
         .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
         .neq('user_id', user?.id || '') // Exclude current user
@@ -106,8 +119,20 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
-      setProfiles(data || []);
+      // Fallback to public view if needed
+      if (error) {
+        console.warn('profiles search failed, falling back to public_profiles:', error);
+        const fallback = await supabase
+          .from('public_profiles')
+          .select('user_id, username, display_name, avatar_url, bio, country_name, spotify_connected, merch_store_connected, created_at')
+          .neq('user_id', user?.id || '')
+          .or(`username.ilike.%${term}%,display_name.ilike.%${term}%,bio.ilike.%${term}%`)
+          .limit(20);
+        if (fallback.error) throw fallback.error;
+        data = fallback.data as any;
+      }
+
+      setProfiles((data as any) || []);
     } catch (error) {
       console.error('Error searching profiles:', error);
     } finally {

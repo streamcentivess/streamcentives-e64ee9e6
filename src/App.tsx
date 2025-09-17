@@ -71,6 +71,7 @@ const App = () => {
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/pitch-deck" element={<PitchDeck />} />
+                      <Route path="/pitch" element={<PitchDeck />} />
                       <Route path="/website" element={<Website />} />
                       <Route path="/auth/signin" element={<SignIn />} />
                       <Route path="/auth/signup" element={<SignUp />} />

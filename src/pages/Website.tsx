@@ -176,7 +176,7 @@ const Website = () => {
               <img src={logoUrl} alt="Streamcentives" className="w-8 h-8 rounded-full" width={32} height={32} />
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/pitch" className="order-1 sm:order-2">
+              <Link to="/pitch-deck" className="order-1 sm:order-2">
                 <Button variant="ghost" size="sm">
                   Investor Pitch
                 </Button>
@@ -631,7 +631,7 @@ const Website = () => {
                 <Globe className="w-4 h-4" />
                 streamcentives.io
               </div>
-              <Link to="/pitch" className="hover:text-foreground transition-colors">
+              <Link to="/pitch-deck" className="hover:text-foreground transition-colors">
                 Investor Relations
               </Link>
               <Link to="/terms-conditions" className="hover:text-foreground transition-colors">

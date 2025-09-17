@@ -139,7 +139,7 @@ const Team = () => {
                   Home
                 </Button>
               </Link>
-              <Link to="/pitch">
+              <Link to="/pitch-deck">
                 <Button variant="ghost" size="sm" className="text-sm">
                   <span className="hidden sm:inline">Investor Pitch</span>
                   <span className="sm:hidden">Pitch</span>
@@ -432,7 +432,7 @@ const Team = () => {
               <Link to="/" className="hover:text-foreground transition-colors">
                 Home
               </Link>
-              <Link to="/pitch" className="hover:text-foreground transition-colors">
+              <Link to="/pitch-deck" className="hover:text-foreground transition-colors">
                 Investor Relations
               </Link>
               <span>streamcentives.io</span>
