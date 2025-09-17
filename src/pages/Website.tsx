@@ -8,7 +8,7 @@ import { ArrowRight, Play, Users, TrendingUp, Zap, Globe, Mail, CheckCircle, Bot
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import VideoModal from "@/components/VideoModal";
-const logoUrl = "/lovable-uploads/streamcentives-logo-round.png";
+const logoUrl = "/lovable-uploads/streamcentivesloveable.PNG";
 const Website = () => {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
