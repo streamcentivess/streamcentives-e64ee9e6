@@ -651,14 +651,37 @@ const UniversalProfile = () => {
     }
   };
 
-  // Remove hater (placeholder until types update)
+  // Remove hater
   const removeHaterAction = async (haterId: string) => {
-    // TODO: Implement after database types are regenerated
-    toast({
-      title: "Feature Coming Soon", 
-      description: "Haters functionality will be available after database setup completes.",
-      variant: "default"
-    });
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_haters')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('hater_id', haterId);
+
+      if (error) throw error;
+
+      // Update local state
+      setHaters(prev => prev.filter(h => h.user_id !== haterId));
+      setHaterStates(prev => ({
+        ...prev,
+        [haterId]: false
+      }));
+
+      toast({
+        title: "Removed",
+        description: "Hater removed from your list"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   // Handle adding a supporter with restrictions
