@@ -31,8 +31,11 @@ interface YouTubeAction {
   action_label: string;
   action_url: string;
   xp_reward: number;
-  button_style: 'default' | 'youtube' | 'custom';
+  button_style: 'default' | 'youtube' | 'google_official' | 'custom';
   button_color?: string;
+  google_layout?: 'default' | 'full';
+  google_count?: 'default' | 'hidden';
+  channel_id?: string;
   is_active: boolean;
 }
 
@@ -51,7 +54,9 @@ export const YouTubeActionConfigurator: React.FC = () => {
     action_label: '📺 Subscribe on YouTube',
     action_url: '',
     xp_reward: 20,
-    button_style: 'youtube',
+    button_style: 'google_official',
+    google_layout: 'default',
+    google_count: 'default',
     is_active: true
   });
   const [loading, setLoading] = useState(false);
@@ -130,7 +135,52 @@ export const YouTubeActionConfigurator: React.FC = () => {
     const selectedLink = smartLinks.find(link => link.id === selectedLinkId);
     if (!selectedLink) return;
 
-    const buttonHtml = `<!-- StreamCentives YouTube Action Button -->
+    if (action.button_style === 'google_official' && action.action_type === 'youtube_subscribe') {
+      const channelId = extractChannelId(action.action_url);
+      if (!channelId) {
+        setEmbedCode('<!-- Please provide a valid YouTube channel URL to generate Google official button -->');
+        return;
+      }
+
+      const googleButtonHtml = `<!-- Google Official YouTube Subscribe Button with XP Tracking -->
+<script src="https://apis.google.com/js/platform.js"></script>
+<div style="display: inline-block; position: relative;">
+  <div 
+    class="g-ytsubscribe" 
+    data-channel="${channelId}" 
+    data-layout="${action.google_layout}" 
+    data-count="${action.google_count}"
+    onclick="trackYouTubeAction('${selectedLink.slug}', ${action.xp_reward})"
+  ></div>
+  <div style="
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #10B981;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: bold;
+  ">
+    +${action.xp_reward} XP
+  </div>
+</div>
+
+<script>
+function trackYouTubeAction(linkSlug, xpReward) {
+  // Track the action with StreamCentives
+  fetch('${window.location.origin}/link/' + linkSlug, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'youtube_subscribe', xp: xpReward })
+  }).catch(err => console.log('XP tracking:', err));
+}
+</script>`;
+
+      setEmbedCode(googleButtonHtml);
+    } else {
+      const customButtonHtml = `<!-- StreamCentives Custom YouTube Action Button -->
 <button 
   onclick="window.open('${window.location.origin}/link/${selectedLink.slug}', '_blank')"
   style="
@@ -162,13 +212,34 @@ export const YouTubeActionConfigurator: React.FC = () => {
   </span>
 </button>`;
 
-    setEmbedCode(buttonHtml);
+      setEmbedCode(customButtonHtml);
+    }
+  };
+
+  const extractChannelId = (url: string) => {
+    if (!url) return '';
+    
+    // Handle different YouTube URL formats
+    const patterns = [
+      /youtube\.com\/channel\/([\w-]+)/,
+      /youtube\.com\/@([\w-]+)/,
+      /youtube\.com\/c\/([\w-]+)/,
+      /youtube\.com\/user\/([\w-]+)/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return '';
   };
 
   const getButtonBackgroundStyle = () => {
     switch (action.button_style) {
       case 'youtube':
         return '#FF0000';
+      case 'google_official':
+        return 'transparent';
       case 'custom':
         return action.button_color || '#3B82F6';
       default:
@@ -357,12 +428,49 @@ export const YouTubeActionConfigurator: React.FC = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="default">Default Gradient</SelectItem>
+                        <SelectItem value="google_official">Google Official Widget</SelectItem>
                         <SelectItem value="youtube">YouTube Red</SelectItem>
+                        <SelectItem value="default">Default Gradient</SelectItem>
                         <SelectItem value="custom">Custom Color</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {action.button_style === 'google_official' && action.action_type === 'youtube_subscribe' && (
+                    <>
+                      <div>
+                        <Label htmlFor="google-layout">Google Button Layout</Label>
+                        <Select 
+                          value={action.google_layout} 
+                          onValueChange={(value) => setAction(prev => ({ ...prev, google_layout: value as 'default' | 'full' }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Default (compact)</SelectItem>
+                            <SelectItem value="full">Full (with channel info)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="google-count">Subscriber Count</Label>
+                        <Select 
+                          value={action.google_count} 
+                          onValueChange={(value) => setAction(prev => ({ ...prev, google_count: value as 'default' | 'hidden' }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Show Count</SelectItem>
+                            <SelectItem value="hidden">Hide Count</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
 
                   {action.button_style === 'custom' && (
                     <div>
@@ -400,25 +508,38 @@ export const YouTubeActionConfigurator: React.FC = () => {
               <div className="text-center space-y-4">
                 <h3 className="text-lg font-semibold">Button Preview</h3>
                 <div className="p-8 bg-muted rounded-lg">
-                  <div 
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold cursor-pointer transition-transform hover:scale-105"
-                    style={{ 
-                      background: getButtonBackgroundStyle(),
-                      color: 'white'
-                    }}
-                  >
-                    <span>{getActionIcon()}</span>
-                    {action.action_label}
-                    <Badge variant="secondary" className="ml-2 text-xs">
-                      +{action.xp_reward} XP
-                    </Badge>
-                  </div>
+                  {action.button_style === 'google_official' && action.action_type === 'youtube_subscribe' ? (
+                    <div className="inline-block relative">
+                      <div className="bg-white border border-gray-300 rounded px-3 py-2 text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <Youtube className="h-4 w-4 text-red-500" />
+                        Subscribe {action.google_count === 'default' && '• 1.2M'}
+                      </div>
+                      <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                        +{action.xp_reward} XP
+                      </div>
+                    </div>
+                  ) : (
+                    <div 
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold cursor-pointer transition-transform hover:scale-105"
+                      style={{ 
+                        background: getButtonBackgroundStyle(),
+                        color: 'white'
+                      }}
+                    >
+                      <span>{getActionIcon()}</span>
+                      {action.action_label}
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        +{action.xp_reward} XP
+                      </Badge>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p><strong>Action:</strong> {getActionTypeLabel(action.action_type)}</p>
                   <p><strong>URL:</strong> {action.action_url || 'Not set'}</p>
                   <p><strong>XP Reward:</strong> {action.xp_reward} points</p>
+                  <p><strong>Button Style:</strong> {action.button_style === 'google_official' ? 'Google Official Widget' : 'Custom Button'}</p>
                 </div>
               </div>
             </TabsContent>
