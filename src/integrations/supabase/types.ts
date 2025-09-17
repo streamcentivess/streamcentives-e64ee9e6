@@ -4955,6 +4955,16 @@ export type Database = {
         Args: { campaign_id_param: string; interaction_data_param?: Json }
         Returns: Json
       }
+      create_encrypted_api_key: {
+        Args: {
+          p_expires_at?: string
+          p_key_name: string
+          p_permissions?: Json
+          p_rate_limit?: number
+          p_raw_key: string
+        }
+        Returns: string
+      }
       create_notification: {
         Args: {
           action_url_param?: string
@@ -4965,6 +4975,14 @@ export type Database = {
           type_param: string
           user_id_param: string
         }
+        Returns: string
+      }
+      decrypt_api_key: {
+        Args: { encrypted_key: string; user_secret?: string }
+        Returns: string
+      }
+      encrypt_api_key: {
+        Args: { raw_key: string; user_secret?: string }
         Returns: string
       }
       enhanced_redeem_reward: {
@@ -5097,6 +5115,20 @@ export type Database = {
           interaction_type: string
         }[]
       }
+      get_user_api_keys: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          key_name: string
+          last_used_at: string
+          masked_key: string
+          permissions: Json
+          rate_limit: number
+        }[]
+      }
       get_user_follow_stats_safe: {
         Args: { target_user_id: string }
         Returns: {
@@ -5176,6 +5208,14 @@ export type Database = {
       }
       update_message_status: {
         Args: { message_id_param: string; new_status_param: string }
+        Returns: boolean
+      }
+      validate_api_key: {
+        Args: {
+          key_user_id: string
+          raw_key: string
+          stored_encrypted_key: string
+        }
         Returns: boolean
       }
     }
