@@ -411,19 +411,22 @@ const UniversalProfile = () => {
         return;
       }
 
-      // Then get profile data for those supporters
-      const ids = supporterIds.map(item => item.supporter_id);
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id, username, display_name, avatar_url, bio, location, interests')
-        .in('user_id', ids);
+      // Then get profile data for those supporters using secure RPC function
+      const profilePromises = supporterIds.map(async (item) => {
+        const { data, error } = await supabase.rpc('get_safe_profile', { 
+          target_user_id: item.supporter_id 
+        });
+        if (error) {
+          console.error('Error fetching supporter profile:', error);
+          return null;
+        }
+        return data?.[0] || null;
+      });
 
-      if (profileError) {
-        console.error('Error fetching supporter profiles:', profileError);
-        return;
-      }
-
-      setSupporters(profiles || []);
+      const profiles = await Promise.all(profilePromises);
+      const validProfiles = profiles.filter(p => p !== null);
+      
+      setSupporters(validProfiles);
     } catch (error) {
       console.error('Error fetching supporters:', error);
     }
@@ -452,19 +455,22 @@ const UniversalProfile = () => {
         return;
       }
 
-      // Then get profile data for those haters
-      const ids = haterIds.map((item: any) => item.hater_id);
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id, username, display_name, avatar_url, bio, location, interests')
-        .in('user_id', ids);
+      // Then get profile data for those haters using secure RPC function
+      const profilePromises = haterIds.map(async (item: any) => {
+        const { data, error } = await supabase.rpc('get_safe_profile', { 
+          target_user_id: item.hater_id 
+        });
+        if (error) {
+          console.error('Error fetching hater profile:', error);
+          return null;
+        }
+        return data?.[0] || null;
+      });
 
-      if (profileError) {
-        console.error('Error fetching hater profiles:', profileError);
-        return;
-      }
-
-      setHaters(profiles || []);
+      const profiles = await Promise.all(profilePromises);
+      const validProfiles = profiles.filter(p => p !== null);
+      
+      setHaters(validProfiles);
     } catch (error) {
       console.error('Error fetching haters:', error);
     }
