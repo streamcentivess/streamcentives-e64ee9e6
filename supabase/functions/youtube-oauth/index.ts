@@ -16,7 +16,11 @@ serve(async (req) => {
     const YOUTUBE_CLIENT_SECRET = Deno.env.get('YOUTUBE_CLIENT_SECRET');
     
     if (!YOUTUBE_CLIENT_ID || !YOUTUBE_CLIENT_SECRET) {
-      throw new Error('YouTube OAuth credentials not configured');
+      console.error('Missing YouTube OAuth credentials:', { 
+        hasClientId: !!YOUTUBE_CLIENT_ID, 
+        hasClientSecret: !!YOUTUBE_CLIENT_SECRET 
+      });
+      throw new Error('YouTube OAuth credentials not configured in Supabase secrets');
     }
 
     // Handle GET request (OAuth callback from YouTube)
@@ -27,14 +31,19 @@ serve(async (req) => {
       
       if (error) {
         // Redirect back to app with error
-        const redirectUrl = `${url.origin}/youtube/callback?error=${encodeURIComponent(error)}`;
+        const referer = req.headers.get('referer') || 'https://bea56f2e-8da2-46b7-b30b-ab01f7704e03.lovableproject.com';
+        const appOrigin = new URL(referer).origin;
+        const redirectUrl = `${appOrigin}/youtube/callback?error=${encodeURIComponent(error)}`;
         return Response.redirect(redirectUrl, 302);
       }
       
       if (code) {
         // Redirect back to app with code for processing
         const state = url.searchParams.get('state') || '';
-        const redirectUrl = `${url.origin}/youtube/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
+        // Get the origin from the request headers to ensure proper redirect
+        const referer = req.headers.get('referer') || 'https://bea56f2e-8da2-46b7-b30b-ab01f7704e03.lovableproject.com';
+        const appOrigin = new URL(referer).origin;
+        const redirectUrl = `${appOrigin}/youtube/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
         return Response.redirect(redirectUrl, 302);
       }
       

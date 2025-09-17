@@ -202,6 +202,8 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
         timestamp: Date.now()
       }));
       
+      console.log('Starting YouTube OAuth flow...');
+      
       // Get YouTube OAuth URL from our edge function
       const { data: authData, error: authError } = await supabase.functions.invoke('youtube-oauth', {
         body: { 
@@ -210,16 +212,24 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
         }
       });
       
-      if (authError || !authData?.auth_url) {
-        throw new Error('Failed to generate YouTube OAuth URL');
+      if (authError) {
+        console.error('YouTube OAuth URL generation error:', authError);
+        throw new Error(`Failed to generate YouTube OAuth URL: ${authError.message}`);
       }
+      
+      if (!authData?.auth_url) {
+        console.error('No auth URL returned from YouTube OAuth function');
+        throw new Error('Failed to generate YouTube OAuth URL - no URL returned');
+      }
+      
+      console.log('Redirecting to YouTube OAuth URL:', authData.auth_url);
       
       // Redirect to YouTube OAuth
       window.location.href = authData.auth_url;
       
     } catch (error) {
       console.error('YouTube connection error:', error);
-      toast.error('Failed to connect YouTube. Please try again.');
+      toast.error(`Failed to connect YouTube: ${error.message}. Please check that the YouTube OAuth app is properly configured.`);
     }
   };
 
