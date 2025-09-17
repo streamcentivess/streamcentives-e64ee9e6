@@ -54,6 +54,23 @@ const Team = () => {
       },
       education: "Dual certifications as broker and investment advisor",
       previousRoles: ["NFL Agent - $117M+ in negotiations", "Wealth Manager at Merrill Lynch - $134M-$160M AUM", "IPO Advisory Specialist"]
+    },
+    {
+      id: 6,
+      name: "Annabelle Worrall",
+      title: "Digital Advertising Operations Manager",
+      bio: "Annabelle is the operational powerhouse behind our advertising strategy. With over five years of experience in the ad-tech world, she specializes in managing and scaling complex digital campaigns. Annabelle masterfully navigates the programmatic landscape, optimizing over $6 million in ad spend each quarter to ensure our partners get maximum impact for their investment. A technical expert with a passion for data, she excels at turning complex performance metrics into actionable insights and streamlined processes.",
+      image: "/lovable-uploads/4887c953-2020-4a6c-8d86-7201c20d87bf.png",
+      resume: "",
+      skills: ["Digital Advertising Technologies", "Campaign Optimization", "Data Analysis", "Creative Strategy", "Budget Forecasting", "SQL & Tableau", "A/B Testing", "CRM (Salesforce)"],
+      social: {
+        linkedin: "",
+        twitter: "",
+        github: "",
+        email: ""
+      },
+      education: "Master of Business Administration (MBA), Marketing | California Lutheran University, Bachelor of Arts (BA), Multimedia | California Lutheran University",
+      previousRoles: ["Digital Advertising Operations Manager", "Ad-Tech Specialist", "Campaign Optimization Expert"]
     }
   ];
 
@@ -81,17 +98,6 @@ const Team = () => {
   ];
 
   const keyHires = [
-    {
-      id: 6,
-      name: "Annabelle Worrall",
-      title: "Digital Advertising Operations Manager",
-      status: "Team Member",
-      image: "/lovable-uploads/4887c953-2020-4a6c-8d86-7201c20d87bf.png",
-      bio: "Annabelle is the operational powerhouse behind our advertising strategy. With over five years of experience in the ad-tech world, she specializes in managing and scaling complex digital campaigns. Annabelle masterfully navigates the programmatic landscape, optimizing over $6 million in ad spend each quarter to ensure our partners get maximum impact for their investment. A technical expert with a passion for data, she excels at turning complex performance metrics into actionable insights and streamlined processes.",
-      education: "Master of Business Administration (MBA), Marketing | California Lutheran University\nBachelor of Arts (BA), Multimedia | California Lutheran University",
-      skills: ["Digital Advertising Technologies", "Campaign Optimization", "Data Analysis", "Creative Strategy", "Budget Forecasting", "SQL & Tableau", "A/B Testing", "CRM (Salesforce)"],
-      description: "Operational powerhouse behind our advertising strategy with expertise in programmatic advertising and data-driven optimization."
-    },
     {
       id: 7,
       name: "Senior Developer",
@@ -338,10 +344,10 @@ const Team = () => {
             {keyHires.map((hire) => (
               <Card key={hire.id} className="group hover:shadow-xl transition-all duration-300">
                 <CardHeader>
-                  {hire.image && (
+                  {(hire as any).image && (
                     <div className="flex justify-center mb-4">
                       <Avatar className="w-20 h-20 border-2 border-brand-primary/20">
-                        <AvatarImage src={hire.image} alt={hire.name} />
+                        <AvatarImage src={(hire as any).image} alt={hire.name} />
                         <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-brand-primary to-brand-accent text-white">
                           {hire.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
@@ -358,15 +364,15 @@ const Team = () => {
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">{hire.bio || hire.description}</p>
+                  <p className="text-muted-foreground">{(hire as any).bio || hire.description}</p>
                   
-                  {hire.education && (
+                  {(hire as any).education && (
                     <div>
                       <h4 className="font-semibold mb-2 flex items-center gap-2">
                         <GraduationCap className="w-4 h-4" />
                         Education
                       </h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-line">{hire.education}</p>
+                      <p className="text-sm text-muted-foreground whitespace-pre-line">{(hire as any).education}</p>
                     </div>
                   )}
                   
