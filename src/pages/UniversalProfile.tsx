@@ -2140,7 +2140,7 @@ const UniversalProfile = () => {
                   <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
                     {supporters.slice(0, 12).map((supporter) => (
                       <div key={supporter.user_id} className="text-center">
-                        <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75" onClick={() => viewProfile(supporter.user_id)}>
+                        <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75" onClick={() => isOwnProfile ? removeSupporterAction(supporter.user_id) : viewProfile(supporter.user_id)}>
                           <AvatarImage src={supporter.avatar_url || ''} />
                           <AvatarFallback className="text-xs">
                             {supporter.display_name?.[0] || supporter.username?.[0]?.toUpperCase() || '?'}
@@ -2278,7 +2278,7 @@ const UniversalProfile = () => {
                   <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
                     {haters.slice(0, 12).map((hater) => (
                       <div key={hater.user_id} className="text-center">
-                        <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75 border-2 border-red-200" onClick={() => viewProfile(hater.user_id)}>
+                        <Avatar className="h-12 w-12 mx-auto cursor-pointer hover:opacity-75 border-2 border-red-200" onClick={() => isOwnProfile ? removeHaterAction(hater.user_id) : viewProfile(hater.user_id)}>
                           <AvatarImage src={hater.avatar_url || ''} />
                           <AvatarFallback className="text-xs bg-red-50">
                             {hater.display_name?.[0] || hater.username?.[0]?.toUpperCase() || '?'}
