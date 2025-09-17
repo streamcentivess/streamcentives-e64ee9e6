@@ -92,11 +92,12 @@ const Inbox: React.FC = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('public_profiles' as any)
-        .select('user_id, username, display_name, avatar_url')
-        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
-        .limit(10);
+      // Use the secure RPC function to search public profiles
+      const { data, error } = await supabase.rpc('search_public_profiles', {
+        search_query: query,
+        limit_count: 10,
+        offset_count: 0
+      });
 
       if (error) {
         console.error('Error searching users:', error);
@@ -141,11 +142,10 @@ const Inbox: React.FC = () => {
         // Fetch recipient profiles for sent messages
         const messagesWithRecipients = await Promise.all(
           (sent || []).map(async (message: any) => {
-            const { data: profile } = await supabase
-              .from('public_profiles' as any)
-              .select('username, display_name, avatar_url')
-              .eq('user_id', message.recipient_id)
-              .maybeSingle();
+            const { data: profileResult } = await supabase.rpc('get_public_profile_safe', { 
+              target_user_id: message.recipient_id 
+            });
+            const profile = profileResult?.[0];
 
             return {
               ...message,

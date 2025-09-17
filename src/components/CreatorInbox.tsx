@@ -134,11 +134,10 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
         const latestMessage = msgs[0]; // First message is latest due to ordering
         const senderId = latestMessage.sender_id;
         
-        const { data: profile } = await supabase
-          .from('public_profiles' as any)
-          .select('display_name, avatar_url')
-          .eq('user_id', senderId)
-          .maybeSingle();
+        const { data: profileResult } = await supabase.rpc('get_public_profile_safe', { 
+          target_user_id: senderId 
+        });
+        const profile = profileResult?.[0];
 
         const unreadCount = msgs.filter(m => m.status === 'pending').length;
 

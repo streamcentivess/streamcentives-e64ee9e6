@@ -71,10 +71,14 @@ const CreatorDashboard = () => {
         const fanIds = (data || []).map((d: any) => d.fan_user_id);
         let profilesMap: Record<string, any> = {};
         if (fanIds.length) {
-          const { data: profiles } = await supabase
-            .from('public_profiles' as any)
-            .select('user_id, display_name, username, avatar_url')
-            .in('user_id', fanIds);
+          // Get profiles using the safe function
+          const profilePromises = fanIds.map(id => 
+            supabase.rpc('get_public_profile_safe', { target_user_id: id })
+          );
+          const profileResults = await Promise.all(profilePromises);
+          const profiles = profileResults
+            .map(result => result.data?.[0])
+            .filter(Boolean);
           profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
         }
         setLeaderboard((data || []).map((d: any) => ({

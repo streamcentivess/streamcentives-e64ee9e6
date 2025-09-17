@@ -62,12 +62,11 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
 
       if (postsError) throw postsError;
 
-      // Fetch user profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('public_profiles' as any)
-        .select('display_name, username, avatar_url')
-        .eq('user_id', userId)
-        .maybeSingle();
+      // Fetch user profile using safe function
+      const { data: profileData, error: profileError } = await supabase.rpc('get_public_profile_safe', { 
+        target_user_id: userId 
+      });
+      const userProfile = profileData?.[0];
 
       if (profileError) throw profileError;
 
@@ -90,11 +89,10 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
           // Fetch profiles for comment authors
           const commentsWithProfiles = await Promise.all(
             (comments || []).map(async (comment) => {
-              const { data: commentProfile } = await supabase
-                .from('public_profiles' as any)
-                .select('display_name, username, avatar_url')
-                .eq('user_id', comment.user_id)
-                .maybeSingle();
+              const { data: commentProfileResult } = await supabase.rpc('get_public_profile_safe', { 
+                target_user_id: comment.user_id 
+              });
+              const commentProfile = commentProfileResult?.[0];
 
               return {
                 ...comment,
@@ -103,7 +101,7 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
             })
           );
 
-          const profileSafe = (profileData as any) || { display_name: 'Unknown', username: 'unknown', avatar_url: '' };
+          const profileSafe = userProfile || { display_name: 'Unknown', username: 'unknown', avatar_url: '' };
 
           return {
             ...post,

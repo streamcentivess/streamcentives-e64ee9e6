@@ -864,10 +864,13 @@ const UniversalProfile = () => {
     }
     setSearching(true);
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('public_profiles' as any).select('user_id, username, display_name, avatar_url, bio, location, interests, spotify_connected').or(`username.ilike.%${query}%,display_name.ilike.%${query}%,bio.ilike.%${query}%,interests.ilike.%${query}%,location.ilike.%${query}%`).neq('user_id', user?.id || '').limit(10);
+      // Use the secure RPC function to search public profiles
+      const { data, error } = await supabase.rpc('search_public_profiles', {
+        search_query: query.trim(),
+        limit_count: 10,
+        offset_count: 0
+      });
+
       if (error) {
         console.error('Search error:', error);
         toast({
@@ -924,13 +927,17 @@ const UniversalProfile = () => {
       // Get follower user IDs
       const followerIds = followsData.map(f => f.follower_id);
 
-      // Then get the profiles for those followers
-      const {
-        data: profilesData,
-        error: profilesError
-      } = await supabase.from('public_profiles' as any).select('user_id, username, display_name, avatar_url').in('user_id', followerIds);
-      if (profilesError) {
-        console.error('Error fetching follower profiles:', profilesError);
+      // Get profiles for followers using the safe function
+      const profilePromises = followerIds.map(id => 
+        supabase.rpc('get_public_profile_safe', { target_user_id: id })
+      );
+      const profileResults = await Promise.all(profilePromises);
+      const profilesData = profileResults
+        .map(result => result.data?.[0])
+        .filter(Boolean);
+      
+      if (profilesData.length === 0) {
+        console.error('Error fetching follower profiles');
         return;
       }
       setFollowers(profilesData as any || []);
@@ -959,13 +966,17 @@ const UniversalProfile = () => {
       // Get following user IDs
       const followingIds = followsData.map(f => f.following_id);
 
-      // Then get the profiles for those users
-      const {
-        data: profilesData,
-        error: profilesError
-      } = await supabase.from('public_profiles' as any).select('user_id, username, display_name, avatar_url').in('user_id', followingIds);
-      if (profilesError) {
-        console.error('Error fetching following profiles:', profilesError);
+      // Get profiles for following users using the safe function
+      const profilePromises = followingIds.map(id => 
+        supabase.rpc('get_public_profile_safe', { target_user_id: id })
+      );
+      const profileResults = await Promise.all(profilePromises);
+      const profilesData = profileResults
+        .map(result => result.data?.[0])
+        .filter(Boolean);
+      
+      if (profilesData.length === 0) {
+        console.error('Error fetching following profiles');
         return;
       }
       const followingData = profilesData as any || [];

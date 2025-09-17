@@ -228,10 +228,14 @@ const FanDashboard = () => {
           .map((a: any) => a.artistId);
 
         if (topArtistIds.length > 0) {
-          const { data: artistProfiles } = await supabase
-            .from('public_profiles' as any)
-            .select('user_id, display_name, username, avatar_url')
-            .in('user_id', topArtistIds);
+          // Get profiles using the safe function
+          const profilePromises = topArtistIds.map(id => 
+            supabase.rpc('get_public_profile_safe', { target_user_id: id })
+          );
+          const profileResults = await Promise.all(profilePromises);
+          const artistProfiles = profileResults
+            .map(result => result.data?.[0])
+            .filter(Boolean);
 
           const artistProfilesSafe = (artistProfiles as any[]) || [];
           const artistsWithData = topArtistIds.map(artistId => {
