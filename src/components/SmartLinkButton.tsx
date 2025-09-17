@@ -44,8 +44,75 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
   const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
+    // Clear previous data when userId changes
+    setSmartLink(null);
+    setActions([]);
+    setLoading(true);
+    
     loadSmartLink();
   }, [userId]);
+
+  useEffect(() => {
+    if (!smartLink) return;
+
+    // Set up real-time subscription for smart link updates
+    const channel = supabase
+      .channel(`smart_link_${smartLink.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'smart_links',
+          filter: `id=eq.${smartLink.id}`
+        },
+        (payload) => {
+          console.log('Smart link updated:', payload);
+          if (payload.eventType === 'UPDATE') {
+            setSmartLink(payload.new as SmartLink);
+          } else if (payload.eventType === 'DELETE') {
+            setSmartLink(null);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'smart_link_actions',
+          filter: `smart_link_id=eq.${smartLink.id}`
+        },
+        (payload) => {
+          console.log('Smart link actions updated:', payload);
+          // Reload actions when they change
+          loadActions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [smartLink?.id]);
+
+  const loadActions = async () => {
+    if (!smartLink) return;
+    
+    try {
+      const { data: actionsData, error: actionsError } = await supabase
+        .from('smart_link_actions')
+        .select('*')
+        .eq('smart_link_id', smartLink.id)
+        .eq('is_active', true)
+        .order('order_index');
+
+      if (actionsError) throw actionsError;
+      setActions(actionsData || []);
+    } catch (error) {
+      console.error('Error loading actions:', error);
+    }
+  };
 
   const loadSmartLink = async () => {
     try {
@@ -76,9 +143,15 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
 
         if (actionsError) throw actionsError;
         setActions(actionsData || []);
+      } else {
+        // No smart link found, clear state
+        setSmartLink(null);
+        setActions([]);
       }
     } catch (error) {
       console.error('Error loading smart link:', error);
+      setSmartLink(null);
+      setActions([]);
     } finally {
       setLoading(false);
     }
