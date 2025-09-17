@@ -4872,6 +4872,27 @@ export type Database = {
       }
     }
     Views: {
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       safe_profiles_view: {
         Row: {
           avatar_url: string | null
@@ -4905,6 +4926,14 @@ export type Database = {
           spotify_connected?: boolean | null
           user_id?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      user_follow_stats: {
+        Row: {
+          followers_count: number | null
+          following_count: number | null
+          user_id: string | null
         }
         Relationships: []
       }
