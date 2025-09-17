@@ -520,6 +520,10 @@ const Inbox: React.FC = () => {
                     setSearchResults([]);
                     // Refresh the inbox
                     fetchSentMessages();
+                    toast({
+                      title: "Message sent!",
+                      description: `Your message has been sent to ${selectedRecipient.display_name || selectedRecipient.username}.`,
+                    });
                   }}
                 />
               </div>
