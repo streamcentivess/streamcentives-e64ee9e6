@@ -28,22 +28,34 @@ serve(async (req) => {
       const url = new URL(req.url);
       const code = url.searchParams.get('code');
       const error = url.searchParams.get('error');
+      const stateParam = url.searchParams.get('state') || '';
       
+      // Determine the application origin to redirect back to
+      let appOrigin = Deno.env.get('APP_PUBLIC_URL') || 'https://bea56f2e-8da2-46b7-b30b-ab01f7704e03.lovableproject.com';
+      try {
+        if (stateParam) {
+          const parsed = JSON.parse(atob(stateParam));
+          const originFromState = parsed?.app_origin;
+          if (originFromState && /^https?:\/\/.+/i.test(originFromState)) {
+            appOrigin = originFromState;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse state for app_origin:', e);
+      }
+      // Fallback to Referer if state wasn't provided or invalid
+      const referer = req.headers.get('referer');
+      if ((!appOrigin || appOrigin.includes('accounts.google.com')) && referer) {
+        try { appOrigin = new URL(referer).origin; } catch (_) { /* ignore */ }
+      }
+
       if (error) {
-        // Redirect back to app with error
-        const referer = req.headers.get('referer') || 'https://bea56f2e-8da2-46b7-b30b-ab01f7704e03.lovableproject.com';
-        const appOrigin = new URL(referer).origin;
-        const redirectUrl = `${appOrigin}/youtube/callback?error=${encodeURIComponent(error)}`;
+        const redirectUrl = `${appOrigin}/youtube/callback?error=${encodeURIComponent(error)}&state=${encodeURIComponent(stateParam)}`;
         return Response.redirect(redirectUrl, 302);
       }
       
       if (code) {
-        // Redirect back to app with code for processing
-        const state = url.searchParams.get('state') || '';
-        // Get the origin from the request headers to ensure proper redirect
-        const referer = req.headers.get('referer') || 'https://bea56f2e-8da2-46b7-b30b-ab01f7704e03.lovableproject.com';
-        const appOrigin = new URL(referer).origin;
-        const redirectUrl = `${appOrigin}/youtube/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
+        const redirectUrl = `${appOrigin}/youtube/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(stateParam)}`;
         return Response.redirect(redirectUrl, 302);
       }
       

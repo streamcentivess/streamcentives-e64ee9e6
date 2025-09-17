@@ -197,9 +197,10 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
   const handleYouTubeConnect = async () => {
     try {
       // Generate state parameter for OAuth security
-      const state = btoa(JSON.stringify({ 
+      const state = btoa(JSON.stringify({
         user_id: user!.id,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        app_origin: window.location.origin
       }));
       
       console.log('Starting YouTube OAuth flow...');
