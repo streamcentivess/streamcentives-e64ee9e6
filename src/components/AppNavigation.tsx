@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { 
   Home, 
   Target, 
@@ -27,7 +28,8 @@ import {
   Users,
   BarChart3,
   Mail,
-  Rss
+  Rss,
+  Building2
 } from 'lucide-react';
 const streamcentivesLogo = '/lovable-uploads/streamcentivesloveable.PNG';
 
@@ -37,6 +39,7 @@ const AppNavigation = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const unreadCount = useUnreadMessages();
+  const { role: userRole } = useUserRole();
 
   const navigationItems = [
     { name: 'Home', href: '/feed', icon: Home },
@@ -46,10 +49,21 @@ const AppNavigation = () => {
     { name: 'Leaderboards', href: '/leaderboards', icon: Trophy },
   ];
 
-  const dashboardItems = [
-    { name: 'Fan Dashboard', href: '/fan-dashboard', icon: Users, color: 'text-primary' },
-    { name: 'Creator Dashboard', href: '/creator-dashboard', icon: Music, color: 'text-secondary' },
-  ];
+  // Role-based dashboard items
+  const getDashboardItems = () => {
+    if (userRole === 'sponsor') {
+      return [
+        { name: 'Sponsor Dashboard', href: '/sponsor-dashboard', icon: Building2, color: 'text-orange-500' },
+      ];
+    }
+    
+    return [
+      { name: 'Fan Dashboard', href: '/fan-dashboard', icon: Users, color: 'text-primary' },
+      { name: 'Creator Dashboard', href: '/creator-dashboard', icon: Music, color: 'text-secondary' },
+    ];
+  };
+
+  const dashboardItems = getDashboardItems();
 
   const isActive = (href: string) => location.pathname === href;
 
@@ -66,7 +80,7 @@ const AppNavigation = () => {
         <div className="flex justify-between h-16">
           {/* Logo and Navigation */}
           <div className="flex items-center">
-            <Link to="/universal-profile" className="flex items-center gap-3 mr-8">
+            <Link to={userRole === 'sponsor' ? '/sponsor-profile' : '/universal-profile'} className="flex items-center gap-3 mr-8">
               <img src={streamcentivesLogo} alt="Streamcentives" className="w-8 h-8 rounded-full" />
               <span className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
                 Streamcentives
@@ -135,7 +149,7 @@ const AppNavigation = () => {
                 <DropdownMenuSeparator />
                 
                 <DropdownMenuItem asChild>
-                  <Link to="/universal-profile" className="cursor-pointer">
+                  <Link to={userRole === 'sponsor' ? '/sponsor-profile' : '/universal-profile'} className="cursor-pointer">
                     <User className="h-4 w-4 mr-2" />
                     Profile
                   </Link>

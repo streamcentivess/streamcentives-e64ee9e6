@@ -150,10 +150,10 @@ export default function SponsorOnboarding() {
 
   const handleWelcomeModalClose = () => {
     setShowWelcomeModal(false);
-    navigate('/sponsor-dashboard');
+    navigate('/sponsor-profile');
     toast({
       title: "Profile setup complete!",
-      description: "Welcome to your sponsor dashboard."
+      description: "Welcome to your sponsor profile."
     });
   };
 
