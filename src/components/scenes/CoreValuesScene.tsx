@@ -109,7 +109,7 @@ const CoreValuesScene = () => {
                 These values aren't just words on a page — they're the foundation of every feature we build, 
                 every partnership we forge, and every decision we make.
               </blockquote>
-              <div className="text-sm text-muted-foreground">- Building with Purpose</div>
+              <div className="text-sm text-muted-foreground">- Kofa Muse Founder Streamcentives</div>
             </div>
           </div>
         </div>
