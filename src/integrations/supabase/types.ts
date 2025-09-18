@@ -4137,6 +4137,8 @@ export type Database = {
           created_at: string
           id: string
           industry: string | null
+          partnership_goals: Json | null
+          target_audience: string | null
           updated_at: string
           user_id: string
           verified: boolean | null
@@ -4151,6 +4153,8 @@ export type Database = {
           created_at?: string
           id?: string
           industry?: string | null
+          partnership_goals?: Json | null
+          target_audience?: string | null
           updated_at?: string
           user_id: string
           verified?: boolean | null
@@ -4165,6 +4169,8 @@ export type Database = {
           created_at?: string
           id?: string
           industry?: string | null
+          partnership_goals?: Json | null
+          target_audience?: string | null
           updated_at?: string
           user_id?: string
           verified?: boolean | null
