@@ -153,6 +153,100 @@ const FundingScene = () => {
           </div>
         </div>
 
+        {/* Strategic Insights */}
+        <div className="grid lg:grid-cols-2 gap-12 mb-16">
+          <div className="pitch-card p-8">
+            <h3 className="text-2xl font-bold mb-6">Platform Readiness Advantage</h3>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="w-3 h-3 bg-success rounded-full mt-2"></div>
+                <div>
+                  <div className="font-semibold text-success">Full MVP Deployed</div>
+                  <p className="text-sm text-muted-foreground">Complete XP system, campaigns, marketplace, AI tools, and mobile PWA</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-3 h-3 bg-success rounded-full mt-2"></div>
+                <div>
+                  <div className="font-semibold text-success">Multi-Revenue Streams Live</div>
+                  <p className="text-sm text-muted-foreground">XP purchases, marketplace transactions, campaign fees, premium subscriptions</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-3 h-3 bg-success rounded-full mt-2"></div>
+                <div>
+                  <div className="font-semibold text-success">AI-Powered Automation</div>
+                  <p className="text-sm text-muted-foreground">Smart campaign builder, content generation, and social media integration</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pitch-card p-8">
+            <h3 className="text-2xl font-bold mb-6">Network Effect Multiplier</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 bg-brand-primary/10 rounded-xl">
+                <div className="text-2xl font-black text-brand-primary">Sports</div>
+                <div className="text-sm text-muted-foreground">Derek's $160M+ athlete network</div>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-brand-secondary/10 rounded-xl">
+                <div className="text-2xl font-black text-brand-secondary">Music</div>
+                <div className="text-sm text-muted-foreground">Markeith & Kofa's industry connections</div>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-brand-accent/10 rounded-xl">
+                <div className="text-2xl font-black text-brand-accent">Content</div>
+                <div className="text-sm text-muted-foreground">Trev's creator & influencer network</div>
+              </div>
+              <div className="text-center mt-4 p-4 bg-surface rounded-xl border-2 border-brand-primary/20">
+                <div className="text-3xl font-black text-brand-primary">500+</div>
+                <div className="text-sm font-medium">Combined Creator Reach</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Revenue Model Insights */}
+        <div className="pitch-card p-8 mb-16">
+          <h3 className="text-2xl font-bold text-center mb-8">Multi-Stream Revenue Model</h3>
+          <div className="grid md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-brand-primary/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <DollarSign className="w-8 h-8 text-brand-primary" />
+              </div>
+              <div className="font-bold mb-2">XP Purchases</div>
+              <div className="text-2xl font-black text-brand-primary mb-2">$5-50</div>
+              <p className="text-xs text-muted-foreground">Per fan transaction, 30% platform fee</p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-brand-secondary/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <TrendingUp className="w-8 h-8 text-brand-secondary" />
+              </div>
+              <div className="font-bold mb-2">Campaign Fees</div>
+              <div className="text-2xl font-black text-brand-secondary mb-2">$100-1K</div>
+              <p className="text-xs text-muted-foreground">Per campaign setup, recurring monthly</p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-brand-accent/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <Users className="w-8 h-8 text-brand-accent" />
+              </div>
+              <div className="font-bold mb-2">Marketplace</div>
+              <div className="text-2xl font-black text-brand-accent mb-2">15%</div>
+              <p className="text-xs text-muted-foreground">Commission on all reward transactions</p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-success/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <Target className="w-8 h-8 text-success" />
+              </div>
+              <div className="font-bold mb-2">Premium</div>
+              <div className="text-2xl font-black text-success mb-2">$29</div>
+              <p className="text-xs text-muted-foreground">Monthly creator subscriptions</p>
+            </div>
+          </div>
+        </div>
+
         {/* Milestones & Timeline */}
         <div className="pitch-card p-8 mb-16">
           <h3 className="text-2xl font-bold text-center mb-8">Key Milestones</h3>
