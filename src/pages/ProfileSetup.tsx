@@ -34,6 +34,13 @@ const ProfileSetup = () => {
       navigate('/role-selection');
       return;
     }
+
+    // Route sponsors to dedicated onboarding
+    if (role === 'sponsor') {
+      navigate('/sponsor-onboarding');
+      return;
+    }
+    
     setSelectedRole(role);
   }, [navigate]);
 

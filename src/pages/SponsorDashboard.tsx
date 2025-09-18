@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Users, DollarSign, TrendingUp, Plus, MessageSquare, User } from "lucide-react";
 import { SponsorProfile } from "@/components/SponsorProfile";
-import { SponsorPosts } from "@/components/SponsorPosts";
 import { SponsorOffers } from "@/components/SponsorOffers";
+import { CreatorDiscovery } from "@/components/CreatorDiscovery";
 import { Link } from "react-router-dom";
 
 export default function SponsorDashboard() {
@@ -75,29 +75,84 @@ export default function SponsorDashboard() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="creators">Discover Creators</TabsTrigger>
             <TabsTrigger value="offers">My Offers</TabsTrigger>
-            <TabsTrigger value="posts">Social Feed</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
-            <Card>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Partnerships</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">0</div>
+                  <p className="text-xs text-muted-foreground">+0% from last month</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Reach</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">0</div>
+                  <p className="text-xs text-muted-foreground">Across all campaigns</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Campaign ROI</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">0%</div>
+                  <p className="text-xs text-muted-foreground">Average return</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Offers</CardTitle>
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">0</div>
+                  <p className="text-xs text-muted-foreground">Awaiting response</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="mt-6">
               <CardContent className="p-6">
-                <h3 className="text-lg font-medium mb-4">Partnership Dashboard</h3>
-                <p className="text-muted-foreground">
-                  Your comprehensive sponsor dashboard is now ready! You can create offers, 
-                  manage partnerships, and post content with creator tagging.
+                <h3 className="text-lg font-medium mb-4">Welcome to Your Sponsor Dashboard</h3>
+                <p className="text-muted-foreground mb-4">
+                  Get started by discovering creators that match your brand and campaign goals.
                 </p>
+                <Button 
+                  onClick={() => {
+                    // Switch to creators tab programmatically
+                    const creatorsTab = document.querySelector('[value="creators"]') as HTMLButtonElement;
+                    creatorsTab?.click();
+                  }}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Discover Creators
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="offers">
-            <SponsorOffers />
+          <TabsContent value="creators">
+            <CreatorDiscovery />
           </TabsContent>
 
-          <TabsContent value="posts">
-            <SponsorPosts />
+          <TabsContent value="offers">
+            <SponsorOffers />
           </TabsContent>
 
           <TabsContent value="profile">

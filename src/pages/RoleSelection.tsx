@@ -158,28 +158,54 @@ const RoleSelection = () => {
         <div className="text-center">
           <div 
             className={`
-              inline-block p-6 rounded-xl cursor-pointer transition-all duration-300 group
+              relative p-8 rounded-2xl cursor-pointer transition-all duration-300 group max-w-2xl mx-auto
               ${selectedRole === 'sponsor' 
-                ? 'bg-gradient-to-r from-muted to-muted/50 ring-2 ring-primary scale-105' 
-                : 'hover:bg-muted/50 hover:scale-105'
+                ? 'bg-gradient-to-br from-secondary/10 to-secondary/20 ring-2 ring-secondary scale-105 shadow-2xl shadow-secondary/25' 
+                : 'bg-gradient-to-br from-muted/5 to-muted/10 hover:from-secondary/5 hover:to-secondary/10 hover:scale-102 hover:shadow-xl border border-muted/20'
               }
             `}
             onClick={() => setSelectedRole('sponsor')}
           >
-            <div className="flex items-center justify-center mb-2">
-              <svg className="w-6 h-6 text-muted-foreground mr-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7,15H9C9,16.08 10.37,17 12,17C13.63,17 15,16.08 15,15C15,13.9 13.96,13.5 11.76,12.97C9.64,12.44 7,11.78 7,9C7,7.21 8.47,5.69 10.5,5.18V3H13.5V5.18C15.53,5.69 17,7.21 17,9H15C15,7.92 13.63,7 12,7C10.37,7 9,7.92 9,9C9,10.1 10.04,10.5 12.24,11.03C14.36,11.56 17,12.22 17,15C17,16.79 15.53,18.31 13.5,18.82V21H10.5V18.82C8.47,18.31 7,16.79 7,15Z"/>
+            {/* Icon */}
+            <div className={`
+              w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto
+              ${selectedRole === 'sponsor'
+                ? 'bg-gradient-to-br from-secondary to-secondary/80' 
+                : 'bg-gradient-to-br from-muted to-muted/80 group-hover:from-secondary group-hover:to-secondary/80'
+              }
+            `}>
+              <svg className="w-8 h-8 text-primary-foreground" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M17,13H13V17H11V13H7V11H11V7H13V11H17V13Z"/>
               </svg>
-              <h3 className="text-xl font-bold tracking-wide">
-                Looking to Sponsor?
-              </h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Partner with creators and reach engaged audiences
+
+            <h3 className="text-3xl font-bold text-center mb-4 tracking-wide">
+              SPONSOR
+            </h3>
+            <p className="text-muted-foreground text-center leading-relaxed mb-6">
+              Connect with 10K+ creators, launch impactful campaigns, and measure your ROI with advanced analytics and partnership tools.
             </p>
+
+            {/* Features list */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-center text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-secondary rounded-full mr-2"></div>
+                Access to 10K+ verified creators
+              </div>
+              <div className="flex items-center justify-center text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-secondary rounded-full mr-2"></div>
+                Advanced ROI tracking & analytics
+              </div>
+              <div className="flex items-center justify-center text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-secondary rounded-full mr-2"></div>
+                Branded partnership management tools
+              </div>
+            </div>
+
+            {/* Selection indicator */}
             {selectedRole === 'sponsor' && (
-              <div className="absolute -top-2 -right-2">
-                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+              <div className="absolute top-4 right-4">
+                <div className="w-6 h-6 bg-secondary rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>

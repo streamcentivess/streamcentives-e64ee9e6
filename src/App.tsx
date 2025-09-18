@@ -54,6 +54,7 @@ const ShoutoutGenerator = lazy(() => import("./pages/ShoutoutGenerator"));
 const MessageTemplates = lazy(() => import("./pages/MessageTemplates"));
 const SentimentAnalysis = lazy(() => import("./pages/SentimentAnalysis"));
 const SmartLinkPage = lazy(() => import("./pages/SmartLinkPage"));
+const SponsorOnboarding = lazy(() => import("./components/SponsorOnboarding"));
 import { NavigationIntegration } from "./components/NavigationIntegration";
 
 const queryClient = new QueryClient();
@@ -93,6 +94,11 @@ const App = () => {
                       <Route path="/role-selection" element={
                         <ProtectedRoute>
                           <RoleSelection />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/sponsor-onboarding" element={
+                        <ProtectedRoute>
+                          <SponsorOnboarding />
                         </ProtectedRoute>
                       } />
                       <Route path="/profile-setup" element={
