@@ -12,6 +12,7 @@ import BusinessModelScene from "@/components/scenes/BusinessModelScene";
 import GoToMarketScene from "@/components/scenes/GoToMarketScene";
 import CompetitionScene from "@/components/scenes/CompetitionScene";
 import TeamScene from "@/components/scenes/TeamScene";
+import CoreValuesScene from "@/components/scenes/CoreValuesScene";
 import FundingScene from "@/components/scenes/FundingScene";
 import ClosingScene from "@/components/scenes/ClosingScene";
 
@@ -25,6 +26,7 @@ const scenes = [
   { component: GoToMarketScene, title: "Go-to-Market", duration: 20 },
   { component: CompetitionScene, title: "Competition", duration: 20 },
   { component: TeamScene, title: "The Team", duration: 10 },
+  { component: CoreValuesScene, title: "Core Values", duration: 20 },
   { component: FundingScene, title: "The Ask", duration: 15 },
   { component: ClosingScene, title: "Let's Build Together", duration: 15 },
 ];

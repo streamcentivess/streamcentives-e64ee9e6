@@ -284,8 +284,97 @@ const Team = () => {
         </div>
       </section>
 
-      {/* Advisory Board */}
+      {/* Core Values Section */}
       <section className="py-16 bg-gradient-to-r from-brand-primary/5 via-background to-brand-accent/5">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Streamcentives' Core Values</h2>
+            <p className="text-lg text-muted-foreground max-w-4xl mx-auto">
+              Our core values are what guide every decision we make, from product development to how we 
+              communicate with the world. They are the heart of our story.
+            </p>
+          </div>
+
+          <div className="grid gap-8 max-w-6xl mx-auto mb-16">
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card className="group hover:shadow-xl transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center">
+                      <span className="text-2xl font-bold text-brand-primary">1</span>
+                    </div>
+                    <CardTitle className="text-xl text-brand-primary">Respect for the Creator</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    We believe in the power and passion of artists and influencers. We are here to serve them, not to control them. 
+                    We value their independence, their creative freedom, and their unique relationship with their audience. Our platform 
+                    is a tool to empower them, not a platform that dictates their every move.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="group hover:shadow-xl transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-brand-accent/10 rounded-2xl flex items-center justify-center">
+                      <span className="text-2xl font-bold text-brand-accent">2</span>
+                    </div>
+                    <CardTitle className="text-xl text-brand-accent">Celebrating the Fan</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    We see fans not as passive consumers, but as active, passionate members of a community. We believe every fan's 
+                    support—no matter how small—is valuable. Our mission is to recognize and reward that dedication, transforming 
+                    a large, anonymous following into a vibrant, engaged community.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="group hover:shadow-xl transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-brand-secondary/10 rounded-2xl flex items-center justify-center">
+                      <span className="text-2xl font-bold text-brand-secondary">3</span>
+                    </div>
+                    <CardTitle className="text-xl text-brand-secondary">Building Authentic Community</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    In a world of fleeting trends and shallow connections, we stand for something deeper. We believe in fostering 
+                    real, meaningful bonds between creators and their fans. We are a force against anonymity, helping to create 
+                    spaces where people feel seen, valued, and a part of something bigger.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="group hover:shadow-xl transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-success/10 rounded-2xl flex items-center justify-center">
+                      <span className="text-2xl font-bold text-success">4</span>
+                    </div>
+                    <CardTitle className="text-xl text-success">Transparency and Integrity</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    We operate with honesty and clarity. We are committed to building a trusted ecosystem where creators and fans 
+                    alike can be confident in the value and fairness of their interactions. Our technology is designed to be 
+                    transparent, and our communication will always be genuine.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Advisory Board */}
+      <section className="py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">Advisory Board</h2>
