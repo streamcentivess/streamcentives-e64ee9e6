@@ -72,7 +72,7 @@ const ProfileSetup = () => {
             bio: profileData.bio,
             age: profileData.age,
             location: profileData.location,
-            interests: profileData.interests,
+            interests: selectedRole === 'sponsor' ? '' : profileData.interests, // Don't store company name in interests
             onboarding_completed: true,
           },
           { onConflict: 'user_id' }
@@ -90,6 +90,27 @@ const ProfileSetup = () => {
           variant: "destructive"
         });
         return;
+      }
+
+      // For sponsors, create sponsor profile entry
+      if (selectedRole === 'sponsor' && profileData.interests) {
+        console.log('Creating sponsor profile...');
+        const { error: sponsorError } = await supabase
+          .from('sponsor_profiles')
+          .insert([{
+            user_id: user.id,
+            company_name: profileData.interests, // Company name was stored in interests field
+          }]);
+        
+        if (sponsorError) {
+          console.error('Sponsor profile error:', sponsorError);
+          toast({
+            title: "Error",
+            description: `Failed to create sponsor profile: ${sponsorError.message}`,
+            variant: "destructive"
+          });
+          return;
+        }
       }
 
       // Award 250 XP to new users
