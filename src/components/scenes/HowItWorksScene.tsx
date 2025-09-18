@@ -234,7 +234,7 @@ const HowItWorksScene = () => {
                 {feature.features.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-sm">
                     <div className={`w-1.5 h-1.5 rounded-full ${feature.color.replace('text-', 'bg-')}`}></div>
-                    <span className="text-muted-foreground">{item}</span>
+                    <span className="text-white">{item}</span>
                   </div>
                 ))}
               </div>
