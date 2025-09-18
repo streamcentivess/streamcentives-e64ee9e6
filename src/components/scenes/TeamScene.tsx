@@ -20,33 +20,14 @@ const TeamScene = () => {
       image: "/lovable-uploads/0f33e720-6b49-472b-9bf9-885964b78755.png",
       expertise: [
         "Decorated military veteran with 10+ years in entertainment & tech",
-        "Architected merchandising strategies generating $5M+ revenue",
+        "Architected merchandising strategies generating $2M+ revenue",
         "Worked with Sony, Warner, Universal, Netflix, Roc Nation",
-        "B.A. in Entertainment Business & Marketing from UCLA"
+        "B.A. in Entertainment Business & Marketing from LA Film School"
       ],
       achievements: [
         "Led merchandising for 500+ major and independent artists",
         "Built strategic partnerships with major labels & platforms",
         "Proven track record in creator monetization & fan engagement"
-      ]
-    },
-    {
-      name: "Trev Case",
-      role: "Co-Founder",
-      icon: Code,
-      color: "text-brand-secondary",
-      bgColor: "bg-brand-secondary/10",
-      image: "/lovable-uploads/5897885b-dc57-41a0-b75a-5fd38b676bad.png",
-      expertise: [
-        "20+ years in music production & audio engineering",
-        "Collaborated with Young Thug, Ty Dolla $ign, T.I., Big K.R.I.T.",
-        "Featured by PlayStation, NFL, MLB, Apple TV+, Oprah Network",
-        "Expert in broadcasting & multimedia technologies"
-      ],
-      achievements: [
-        "Produced for 50+ major recording artists",
-        "Work featured across major brands & platforms",
-        "Deep technical expertise in audio & streaming technology"
       ]
     },
     {
@@ -67,6 +48,25 @@ const TeamScene = () => {
         "Managed $134M-$160M AUM at Merrill Lynch",
         "IPO advisory specialist with proven track record"
       ]
+    },
+    {
+      name: "Annabelle Worrall",
+      role: "Digital Advertising Operations Manager",
+      icon: Trophy,
+      color: "text-brand-secondary",
+      bgColor: "bg-brand-secondary/10",
+      image: "/lovable-uploads/4887c953-2020-4a6c-8d86-7201c20d87bf.png",
+      expertise: [
+        "5+ years experience in ad-tech world",
+        "Manages & scales complex digital campaigns",
+        "Optimizes $6M+ in ad spend quarterly",
+        "MBA Marketing from California Lutheran University"
+      ],
+      achievements: [
+        "Expert in programmatic advertising landscape",
+        "Turns complex metrics into actionable insights",
+        "Technical expert with passion for data analysis"
+      ]
     }
   ];
 
@@ -80,11 +80,11 @@ const TeamScene = () => {
       status: "Team Member"
     },
     {
-      name: "Annabelle Worrall", 
-      title: "Digital Advertising Operations Manager",
-      image: "/lovable-uploads/4887c953-2020-4a6c-8d86-7201c20d87bf.png",
-      expertise: "Ad-Tech & Campaign Optimization",
-      description: "Manages $6M+ in quarterly ad spend with expertise in programmatic advertising",
+      name: "Trev Case",
+      title: "Music Industry Advisor",
+      image: "/lovable-uploads/5897885b-dc57-41a0-b75a-5fd38b676bad.png",
+      expertise: "Music Production & Industry Relations",
+      description: "20+ years in music production with collaborations including Young Thug, Ty Dolla $ign, T.I., Big K.R.I.T.",
       status: "Team Member"
     }
   ];
@@ -116,7 +116,7 @@ const TeamScene = () => {
         {/* Main Title */}
         <div className="text-center mb-16 scene-fade-in">
           <h1 className="heading-section mb-6">
-            World-Class Team Bridging <span className="text-brand-primary">Music & Technology</span>
+            World-Class <span className="text-brand-primary">Leadership Team</span>
           </h1>
           <p className="text-cinematic max-w-3xl mx-auto">
             Led by industry veterans who understand both the creative and technical sides 
@@ -187,8 +187,12 @@ const TeamScene = () => {
             ))}
           </div>
 
-          {/* Team Members */}
+          {/* Advisory Board */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
+            <div className="col-span-full text-center mb-8">
+              <h2 className="text-2xl font-bold mb-4">Advisory Board</h2>
+              <p className="text-muted-foreground">Industry experts guiding our strategic direction</p>
+            </div>
             {teamMembers2.map((member, index) => (
               <div key={member.name} className="pitch-card p-6">
                 <div className="text-center mb-4">
