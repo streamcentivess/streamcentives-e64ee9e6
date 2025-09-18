@@ -165,29 +165,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = getRedirectUrl();
-      console.log('Google OAuth redirect URL:', redirectUrl);
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-        }
+      // Get Google OAuth URL from our custom handler
+      const { data: urlData, error: urlError } = await supabase.functions.invoke('google-oauth-handler', {
+        body: { action: 'get_auth_url' }
       });
 
-      if (error) {
-        toast({
-          title: "Authentication Error",
-          description: error.message,
-          variant: "destructive"
-        });
+      if (urlError || !urlData?.auth_url) {
+        throw new Error(urlError?.message || 'Failed to get Google OAuth URL');
       }
-    } catch (error) {
-      console.error('Google auth error:', error);
+
+      // Store state for security verification
+      sessionStorage.setItem('google_oauth_state', urlData.state);
+      
+      // Redirect to Google OAuth
+      window.location.href = urlData.auth_url;
+    } catch (error: any) {
+      console.error('Google sign-in error:', error);
       toast({
         title: "Authentication Error",
-        description: "Failed to connect with Google",
-        variant: "destructive"
+        description: error.message || "Failed to initiate Google sign-in",
+        variant: "destructive",
       });
     }
   };
