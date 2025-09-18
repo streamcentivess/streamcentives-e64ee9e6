@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CreditCard, ShoppingCart, Megaphone, Code, Repeat } from "lucide-react";
+import { CreditCard, ShoppingCart, Megaphone, Code, Repeat, Coins } from "lucide-react";
 
 const BusinessModelScene = () => {
   const [showRevenue, setShowRevenue] = useState(false);
@@ -18,6 +18,15 @@ const BusinessModelScene = () => {
       color: "text-brand-primary",
       bgColor: "bg-brand-primary/10",
       details: ["Creator Basic: $9.99/mo", "Creator Pro: $19.99/mo", "Label Enterprise: $500/mo"]
+    },
+    {
+      icon: Coins,
+      title: "XP Purchases",
+      description: "Platform fee on fan XP purchases and creator revenue sharing",
+      revenue: "$0.50+ per transaction",
+      color: "text-warning",
+      bgColor: "bg-warning/10",
+      details: ["Platform fee: $0.50 per purchase", "Creator revenue sharing: 70-90%", "Platform & creator-specific XP"]
     },
     {
       icon: ShoppingCart,
