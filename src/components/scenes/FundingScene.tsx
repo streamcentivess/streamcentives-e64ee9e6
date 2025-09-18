@@ -17,54 +17,54 @@ const FundingScene = () => {
   const fundingAllocation = [
     {
       category: "Artist Partnerships & Acquisition", 
-      percentage: 45,
-      amount: "$450K",
+      percentage: 40,
+      amount: "$400K",
       icon: Users,
       color: "text-brand-primary",
       bgColor: "bg-brand-primary",
       details: [
-        "100+ artist onboarding program",
-        "Sports agency partnerships (via Derek's network)",
-        "Music industry relationship building",
-        "Creator success & support team"
+        "200+ artist rapid onboarding program",
+        "Multi-genre network activation (sports, music, content)",
+        "Creator success & relationship management",
+        "Partnership program incentives & bonuses"
       ]
     },
     {
-      category: "Marketing & Growth",
+      category: "Marketing & Scale Operations",
       percentage: 35, 
       amount: "$350K",
       icon: TrendingUp,
       color: "text-brand-secondary",
       bgColor: "bg-brand-secondary",
       details: [
-        "Performance marketing campaigns",
-        "Influencer & creator marketing",
-        "Brand partnerships & sponsorships", 
-        "User acquisition & retention"
+        "Performance marketing & paid acquisition",
+        "Content creation & influencer campaigns", 
+        "Brand partnerships & enterprise deals",
+        "User growth & retention optimization"
       ]
     },
     {
       category: "Operations & Infrastructure",
-      percentage: 20,
-      amount: "$200K",
+      percentage: 25,
+      amount: "$250K",
       icon: Code,
       color: "text-brand-accent", 
       bgColor: "bg-brand-accent",
       details: [
-        "Platform optimization & scaling",
-        "Customer success team",
-        "Legal, compliance & security",
-        "Working capital & contingency"
+        "Platform scaling & performance optimization",
+        "Customer success & support expansion",
+        "Legal, compliance & security infrastructure",
+        "Working capital & strategic reserves"
       ]
     }
   ];
 
   const milestones = [
-    { milestone: "50 Artists Onboarded", timeline: "3 months", funding: "$200K" },
-    { milestone: "10K+ Active Fans", timeline: "6 months", funding: "$500K" },
-    { milestone: "100+ Artists, $50K MRR", timeline: "9 months", funding: "$750K" },
-    { milestone: "Sports Partnership Launch", timeline: "12 months", funding: "$1M" },
-    { milestone: "Q1 2026: $200K MRR", timeline: "15 months", funding: "$1.5M ARR" }
+    { milestone: "100 Artists Onboarded", timeline: "3 months", funding: "$300K" },
+    { milestone: "25K+ Active Fans", timeline: "6 months", funding: "$600K" },
+    { milestone: "250+ Artists, $100K MRR", timeline: "9 months", funding: "$800K" },
+    { milestone: "Multi-Genre Partnerships", timeline: "12 months", funding: "$1M" },
+    { milestone: "Q1 2026: $350K MRR", timeline: "15 months", funding: "$4.2M ARR" }
   ];
 
   return (
@@ -77,8 +77,8 @@ const FundingScene = () => {
             <h1 className="heading-section mb-6">Seed Funding</h1>
           </div>
           <p className="text-cinematic max-w-4xl mx-auto">
-            Raising $1M to scale our proven MVP, onboard 100+ artists through our sports agency network, 
-            and achieve $200K MRR by Q1 2026.
+            Raising $1M to leverage our team's combined 500+ creator network across sports, music & content 
+            to scale our proven MVP and achieve $350K MRR by Q1 2026.
           </p>
         </div>
 
@@ -197,10 +197,10 @@ const FundingScene = () => {
             <div className="w-16 h-16 bg-brand-secondary/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <Users className="w-8 h-8 text-brand-secondary" />
             </div>
-            <h4 className="font-bold mb-2">Sports Industry Access</h4>
-            <div className="text-2xl font-black text-brand-secondary mb-2">$160M+</div>
+            <h4 className="font-bold mb-2">Multi-Genre Network Access</h4>
+            <div className="text-2xl font-black text-brand-secondary mb-2">500+</div>
             <p className="text-sm text-muted-foreground">
-              Derek's sports agency network & proven relationship track record
+              Combined creator connections across sports, music & content creation
             </p>
           </div>
 
@@ -209,9 +209,9 @@ const FundingScene = () => {
               <DollarSign className="w-8 h-8 text-success" />
             </div>
             <h4 className="font-bold mb-2">Q1 2026 Target</h4>
-            <div className="text-2xl font-black text-success mb-2">$200K</div>
+            <div className="text-2xl font-black text-success mb-2">$350K</div>
             <p className="text-sm text-muted-foreground">
-              Monthly recurring revenue with 100+ artists & 50K+ active fans
+              Monthly recurring revenue with 250+ artists & 100K+ active fans
             </p>
           </div>
         </div>
