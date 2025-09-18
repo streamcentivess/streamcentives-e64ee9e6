@@ -144,9 +144,8 @@ const ProfileSetup = () => {
         navigate('/creator-dashboard');
         break;
       case 'sponsor':
-        console.log('Redirecting to creator dashboard (sponsor)');
-        // For now, redirect to creator dashboard as sponsor dashboard doesn't exist yet
-        navigate('/creator-dashboard');
+        console.log('Redirecting to sponsor dashboard');
+        navigate('/sponsor-dashboard');
         break;
       default:
         console.log('Redirecting to universal profile');

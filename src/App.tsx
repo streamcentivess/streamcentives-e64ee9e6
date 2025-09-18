@@ -34,6 +34,7 @@ const BillingPayments = lazy(() => import("./pages/BillingPayments"));
 const FanDashboard = lazy(() => import("./pages/FanDashboard"));
 const FanCampaigns = lazy(() => import("./pages/FanCampaigns"));
 const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
+const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard"));
 const Campaigns = lazy(() => import("./pages/Campaigns"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Leaderboards = lazy(() => import("./pages/Leaderboards"));
@@ -123,11 +124,16 @@ const App = () => {
                           <FanCampaigns />
                         </ProtectedRoute>
                       } />
-                      <Route path="/creator-dashboard" element={
-                        <ProtectedRoute>
-                          <CreatorDashboard />
-                        </ProtectedRoute>
-                      } />
+                       <Route path="/creator-dashboard" element={
+                         <ProtectedRoute>
+                           <CreatorDashboard />
+                         </ProtectedRoute>
+                       } />
+                       <Route path="/sponsor-dashboard" element={
+                         <ProtectedRoute>
+                           <SponsorDashboard />
+                         </ProtectedRoute>
+                       } />
                       <Route path="/campaigns" element={
                         <ProtectedRoute>
                           <Campaigns />
