@@ -16,55 +16,55 @@ const FundingScene = () => {
 
   const fundingAllocation = [
     {
-      category: "Product & Engineering", 
-      percentage: 50,
-      amount: "$750K",
-      icon: Code,
+      category: "Artist Partnerships & Acquisition", 
+      percentage: 45,
+      amount: "$450K",
+      icon: Users,
       color: "text-brand-primary",
       bgColor: "bg-brand-primary",
       details: [
-        "Core platform development",
-        "AI/ML infrastructure", 
-        "Mobile app development",
-        "API integrations"
+        "100+ artist onboarding program",
+        "Sports agency partnerships (via Derek's network)",
+        "Music industry relationship building",
+        "Creator success & support team"
       ]
     },
     {
-      category: "Artist Partnerships",
-      percentage: 30, 
-      amount: "$450K",
-      icon: Users,
+      category: "Marketing & Growth",
+      percentage: 35, 
+      amount: "$350K",
+      icon: TrendingUp,
       color: "text-brand-secondary",
       bgColor: "bg-brand-secondary",
       details: [
-        "Artist acquisition & onboarding",
-        "Partnership development",
-        "Community management", 
-        "Creator support programs"
+        "Performance marketing campaigns",
+        "Influencer & creator marketing",
+        "Brand partnerships & sponsorships", 
+        "User acquisition & retention"
       ]
     },
     {
-      category: "Operations & Growth",
+      category: "Operations & Infrastructure",
       percentage: 20,
-      amount: "$300K",
-      icon: TrendingUp,
+      amount: "$200K",
+      icon: Code,
       color: "text-brand-accent", 
       bgColor: "bg-brand-accent",
       details: [
-        "Marketing & brand building",
-        "Legal & compliance",
-        "Team expansion",
-        "Working capital"
+        "Platform optimization & scaling",
+        "Customer success team",
+        "Legal, compliance & security",
+        "Working capital & contingency"
       ]
     }
   ];
 
   const milestones = [
-    { milestone: "MVP Launch", timeline: "3 months", funding: "$250K" },
-    { milestone: "20 Artists Onboarded", timeline: "6 months", funding: "$500K" },
-    { milestone: "AI Campaign Builder", timeline: "9 months", funding: "$750K" },
-    { milestone: "100K+ Active Fans", timeline: "12 months", funding: "$1M+" },
-    { milestone: "Series A Ready", timeline: "18 months", funding: "$2M+ ARR" }
+    { milestone: "50 Artists Onboarded", timeline: "3 months", funding: "$200K" },
+    { milestone: "10K+ Active Fans", timeline: "6 months", funding: "$500K" },
+    { milestone: "100+ Artists, $50K MRR", timeline: "9 months", funding: "$750K" },
+    { milestone: "Sports Partnership Launch", timeline: "12 months", funding: "$1M" },
+    { milestone: "Q1 2026: $200K MRR", timeline: "15 months", funding: "$1.5M ARR" }
   ];
 
   return (
@@ -73,12 +73,12 @@ const FundingScene = () => {
         {/* Main Title */}
         <div className="text-center mb-16 scene-fade-in">
           <div className={`transition-all duration-1000 ${animateFunding ? 'scale-110' : 'scale-100'}`}>
-            <div className="text-8xl font-black text-brand-primary mb-4">$1.5M</div>
-            <h1 className="heading-section mb-6">Pre-Seed Funding</h1>
+            <div className="text-8xl font-black text-brand-primary mb-4">$1M</div>
+            <h1 className="heading-section mb-6">Seed Funding</h1>
           </div>
           <p className="text-cinematic max-w-4xl mx-auto">
-            Raising $1.5M to build product, grow our creator base, 
-            and establish Streamcentives as the leading fan engagement platform.
+            Raising $1M to scale our proven MVP, onboard 100+ artists through our sports agency network, 
+            and achieve $200K MRR by Q1 2026.
           </p>
         </div>
 
@@ -186,10 +186,10 @@ const FundingScene = () => {
             <div className="w-16 h-16 bg-brand-primary/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <TrendingUp className="w-8 h-8 text-brand-primary" />
             </div>
-            <h4 className="font-bold mb-2">Massive Market</h4>
-            <div className="text-2xl font-black text-brand-primary mb-2">$100B+</div>
+            <h4 className="font-bold mb-2">Ready-to-Scale MVP</h4>
+            <div className="text-2xl font-black text-brand-primary mb-2">Built</div>
             <p className="text-sm text-muted-foreground">
-              Creator economy ready for disruption
+              Full platform with XP system, campaigns, marketplace & AI features
             </p>
           </div>
 
@@ -197,10 +197,10 @@ const FundingScene = () => {
             <div className="w-16 h-16 bg-brand-secondary/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <Users className="w-8 h-8 text-brand-secondary" />
             </div>
-            <h4 className="font-bold mb-2">Proven Traction</h4>
-            <div className="text-2xl font-black text-brand-secondary mb-2">20+</div>
+            <h4 className="font-bold mb-2">Sports Industry Access</h4>
+            <div className="text-2xl font-black text-brand-secondary mb-2">$160M+</div>
             <p className="text-sm text-muted-foreground">
-              Artists ready to launch at day one
+              Derek's sports agency network & proven relationship track record
             </p>
           </div>
 
@@ -208,10 +208,10 @@ const FundingScene = () => {
             <div className="w-16 h-16 bg-success/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <DollarSign className="w-8 h-8 text-success" />
             </div>
-            <h4 className="font-bold mb-2">Clear Path to Profitability</h4>
-            <div className="text-2xl font-black text-success mb-2">18mo</div>
+            <h4 className="font-bold mb-2">Q1 2026 Target</h4>
+            <div className="text-2xl font-black text-success mb-2">$200K</div>
             <p className="text-sm text-muted-foreground">
-              Multiple revenue streams, strong unit economics
+              Monthly recurring revenue with 100+ artists & 50K+ active fans
             </p>
           </div>
         </div>
