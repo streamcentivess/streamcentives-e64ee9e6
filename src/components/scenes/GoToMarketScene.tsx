@@ -115,7 +115,7 @@ const GoToMarketScene = () => {
           <div className="pitch-card p-8">
             <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
               <Users className="w-6 h-6 text-brand-primary" />
-              Artist Partnership Program
+              Creator Partnership Program
             </h3>
             
             <div className="space-y-4">
