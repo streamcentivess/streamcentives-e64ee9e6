@@ -107,6 +107,78 @@ const BusinessModelScene = () => {
           ))}
         </div>
 
+        {/* Year One Bootstrap Strategy */}
+        <div className="pitch-card p-8 mb-16">
+          <h3 className="text-2xl font-bold text-center mb-8">Year One: Bootstrap to Traction</h3>
+          <p className="text-center text-muted-foreground mb-8 max-w-3xl mx-auto">
+            What we can achieve in the first 6 months without investor funding - proving market fit and revenue potential
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div className="space-y-6">
+              <h4 className="text-xl font-semibold text-brand-primary">First 6 Months (Self-Funded)</h4>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
+                  <span className="font-medium">Target Artists</span>
+                  <span className="text-brand-primary font-bold">5-10</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
+                  <span className="font-medium">Active Fans</span>
+                  <span className="text-brand-primary font-bold">2,500-5,000</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
+                  <span className="font-medium">Monthly Revenue</span>
+                  <span className="text-brand-primary font-bold">$2K-5K</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
+                  <span className="font-medium">XP Transactions</span>
+                  <span className="text-brand-primary font-bold">500+/month</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <h4 className="text-xl font-semibold text-brand-secondary">Months 6-12 (Proven Traction)</h4>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
+                  <span className="font-medium">Target Artists</span>
+                  <span className="text-brand-secondary font-bold">15-20</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
+                  <span className="font-medium">Active Fans</span>
+                  <span className="text-brand-secondary font-bold">10K-15K</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
+                  <span className="font-medium">Monthly Revenue</span>
+                  <span className="text-brand-secondary font-bold">$8K-12K</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
+                  <span className="font-medium">Investment Ready</span>
+                  <span className="text-success font-bold">✓ Proven PMF</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-brand-primary/5 rounded-xl p-6 border border-brand-primary/20">
+            <h4 className="text-lg font-semibold mb-4 text-center">Bootstrap Strategy</h4>
+            <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div className="text-center">
+                <div className="font-medium text-brand-primary mb-2">Lean Operations</div>
+                <p className="text-muted-foreground">Core team, MVP features, direct artist outreach</p>
+              </div>
+              <div className="text-center">
+                <div className="font-medium text-brand-primary mb-2">Revenue Focus</div>
+                <p className="text-muted-foreground">XP purchases, marketplace fees, subscription upgrades</p>
+              </div>
+              <div className="text-center">
+                <div className="font-medium text-brand-primary mb-2">Proof Points</div>
+                <p className="text-muted-foreground">User retention, revenue growth, artist satisfaction</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Revenue Projections */}
         <div className="pitch-card p-8 mb-16">
           <h3 className="text-2xl font-bold text-center mb-8">5-Year Revenue Projection</h3>
