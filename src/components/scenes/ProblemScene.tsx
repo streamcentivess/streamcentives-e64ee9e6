@@ -50,7 +50,7 @@ const ProblemScene = () => {
                 Artists & Creators Struggle
               </h3>
               
-              <ul className="space-y-3 text-muted-foreground">
+              <ul className="space-y-3 text-white">
                 <li className="flex items-start gap-3">
                   <Eye className="w-5 h-5 mt-0.5 text-muted-foreground" />
                   <span>Millions of streams, but fans are faceless numbers</span>
