@@ -10,10 +10,10 @@ const MarketOpportunityScene = () => {
   }, []);
 
   const marketStats = [
-    { value: "$100B+", label: "Creator Economy", icon: TrendingUp, color: "text-brand-primary" },
-    { value: "50M+", label: "Independent Artists", icon: Users, color: "text-brand-secondary" },
-    { value: "$28B", label: "Direct-to-Fan Market", icon: DollarSign, color: "text-brand-accent" },
-    { value: "4.4B", label: "Global Music Fans", icon: Globe, color: "text-success" },
+    { value: "$480B", label: "Creator Economy (2025)", icon: TrendingUp, color: "text-brand-primary" },
+    { value: "207M", label: "Global Content Creators", icon: Users, color: "text-brand-secondary" },
+    { value: "$5.9B", label: "Fan Engagement Platforms", icon: DollarSign, color: "text-brand-accent" },
+    { value: "162M", label: "US Creators (45M Pro)", icon: Globe, color: "text-success" },
   ];
 
   return (
@@ -22,11 +22,11 @@ const MarketOpportunityScene = () => {
         {/* Main Title */}
         <div className="text-center mb-16 scene-fade-in">
           <h1 className="heading-section mb-6">
-            A <span className="text-brand-primary">$100B+</span> Market Ready for Disruption
+            A <span className="text-brand-primary">$480B</span> Creator Economy Ready for Transformation
           </h1>
           <p className="text-cinematic max-w-4xl mx-auto">
-            We're unlocking a massive direct-to-fan market where millions of creators 
-            can finally monetize their most loyal supporters through meaningful engagement.
+            With 207M global creators and rapid growth in fan engagement platforms, 
+            Streamcentives is positioned to capture the shift from passive consumption to active, rewarded participation.
           </p>
         </div>
 
@@ -68,9 +68,9 @@ const MarketOpportunityScene = () => {
               <div className="flex items-start gap-4 p-4 bg-surface-elevated rounded-lg">
                 <div className="w-2 h-2 rounded-full bg-destructive mt-3"></div>
                 <div>
-                  <div className="font-semibold mb-1">Broken Revenue Streams</div>
+                  <div className="font-semibold mb-1">6.5 Month Revenue Gap</div>
                   <div className="text-sm text-muted-foreground">
-                    Artists earn $0.003-0.005 per stream while platforms keep 70%
+                    Average creator takes 6.5 months to earn their first dollar
                   </div>
                 </div>
               </div>
@@ -78,9 +78,9 @@ const MarketOpportunityScene = () => {
               <div className="flex items-start gap-4 p-4 bg-surface-elevated rounded-lg">
                 <div className="w-2 h-2 rounded-full bg-warning mt-3"></div>
                 <div>
-                  <div className="font-semibold mb-1">Anonymous Audiences</div>
+                  <div className="font-semibold mb-1">Platform Dependency</div>
                   <div className="text-sm text-muted-foreground">
-                    No direct connection between creators and their most loyal fans
+                    Creators lose 70% of revenue to intermediary platforms with no fan data
                   </div>
                 </div>
               </div>
@@ -88,9 +88,9 @@ const MarketOpportunityScene = () => {
               <div className="flex items-start gap-4 p-4 bg-surface-elevated rounded-lg">
                 <div className="w-2 h-2 rounded-full bg-muted-foreground mt-3"></div>
                 <div>
-                  <div className="font-semibold mb-1">Passive Experiences</div>
+                  <div className="font-semibold mb-1">Fragmented Monetization</div>
                   <div className="text-sm text-muted-foreground">
-                    Fan loyalty generates zero rewards or meaningful interaction
+                    No unified system for fan engagement, rewards, and direct-to-fan sales
                   </div>
                 </div>
               </div>
@@ -108,9 +108,9 @@ const MarketOpportunityScene = () => {
               <div className="flex items-start gap-4 p-4 bg-brand-primary/10 rounded-lg">
                 <div className="w-2 h-2 rounded-full bg-brand-primary mt-3"></div>
                 <div>
-                  <div className="font-semibold mb-1">Direct Monetization</div>
+                  <div className="font-semibold mb-1">Multi-Revenue XP System</div>
                   <div className="text-sm text-muted-foreground">
-                    Artists earn from engaged fans through XP-based rewards marketplace
+                    XP purchases, marketplace transactions, campaign fees, premium subscriptions
                   </div>
                 </div>
               </div>
@@ -118,9 +118,9 @@ const MarketOpportunityScene = () => {
               <div className="flex items-start gap-4 p-4 bg-brand-secondary/10 rounded-lg">
                 <div className="w-2 h-2 rounded-full bg-brand-secondary mt-3"></div>
                 <div>
-                  <div className="font-semibold mb-1">Data-Rich Relationships</div>
+                  <div className="font-semibold mb-1">Multi-Genre Network</div>
                   <div className="text-sm text-muted-foreground">
-                    Deep insights into fan behavior and preferences for targeted campaigns
+                    Sports (Derek's $160M network), Music (Markeith & Kofa), Content (Trev)
                   </div>
                 </div>
               </div>
@@ -128,9 +128,9 @@ const MarketOpportunityScene = () => {
               <div className="flex items-start gap-4 p-4 bg-brand-accent/10 rounded-lg">
                 <div className="w-2 h-2 rounded-full bg-brand-accent mt-3"></div>
                 <div>
-                  <div className="font-semibold mb-1">Gamified Engagement</div>
+                  <div className="font-semibold mb-1">AI-Powered Campaigns</div>
                   <div className="text-sm text-muted-foreground">
-                    Transform passive consumption into active, rewarded participation
+                    Smart campaign builder, content generation, and automated social posting
                   </div>
                 </div>
               </div>
@@ -139,31 +139,88 @@ const MarketOpportunityScene = () => {
         </div>
 
         {/* Market Timing */}
-        <div className="pitch-card p-8 text-center">
+        <div className="pitch-card p-8 text-center mb-16">
           <h3 className="text-2xl font-bold mb-6">Perfect Market Timing</h3>
           
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <div className="text-4xl font-black text-brand-primary mb-3">2024</div>
-              <div className="font-semibold mb-2">Creator Economy Boom</div>
+              <div className="text-4xl font-black text-brand-primary mb-3">2025</div>
+              <div className="font-semibold mb-2">Fan Engagement Boom</div>
               <div className="text-sm text-muted-foreground">
-                Independent artists seeking direct fan monetization
+                $5.9B market growing rapidly as creators seek direct fan monetization
               </div>
             </div>
 
             <div>
               <div className="text-4xl font-black text-brand-secondary mb-3">AI</div>
-              <div className="font-semibold mb-2">AI Revolution</div>
+              <div className="font-semibold mb-2">Automation Revolution</div>
               <div className="text-sm text-muted-foreground">
-                Personalization and automation enabling scalable engagement
+                Smart campaign builders and content generation scaling creator productivity
               </div>
             </div>
 
             <div>
-              <div className="text-4xl font-black text-brand-accent mb-3">Web3</div>
-              <div className="font-semibold mb-2">Digital Ownership</div>
+              <div className="text-4xl font-black text-brand-accent mb-3">46.7%</div>
+              <div className="font-semibold mb-2">Full-Time Creators</div>
               <div className="text-sm text-muted-foreground">
-                Fans ready to own and trade digital music collectibles
+                Nearly half of creators are full-time, needing reliable revenue streams
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Competitive Landscape Insight */}
+        <div className="grid lg:grid-cols-2 gap-12">
+          <div className="pitch-card p-8">
+            <h3 className="text-2xl font-bold mb-6">Emerging Competition</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-lg">
+                <div>
+                  <div className="font-semibold">FANtium</div>
+                  <div className="text-sm text-muted-foreground">Sports-focused investment platform</div>
+                </div>
+                <div className="text-xs text-brand-primary">Sports Only</div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-lg">
+                <div>
+                  <div className="font-semibold">TopFan</div>
+                  <div className="text-sm text-muted-foreground">Direct-to-consumer fan clubs</div>
+                </div>
+                <div className="text-xs text-brand-secondary">No XP System</div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-lg">
+                <div>
+                  <div className="font-semibold">FanHero</div>
+                  <div className="text-sm text-muted-foreground">Subscription-based content platform</div>
+                </div>
+                <div className="text-xs text-brand-accent">Content Only</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pitch-card p-8">
+            <h3 className="text-2xl font-bold mb-6">Streamcentives Advantage</h3>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 p-4 bg-success/10 rounded-lg">
+                <div className="w-3 h-3 bg-success rounded-full mt-2"></div>
+                <div>
+                  <div className="font-semibold text-success">Multi-Genre Platform</div>
+                  <div className="text-sm text-muted-foreground">Sports, music, content creators all unified</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 bg-success/10 rounded-lg">
+                <div className="w-3 h-3 bg-success rounded-full mt-2"></div>
+                <div>
+                  <div className="font-semibold text-success">XP-Based Economy</div>
+                  <div className="text-sm text-muted-foreground">Gamified engagement driving revenue</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 bg-success/10 rounded-lg">
+                <div className="w-3 h-3 bg-success rounded-full mt-2"></div>
+                <div>
+                  <div className="font-semibold text-success">Built MVP</div>
+                  <div className="text-sm text-muted-foreground">Ready to scale with team network access</div>
+                </div>
               </div>
             </div>
           </div>
