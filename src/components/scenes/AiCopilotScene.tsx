@@ -256,7 +256,7 @@ const AiCopilotScene = () => {
                 {capability.features.map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-3">
                     <div className={`w-2 h-2 rounded-full mt-2 ${capability.color.replace('text-', 'bg-')}`}></div>
-                    <span className="text-sm text-muted-foreground">{feature}</span>
+                    <span className="text-sm text-white">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -283,7 +283,7 @@ const AiCopilotScene = () => {
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold mb-1">{benefit.title}</div>
-                    <div className="text-sm text-muted-foreground mb-2">{benefit.description}</div>
+                    <div className="text-sm text-white mb-2">{benefit.description}</div>
                     <div className={`text-sm font-medium ${benefit.color}`}>{benefit.metric}</div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -309,7 +309,7 @@ const AiCopilotScene = () => {
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold mb-1">{benefit.title}</div>
-                    <div className="text-sm text-muted-foreground mb-2">{benefit.description}</div>
+                    <div className="text-sm text-white mb-2">{benefit.description}</div>
                     <div className={`text-sm font-medium ${benefit.color}`}>{benefit.experience}</div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />

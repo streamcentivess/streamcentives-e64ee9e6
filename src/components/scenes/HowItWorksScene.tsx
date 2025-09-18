@@ -207,7 +207,7 @@ const HowItWorksScene = () => {
                 {step.details.map((detail, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-xs">
                     <div className={`w-1.5 h-1.5 rounded-full ${step.color.replace('text-', 'bg-')}`}></div>
-                    <span className="text-muted-foreground">{detail}</span>
+                    <span className="text-white">{detail}</span>
                   </div>
                 ))}
               </div>

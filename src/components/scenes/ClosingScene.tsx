@@ -85,7 +85,7 @@ const ClosingScene = () => {
               </div>
               
               <h3 className="text-xl font-bold text-blue-400 mb-3">{point.title}</h3>
-              <p className="text-muted-foreground">{point.description}</p>
+              <p className="text-white">{point.description}</p>
             </div>
           ))}
         </div>

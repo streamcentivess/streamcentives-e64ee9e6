@@ -114,7 +114,7 @@ const FundingScene = () => {
                 <div key={item.category} className="flex items-center gap-3">
                   <div className={`w-4 h-4 rounded ${item.bgColor}`}></div>
                   <span className="font-medium">{item.category}</span>
-                  <span className="ml-auto text-sm text-muted-foreground">{item.amount}</span>
+                  <span className="ml-auto text-sm text-white">{item.amount}</span>
                 </div>
               ))}
             </div>
@@ -144,7 +144,7 @@ const FundingScene = () => {
                   {item.details.map((detail, i) => (
                     <div key={i} className="flex items-start gap-3 text-sm">
                       <div className={`w-2 h-2 rounded-full mt-2 ${item.color.replace('text-', 'bg-')}`}></div>
-                      <span className="text-muted-foreground">{detail}</span>
+                      <span className="text-white">{detail}</span>
                     </div>
                   ))}
                 </div>
@@ -267,8 +267,8 @@ const FundingScene = () => {
                 </div>
                 
                 <div className="font-bold mb-2">{milestone.milestone}</div>
-                <div className="text-sm text-muted-foreground mb-2">{milestone.timeline}</div>
-                <div className="text-xs text-muted-foreground">{milestone.funding}</div>
+                <div className="text-sm text-white mb-2">{milestone.timeline}</div>
+                <div className="text-xs text-white">{milestone.funding}</div>
               </div>
             ))}
           </div>

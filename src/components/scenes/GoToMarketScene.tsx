@@ -102,7 +102,7 @@ const GoToMarketScene = () => {
                 {phase.goals.map((goal, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className={`w-2 h-2 rounded-full mt-2 ${phase.color.replace('text-', 'bg-')}`}></div>
-                    <span className="text-sm text-muted-foreground">{goal}</span>
+                    <span className="text-sm text-white">{goal}</span>
                   </div>
                 ))}
               </div>

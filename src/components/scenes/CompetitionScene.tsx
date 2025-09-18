@@ -113,14 +113,14 @@ const CompetitionScene = () => {
           {competitors.map((competitor, index) => (
             <div key={competitor.name} className="pitch-card p-4 sm:p-6">
               <h3 className="text-lg sm:text-xl font-bold text-blue-400 mb-2">{competitor.name}</h3>
-              <p className="text-muted-foreground mb-4 text-sm">{competitor.description}</p>
+              <p className="text-white mb-4 text-sm">{competitor.description}</p>
               
               <div className="space-y-2">
                 <div className="text-sm font-medium text-destructive mb-2">Limitations:</div>
                 {competitor.limitations.map((limitation, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs sm:text-sm">
                     <XCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">{limitation}</span>
+                    <span className="text-white">{limitation}</span>
                   </div>
                 ))}
               </div>
@@ -154,7 +154,7 @@ const CompetitionScene = () => {
                 
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold mb-2 text-sm sm:text-base">{diff.title}</h4>
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-3">{diff.description}</p>
+                  <p className="text-xs sm:text-sm text-white mb-3">{diff.description}</p>
                   <div className="text-xs text-success font-medium">
                     ✓ {diff.competitive}
                   </div>

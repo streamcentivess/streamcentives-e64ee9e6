@@ -161,7 +161,7 @@ const TeamScene = () => {
                       {member.expertise.map((item, i) => (
                         <div key={i} className="flex items-start gap-2 sm:gap-3">
                           <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-secondary mt-2 flex-shrink-0"></div>
-                          <span className="text-xs sm:text-sm text-muted-foreground">{item}</span>
+                          <span className="text-xs sm:text-sm text-white">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -177,7 +177,7 @@ const TeamScene = () => {
                       {member.achievements.map((achievement, i) => (
                         <div key={i} className="flex items-start gap-2 sm:gap-3">
                           <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-brand-accent mt-2 flex-shrink-0"></div>
-                          <span className="text-xs sm:text-sm text-muted-foreground">{achievement}</span>
+                          <span className="text-xs sm:text-sm text-white">{achievement}</span>
                         </div>
                       ))}
                     </div>
@@ -205,11 +205,11 @@ const TeamScene = () => {
                   <h3 className="text-lg font-bold mb-1">{member.name}</h3>
                   <div className="text-sm font-semibold text-brand-primary mb-2">{member.title}</div>
                   {member.company && (
-                    <div className="text-xs text-muted-foreground mb-2">{member.company}</div>
+                    <div className="text-xs text-white mb-2">{member.company}</div>
                   )}
-                  <div className="text-xs font-medium text-muted-foreground mb-3">{member.expertise}</div>
+                  <div className="text-xs font-medium text-white mb-3">{member.expertise}</div>
                   {member.description && (
-                    <p className="text-xs text-muted-foreground">{member.description}</p>
+                    <p className="text-xs text-white">{member.description}</p>
                   )}
                 </div>
               </div>
@@ -246,8 +246,8 @@ const TeamScene = () => {
               </div>
               
               <h3 className="text-base sm:text-lg font-bold mb-2">{advisor.title}</h3>
-              <div className="text-xs sm:text-sm font-medium text-muted-foreground mb-3">{advisor.expertise}</div>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-4">{advisor.description}</p>
+              <div className="text-xs sm:text-sm font-medium text-white mb-3">{advisor.expertise}</div>
+              <p className="text-xs sm:text-sm text-white mb-4">{advisor.description}</p>
               
               <div className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
                 advisor.status === "Actively Hiring" ? 'bg-warning/20 text-warning' :
