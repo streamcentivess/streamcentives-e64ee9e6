@@ -74,9 +74,9 @@ const FundingScene = () => {
         <div className="text-center mb-16 scene-fade-in">
           <div className={`transition-all duration-1000 ${animateFunding ? 'scale-110' : 'scale-100'}`}>
             <div className="text-8xl font-black text-brand-primary mb-4">$1M</div>
-            <h1 className="heading-section mb-6">Seed Funding</h1>
+            <h1 className="heading-section text-blue-400 mb-6">Seed Funding</h1>
           </div>
-          <p className="text-cinematic max-w-4xl mx-auto">
+          <p className="text-cinematic text-white max-w-4xl mx-auto">
             Raising $1M to leverage our team's combined 500+ creator network across sports, music & content 
             to scale our proven MVP and achieve $350K MRR by Q1 2026.
           </p>
@@ -86,7 +86,7 @@ const FundingScene = () => {
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
           {/* Visual Breakdown */}
           <div className="pitch-card p-8">
-            <h3 className="text-2xl font-bold text-center mb-8">Fund Allocation</h3>
+            <h3 className="text-2xl font-bold text-blue-400 text-center mb-8">Fund Allocation</h3>
             
             {/* Pie Chart Style Breakdown */}
             <div className="relative w-64 h-64 mx-auto mb-8">

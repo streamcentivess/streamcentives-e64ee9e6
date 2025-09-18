@@ -158,10 +158,10 @@ const SolutionScene = () => {
       <div className="max-w-7xl mx-auto">
         {/* Main Title */}
         <div className="text-center mb-16 scene-fade-in">
-          <h1 className="heading-section mb-6">
+          <h1 className="heading-section text-blue-400 mb-6">
             The Complete <span className="text-brand-primary drop-shadow-[0_0_15px_hsl(var(--brand-primary))] animate-pulse">AI-Powered</span> Creator Economy
           </h1>
-          <p className="text-cinematic max-w-4xl mx-auto">
+          <p className="text-cinematic text-white max-w-4xl mx-auto">
             Streamcentives is the world's first comprehensive AI-native platform that transforms 
             passive fan consumption into active, rewarded engagement across sports, music, and content creation.
           </p>
@@ -184,14 +184,14 @@ const SolutionScene = () => {
                 <solution.icon className={`w-6 h-6 ${solution.color}`} />
               </div>
               
-              <h3 className="text-lg font-bold mb-2">{solution.title}</h3>
-              <p className="text-sm text-muted-foreground mb-4">{solution.description}</p>
+              <h3 className="text-lg font-bold text-blue-400 mb-2">{solution.title}</h3>
+              <p className="text-sm text-white mb-4">{solution.description}</p>
               
               <div className="space-y-2">
                 {solution.features.map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2 text-xs">
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${solution.color.replace('text-', 'bg-')}`}></div>
-                    <span className="text-muted-foreground">{feature}</span>
+                    <span className="text-white">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -213,7 +213,7 @@ const SolutionScene = () => {
                 <div className="w-12 h-12 bg-brand-primary/20 rounded-2xl flex items-center justify-center">
                   <capability.icon className="w-6 h-6 text-brand-primary" />
                 </div>
-                <h3 className="text-xl font-bold">{capability.category}</h3>
+                <h3 className="text-xl font-bold text-blue-400">{capability.category}</h3>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -223,8 +223,8 @@ const SolutionScene = () => {
                       <tool.icon className="w-4 h-4 text-brand-secondary" />
                     </div>
                     <div>
-                      <div className="font-semibold text-sm">{tool.name}</div>
-                      <div className="text-xs text-muted-foreground">{tool.desc}</div>
+                      <div className="font-semibold text-sm text-blue-400">{tool.name}</div>
+                      <div className="text-xs text-white">{tool.desc}</div>
                     </div>
                   </div>
                 ))}
@@ -235,7 +235,7 @@ const SolutionScene = () => {
 
         {/* Real-World Results */}
         <div className="pitch-card p-8 mb-16">
-          <h3 className="text-2xl font-bold text-center mb-8">Built & Ready to Scale</h3>
+          <h3 className="text-2xl font-bold text-blue-400 text-center mb-8">Built & Ready to Scale</h3>
           
           <div className="grid md:grid-cols-4 gap-6 mb-8">
             {realWorldResults.map((result, index) => (
@@ -244,8 +244,8 @@ const SolutionScene = () => {
                   <result.icon className={`w-8 h-8 ${result.color}`} />
                 </div>
                 <div className={`text-2xl font-black mb-2 ${result.color}`}>{result.metric}</div>
-                <div className="font-semibold mb-1">{result.label}</div>
-                <div className="text-sm text-muted-foreground">{result.description}</div>
+                <div className="font-semibold text-blue-400 mb-1">{result.label}</div>
+                <div className="text-sm text-white">{result.description}</div>
               </div>
             ))}
           </div>
@@ -255,7 +255,7 @@ const SolutionScene = () => {
         <div className="pitch-card p-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="text-3xl font-bold mb-6 flex items-center gap-3">
+              <h3 className="text-3xl font-bold text-blue-400 mb-6 flex items-center gap-3">
                 <Sparkles className="w-8 h-8 text-brand-primary" />
                 Live Platform in Action
               </h3>
@@ -265,7 +265,7 @@ const SolutionScene = () => {
                   <Bot className="w-6 h-6 text-brand-primary mt-1" />
                   <div>
                     <div className="font-semibold text-brand-primary">AI Campaign Builder</div>
-                    <div className="text-sm text-muted-foreground">Generate complete campaigns from simple prompts in seconds</div>
+                    <div className="text-sm text-white">Generate complete campaigns from simple prompts in seconds</div>
                   </div>
                 </div>
                 
@@ -273,7 +273,7 @@ const SolutionScene = () => {
                   <Target className="w-6 h-6 text-brand-secondary mt-1" />
                   <div>
                     <div className="font-semibold text-brand-secondary">Personalized Quests</div>
-                    <div className="text-sm text-muted-foreground">AI creates unique challenges for each fan based on behavior</div>
+                    <div className="text-sm text-white">AI creates unique challenges for each fan based on behavior</div>
                   </div>
                 </div>
                 
@@ -281,7 +281,7 @@ const SolutionScene = () => {
                   <TrendingUp className="w-6 h-6 text-success mt-1" />
                   <div>
                     <div className="font-semibold text-success">Multi-Revenue Streams</div>
-                    <div className="text-sm text-muted-foreground">XP purchases, campaigns, marketplace, subscriptions, data revenue share all live</div>
+                    <div className="text-sm text-white">XP purchases, campaigns, marketplace, subscriptions, data revenue share all live</div>
                   </div>
                 </div>
               </div>
@@ -293,8 +293,8 @@ const SolutionScene = () => {
                   <div className="w-8 h-8 bg-brand-accent rounded-full flex items-center justify-center text-xs font-bold text-white">AI</div>
                 </div>
                 <div>
-                  <div className="font-semibold">Ready for Launch</div>
-                  <div className="text-sm text-muted-foreground">Creators ready, revenue streams active, AI tools deployed</div>
+                  <div className="font-semibold text-blue-400">Ready for Launch</div>
+                  <div className="text-sm text-white">Creators ready, revenue streams active, AI tools deployed</div>
                 </div>
               </div>
             </div>
@@ -308,7 +308,7 @@ const SolutionScene = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-surface/30 via-transparent to-transparent rounded-2xl"></div>
               <div className="absolute bottom-4 left-4 right-4">
                 <div className="bg-surface/90 backdrop-blur-sm rounded-lg p-3">
-                  <div className="text-sm font-semibold text-center">Complete AI-Powered Creator Economy</div>
+                  <div className="text-sm font-semibold text-blue-400 text-center">Complete AI-Powered Creator Economy</div>
                 </div>
               </div>
             </div>

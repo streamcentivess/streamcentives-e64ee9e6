@@ -98,10 +98,10 @@ const CompetitionScene = () => {
       <div className="max-w-7xl mx-auto w-full">
         {/* Main Title */}
         <div className="text-center mb-8 sm:mb-16 scene-fade-in">
-          <h1 className="heading-section mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl px-2">
+          <h1 className="heading-section text-blue-400 mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl px-2">
             No One Else Combines <span className="text-brand-primary">Our Technology</span>
           </h1>
-          <p className="text-cinematic max-w-4xl mx-auto text-sm sm:text-base px-2">
+          <p className="text-cinematic text-white max-w-4xl mx-auto text-sm sm:text-base px-2">
             While others focus on single aspects of creator-fan relationships, 
             Streamcentives uniquely combines multi-platform tracking, AI automation, 
             and gamified engagement in one integrated platform.
@@ -112,7 +112,7 @@ const CompetitionScene = () => {
         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-16 transition-all duration-1000 ${showComparison ? 'opacity-100' : 'opacity-0'}`}>
           {competitors.map((competitor, index) => (
             <div key={competitor.name} className="pitch-card p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold mb-2">{competitor.name}</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-blue-400 mb-2">{competitor.name}</h3>
               <p className="text-muted-foreground mb-4 text-sm">{competitor.description}</p>
               
               <div className="space-y-2">
@@ -130,7 +130,7 @@ const CompetitionScene = () => {
 
         {/* Streamcentives Advantages */}
         <div className="pitch-card p-4 sm:p-8 mb-8 sm:mb-16">
-          <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <h3 className="text-xl sm:text-2xl font-bold text-blue-400 text-center mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <CheckCircle className="w-6 sm:w-8 h-6 sm:h-8 text-success" />
             <span className="text-center">Streamcentives Competitive Moat</span>
           </h3>
@@ -166,7 +166,7 @@ const CompetitionScene = () => {
 
         {/* Feature Comparison Table */}
         <div className="pitch-card p-4 sm:p-8 mb-8 sm:mb-16">
-          <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Feature Comparison</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-blue-400 text-center mb-6 sm:mb-8">Feature Comparison</h3>
           
           <div className="overflow-x-auto -mx-4 sm:mx-0">
             <table className="w-full min-w-[600px]">

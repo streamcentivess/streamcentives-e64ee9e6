@@ -60,11 +60,11 @@ const ClosingScene = () => {
             </div>
           </div>
           
-          <h1 className="heading-section mb-6">
+          <h1 className="heading-section text-blue-400 mb-6">
             Let's Build the Future of <span className="text-brand-primary">Fan Engagement</span>
           </h1>
           
-          <p className="text-cinematic max-w-4xl mx-auto mb-8">
+          <p className="text-cinematic text-white max-w-4xl mx-auto mb-8">
             Join us in creating a world where every stream, every share, every moment of fandom 
             becomes a meaningful connection between artists and their most passionate supporters.
           </p>
@@ -84,7 +84,7 @@ const ClosingScene = () => {
                 <point.icon className={`w-8 h-8 ${point.color}`} />
               </div>
               
-              <h3 className="text-xl font-bold mb-3">{point.title}</h3>
+              <h3 className="text-xl font-bold text-blue-400 mb-3">{point.title}</h3>
               <p className="text-muted-foreground">{point.description}</p>
             </div>
           ))}
@@ -99,7 +99,7 @@ const ClosingScene = () => {
               </div>
             </div>
 
-            <h2 className="text-3xl font-bold mb-6">Ready to Transform Music Together?</h2>
+            <h2 className="text-3xl font-bold text-blue-400 mb-6">Ready to Transform Music Together?</h2>
             
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               We're looking for visionary investors who understand the power of 

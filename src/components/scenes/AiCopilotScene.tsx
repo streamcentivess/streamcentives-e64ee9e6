@@ -147,10 +147,10 @@ const AiCopilotScene = () => {
       <div className="max-w-7xl mx-auto">
         {/* Main Title */}
         <div className="text-center mb-16 scene-fade-in">
-          <h1 className="heading-section mb-6">
+          <h1 className="heading-section text-blue-400 mb-6">
             Beyond Engagement — <span className="text-brand-primary">AI-Powered</span> Creator Economy
           </h1>
-          <p className="text-cinematic max-w-4xl mx-auto">
+          <p className="text-cinematic text-white max-w-4xl mx-auto">
             Streamcentives is the world's first AI-native fan engagement platform, automating everything 
             from campaign creation to personalized fan experiences at scale.
           </p>
@@ -162,7 +162,7 @@ const AiCopilotScene = () => {
             <div className="w-12 h-12 bg-brand-primary/20 rounded-2xl flex items-center justify-center">
               <Brain className="w-6 h-6 text-brand-primary animate-pulse" />
             </div>
-            <h3 className="text-2xl font-bold">Live AI Demo</h3>
+            <h3 className="text-2xl font-bold text-blue-400">Live AI Demo</h3>
           </div>
 
           <div className="bg-surface-elevated rounded-xl p-6">
@@ -249,7 +249,7 @@ const AiCopilotScene = () => {
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${capability.color.replace('text-', 'bg-')}/20`}>
                   <capability.icon className={`w-6 h-6 ${capability.color}`} />
                 </div>
-                <h3 className="text-xl font-bold">{capability.category}</h3>
+                <h3 className="text-xl font-bold text-blue-400">{capability.category}</h3>
               </div>
               
               <div className="space-y-3">
@@ -272,7 +272,7 @@ const AiCopilotScene = () => {
               <div className="w-12 h-12 bg-brand-primary/20 rounded-2xl flex items-center justify-center">
                 <Crown className="w-6 h-6 text-brand-primary" />
               </div>
-              <h3 className="text-2xl font-bold">Creator AI Benefits</h3>
+              <h3 className="text-2xl font-bold text-blue-400">Creator AI Benefits</h3>
             </div>
 
             <div className="space-y-6">
@@ -298,7 +298,7 @@ const AiCopilotScene = () => {
               <div className="w-12 h-12 bg-brand-secondary/20 rounded-2xl flex items-center justify-center">
                 <Star className="w-6 h-6 text-brand-secondary" />
               </div>
-              <h3 className="text-2xl font-bold">Fan AI Experience</h3>
+              <h3 className="text-2xl font-bold text-blue-400">Fan AI Experience</h3>
             </div>
 
             <div className="space-y-6">
@@ -321,7 +321,7 @@ const AiCopilotScene = () => {
 
         {/* AI Technology Stack */}
         <div className="pitch-card p-8 mt-16 text-center">
-          <h3 className="text-2xl font-bold mb-8">Powered by Cutting-Edge AI</h3>
+          <h3 className="text-2xl font-bold text-blue-400 mb-8">Powered by Cutting-Edge AI</h3>
           
           <div className="grid md:grid-cols-4 gap-6">
             <div>

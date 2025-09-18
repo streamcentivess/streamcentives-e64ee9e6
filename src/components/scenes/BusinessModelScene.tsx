@@ -62,10 +62,10 @@ const BusinessModelScene = () => {
       <div className="max-w-7xl mx-auto">
         {/* Main Title */}
         <div className="text-center mb-16 scene-fade-in">
-          <h1 className="heading-section mb-6">
+          <h1 className="heading-section text-blue-400 mb-6">
             Multiple <span className="text-brand-primary">Revenue Streams</span>
           </h1>
-          <p className="text-cinematic max-w-4xl mx-auto">
+          <p className="text-cinematic text-white max-w-4xl mx-auto">
             Diversified monetization strategy with recurring SaaS revenue, 
             transaction-based marketplace fees, premium brand partnerships, and B2B licensing.
           </p>
@@ -87,8 +87,8 @@ const BusinessModelScene = () => {
                 </div>
                 
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-2">{stream.title}</h3>
-                  <p className="text-muted-foreground mb-3">{stream.description}</p>
+                  <h3 className="text-xl font-bold text-blue-400 mb-2">{stream.title}</h3>
+                  <p className="text-white mb-3">{stream.description}</p>
                   <div className={`text-lg font-black ${stream.color}`}>
                     {stream.revenue}
                   </div>
@@ -99,7 +99,7 @@ const BusinessModelScene = () => {
                 {stream.details.map((detail, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm">
                     <div className={`w-2 h-2 rounded-full ${stream.color.replace('text-', 'bg-')}`}></div>
-                    <span className="text-muted-foreground">{detail}</span>
+                    <span className="text-white">{detail}</span>
                   </div>
                 ))}
               </div>
@@ -109,14 +109,14 @@ const BusinessModelScene = () => {
 
         {/* Year One Bootstrap Strategy */}
         <div className="pitch-card p-8 mb-16">
-          <h3 className="text-2xl font-bold text-center mb-8">Year One: Bootstrap to Traction</h3>
-          <p className="text-center text-muted-foreground mb-8 max-w-3xl mx-auto">
+          <h3 className="text-2xl font-bold text-blue-400 text-center mb-8">Year One: Bootstrap to Traction</h3>
+          <p className="text-center text-white mb-8 max-w-3xl mx-auto">
             What we can achieve in the first 6 months without investor funding - proving market fit and revenue potential
           </p>
           
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             <div className="space-y-6">
-              <h4 className="text-xl font-semibold text-brand-primary">First 6 Months (Self-Funded)</h4>
+              <h4 className="text-xl font-semibold text-blue-400">First 6 Months (Self-Funded)</h4>
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
                   <span className="font-medium">Target Artists</span>
@@ -138,7 +138,7 @@ const BusinessModelScene = () => {
             </div>
             
             <div className="space-y-6">
-              <h4 className="text-xl font-semibold text-brand-secondary">Months 6-12 (Proven Traction)</h4>
+              <h4 className="text-xl font-semibold text-blue-400">Months 6-12 (Proven Traction)</h4>
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-4 bg-surface-elevated rounded-lg">
                   <span className="font-medium">Target Artists</span>
@@ -161,19 +161,19 @@ const BusinessModelScene = () => {
           </div>
           
           <div className="bg-brand-primary/5 rounded-xl p-6 border border-brand-primary/20">
-            <h4 className="text-lg font-semibold mb-4 text-center">Bootstrap Strategy</h4>
+            <h4 className="text-lg font-semibold text-blue-400 mb-4 text-center">Bootstrap Strategy</h4>
             <div className="grid md:grid-cols-3 gap-4 text-sm">
               <div className="text-center">
-                <div className="font-medium text-brand-primary mb-2">Lean Operations</div>
-                <p className="text-muted-foreground">Core team, MVP features, direct artist outreach</p>
+                <div className="font-medium text-blue-400 mb-2">Lean Operations</div>
+                <p className="text-white">Core team, MVP features, direct artist outreach</p>
               </div>
               <div className="text-center">
-                <div className="font-medium text-brand-primary mb-2">Revenue Focus</div>
-                <p className="text-muted-foreground">XP purchases, marketplace fees, subscription upgrades</p>
+                <div className="font-medium text-blue-400 mb-2">Revenue Focus</div>
+                <p className="text-white">XP purchases, marketplace fees, subscription upgrades</p>
               </div>
               <div className="text-center">
-                <div className="font-medium text-brand-primary mb-2">Proof Points</div>
-                <p className="text-muted-foreground">User retention, revenue growth, artist satisfaction</p>
+                <div className="font-medium text-blue-400 mb-2">Proof Points</div>
+                <p className="text-white">User retention, revenue growth, artist satisfaction</p>
               </div>
             </div>
           </div>
@@ -181,7 +181,7 @@ const BusinessModelScene = () => {
 
         {/* Revenue Projections */}
         <div className="pitch-card p-8 mb-16">
-          <h3 className="text-2xl font-bold text-center mb-8">5-Year Revenue Projection</h3>
+          <h3 className="text-2xl font-bold text-blue-400 text-center mb-8">5-Year Revenue Projection</h3>
           
           <div className="grid md:grid-cols-5 gap-6">
             {[
@@ -200,8 +200,8 @@ const BusinessModelScene = () => {
                     {projection.revenue}
                   </div>
                   <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground">{projection.artists}</div>
-                    <div className="text-sm text-muted-foreground">{projection.fans}</div>
+                    <div className="text-sm text-white">{projection.artists}</div>
+                    <div className="text-sm text-white">{projection.fans}</div>
                   </div>
                 </div>
                 
@@ -225,9 +225,9 @@ const BusinessModelScene = () => {
             <div className="w-16 h-16 bg-brand-primary/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <CreditCard className="w-8 h-8 text-brand-primary" />
             </div>
-            <h4 className="font-bold mb-2">Low CAC</h4>
+            <h4 className="font-bold text-blue-400 mb-2">Low CAC</h4>
             <div className="text-2xl font-black text-brand-primary mb-2">$25</div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white">
               Customer Acquisition Cost via artist network effects
             </p>
           </div>
@@ -236,9 +236,9 @@ const BusinessModelScene = () => {
             <div className="w-16 h-16 bg-brand-secondary/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <Repeat className="w-8 h-8 text-brand-secondary" />
             </div>
-            <h4 className="font-bold mb-2">High LTV</h4>
+            <h4 className="font-bold text-blue-400 mb-2">High LTV</h4>
             <div className="text-2xl font-black text-brand-secondary mb-2">$1,200</div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white">
               Lifetime Value from recurring subscriptions + transactions
             </p>
           </div>
@@ -247,9 +247,9 @@ const BusinessModelScene = () => {
             <div className="w-16 h-16 bg-success/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <Megaphone className="w-8 h-8 text-success" />
             </div>
-            <h4 className="font-bold mb-2">Strong Margins</h4>
+            <h4 className="font-bold text-blue-400 mb-2">Strong Margins</h4>
             <div className="text-2xl font-black text-success mb-2">75%</div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white">
               Gross margins on SaaS and marketplace transactions
             </p>
           </div>

@@ -26,18 +26,18 @@ const HeroScene = () => {
             </div>
           </div>
           
-          <h1 className="heading-hero mb-8">
+          <h1 className="heading-hero text-blue-400 mb-8">
             Stream<span className="text-brand-accent">centives</span>
           </h1>
           
-          <p className="text-cinematic max-w-3xl mx-auto mb-12">
+          <p className="text-cinematic text-white max-w-3xl mx-auto mb-12">
             The future of fan engagement, powered by AI.
           </p>
           
           {/* Subtitle with typewriter effect */}
           <div className="flex justify-center items-center gap-4 text-lg text-muted-foreground">
             <div className="w-12 h-0.5 bg-brand-primary"></div>
-            <span className="font-light tracking-wide">
+            <span className="font-light tracking-wide text-white">
               Transform Fandom Into Rewards
             </span>
             <div className="w-12 h-0.5 bg-brand-primary"></div>
