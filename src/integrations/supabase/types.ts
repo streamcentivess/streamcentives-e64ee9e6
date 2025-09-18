@@ -2964,6 +2964,7 @@ export type Database = {
           merch_store_connected_at: string | null
           merch_store_platform: string | null
           merch_store_url: string | null
+          onboarding_completed: boolean | null
           profile_boost_score: number | null
           spotify_connected: boolean | null
           total_boosts_received: number | null
@@ -2992,6 +2993,7 @@ export type Database = {
           merch_store_connected_at?: string | null
           merch_store_platform?: string | null
           merch_store_url?: string | null
+          onboarding_completed?: boolean | null
           profile_boost_score?: number | null
           spotify_connected?: boolean | null
           total_boosts_received?: number | null
@@ -3020,6 +3022,7 @@ export type Database = {
           merch_store_connected_at?: string | null
           merch_store_platform?: string | null
           merch_store_url?: string | null
+          onboarding_completed?: boolean | null
           profile_boost_score?: number | null
           spotify_connected?: boolean | null
           total_boosts_received?: number | null

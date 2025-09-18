@@ -62,10 +62,10 @@ const AuthCallback = () => {
             // YouTube connections go through /youtube/callback instead
           }
 
-          // Check if user already has a complete profile
+          // Check if user has completed onboarding
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('username, display_name, user_id')
+            .select('onboarding_completed, user_id')
             .eq('user_id', data.session.user.id)
             .maybeSingle();
 
@@ -74,8 +74,8 @@ const AuthCallback = () => {
             console.error('Profile fetch error:', profileError);
           }
 
-          // Check if profile exists and has username (complete profile)
-          if (profile && (profile.username || profile.display_name)) {
+          // Check if user has completed onboarding
+          if (profile && profile.onboarding_completed) {
             // Existing user with profile, redirect to universal profile
             toast({
               title: "Welcome back!",

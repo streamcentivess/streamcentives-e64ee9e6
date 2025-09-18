@@ -73,6 +73,7 @@ const ProfileSetup = () => {
             age: profileData.age,
             location: profileData.location,
             interests: profileData.interests,
+            onboarding_completed: true,
           },
           { onConflict: 'user_id' }
         )
