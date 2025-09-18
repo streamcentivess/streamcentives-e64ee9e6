@@ -332,7 +332,7 @@ const ProfileSetup = () => {
           </form>
         </CardContent>
       </Card>
-      <WelcomeModal isOpen={showWelcomeModal} onClose={handleWelcomeModalClose} />
+      <WelcomeModal isOpen={showWelcomeModal} onClose={handleWelcomeModalClose} role={selectedRole} />
     </div>
   );
 };
