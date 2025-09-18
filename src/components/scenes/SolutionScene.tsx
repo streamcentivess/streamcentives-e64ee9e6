@@ -159,7 +159,7 @@ const SolutionScene = () => {
         {/* Main Title */}
         <div className="text-center mb-16 scene-fade-in">
           <h1 className="heading-section mb-6">
-            The Complete <span className="text-brand-primary">AI-Powered</span> Creator Economy
+            The Complete <span className="text-brand-primary drop-shadow-[0_0_15px_hsl(var(--brand-primary))] animate-pulse">AI-Powered</span> Creator Economy
           </h1>
           <p className="text-cinematic max-w-4xl mx-auto">
             Streamcentives is the world's first comprehensive AI-native platform that transforms 
