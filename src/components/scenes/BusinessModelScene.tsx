@@ -17,7 +17,7 @@ const BusinessModelScene = () => {
       revenue: "$9.99-500/month",
       color: "text-brand-primary",
       bgColor: "bg-brand-primary/10",
-      details: ["Creator Basic: $9.99/mo", "Creator Pro: $19.99/mo", "Label Enterprise: $500/mo"]
+      details: ["Creator Basic: Free", "Creator Pro: $19.99/mo", "Label Enterprise: $500/mo"]
     },
     {
       icon: Coins,
