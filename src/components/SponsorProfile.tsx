@@ -1,0 +1,217 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { Building2, Globe, DollarSign } from "lucide-react";
+
+interface SponsorProfileProps {
+  existingProfile?: any;
+  onProfileCreated?: () => void;
+  onProfileUpdated?: () => void;
+}
+
+const industries = [
+  "Technology", "Fashion & Beauty", "Food & Beverage", "Fitness & Health",
+  "Gaming", "Travel", "Automotive", "Finance", "Entertainment", "Education",
+  "Real Estate", "Retail", "Healthcare", "Sports", "Music", "Other"
+];
+
+export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpdated }: SponsorProfileProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    company_name: "",
+    industry: "",
+    website_url: "",
+    company_logo_url: "",
+    company_description: "",
+    budget_range_min: "",
+    budget_range_max: ""
+  });
+
+  useEffect(() => {
+    if (existingProfile) {
+      setFormData({
+        company_name: existingProfile.company_name || "",
+        industry: existingProfile.industry || "",
+        website_url: existingProfile.website_url || "",
+        company_logo_url: existingProfile.company_logo_url || "",
+        company_description: existingProfile.company_description || "",
+        budget_range_min: existingProfile.budget_range_min?.toString() || "",
+        budget_range_max: existingProfile.budget_range_max?.toString() || ""
+      });
+    }
+  }, [existingProfile]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const profileData = {
+        user_id: user.id,
+        company_name: formData.company_name,
+        industry: formData.industry,
+        website_url: formData.website_url,
+        company_logo_url: formData.company_logo_url,
+        company_description: formData.company_description,
+        budget_range_min: formData.budget_range_min ? parseInt(formData.budget_range_min) : null,
+        budget_range_max: formData.budget_range_max ? parseInt(formData.budget_range_max) : null,
+      };
+
+      const { error } = existingProfile
+        ? await supabase
+            .from('sponsor_profiles')
+            .update(profileData)
+            .eq('id', existingProfile.id)
+        : await supabase
+            .from('sponsor_profiles')
+            .insert([profileData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: existingProfile ? "Profile updated successfully" : "Sponsor profile created successfully"
+      });
+
+      if (existingProfile && onProfileUpdated) {
+        onProfileUpdated();
+      } else if (!existingProfile && onProfileCreated) {
+        onProfileCreated();
+      }
+    } catch (error) {
+      console.error('Error saving sponsor profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save profile. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            {existingProfile ? "Edit Sponsor Profile" : "Create Your Sponsor Profile"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="company_name">Company Name *</Label>
+                <Input
+                  id="company_name"
+                  value={formData.company_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                  required
+                  placeholder="Your company name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="industry">Industry</Label>
+                <Select 
+                  value={formData.industry} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, industry: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {industries.map(industry => (
+                      <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="website_url">Website URL</Label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="website_url"
+                    value={formData.website_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, website_url: e.target.value }))}
+                    placeholder="https://your-company.com"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="company_logo_url">Company Logo URL</Label>
+                <Input
+                  id="company_logo_url"
+                  value={formData.company_logo_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_logo_url: e.target.value }))}
+                  placeholder="https://your-logo-url.com/logo.png"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="budget_range_min">Monthly Budget Range (Min) $</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="budget_range_min"
+                    type="number"
+                    value={formData.budget_range_min}
+                    onChange={(e) => setFormData(prev => ({ ...prev, budget_range_min: e.target.value }))}
+                    placeholder="1000"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="budget_range_max">Monthly Budget Range (Max) $</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="budget_range_max"
+                    type="number"
+                    value={formData.budget_range_max}
+                    onChange={(e) => setFormData(prev => ({ ...prev, budget_range_max: e.target.value }))}
+                    placeholder="10000"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="company_description">Company Description</Label>
+              <Textarea
+                id="company_description"
+                value={formData.company_description}
+                onChange={(e) => setFormData(prev => ({ ...prev, company_description: e.target.value }))}
+                placeholder="Tell creators about your company, your values, and what kind of partnerships you're looking for..."
+                rows={4}
+              />
+            </div>
+
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? "Saving..." : existingProfile ? "Update Profile" : "Create Profile"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -1710,6 +1710,54 @@ export type Database = {
         }
         Relationships: []
       }
+      escrow_payments: {
+        Row: {
+          amount_cents: number
+          auto_refund_at: string | null
+          created_at: string
+          creator_id: string
+          held_at: string | null
+          id: string
+          offer_id: string
+          refunded_at: string | null
+          released_at: string | null
+          sponsor_id: string
+          status: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          auto_refund_at?: string | null
+          created_at?: string
+          creator_id: string
+          held_at?: string | null
+          id?: string
+          offer_id: string
+          refunded_at?: string | null
+          released_at?: string | null
+          sponsor_id: string
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          auto_refund_at?: string | null
+          created_at?: string
+          creator_id?: string
+          held_at?: string | null
+          id?: string
+          offer_id?: string
+          refunded_at?: string | null
+          released_at?: string | null
+          sponsor_id?: string
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_attendees: {
         Row: {
           attended: boolean | null
@@ -2665,6 +2713,39 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_negotiations: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          offer_id: string
+          proposed_amount_cents: number | null
+          proposed_terms: Json | null
+          sender_id: string
+          sender_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          offer_id: string
+          proposed_amount_cents?: number | null
+          proposed_terms?: Json | null
+          sender_id: string
+          sender_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          offer_id?: string
+          proposed_amount_cents?: number | null
+          proposed_terms?: Json | null
+          sender_id?: string
+          sender_type?: string
+        }
+        Relationships: []
+      }
       organization_members: {
         Row: {
           created_at: string | null
@@ -2892,6 +2973,36 @@ export type Database = {
           share_date?: string
           share_type?: string
           xp_earned?: number
+        }
+        Relationships: []
+      }
+      post_tags: {
+        Row: {
+          approved: boolean | null
+          created_at: string
+          id: string
+          post_id: string
+          tag_type: string | null
+          tagged_by_user_id: string
+          tagged_user_id: string
+        }
+        Insert: {
+          approved?: boolean | null
+          created_at?: string
+          id?: string
+          post_id: string
+          tag_type?: string | null
+          tagged_by_user_id: string
+          tagged_user_id: string
+        }
+        Update: {
+          approved?: boolean | null
+          created_at?: string
+          id?: string
+          post_id?: string
+          tag_type?: string | null
+          tagged_by_user_id?: string
+          tagged_user_id?: string
         }
         Relationships: []
       }
@@ -3962,6 +4073,102 @@ export type Database = {
           post_url?: string | null
           posted_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      sponsor_offers: {
+        Row: {
+          campaign_duration_days: number | null
+          created_at: string
+          creator_id: string
+          deliverables: Json | null
+          expires_at: string | null
+          id: string
+          offer_amount_cents: number
+          offer_description: string
+          offer_title: string
+          responded_at: string | null
+          sponsor_id: string
+          status: string | null
+          terms: string | null
+          updated_at: string
+        }
+        Insert: {
+          campaign_duration_days?: number | null
+          created_at?: string
+          creator_id: string
+          deliverables?: Json | null
+          expires_at?: string | null
+          id?: string
+          offer_amount_cents: number
+          offer_description: string
+          offer_title: string
+          responded_at?: string | null
+          sponsor_id: string
+          status?: string | null
+          terms?: string | null
+          updated_at?: string
+        }
+        Update: {
+          campaign_duration_days?: number | null
+          created_at?: string
+          creator_id?: string
+          deliverables?: Json | null
+          expires_at?: string | null
+          id?: string
+          offer_amount_cents?: number
+          offer_description?: string
+          offer_title?: string
+          responded_at?: string | null
+          sponsor_id?: string
+          status?: string | null
+          terms?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sponsor_profiles: {
+        Row: {
+          budget_range_max: number | null
+          budget_range_min: number | null
+          company_description: string | null
+          company_logo_url: string | null
+          company_name: string
+          created_at: string
+          id: string
+          industry: string | null
+          updated_at: string
+          user_id: string
+          verified: boolean | null
+          website_url: string | null
+        }
+        Insert: {
+          budget_range_max?: number | null
+          budget_range_min?: number | null
+          company_description?: string | null
+          company_logo_url?: string | null
+          company_name: string
+          created_at?: string
+          id?: string
+          industry?: string | null
+          updated_at?: string
+          user_id: string
+          verified?: boolean | null
+          website_url?: string | null
+        }
+        Update: {
+          budget_range_max?: number | null
+          budget_range_min?: number | null
+          company_description?: string | null
+          company_logo_url?: string | null
+          company_name?: string
+          created_at?: string
+          id?: string
+          industry?: string | null
+          updated_at?: string
+          user_id?: string
+          verified?: boolean | null
+          website_url?: string | null
         }
         Relationships: []
       }
