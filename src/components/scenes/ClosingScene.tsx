@@ -101,7 +101,7 @@ const ClosingScene = () => {
 
             <h2 className="text-3xl font-bold text-blue-400 mb-6">Ready to Transform Music Together?</h2>
             
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
               We're looking for visionary investors who understand the power of 
               combining AI, gamification, and music to create the next generation 
               of creator-fan relationships.
