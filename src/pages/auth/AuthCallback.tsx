@@ -9,6 +9,59 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        const params = new URLSearchParams(window.location.search);
+        const provider = params.get('provider');
+        const code = params.get('code');
+        const state = params.get('state');
+
+        // Handle custom Google OAuth flow
+        if (provider === 'google_custom' && code) {
+          const storedState = sessionStorage.getItem('google_oauth_state');
+          if (storedState && state && storedState !== state) {
+            toast({
+              title: 'Authentication Error',
+              description: 'State mismatch. Please try signing in again.',
+              variant: 'destructive',
+            });
+            navigate('/auth/signin');
+            return;
+          }
+
+          // Exchange code for Google tokens via Edge Function
+          const { data: exchangeData, error: exchangeError } = await supabase.functions.invoke('google-oauth-handler', {
+            body: { action: 'exchange_code', code, origin: window.location.origin }
+          });
+
+          if (exchangeError || !exchangeData?.id_token) {
+            console.error('Google code exchange failed:', exchangeError || exchangeData);
+            toast({
+              title: 'Authentication Error',
+              description: 'Google sign-in failed. Please try again.',
+              variant: 'destructive',
+            });
+            navigate('/auth/signin');
+            return;
+          }
+
+          // Complete sign-in with Supabase using Google ID token
+          const { data: idpData, error: idpError } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: exchangeData.id_token,
+          });
+
+          if (idpError) {
+            console.error('Supabase sign-in with ID token failed:', idpError);
+            toast({
+              title: 'Authentication Error',
+              description: idpError.message,
+              variant: 'destructive',
+            });
+            navigate('/auth/signin');
+            return;
+          }
+        }
+
+        // Proceed with standard session handling
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -56,41 +109,25 @@ const AuthCallback = () => {
             }
           }
 
-          // Handle YouTube OAuth connection via Google provider with YouTube scopes
-          if (data.session.user.app_metadata?.provider === 'google' && data.session.provider_token) {
-            // This is handled by dedicated YouTube OAuth flow now
-            // YouTube connections go through /youtube/callback instead
-          }
+          // Handle YouTube via dedicated flow (no-op here)
 
-          // Check if user has completed onboarding
+          // Check onboarding status
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('onboarding_completed, user_id')
             .eq('user_id', data.session.user.id)
             .maybeSingle();
 
-          // If there's an error fetching profile or no profile exists, treat as new user
           if (profileError) {
             console.error('Profile fetch error:', profileError);
           }
 
-          // Check if user has completed onboarding
           if (profile && profile.onboarding_completed) {
-            // Existing user with profile, redirect to universal profile
-            toast({
-              title: "Welcome back!",
-              description: "You have been signed in successfully.",
-            });
-            
+            toast({ title: 'Welcome back!', description: 'You have been signed in successfully.' });
             window.history.replaceState(null, '', '/universal-profile');
             navigate('/universal-profile', { replace: true });
           } else {
-            // New user or incomplete profile, redirect to onboarding
-            toast({
-              title: "Welcome to Streamcentives!",
-              description: "Let's set up your profile.",
-            });
-            
+            toast({ title: 'Welcome to Streamcentives!', description: "Let's set up your profile." });
             window.history.replaceState(null, '', '/role-selection');
             navigate('/role-selection', { replace: true });
           }
@@ -100,9 +137,9 @@ const AuthCallback = () => {
       } catch (error) {
         console.error('Unexpected auth callback error:', error);
         toast({
-          title: "Authentication Error",
-          description: "An unexpected error occurred during authentication.",
-          variant: "destructive"
+          title: 'Authentication Error',
+          description: 'An unexpected error occurred during authentication.',
+          variant: 'destructive',
         });
         navigate('/auth/signin');
       }

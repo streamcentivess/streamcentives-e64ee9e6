@@ -167,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Get Google OAuth URL from our custom handler
       const { data: urlData, error: urlError } = await supabase.functions.invoke('google-oauth-handler', {
-        body: { action: 'get_auth_url' }
+        body: { action: 'get_auth_url', origin: window.location.origin }
       });
 
       if (urlError || !urlData?.auth_url) {
@@ -177,7 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Store state for security verification
       sessionStorage.setItem('google_oauth_state', urlData.state);
       
-      // Redirect to Google OAuth
+      // Redirect to Google OAuth (consent should show your domain)
       window.location.href = urlData.auth_url;
     } catch (error: any) {
       console.error('Google sign-in error:', error);
