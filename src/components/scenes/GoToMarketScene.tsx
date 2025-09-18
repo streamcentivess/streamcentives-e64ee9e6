@@ -122,7 +122,7 @@ const GoToMarketScene = () => {
               <div className="bg-surface-elevated rounded-lg p-4">
                 <div className="font-semibold mb-2">Revenue Share Model</div>
                 <div className="text-sm text-muted-foreground">
-                  Artists keep 80% of direct fan revenue + performance bonuses
+                  Creators keep 80% of direct fan revenue + performance bonuses
                 </div>
               </div>
               
