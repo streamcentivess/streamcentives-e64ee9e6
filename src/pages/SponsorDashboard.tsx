@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, DollarSign, TrendingUp, Plus, MessageSquare } from "lucide-react";
+import { Building2, Users, DollarSign, TrendingUp, Plus, MessageSquare, User } from "lucide-react";
 import { SponsorProfile } from "@/components/SponsorProfile";
 import { SponsorPosts } from "@/components/SponsorPosts";
 import { SponsorOffers } from "@/components/SponsorOffers";
+import { Link } from "react-router-dom";
 
 export default function SponsorDashboard() {
   const { user } = useAuth();
@@ -57,10 +58,18 @@ export default function SponsorDashboard() {
             <h1 className="text-3xl font-bold text-foreground">Sponsor Dashboard</h1>
             <p className="text-muted-foreground">Welcome back, {sponsorProfile.company_name}</p>
           </div>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New Campaign
-          </Button>
+          <div className="flex gap-3">
+            <Button asChild variant="outline">
+              <Link to="/sponsor-profile">
+                <User className="h-4 w-4 mr-2" />
+                View Profile
+              </Link>
+            </Button>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Campaign
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
