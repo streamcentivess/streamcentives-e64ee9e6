@@ -38,7 +38,7 @@ const TeamScene = () => {
       bgColor: "bg-brand-accent/10", 
       image: "/lovable-uploads/f8f02f72-0dbe-4034-b5af-0619db9a9016.png",
       expertise: [
-        "Certified NFL agent & wealth management expert",
+        "Certified NFL agent & wealth management expert at Equity Sports",
         "Negotiated $117M+ in player contracts",
         "Dual certifications as broker and investment advisor",
         "Wall Street precision in financial strategy"
@@ -46,7 +46,7 @@ const TeamScene = () => {
       achievements: [
         "Closed $60M contract in winter 2025",
         "Managed $134M-$160M AUM at Merrill Lynch",
-        "IPO advisory specialist with proven track record"
+        "Currently working as sports agent at Equity Sports"
       ]
     },
     {
