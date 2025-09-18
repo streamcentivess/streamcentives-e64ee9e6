@@ -281,7 +281,7 @@ const SolutionScene = () => {
                   <TrendingUp className="w-6 h-6 text-success mt-1" />
                   <div>
                     <div className="font-semibold text-success">Multi-Revenue Streams</div>
-                    <div className="text-sm text-muted-foreground">XP purchases, campaigns, marketplace, subscriptions all live</div>
+                    <div className="text-sm text-muted-foreground">XP purchases, campaigns, marketplace, subscriptions, data revenue share all live</div>
                   </div>
                 </div>
               </div>
