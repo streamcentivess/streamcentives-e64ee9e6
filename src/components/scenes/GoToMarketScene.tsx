@@ -15,7 +15,7 @@ const GoToMarketScene = () => {
     {
       title: "Phase 1: Validation",
       subtitle: "De-Risk Launch",
-      duration: "Q1-Q2 2025",
+      duration: "Q1-Q2 2026",
       icon: Target,
       color: "text-brand-primary",
       bgColor: "bg-brand-primary/10",
@@ -29,7 +29,7 @@ const GoToMarketScene = () => {
     {
       title: "Phase 2: Niche Scale",
       subtitle: "Targeted Growth",
-      duration: "Q3-Q4 2025",
+      duration: "Q3-Q4 2026",
       icon: Users,
       color: "text-brand-secondary", 
       bgColor: "bg-brand-secondary/10",
@@ -43,7 +43,7 @@ const GoToMarketScene = () => {
     {
       title: "Phase 3: Market Leadership",
       subtitle: "Global Expansion",
-      duration: "2026+",
+      duration: "2027+",
       icon: Rocket,
       color: "text-brand-accent",
       bgColor: "bg-brand-accent/10", 
