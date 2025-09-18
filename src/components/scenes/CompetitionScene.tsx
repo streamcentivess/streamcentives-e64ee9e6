@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Zap, Shield, Bot, Database, CheckCircle, XCircle } from "lucide-react";
+import { Zap, Shield, Bot, Database, CheckCircle, XCircle, DollarSign, Smartphone, Link, Calendar } from "lucide-react";
 
 const CompetitionScene = () => {
   const [showComparison, setShowComparison] = useState(false);
@@ -62,6 +62,30 @@ const CompetitionScene = () => {
       competitive: "Manual processes require constant creator attention"
     },
     {
+      icon: DollarSign,
+      title: "XP Purchase Revenue Model",
+      description: "Platform & creator-specific XP with revenue sharing (70-90% to creators)",
+      competitive: "No platform offers dual XP economy with creator revenue sharing"
+    },
+    {
+      icon: Link,
+      title: "Smart Link Technology",
+      description: "Dynamic links with embedded actions and XP rewards",
+      competitive: "Traditional link-in-bio tools lack interactive engagement"
+    },
+    {
+      icon: Smartphone,
+      title: "Mobile-First Experience",
+      description: "PWA with haptic feedback and native mobile features",
+      competitive: "Most creator tools are desktop-focused web applications"
+    },
+    {
+      icon: Calendar,
+      title: "Content Automation Suite",
+      description: "AI-powered content scheduling and cross-platform posting",
+      competitive: "Creators manage multiple platforms manually"
+    },
+    {
       icon: Shield,
       title: "Data Moat",
       description: "Proprietary engagement patterns and fan behavior insights",
@@ -115,15 +139,15 @@ const CompetitionScene = () => {
             {differentiators.map((diff, index) => (
               <div key={diff.title} className="flex gap-3 sm:gap-4">
                 <div className={`w-10 sm:w-12 h-10 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  index === 0 ? 'bg-brand-primary/20' :
-                  index === 1 ? 'bg-brand-secondary/20' :
-                  index === 2 ? 'bg-brand-accent/20' :
+                  index % 4 === 0 ? 'bg-brand-primary/20' :
+                  index % 4 === 1 ? 'bg-brand-secondary/20' :
+                  index % 4 === 2 ? 'bg-brand-accent/20' :
                   'bg-success/20'
                 }`}>
                   <diff.icon className={`w-5 sm:w-6 h-5 sm:h-6 ${
-                    index === 0 ? 'text-brand-primary' :
-                    index === 1 ? 'text-brand-secondary' :
-                    index === 2 ? 'text-brand-accent' :
+                    index % 4 === 0 ? 'text-brand-primary' :
+                    index % 4 === 1 ? 'text-brand-secondary' :
+                    index % 4 === 2 ? 'text-brand-accent' :
                     'text-success'
                   }`} />
                 </div>
@@ -160,9 +184,17 @@ const CompetitionScene = () => {
                   { feature: "Multi-platform Tracking", values: [false, false, false, true] },
                   { feature: "Gamified XP System", values: [false, false, false, true] },
                   { feature: "AI Campaign Builder", values: [false, false, false, true] },
+                  { feature: "XP Purchase Revenue Model", values: [false, false, false, true] },
+                  { feature: "Creator Revenue Sharing", values: [false, true, false, true] },
                   { feature: "Reward Marketplace", values: [false, true, false, true] },
-                  { feature: "Fan Analytics", values: [false, false, false, true] },
-                  { feature: "Automated Engagement", values: [false, false, false, true] },
+                  { feature: "Fan Analytics Dashboard", values: [false, false, false, true] },
+                  { feature: "Smart Link Technology", values: [false, false, false, true] },
+                  { feature: "Content Automation", values: [false, false, false, true] },
+                  { feature: "Voice/Video Messages", values: [true, false, false, true] },
+                  { feature: "Brand Partnership Tools", values: [false, false, false, true] },
+                  { feature: "API Licensing Model", values: [false, false, false, true] },
+                  { feature: "Mobile PWA Experience", values: [true, false, false, true] },
+                  { feature: "Real-time Notifications", values: [true, false, false, true] },
                 ].map((row, index) => (
                   <tr key={row.feature} className="border-b border-border/50">
                     <td className="p-2 sm:p-4 font-medium text-xs sm:text-sm">{row.feature}</td>
