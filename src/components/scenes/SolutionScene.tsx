@@ -39,7 +39,7 @@ const SolutionScene = () => {
     },
     {
       title: "Multi-Revenue Ecosystem", 
-      description: "Four distinct revenue streams for sustainable creator income",
+      description: "Five distinct revenue streams for sustainable creator income",
       icon: TrendingUp,
       color: "text-brand-secondary",
       bgColor: "bg-brand-secondary", 
@@ -47,7 +47,8 @@ const SolutionScene = () => {
         "XP purchases ($5-50 per transaction, 30% platform fee)",
         "Campaign fees ($100-1K per campaign)",
         "Marketplace transactions (15% commission)",
-        "Premium subscriptions ($29/month per creator)"
+        "Premium subscriptions ($29/month per creator)",
+        "User data revenue share (80% to users, opt-in)"
       ]
     },
     {
