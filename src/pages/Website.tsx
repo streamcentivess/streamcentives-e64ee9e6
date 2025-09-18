@@ -586,7 +586,7 @@ const Website = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-              Redeem Your
+              Join Our
               <span className="block bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">First Reward?</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
