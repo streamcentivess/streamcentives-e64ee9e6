@@ -166,7 +166,7 @@
   }
 
   .text-cinematic {
-    @apply text-xl lg:text-2xl font-light text-muted-foreground leading-relaxed;
+    @apply text-xl lg:text-2xl font-light text-white leading-relaxed;
   }
 
   /* Modern Card Components for Auth */
