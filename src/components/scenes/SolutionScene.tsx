@@ -131,9 +131,9 @@ const SolutionScene = () => {
       color: "text-brand-primary"
     },
     {
-      metric: "4 Revenue Streams",
+      metric: "5 Revenue Streams",
       label: "Monetization Options", 
-      description: "XP, campaigns, marketplace, subscriptions",
+      description: "XP, campaigns, marketplace, subscriptions, user data share",
       icon: TrendingUp,
       color: "text-brand-secondary"
     },
