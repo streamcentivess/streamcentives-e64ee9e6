@@ -96,29 +96,29 @@ const ProblemScene = () => {
                 Fans Feel Invisible
               </h3>
               
-              <ul className="space-y-3 text-muted-foreground">
+              <ul className="space-y-3 text-white">
                 <li className="flex items-start gap-3">
-                  <Eye className="w-5 h-5 mt-0.5 text-muted-foreground opacity-50" />
+                  <Eye className="w-5 h-5 mt-0.5 text-blue-400" />
                   <span>Support goes unnoticed and unrewarded</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Users className="w-5 h-5 mt-0.5 text-muted-foreground opacity-50" />
+                  <Users className="w-5 h-5 mt-0.5 text-purple-400" />
                   <span>Passive streaming experience with no interaction</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Zap className="w-5 h-5 mt-0.5 text-muted-foreground opacity-50" />
+                  <Zap className="w-5 h-5 mt-0.5 text-yellow-400" />
                   <span>Loyalty never translates to meaningful rewards</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Users className="w-5 h-5 mt-0.5 text-muted-foreground opacity-50" />
+                  <Users className="w-5 h-5 mt-0.5 text-purple-400" />
                   <span>54% want interactive experiences like live Q&As beyond passive viewing</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Zap className="w-5 h-5 mt-0.5 text-muted-foreground opacity-50" />
+                  <Zap className="w-5 h-5 mt-0.5 text-yellow-400" />
                   <span>Only 1-2% of fans financially support creators despite willingness to pay</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Eye className="w-5 h-5 mt-0.5 text-muted-foreground opacity-50" />
+                  <Eye className="w-5 h-5 mt-0.5 text-blue-400" />
                   <span>60% willing to pay for exclusive content but lack meaningful offerings</span>
                 </li>
               </ul>
