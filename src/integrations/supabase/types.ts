@@ -686,6 +686,101 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_upload_files: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          error_message: string | null
+          file_size: number | null
+          file_url: string | null
+          id: string
+          job_id: string | null
+          mime_type: string | null
+          original_name: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          error_message?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          job_id?: string | null
+          mime_type?: string | null
+          original_name: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          error_message?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          job_id?: string | null
+          mime_type?: string | null
+          original_name?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_upload_files_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_upload_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_upload_jobs: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          creator_id: string
+          failed_files: number
+          id: string
+          job_name: string
+          metadata: Json | null
+          processed_files: number
+          status: string
+          tags: string[] | null
+          total_files: number
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          creator_id: string
+          failed_files?: number
+          id?: string
+          job_name: string
+          metadata?: Json | null
+          processed_files?: number
+          status?: string
+          tags?: string[] | null
+          total_files?: number
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          creator_id?: string
+          failed_files?: number
+          id?: string
+          job_name?: string
+          metadata?: Json | null
+          processed_files?: number
+          status?: string
+          tags?: string[] | null
+          total_files?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       campaign_assets: {
         Row: {
           asset_data: Json
@@ -4057,6 +4152,54 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_content: {
+        Row: {
+          content: string
+          content_type: string
+          created_at: string | null
+          creator_id: string
+          hashtags: string[] | null
+          id: string
+          media_urls: string[] | null
+          metadata: Json | null
+          platforms: string[]
+          scheduled_time: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          content_type: string
+          created_at?: string | null
+          creator_id: string
+          hashtags?: string[] | null
+          id?: string
+          media_urls?: string[] | null
+          metadata?: Json | null
+          platforms: string[]
+          scheduled_time: string
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          content_type?: string
+          created_at?: string | null
+          creator_id?: string
+          hashtags?: string[] | null
+          id?: string
+          media_urls?: string[] | null
+          metadata?: Json | null
+          platforms?: string[]
+          scheduled_time?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       security_audit_logs: {
         Row: {
           action: string
@@ -6040,6 +6183,10 @@ export type Database = {
           xp_type_param?: Database["public"]["Enums"]["xp_type"]
         }
         Returns: Json
+      }
+      increment_template_usage: {
+        Args: { template_id: string }
+        Returns: undefined
       }
       mark_notifications_read: {
         Args: { notification_ids: string[] }
