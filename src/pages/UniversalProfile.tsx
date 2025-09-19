@@ -190,13 +190,14 @@ const UniversalProfile = () => {
   };
 
   const fetchXpBalance = async () => {
-    if (!user?.id) return;
+    if (!profile?.user_id && !user?.id) return;
     try {
+      const targetUserId = profile?.user_id || user?.id;
       const { data, error } = await supabase
         .from('user_xp_balances')
         .select('current_xp')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', targetUserId)
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching XP balance:', error);
@@ -247,11 +248,34 @@ const UniversalProfile = () => {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('profiles')
-        .select('*')
-        .eq(finalUserId ? 'user_id' : 'username', finalUserId || finalUsername)
-        .single();
+      // Determine query based on whether we have userId or username
+      let query;
+      let targetUserId = finalUserId;
+      
+      if (finalUserId) {
+        query = supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', finalUserId)
+          .maybeSingle();
+      } else if (finalUsername) {
+        query = supabase
+          .from('profiles')
+          .select('*')
+          .eq('username', finalUsername)
+          .maybeSingle();
+      } else if (user?.id) {
+        // Default to current user if no specific user requested
+        targetUserId = user.id;
+        query = supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+      } else {
+        setLoading(false);
+        return;
+      }
 
       const { data: profileData, error: profileError } = await query;
 
@@ -280,8 +304,10 @@ const UniversalProfile = () => {
 
         if (sponsorProfile) {
           setProfileOwnerRole('sponsor');
+        } else if (profileData.spotify_connected) {
+          setProfileOwnerRole('creator');
         } else {
-          setProfileOwnerRole('fan'); // Default to fan
+          setProfileOwnerRole('fan');
         }
       } else {
         // If no profile data, navigate to create profile if it's the user's own profile
@@ -306,12 +332,12 @@ const UniversalProfile = () => {
         description: 'An unexpected error occurred while loading the profile.',
         variant: 'destructive'
       });
-    } finally {
-      setLoading(false);
-    }
-  };
+     } finally {
+       setLoading(false);
+     }
+   };
 
-  return (
+   return (
     <div className="min-h-screen bg-background">
       {/* Algorithmic Suggestion Popup - only show for profile owners */}
       {showSuggestion && currentSuggestion && isOwnProfile && (
