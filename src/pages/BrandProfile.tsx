@@ -763,7 +763,7 @@ export default function BrandProfile() {
             ) : (
               <>
                 <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold">Supporters</h2>
+                  <h2 className="text-2xl font-bold">Brand Supporters</h2>
                   <Badge variant="outline">{supporters.length} Supporters</Badge>
                 </div>
                 
