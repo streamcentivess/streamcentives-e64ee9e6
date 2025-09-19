@@ -221,6 +221,7 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
       {currentUsers.length > 0 ? (
         <div className="space-y-3">
           {currentUsers.map((userEntry) => {
+            console.log('Rendering user entry:', userEntry);
             const profile = userEntry.profiles;
             const userId = userEntry.supporter_id || userEntry.hater_id || userEntry.follower_id;
             

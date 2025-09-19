@@ -272,6 +272,8 @@ export default function BrandProfile() {
         .order('created_at', { ascending: false })
         .limit(20);
 
+      console.log('Raw followers data:', followersData);
+
       // Map the data to match UserSearchAndManage expectations
       const mappedSupporters = (followersData || []).map(item => ({
         supporter_id: item.follower_id,
@@ -279,6 +281,7 @@ export default function BrandProfile() {
         profiles: item.profiles
       }));
 
+      console.log('Mapped supporters:', mappedSupporters);
       setSupporters(mappedSupporters);
 
       // If own profile, also get blocked users
