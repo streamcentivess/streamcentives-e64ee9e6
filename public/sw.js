@@ -1,71 +1,98 @@
-const CACHE_NAME = 'streamcentives-v1';
-const urlsToCache = [
-  '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/streamcentivesloveable.png',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
-  '/manifest.json'
-];
+const CACHE_NAME = 'streamcentives-v3';
 
-self.addEventListener('install', function(event) {
-  // Perform install steps
+self.addEventListener('install', (event) => {
+  // Activate new SW immediately
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => (key === CACHE_NAME ? Promise.resolve() : caches.delete(key))));
+      await self.clients.claim();
+    })()
   );
 });
 
-self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
+function isScriptRequest(request) {
+  const url = new URL(request.url);
+  return (
+    request.destination === 'script' ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.includes('/node_modules/.vite/deps/') ||
+    url.pathname.includes('/assets/')
+  );
+}
 
-        return fetch(event.request).then(
-          function(response) {
-            // Check if we received a valid response
-            if(!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // IMPORTANT: Clone the response. A response is a stream
-            // and because we want the browser to consume the response
-            // as well as the cache consuming the response, we need
-            // to clone it so we have two streams.
-            var responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(function(cache) {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          }
-        );
-      }
+function isStaticAsset(request) {
+  const url = new URL(request.url);
+  const sameOrigin = url.origin === self.location.origin;
+  return (
+    sameOrigin && (
+      url.pathname.endsWith('.css') ||
+      url.pathname.endsWith('.png') ||
+      url.pathname.endsWith('.jpg') ||
+      url.pathname.endsWith('.jpeg') ||
+      url.pathname.endsWith('.webp') ||
+      url.pathname.endsWith('.svg') ||
+      url.pathname.endsWith('.ico') ||
+      url.pathname.endsWith('.json') ||
+      url.pathname.startsWith('/lovable-uploads/') ||
+      url.pathname === '/' ||
+      url.pathname === '/manifest.json'
     )
   );
-});
+}
 
-self.addEventListener('activate', function(event) {
-  var cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+async function networkFirst(event) {
+  try {
+    const response = await fetch(event.request);
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(event.request, response.clone());
+    return response;
+  } catch (err) {
+    const cached = await caches.match(event.request);
+    if (cached) return cached;
+    throw err;
+  }
+}
+
+async function cacheFirst(event) {
+  const cached = await caches.match(event.request);
+  if (cached) return cached;
+  const response = await fetch(event.request);
+  const cache = await caches.open(CACHE_NAME);
+  cache.put(event.request, response.clone());
+  return response;
+}
+
+self.addEventListener('fetch', (event) => {
+  // Only handle GET
+  if (event.request.method !== 'GET') return;
+
+  if (isScriptRequest(event.request)) {
+    // Network-first for JS and module chunks to avoid stale React duplicates
+    event.respondWith(networkFirst(event));
+    return;
+  }
+
+  if (isStaticAsset(event.request)) {
+    // Cache-first for static assets
+    event.respondWith(cacheFirst(event));
+    return;
+  }
+
+  // Default: try network, fallback to cache
+  event.respondWith(
+    (async () => {
+      try {
+        return await fetch(event.request);
+      } catch {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        throw new Error('Network error and no cache');
+      }
+    })()
   );
 });
