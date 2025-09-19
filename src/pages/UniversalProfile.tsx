@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, UserX, MessageCircle, Search, Share2, Mail, Heart, DollarSign, Link2, Building2 } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, UserX, MessageCircle, Search, Share2, Mail, Heart, DollarSign, Link2, Building2, ExternalLink, ShoppingCart } from 'lucide-react';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { supabase } from '@/integrations/supabase/client';
 import { PostsGrid } from '@/components/PostsGrid';
@@ -82,6 +82,9 @@ const UniversalProfile = () => {
     profile: Profile | null;
   }>({ show: false, profile: null });
   const [joinedCampaigns, setJoinedCampaigns] = useState<any[]>([]);
+  const [marketplaceItems, setMarketplaceItems] = useState<any[]>([]);
+  const [redemptionHistory, setRedemptionHistory] = useState<any[]>([]);
+  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
   const unreadCount = useUnreadMessages();
 
   // Pull-to-refresh state
@@ -200,6 +203,57 @@ const UniversalProfile = () => {
       supabase.removeChannel(channel);
     };
    }, [profile?.user_id, finalUserId, user?.id]);
+
+  // Fetch marketplace data
+  useEffect(() => {
+    fetchMarketplaceItems();
+    if (profile?.user_id || user?.id) {
+      fetchRedemptionHistory();
+    }
+  }, [profile?.user_id, user?.id]);
+
+  // Set up real-time updates for marketplace
+  useEffect(() => {
+    const rewardsChannel = supabase
+      .channel('rewards-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'rewards'
+      }, () => {
+        fetchMarketplaceItems();
+      })
+      .subscribe();
+
+    const listingsChannel = supabase
+      .channel('listings-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'marketplace_listings'
+      }, () => {
+        fetchMarketplaceItems();
+      })
+      .subscribe();
+
+    const redemptionsChannel = supabase
+      .channel('redemptions-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'reward_redemptions',
+        filter: `user_id=eq.${profile?.user_id || user?.id || ''}`
+      }, () => {
+        fetchRedemptionHistory();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(rewardsChannel);
+      supabase.removeChannel(listingsChannel);
+      supabase.removeChannel(redemptionsChannel);
+    };
+  }, [profile?.user_id, user?.id]);
 
   const checkProfileOwnerRole = async () => {
     if (!profile?.user_id) return;
@@ -653,6 +707,123 @@ const UniversalProfile = () => {
       console.error('Error checking follower count:', error);
       return false;
     }
+  };
+
+  // Fetch marketplace items  
+  const fetchMarketplaceItems = async () => {
+    setMarketplaceLoading(true);
+    try {
+      // Fetch available rewards and marketplace listings
+      const [rewardsResult, listingsResult] = await Promise.all([
+        supabase
+          .from('rewards')
+          .select(`
+            *,
+            profiles!rewards_creator_id_fkey(username, display_name)
+          `)
+          .eq('is_active', true)
+          .gte('quantity_available', 1)
+          .order('created_at', { ascending: false })
+          .limit(6),
+        
+        supabase
+          .from('marketplace_listings')
+          .select(`
+            *,
+            reward_redemptions!marketplace_listings_reward_redemption_id_fkey(
+              reward_id,
+              rewards!reward_redemptions_reward_id_fkey(
+                title,
+                description,
+                image_url,
+                xp_cost,
+                cash_price
+              )
+            )
+          `)
+          .eq('is_active', true)
+          .eq('is_sold', false)
+          .order('created_at', { ascending: false })
+          .limit(6)
+      ]);
+
+      const items = [];
+      
+      // Add rewards as marketplace items
+      if (rewardsResult.data) {
+        rewardsResult.data.forEach(reward => {
+          items.push({
+            id: reward.id,
+            type: 'reward',
+            title: reward.title,
+            description: reward.description,
+            image_url: reward.image_url,
+            xp_cost: reward.xp_cost,
+            cash_price: reward.cash_price,
+            creator: reward.profiles
+          });
+        });
+      }
+      
+      // Add marketplace listings
+      if (listingsResult.data) {
+        listingsResult.data.forEach(listing => {
+          const reward = listing.reward_redemptions?.rewards;
+          if (reward) {
+            items.push({
+              id: listing.id,
+              type: 'listing',
+              title: reward.title,
+              description: reward.description,
+              image_url: reward.image_url,
+              xp_cost: listing.asking_price_xp,
+              cash_price: listing.asking_price_cents ? listing.asking_price_cents / 100 : null
+            });
+          }
+        });
+      }
+
+      setMarketplaceItems(items);
+    } catch (error) {
+      console.error('Error fetching marketplace items:', error);
+    } finally {
+      setMarketplaceLoading(false);
+    }
+  };
+
+  // Fetch user's redemption history
+  const fetchRedemptionHistory = async () => {
+    const targetUserId = profile?.user_id || user?.id;
+    if (!targetUserId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('reward_redemptions')
+        .select(`
+          *,
+          rewards!reward_redemptions_reward_id_fkey(
+            title,
+            description,
+            image_url
+          )
+        `)
+        .eq('user_id', targetUserId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching redemption history:', error);
+        return;
+      }
+
+      setRedemptionHistory(data || []);
+    } catch (error) {
+      console.error('Error fetching redemption history:', error);
+    }
+  };
+
+  // Navigate to marketplace
+  const navigateToMarketplace = () => {
+    navigate('/marketplace');
   };
 
   // Handle adding a hater 
@@ -2133,92 +2304,172 @@ const UniversalProfile = () => {
                     </TabsList>
                     
                     <TabsContent value="marketplace" className="mt-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* Placeholder marketplace items */}
-                        <div className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                          <div className="aspect-square bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg mb-3 flex items-center justify-center">
-                            <Trophy className="h-8 w-8 text-primary" />
-                          </div>
-                          <h3 className="font-medium mb-1">Exclusive Badge</h3>
-                          <p className="text-sm text-muted-foreground mb-2">Show your supporter status</p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">500 XP</span>
-                            <Button size="sm">Redeem</Button>
-                          </div>
+                      <div className="space-y-4">
+                        {/* Browse Full Marketplace Button */}
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">Available Rewards</h3>
+                          <Button 
+                            onClick={navigateToMarketplace}
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            Browse All
+                          </Button>
                         </div>
-                        
-                        <div className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                          <div className="aspect-square bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg mb-3 flex items-center justify-center">
-                            <Star className="h-8 w-8 text-accent" />
+
+                        {marketplaceLoading ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[...Array(3)].map((_, i) => (
+                              <div key={i} className="p-4 border rounded-lg animate-pulse">
+                                <div className="aspect-square bg-muted/50 rounded-lg mb-3"></div>
+                                <div className="h-4 bg-muted/50 rounded mb-2"></div>
+                                <div className="h-3 bg-muted/30 rounded mb-3"></div>
+                                <div className="flex items-center justify-between">
+                                  <div className="h-3 bg-muted/30 rounded w-16"></div>
+                                  <div className="h-8 bg-muted/30 rounded w-20"></div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          <h3 className="font-medium mb-1">VIP Access</h3>
-                          <p className="text-sm text-muted-foreground mb-2">Early access to new content</p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">1000 XP</span>
-                            <Button size="sm">Redeem</Button>
+                        ) : marketplaceItems.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {marketplaceItems.map((item) => (
+                              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                                {item.image_url ? (
+                                  <div className="aspect-square rounded-lg mb-3 overflow-hidden">
+                                    <img 
+                                      src={item.image_url} 
+                                      alt={item.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="aspect-square bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg mb-3 flex items-center justify-center">
+                                    <Gift className="h-8 w-8 text-primary" />
+                                  </div>
+                                )}
+                                <h3 className="font-medium mb-1">{item.title}</h3>
+                                <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                  {item.description}
+                                </p>
+                                {item.creator && (
+                                  <p className="text-xs text-muted-foreground mb-2">
+                                    by {item.creator.display_name || item.creator.username}
+                                  </p>
+                                )}
+                                <div className="flex items-center justify-between">
+                                  <div className="flex flex-col">
+                                    {item.xp_cost && (
+                                      <span className="text-sm font-medium">{item.xp_cost} XP</span>
+                                    )}
+                                    {item.cash_price && (
+                                      <span className="text-xs text-muted-foreground">
+                                        ${item.cash_price.toFixed(2)}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    onClick={navigateToMarketplace}
+                                    className="flex items-center gap-1"
+                                  >
+                                    <ShoppingCart className="h-3 w-3" />
+                                    View
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                        
-                        <div className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                          <div className="aspect-square bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-lg mb-3 flex items-center justify-center">
-                            <Heart className="h-8 w-8 text-secondary" />
+                        ) : (
+                          <div className="text-center py-8">
+                            <Gift className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+                            <p className="text-muted-foreground mb-4">No rewards available right now</p>
+                            <Button 
+                              onClick={navigateToMarketplace}
+                              variant="outline"
+                            >
+                              Check Full Marketplace
+                            </Button>
                           </div>
-                          <h3 className="font-medium mb-1">Special Shoutout</h3>
-                          <p className="text-sm text-muted-foreground mb-2">Personal message from creator</p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">2000 XP</span>
-                            <Button size="sm">Redeem</Button>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     </TabsContent>
                     
                     <TabsContent value="history" className="mt-6">
                       <div className="space-y-4">
-                        {/* Redemption History */}
-                        <div className="border rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Trophy className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <h3 className="font-medium">Exclusive Badge</h3>
-                                <Badge variant="outline" className="text-xs">Redeemed</Badge>
+                        {redemptionHistory.length > 0 ? (
+                          redemptionHistory.map((redemption) => (
+                            <div key={redemption.id} className="border rounded-lg p-4">
+                              <div className="flex items-start gap-3">
+                                {redemption.rewards?.image_url ? (
+                                  <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                                    <img 
+                                      src={redemption.rewards.image_url} 
+                                      alt={redemption.rewards.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Gift className="h-6 w-6 text-primary" />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <h3 className="font-medium">{redemption.rewards?.title}</h3>
+                                    <Badge 
+                                      variant={redemption.status === 'completed' ? 'default' : 'outline'} 
+                                      className="text-xs"
+                                    >
+                                      {redemption.status}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    {redemption.rewards?.description}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    Redeemed on {new Date(redemption.created_at).toLocaleDateString()}
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    {redemption.xp_spent && (
+                                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                                        {redemption.xp_spent} XP
+                                      </span>
+                                    )}
+                                    {redemption.amount_paid && (
+                                      <span className="text-xs bg-green-500/10 text-green-600 px-2 py-1 rounded">
+                                        ${redemption.amount_paid}
+                                      </span>
+                                    )}
+                                    <Button size="sm" variant="outline" className="text-xs">
+                                      View Details
+                                    </Button>
+                                  </div>
+                                </div>
                               </div>
-                              <p className="text-sm text-muted-foreground mb-2">Redeemed on March 15, 2024</p>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">500 XP</span>
-                                <Button size="sm" variant="outline" className="text-xs">View Details</Button>
-                              </div>
                             </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <Trophy className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+                            <p className="text-muted-foreground mb-4">
+                              {isOwnProfile 
+                                ? "You haven't redeemed any rewards yet" 
+                                : "This user hasn't redeemed any rewards yet"
+                              }
+                            </p>
+                            {isOwnProfile && (
+                              <Button 
+                                onClick={navigateToMarketplace}
+                                variant="outline"
+                              >
+                                Browse Rewards
+                              </Button>
+                            )}
                           </div>
-                        </div>
-                        
-                        <div className="border rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Star className="h-6 w-6 text-accent" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <h3 className="font-medium">VIP Access</h3>
-                                <Badge className="text-xs">Active</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground mb-2">Activated on March 10, 2024</p>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded">1000 XP</span>
-                                <Button size="sm" variant="outline" className="text-xs">Manage</Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Empty state if no history */}
-                        <div className="text-center py-8 opacity-50">
-                          <Gift className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-muted-foreground">No more reward history</p>
-                        </div>
+                        )}
                       </div>
                     </TabsContent>
                   </Tabs>
