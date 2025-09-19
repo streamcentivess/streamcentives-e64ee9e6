@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building2, Globe, DollarSign, Users, Briefcase, Calendar, Star } from 'lucide-react';
+import { Building2, Globe, DollarSign, Users, Briefcase, Calendar, Star, Edit, TrendingUp, Target, Award, ArrowRight, Mail, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
 interface SponsorProfile {
@@ -35,6 +35,7 @@ interface SponsorOffer {
 
 export default function SponsorProfileView() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<SponsorProfile | null>(null);
   const [offers, setOffers] = useState<SponsorOffer[]>([]);
@@ -210,155 +211,336 @@ export default function SponsorProfileView() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-6">
-      {/* Header Card */}
-      <Card>
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
-            <Avatar className="w-20 h-20">
-              <AvatarImage 
-                src={profile.company_logo_url} 
-                alt={profile.company_name}
-              />
-              <AvatarFallback>
-                <Building2 className="h-10 w-10" />
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="flex-1 space-y-2">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-muted/20">
+      <div className="max-w-7xl mx-auto p-4 space-y-8">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-primary p-8 text-white shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70" />
+          <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+              <Avatar className="w-24 h-24 border-4 border-white/20 shadow-xl">
+                <AvatarImage 
+                  src={profile.company_logo_url} 
+                  alt={profile.company_name}
+                />
+                <AvatarFallback className="bg-white/10 text-white text-2xl">
+                  <Building2 className="h-12 w-12" />
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="space-y-3">
                 <div>
-                  <h1 className="text-2xl font-bold">{profile.company_name}</h1>
-                  <div className="flex items-center gap-4 text-muted-foreground">
+                  <h1 className="text-4xl font-bold mb-2">{profile.company_name}</h1>
+                  <div className="flex flex-wrap items-center gap-4">
                     {profile.industry && (
-                      <Badge variant="secondary" className="text-sm">
+                      <Badge className="bg-white/20 text-white border-white/30 text-sm">
                         <Briefcase className="h-3 w-3 mr-1" />
                         {profile.industry}
                       </Badge>
                     )}
-                    <span className="flex items-center gap-1 text-sm">
-                      <Calendar className="h-3 w-3" />
-                      Joined {format(new Date(profile.created_at), 'MMM yyyy')}
+                    <span className="flex items-center gap-2 text-white/90 text-sm">
+                      <Calendar className="h-4 w-4" />
+                      Partner since {format(new Date(profile.created_at), 'MMM yyyy')}
                     </span>
                   </div>
                 </div>
-                
-                {profile.website_url && (
-                  <Button variant="outline" asChild className="mt-4 md:mt-0">
-                    <a href={profile.website_url} target="_blank" rel="noopener noreferrer">
-                      <Globe className="h-4 w-4 mr-2" />
-                      Visit Website
-                    </a>
-                  </Button>
-                )}
               </div>
-              
-              <div className="flex gap-6 text-sm">
-                <div className="text-center">
-                  <div className="font-semibold">{stats.total_offers}</div>
-                  <div className="text-muted-foreground">Offers Made</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold">{stats.active_partnerships}</div>
-                  <div className="text-muted-foreground">Active Partnerships</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold">{stats.completed_campaigns}</div>
-                  <div className="text-muted-foreground">Completed Campaigns</div>
-                </div>
-              </div>
+            </div>
+            
+            <div className="lg:ml-auto flex flex-col lg:flex-row gap-4">
+              {isOwnProfile && (
+                <Button 
+                  onClick={() => navigate('/sponsor-dashboard')}
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </Button>
+              )}
+              {profile.website_url && (
+                <Button 
+                  asChild 
+                  className="bg-white text-primary hover:bg-white/90"
+                >
+                  <a href={profile.website_url} target="_blank" rel="noopener noreferrer">
+                    <Globe className="h-4 w-4 mr-2" />
+                    Visit Website
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Budget and Description */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Budget Range
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-lg font-semibold text-primary">
-              {formatBudgetRange(profile.budget_range_min, profile.budget_range_max)}
-            </p>
-          </CardContent>
-        </Card>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Offers Made</p>
+                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{stats.total_offers}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Partnership proposals</p>
+                </div>
+                <div className="p-3 bg-blue-200 dark:bg-blue-800 rounded-full">
+                  <Mail className="h-6 w-6 text-blue-700 dark:text-blue-300" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5" />
-              Partnership Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-lg font-semibold text-primary">
-              {stats.completed_campaigns > 0 ? '4.8/5.0' : 'New Sponsor'}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Based on {stats.completed_campaigns} completed campaigns
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-700 dark:text-green-300">Active Partners</p>
+                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.active_partnerships}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">Current collaborations</p>
+                </div>
+                <div className="p-3 bg-green-200 dark:bg-green-800 rounded-full">
+                  <Users className="h-6 w-6 text-green-700 dark:text-green-300" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Company Description */}
-      {profile.company_description && (
-        <Card>
-          <CardHeader>
-            <CardTitle>About {profile.company_name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground leading-relaxed">
-              {profile.company_description}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Completed</p>
+                  <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{stats.completed_campaigns}</p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Successful campaigns</p>
+                </div>
+                <div className="p-3 bg-purple-200 dark:bg-purple-800 rounded-full">
+                  <Award className="h-6 w-6 text-purple-700 dark:text-purple-300" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Recent Offers */}
-      {isOwnProfile && offers.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Recent Partnership Offers
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {offers.slice(0, 5).map((offer) => (
-                <div key={offer.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <h4 className="font-semibold">{offer.offer_title}</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-1">
-                      {offer.offer_description}
-                    </p>
-                    <div className="flex items-center gap-4 mt-2">
-                      <span className="text-sm font-medium">
-                        ${(offer.offer_amount_cents / 100).toLocaleString()}
-                      </span>
-                      <Badge 
-                        variant={offer.status === 'accepted' ? 'default' : 
-                               offer.status === 'rejected' ? 'destructive' : 'secondary'}
-                      >
-                        {offer.status}
-                      </Badge>
-                    </div>
+        {/* Partnership Details Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <DollarSign className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {format(new Date(offer.created_at), 'MMM dd')}
+                  Investment Budget
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <p className="text-2xl font-bold text-primary">
+                    {formatBudgetRange(profile.budget_range_min, profile.budget_range_max)}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Available for creator partnerships and sponsored content
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <TrendingUp className="h-4 w-4" />
+                    <span>Ready to invest in quality partnerships</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                    <Star className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  Partnership Rating
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {stats.completed_campaigns > 0 ? '4.8' : 'New'}
+                    </p>
+                    {stats.completed_campaigns > 0 && (
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`h-4 w-4 ${i < 5 ? 'fill-orange-400 text-orange-400' : 'text-muted-foreground'}`} 
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    {stats.completed_campaigns > 0 
+                      ? `Based on ${stats.completed_campaigns} successful campaigns`
+                      : 'New sponsor ready to build great partnerships'
+                    }
+                  </p>
+                  <Badge variant="secondary" className="w-fit">
+                    {stats.completed_campaigns > 10 ? 'Premium Partner' : 
+                     stats.completed_campaigns > 5 ? 'Trusted Partner' : 
+                     stats.completed_campaigns > 0 ? 'Active Partner' : 'New Partner'}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Company Story */}
+          <div className="space-y-6">
+            {profile.company_description && (
+              <Card className="border-0 shadow-lg">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                      <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    About {profile.company_name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-muted-foreground leading-relaxed text-base">
+                      {profile.company_description}
+                    </p>
+                    
+                    <div className="pt-4 border-t">
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <Target className="h-4 w-4 text-primary" />
+                        Why Partner With Us?
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-primary rounded-full" />
+                          <span>Reliable payment terms</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-primary rounded-full" />
+                          <span>Creative freedom</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-primary rounded-full" />
+                          <span>Long-term partnerships</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-primary rounded-full" />
+                          <span>Professional support</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {isOwnProfile && (
+              <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-secondary/5">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold">Ready to find creators?</h3>
+                      <p className="text-muted-foreground text-sm">
+                        Browse our marketplace of talented creators and start building partnerships.
+                      </p>
+                    </div>
+                    <Button onClick={() => navigate('/sponsor-dashboard')} className="shrink-0">
+                      Discover Creators
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Partnership Activity */}
+        {isOwnProfile && offers.length > 0 && (
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+                    <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  Recent Partnership Activity
+                </div>
+                <Button variant="outline" size="sm" onClick={() => navigate('/sponsor-dashboard')}>
+                  View All
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {offers.slice(0, 5).map((offer) => (
+                  <div key={offer.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-base">{offer.offer_title}</h4>
+                        <div className="text-sm text-muted-foreground">
+                          {format(new Date(offer.created_at), 'MMM dd, yyyy')}
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-1">
+                        {offer.offer_description}
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-600">
+                            ${(offer.offer_amount_cents / 100).toLocaleString()}
+                          </span>
+                        </div>
+                        <Badge 
+                          variant={offer.status === 'accepted' ? 'default' : 
+                                 offer.status === 'rejected' ? 'destructive' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Call to Action for New Sponsors */}
+        {isOwnProfile && offers.length === 0 && (
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10">
+            <CardContent className="p-8 text-center">
+              <div className="space-y-6">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+                  <Target className="h-8 w-8 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-bold">Ready to Start Partnering?</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Connect with talented creators and start building meaningful partnerships that drive results for your brand.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button onClick={() => navigate('/sponsor-dashboard')} size="lg" className="text-base">
+                    <Users className="h-5 w-5 mr-2" />
+                    Discover Creators
+                  </Button>
+                  <Button variant="outline" size="lg" onClick={() => navigate('/campaigns')} className="text-base">
+                    <Target className="h-5 w-5 mr-2" />
+                    Browse Campaigns
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
