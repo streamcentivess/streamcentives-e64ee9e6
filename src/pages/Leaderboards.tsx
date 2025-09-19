@@ -395,7 +395,7 @@ const Leaderboards = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate('/fan-dashboard')}
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
