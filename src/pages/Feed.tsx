@@ -15,9 +15,6 @@ import UserProfileSearch from '@/components/UserProfileSearch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useScrollTrigger } from '@/hooks/useScrollTrigger';
-import { AlgorithmicSuggestionPopup } from '@/components/AlgorithmicSuggestionPopup';
-import { useAlgorithmicSuggestions } from '@/hooks/useAlgorithmicSuggestions';
 import { 
   Heart, 
   MessageCircle, 
@@ -96,23 +93,6 @@ const Feed = () => {
   const [showCommentInput, setShowCommentInput] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
   const POSTS_PER_PAGE = 5;
-
-  // Algorithmic suggestions
-  const {
-    currentSuggestion,
-    showSuggestion,
-    dismissSuggestion,
-    handleSuggestionAction,
-    triggerSuggestion
-  } = useAlgorithmicSuggestions();
-
-  // Trigger suggestions on scroll
-  useScrollTrigger({
-    onTrigger: triggerSuggestion,
-    threshold: 800, // Trigger after scrolling 800px
-    cooldown: 45000, // 45 seconds between suggestions
-    enabled: !!user
-  });
 
   useEffect(() => {
     if (user) {
@@ -1277,14 +1257,6 @@ const Feed = () => {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Algorithmic Suggestion Popup */}
-      <AlgorithmicSuggestionPopup
-        suggestion={currentSuggestion}
-        isVisible={showSuggestion}
-        onDismiss={dismissSuggestion}
-        onAction={handleSuggestionAction}
-      />
     </div>
   );
 };

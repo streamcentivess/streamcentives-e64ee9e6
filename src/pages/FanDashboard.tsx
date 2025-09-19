@@ -18,8 +18,6 @@ import { EnhancedXPBalance } from '@/components/EnhancedXPBalance';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { IntegrationsHub } from '@/components/IntegrationsHub';
 import { CreatorToolsHub } from '@/components/CreatorToolsHub';
-import { AlgorithmicSuggestionPopup } from '@/components/AlgorithmicSuggestionPopup';
-import { useAlgorithmicSuggestions } from '@/hooks/useAlgorithmicSuggestions';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
