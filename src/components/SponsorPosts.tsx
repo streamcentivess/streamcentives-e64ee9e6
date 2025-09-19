@@ -40,13 +40,7 @@ export function SponsorPosts() {
     try {
       const { data, error } = await supabase
         .from('posts')
-        .select(`
-          *,
-          post_tags (
-            tagged_user_id,
-            profiles!post_tags_tagged_user_id_fkey (username, display_name)
-          )
-        `)
+        .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
@@ -394,15 +388,6 @@ export function SponsorPosts() {
                   />
                 )}
                 <p className="text-sm mb-4">{post.caption}</p>
-                {post.post_tags && post.post_tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {post.post_tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        @{tag.profiles?.username}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
                 <p className="text-xs text-muted-foreground">
                   {new Date(post.created_at).toLocaleDateString()}
                 </p>
