@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Globe, Users, Briefcase, MapPin, Calendar, Star, Share2, MessageSquare, Heart, Award, TrendingUp, Target, DollarSign } from 'lucide-react';
+import { Building2, Globe, Users, Briefcase, MapPin, Calendar, Star, Share2, MessageSquare, Heart, Award, TrendingUp, Target, DollarSign, Link2, UserX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -379,11 +379,14 @@ export default function BrandProfile() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="rewards">Rewards</TabsTrigger>
+            <TabsTrigger value="smart-links">Smart Links</TabsTrigger>
+            <TabsTrigger value="supporters">Supporters</TabsTrigger>
+            <TabsTrigger value="haters">Haters</TabsTrigger>
             <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
           </TabsList>
 
@@ -579,6 +582,36 @@ export default function BrandProfile() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="smart-links" className="space-y-6">
+            <div className="text-center py-12">
+              <Link2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">Smart Links</h3>
+              <p className="text-sm text-muted-foreground">
+                Smart Links for brands will be available here soon. Create shareable links with rewards for engagement.
+              </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="supporters" className="space-y-6">
+            <div className="text-center py-12">
+              <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">Brand Supporters</h3>
+              <p className="text-sm text-muted-foreground">
+                Track and showcase your most loyal brand advocates and community supporters.
+              </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="haters" className="space-y-6">
+            <div className="text-center py-12">
+              <UserX className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">Content Moderation</h3>
+              <p className="text-sm text-muted-foreground">
+                Manage problematic users and maintain a positive brand environment.
+              </p>
+            </div>
           </TabsContent>
 
           <TabsContent value="partnerships" className="space-y-6">

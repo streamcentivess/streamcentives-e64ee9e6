@@ -313,10 +313,11 @@ const FanDashboard = () => {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-4 h-12' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-5 h-12' : 'grid-cols-5'}`}>
             <TabsTrigger value="overview" className={isMobile ? 'text-xs' : ''}>Overview</TabsTrigger>
             <TabsTrigger value="rewards" className={isMobile ? 'text-xs' : ''}>Rewards</TabsTrigger>
             <TabsTrigger value="activity" className={isMobile ? 'text-xs' : ''}>Activity</TabsTrigger>
+            <TabsTrigger value="creator-tools" className={isMobile ? 'text-xs' : ''}>Creator Tools</TabsTrigger>
             <TabsTrigger value="integrations" className={isMobile ? 'text-xs' : ''}>Integrations</TabsTrigger>
           </TabsList>
 
@@ -678,6 +679,60 @@ const FanDashboard = () => {
                 <EnhancedXPBalance />
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="creator-tools" className="space-y-6 mt-6">
+            <Card className="card-modern">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-gradient-primary"></div>
+                  Creator Tools Hub
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Unlock premium creator tools with a subscription to enhance your content creation
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  className="w-full bg-gradient-primary text-white hover:shadow-glow transition-all" 
+                  onClick={() => navigate('/content-creator-studio')}
+                >
+                  🤖 AI Campaign Builder
+                </Button>
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigate('/content-creator-studio')}
+                >
+                  ✨ Content Assistant
+                </Button>
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigate('/shoutout-generator')}
+                >
+                  🎤 Shoutout Generator
+                </Button>
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigate('/sentiment-analysis')}
+                >
+                  📊 Sentiment Analysis
+                </Button>
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Subscribe to unlock all creator tools and features
+                  </p>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    onClick={() => navigate('/monetization-tools')}
+                  >
+                    🚀 Upgrade to Creator Pro
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="integrations" className="mt-6">

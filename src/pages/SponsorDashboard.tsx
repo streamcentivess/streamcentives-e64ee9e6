@@ -75,11 +75,12 @@ export default function SponsorDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="creators">Discover Creators</TabsTrigger>
             <TabsTrigger value="offers">My Offers</TabsTrigger>
+            <TabsTrigger value="creator-tools">Creator Tools</TabsTrigger>
             <TabsTrigger value="inbox">Inbox</TabsTrigger>
             <TabsTrigger value="profile">Edit Profile</TabsTrigger>
           </TabsList>
@@ -161,6 +162,55 @@ export default function SponsorDashboard() {
 
           <TabsContent value="offers">
             <SponsorOffers />
+          </TabsContent>
+
+          <TabsContent value="creator-tools">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-gradient-primary"></div>
+                  Creator Tools Hub
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Access premium creator tools with a subscription to enhance your brand content
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  className="w-full bg-gradient-primary text-white hover:shadow-glow transition-all" 
+                >
+                  🤖 AI Campaign Builder
+                </Button>
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                >
+                  ✨ Content Assistant
+                </Button>
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                >
+                  🎤 Shoutout Generator
+                </Button>
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                >
+                  📊 Sentiment Analysis
+                </Button>
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Subscribe to unlock all creator tools for your brand campaigns
+                  </p>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                  >
+                    🚀 Upgrade to Brand Pro
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="inbox">
