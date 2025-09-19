@@ -28,6 +28,7 @@ export function SponsorPosts() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [tipDismissed, setTipDismissed] = useState(false);
   const [newComment, setNewComment] = useState("");
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -347,14 +348,23 @@ export function SponsorPosts() {
     <div className="space-y-6">
       {/* Header with Create Post Button */}
       <div className="flex justify-between items-center">
-        <div>
+        <div className="flex-1">
           <h2 className="text-2xl font-bold">Social Feed</h2>
           <p className="text-muted-foreground">Share your partnerships and tag creators</p>
-          <div className="mt-2 p-3 border border-blue-200 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
-              💡 <strong>Tip:</strong> When users like or comment on your posts, you'll receive notifications in the <strong>bell icon (🔔)</strong> at the top of the page. Click it to see all your notifications!
-            </p>
-          </div>
+          {!tipDismissed && (
+            <div className="mt-2 p-3 border border-blue-200 bg-blue-50 rounded-lg relative">
+              <button
+                onClick={() => setTipDismissed(true)}
+                className="absolute top-2 right-2 text-blue-600 hover:text-blue-800 transition-colors"
+                aria-label="Close tip"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <p className="text-sm text-blue-800 pr-6">
+                💡 <strong>Tip:</strong> When users like or comment on your posts, you'll receive notifications in the <strong>bell icon (🔔)</strong> at the top of the page. Click it to see all your notifications!
+              </p>
+            </div>
+          )}
         </div>
         <Dialog open={showCreatePost} onOpenChange={setShowCreatePost}>
           <DialogTrigger asChild>

@@ -500,37 +500,37 @@ export default function BrandProfile() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
-          <TabsList className={`w-full ${isMobile ? 'flex overflow-x-auto gap-1' : 'grid grid-cols-8'}`}>
-            <TabsTrigger value="overview" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px]' : ''}>
+          <TabsList className={`w-full ${isMobile ? 'flex overflow-x-auto gap-1 justify-start' : 'grid grid-cols-4 lg:grid-cols-8'}`}>
+            <TabsTrigger value="overview" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px] text-xs' : ''}>
               <span className="hidden sm:inline">Overview</span>
               <span className="sm:hidden">Home</span>
             </TabsTrigger>
-            <TabsTrigger value="posts" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[70px]' : ''}>Posts</TabsTrigger>
-            <TabsTrigger value="campaigns" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[90px]' : ''}>
+            <TabsTrigger value="posts" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[70px] text-xs' : ''}>Posts</TabsTrigger>
+            <TabsTrigger value="campaigns" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[90px] text-xs' : ''}>
               <span className="hidden sm:inline">Campaigns</span>
               <span className="sm:hidden">Camps</span>
             </TabsTrigger>
-            <TabsTrigger value="rewards" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px]' : ''}>Rewards</TabsTrigger>
-            <TabsTrigger value="smart-links" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px]' : ''}>
+            <TabsTrigger value="rewards" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px] text-xs' : ''}>Rewards</TabsTrigger>
+            <TabsTrigger value="smart-links" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px] text-xs' : ''}>
               <span className="hidden sm:inline">Smart Links</span>
               <span className="sm:hidden">Links</span>
             </TabsTrigger>
-            <TabsTrigger value="supporters" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[90px]' : ''}>
+            <TabsTrigger value="supporters" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[90px] text-xs' : ''}>
               <span className="hidden sm:inline">Supporters</span>
               <span className="sm:hidden">Fans</span>
             </TabsTrigger>
-            <TabsTrigger value="haters" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[70px]' : ''}>
+            <TabsTrigger value="haters" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[70px] text-xs' : ''}>
               <span className="hidden sm:inline">Haters</span>
               <span className="sm:hidden">Hate</span>
             </TabsTrigger>
-            <TabsTrigger value="partnerships" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[100px]' : ''}>
+            <TabsTrigger value="partnerships" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[100px] text-xs' : ''}>
               <span className="hidden sm:inline">Partnerships</span>
               <span className="sm:hidden">Partners</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -637,7 +637,7 @@ export default function BrandProfile() {
             </div>
             
             {campaigns.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {campaigns.map((campaign) => (
                   <Card key={campaign.id} className="overflow-hidden">
                     <CardHeader>
@@ -690,7 +690,7 @@ export default function BrandProfile() {
             </div>
             
             {rewards.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {rewards.map((reward) => (
                   <Card key={reward.id} className="overflow-hidden">
                     {reward.cover_photo_url && (
@@ -768,7 +768,7 @@ export default function BrandProfile() {
                 </div>
                 
                 {supporters.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {supporters.map((supporter: any) => (
                       <Card key={supporter.follower_id} className="p-4">
                         <div className="flex items-center gap-3">
