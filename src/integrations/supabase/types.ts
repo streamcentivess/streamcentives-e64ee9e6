@@ -576,6 +576,68 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_deals: {
+        Row: {
+          amount_cents: number
+          completed_at: string | null
+          created_at: string
+          creator_id: string
+          creator_net_cents: number
+          deal_name: string
+          id: string
+          offer_details: string | null
+          offer_id: string | null
+          paid_at: string | null
+          sponsor_id: string
+          status: string
+          streamcentives_fee_cents: number
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          completed_at?: string | null
+          created_at?: string
+          creator_id: string
+          creator_net_cents?: number
+          deal_name: string
+          id?: string
+          offer_details?: string | null
+          offer_id?: string | null
+          paid_at?: string | null
+          sponsor_id: string
+          status?: string
+          streamcentives_fee_cents?: number
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          completed_at?: string | null
+          created_at?: string
+          creator_id?: string
+          creator_net_cents?: number
+          deal_name?: string
+          id?: string
+          offer_details?: string | null
+          offer_id?: string | null
+          paid_at?: string | null
+          sponsor_id?: string
+          status?: string
+          streamcentives_fee_cents?: number
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_deals_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_partnerships: {
         Row: {
           brand_contact_info: Json
@@ -3350,6 +3412,12 @@ export type Database = {
           onboarding_completed: boolean | null
           profile_boost_score: number | null
           spotify_connected: boolean | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_expires_at: string | null
+          subscription_started_at: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
           total_boosts_received: number | null
           updated_at: string
           user_id: string
@@ -3380,6 +3448,12 @@ export type Database = {
           onboarding_completed?: boolean | null
           profile_boost_score?: number | null
           spotify_connected?: boolean | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_expires_at?: string | null
+          subscription_started_at?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
           total_boosts_received?: number | null
           updated_at?: string
           user_id: string
@@ -3410,6 +3484,12 @@ export type Database = {
           onboarding_completed?: boolean | null
           profile_boost_score?: number | null
           spotify_connected?: boolean | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_expires_at?: string | null
+          subscription_started_at?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
           total_boosts_received?: number | null
           updated_at?: string
           user_id?: string
@@ -5833,6 +5913,14 @@ export type Database = {
         Args: { notification_ids: string[] }
         Returns: number
       }
+      process_brand_deal_payment: {
+        Args: {
+          amount_paid_cents_param: number
+          deal_id_param: string
+          payment_intent_id_param: string
+        }
+        Returns: Json
+      }
       process_creator_payout: {
         Args: {
           bank_account_last4_param?: string
@@ -5892,6 +5980,16 @@ export type Database = {
           xp_cost_param: number
         }
         Returns: string
+      }
+      update_creator_subscription_status: {
+        Args: {
+          status_param: string
+          stripe_customer_id_param?: string
+          stripe_subscription_id_param?: string
+          tier_param?: string
+          user_id_param: string
+        }
+        Returns: Json
       }
       update_message_status: {
         Args: { message_id_param: string; new_status_param: string }

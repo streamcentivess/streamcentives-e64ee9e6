@@ -11,6 +11,8 @@ import OfflineIndicator from "./components/OfflineIndicator";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useIsMobile } from "./hooks/use-mobile";
+const CreatorSubscriptionPage = lazy(() => import("./pages/CreatorSubscriptionPage"));
+const BrandDealsPage = lazy(() => import("./pages/BrandDealsPage"));
 const YouTubeCallback = lazy(() => import("./pages/YouTubeCallback"));
 const YouTubeActionConfiguratorPage = lazy(() => import("./pages/YouTubeActionConfiguratorPage"));
 const SocialIntegrationsPage = lazy(() => import("./pages/SocialIntegrationsPage"));

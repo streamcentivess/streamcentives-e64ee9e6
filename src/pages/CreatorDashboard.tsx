@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones, Share } from 'lucide-react';
+import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones, Share, Handshake } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { AICampaignBuilder } from '@/components/AICampaignBuilder';
@@ -20,6 +20,8 @@ import { IntegrationsHub } from '@/components/IntegrationsHub';
 import { CreatorEarningsDashboard } from '@/components/CreatorEarningsDashboard';
 import CreatorAnalyticsDashboard from '@/components/CreatorAnalyticsDashboard';
 import CreatorEarningsTracker from '@/components/CreatorEarningsTracker';
+import { CreatorProDashboard } from '@/components/CreatorProDashboard';
+import { BrandDealsDashboard } from '@/components/BrandDealsDashboard';
 
 const CreatorDashboard = () => {
   const { user, signOut } = useAuth();
@@ -336,6 +338,14 @@ const CreatorDashboard = () => {
             <Button onClick={() => navigate('/advanced-analytics')} variant="outline" size="sm">
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics Hub
+            </Button>
+            <Button onClick={() => navigate('/creator-subscription')} variant="outline" size="sm">
+              <Trophy className="h-4 w-4 mr-2" />
+              Creator Pro
+            </Button>
+            <Button onClick={() => navigate('/brand-deals')} variant="outline" size="sm">
+              <Handshake className="h-4 w-4 mr-2" />
+              Brand Deals
             </Button>
             <Button onClick={() => setShowEarningsTracker(true)} variant="outline" size="sm">
               <DollarSign className="h-4 w-4 mr-2" />
