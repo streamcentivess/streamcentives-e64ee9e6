@@ -17,6 +17,7 @@ import { XPRewardAnimation } from '@/components/XPRewardAnimation';
 import { EnhancedXPBalance } from '@/components/EnhancedXPBalance';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { IntegrationsHub } from '@/components/IntegrationsHub';
+import { CreatorToolsHub } from '@/components/CreatorToolsHub';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();

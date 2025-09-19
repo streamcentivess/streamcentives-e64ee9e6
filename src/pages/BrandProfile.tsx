@@ -14,6 +14,7 @@ import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions'
 import { UniversalShareButton } from '@/components/UniversalShareButton';
 import { SponsorPosts } from '@/components/SponsorPosts';
 import { SmartLinkManager } from '@/components/SmartLinkManager';
+import { UserSearchAndManage } from '@/components/UserSearchAndManage';
 
 interface SponsorProfile {
   id: string;
