@@ -150,11 +150,13 @@ const CommunityHub = () => {
     }
   };
 
-  // Photo upload handlers
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Media upload handlers (photos and videos)
+  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const validFiles = files.filter(file => file.type.startsWith('image/'));
-    setPostForm({...postForm, photos: [...postForm.photos, ...validFiles].slice(0, 4)}); // Max 4 photos
+    const validFiles = files.filter(file => 
+      file.type.startsWith('image/') || file.type.startsWith('video/')
+    );
+    setPostForm({...postForm, photos: [...postForm.photos, ...validFiles].slice(0, 4)}); // Max 4 media files
   };
 
   const removePhoto = (index: number) => {
@@ -506,42 +508,51 @@ const CommunityHub = () => {
                       />
                     </div>
 
-                    {/* Photo Upload Section */}
+                    {/* Media Upload Section */}
                     <div>
-                      <Label>Photos (Max 4)</Label>
+                      <Label>Photos & Videos (Max 4)</Label>
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <input
                             type="file"
-                            id="photo-upload"
+                            id="media-upload"
                             multiple
-                            accept="image/*"
-                            onChange={handlePhotoUpload}
+                            accept="image/*,video/*"
+                            onChange={handleMediaUpload}
                             className="hidden"
                           />
                           <Button 
                             type="button"
                             variant="outline"
-                            onClick={() => document.getElementById('photo-upload')?.click()}
+                            onClick={() => document.getElementById('media-upload')?.click()}
                             disabled={postForm.photos.length >= 4}
                           >
                             <Camera className="h-4 w-4 mr-2" />
-                            Add Photos
+                            Add Photos & Videos
                           </Button>
                           <span className="text-sm text-muted-foreground">
-                            {postForm.photos.length}/4 photos
+                            {postForm.photos.length}/4 files
                           </span>
                         </div>
                         
                         {postForm.photos.length > 0 && (
                           <div className="grid grid-cols-2 gap-2">
-                            {postForm.photos.map((photo, index) => (
+                            {postForm.photos.map((file, index) => (
                               <div key={index} className="relative">
-                                <img
-                                  src={URL.createObjectURL(photo)}
-                                  alt={`Upload ${index + 1}`}
-                                  className="w-full h-20 object-cover rounded-md"
-                                />
+                                {file.type.startsWith('image/') ? (
+                                  <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Upload ${index + 1}`}
+                                    className="w-full h-20 object-cover rounded-md"
+                                  />
+                                ) : (
+                                  <video
+                                    src={URL.createObjectURL(file)}
+                                    className="w-full h-20 object-cover rounded-md"
+                                    controls={false}
+                                    muted
+                                  />
+                                )}
                                 <Button
                                   type="button"
                                   variant="destructive"
