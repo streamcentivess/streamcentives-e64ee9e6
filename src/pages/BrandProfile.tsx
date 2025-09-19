@@ -13,6 +13,7 @@ import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
 import { SponsorPosts } from '@/components/SponsorPosts';
+import { SmartLinkManager } from '@/components/SmartLinkManager';
 
 interface SponsorProfile {
   id: string;
@@ -72,6 +73,8 @@ export default function BrandProfile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [supporters, setSupporters] = useState([]);
+  const [blockedUsers, setBlockedUsers] = useState([]);
 
   const isOwnProfile = user?.id === profile?.user_id;
 
@@ -79,9 +82,11 @@ export default function BrandProfile() {
     if (sponsorId) {
       fetchProfileData();
       fetchSocialStats();
+      fetchSupporters();
     } else if (user) {
       // If no sponsor_id provided, show current user's profile if they're a sponsor
       fetchOwnProfileData();
+      fetchSupporters();
     }
   }, [sponsorId, user]);
 
@@ -237,6 +242,40 @@ export default function BrandProfile() {
         description: "Failed to update follow status",
         variant: "destructive",
       });
+    }
+  };
+
+  const fetchSupporters = async () => {
+    if (!profile?.user_id) return;
+
+    try {
+      // Get followers as supporters
+      const { data: followersData } = await supabase
+        .from('follows')
+        .select(`
+          follower_id,
+          created_at,
+          profiles!follows_follower_id_fkey (
+            user_id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('following_id', profile.user_id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      setSupporters(followersData || []);
+
+      // If own profile, also get blocked users
+      if (isOwnProfile && user?.id) {
+        // Note: You'd need to implement a blocked_users table for this
+        // For now, keeping empty array
+        setBlockedUsers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching supporters:', error);
     }
   };
 
@@ -585,33 +624,117 @@ export default function BrandProfile() {
           </TabsContent>
 
           <TabsContent value="smart-links" className="space-y-6">
-            <div className="text-center py-12">
-              <Link2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground mb-2">Smart Links</h3>
-              <p className="text-sm text-muted-foreground">
-                Smart Links for brands will be available here soon. Create shareable links with rewards for engagement.
-              </p>
-            </div>
+            {isOwnProfile ? (
+              <SmartLinkManager />
+            ) : (
+              <div className="text-center py-12">
+                <Link2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-muted-foreground mb-2">Smart Links</h3>
+                <p className="text-sm text-muted-foreground">
+                  This brand hasn't created any public smart links yet.
+                </p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="supporters" className="space-y-6">
-            <div className="text-center py-12">
-              <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground mb-2">Brand Supporters</h3>
-              <p className="text-sm text-muted-foreground">
-                Track and showcase your most loyal brand advocates and community supporters.
-              </p>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Brand Supporters</h2>
+              <Badge variant="outline">{supporters.length} Supporters</Badge>
             </div>
+            
+            {supporters.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {supporters.map((supporter: any) => (
+                  <Card key={supporter.follower_id} className="p-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={supporter.profiles?.avatar_url} />
+                        <AvatarFallback>
+                          {supporter.profiles?.display_name?.charAt(0) || supporter.profiles?.username?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{supporter.profiles?.display_name || supporter.profiles?.username}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          @{supporter.profiles?.username}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Following since {new Date(supporter.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Supporters Yet</h3>
+                  <p className="text-muted-foreground">
+                    {isOwnProfile ? "Build your audience by creating engaging campaigns and content!" : "This brand doesn't have any followers yet."}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="haters" className="space-y-6">
-            <div className="text-center py-12">
-              <UserX className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground mb-2">Content Moderation</h3>
-              <p className="text-sm text-muted-foreground">
-                Manage problematic users and maintain a positive brand environment.
-              </p>
-            </div>
+            {isOwnProfile ? (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">Content Moderation</h2>
+                  <Badge variant="outline">{blockedUsers.length} Blocked Users</Badge>
+                </div>
+                
+                {blockedUsers.length > 0 ? (
+                  <div className="space-y-4">
+                    {blockedUsers.map((user: any) => (
+                      <Card key={user.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={user.avatar_url} />
+                              <AvatarFallback>
+                                {user.display_name?.charAt(0) || user.username?.charAt(0) || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-medium">{user.display_name || user.username}</h4>
+                              <p className="text-sm text-muted-foreground">@{user.username}</p>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            Unblock
+                          </Button>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No Blocked Users</h3>
+                      <p className="text-muted-foreground">
+                        Maintain a positive environment by blocking problematic users when needed.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Content Moderation</h3>
+                  <p className="text-muted-foreground">
+                    This information is only visible to the brand owner.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="partnerships" className="space-y-6">
