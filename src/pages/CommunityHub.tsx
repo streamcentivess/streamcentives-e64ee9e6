@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, MessageSquare, Calendar, MapPin, Plus, Heart, Share, Pin, Crown, Camera, X, UserPlus, Repeat2 } from 'lucide-react';
 import { LocationSearch } from '@/components/LocationSearch';
+import { UserSearchInput } from '@/components/UserSearchInput';
 import AppNavigation from '@/components/AppNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -165,15 +166,9 @@ const CommunityHub = () => {
     setPostForm({...postForm, photos: newPhotos});
   };
 
-  // Tagged people handlers
+  // Tagged people handlers - no longer needed as UserSearchInput handles this
   const addTaggedPerson = () => {
-    if (taggedPeopleInput.trim() && !postForm.tagged_people.includes(taggedPeopleInput.trim())) {
-      setPostForm({
-        ...postForm, 
-        tagged_people: [...postForm.tagged_people, taggedPeopleInput.trim()]
-      });
-      setTaggedPeopleInput('');
-    }
+    // This function is now handled by UserSearchInput component
   };
 
   const removeTaggedPerson = (person: string) => {
@@ -632,17 +627,21 @@ const CommunityHub = () => {
                     <div>
                       <Label>Tag People</Label>
                       <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Type username (e.g., @username)"
-                            value={taggedPeopleInput}
-                            onChange={(e) => setTaggedPeopleInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTaggedPerson())}
-                          />
-                          <Button type="button" variant="outline" onClick={addTaggedPerson}>
-                            <UserPlus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <UserSearchInput
+                          value={taggedPeopleInput}
+                          onChange={setTaggedPeopleInput}
+                          onUserSelect={(user) => {
+                            const username = `@${user.username}`;
+                            if (!postForm.tagged_people.includes(username)) {
+                              setPostForm({
+                                ...postForm,
+                                tagged_people: [...postForm.tagged_people, username]
+                              });
+                            }
+                            setTaggedPeopleInput('');
+                          }}
+                          placeholder="Search users to tag..."
+                        />
                         
                         {postForm.tagged_people.length > 0 && (
                           <div className="flex flex-wrap gap-2">
