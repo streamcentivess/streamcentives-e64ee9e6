@@ -3852,6 +3852,7 @@ export type Database = {
       }
       rewards: {
         Row: {
+          asset_expiry_hours: number | null
           cash_price: number | null
           cover_photo_url: string | null
           created_at: string
@@ -3861,6 +3862,9 @@ export type Database = {
           delivery_metadata: Json | null
           delivery_type: string | null
           description: string | null
+          digital_asset_bucket: string | null
+          digital_asset_key: string | null
+          experience_template_id: string | null
           external_url: string | null
           id: string
           image_url: string | null
@@ -3876,6 +3880,7 @@ export type Database = {
           xp_cost: number | null
         }
         Insert: {
+          asset_expiry_hours?: number | null
           cash_price?: number | null
           cover_photo_url?: string | null
           created_at?: string
@@ -3885,6 +3890,9 @@ export type Database = {
           delivery_metadata?: Json | null
           delivery_type?: string | null
           description?: string | null
+          digital_asset_bucket?: string | null
+          digital_asset_key?: string | null
+          experience_template_id?: string | null
           external_url?: string | null
           id?: string
           image_url?: string | null
@@ -3900,6 +3908,7 @@ export type Database = {
           xp_cost?: number | null
         }
         Update: {
+          asset_expiry_hours?: number | null
           cash_price?: number | null
           cover_photo_url?: string | null
           created_at?: string
@@ -3909,6 +3918,9 @@ export type Database = {
           delivery_metadata?: Json | null
           delivery_type?: string | null
           description?: string | null
+          digital_asset_bucket?: string | null
+          digital_asset_key?: string | null
+          experience_template_id?: string | null
           external_url?: string | null
           id?: string
           image_url?: string | null
