@@ -521,7 +521,7 @@ export default function BrandProfile() {
             </TabsTrigger>
             <TabsTrigger value="haters" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[70px] text-xs' : ''}>
               <span className="hidden sm:inline">Haters</span>
-              <span className="sm:hidden">Hate</span>
+              <span className="sm:hidden">Haters</span>
             </TabsTrigger>
             <TabsTrigger value="partnerships" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[100px] text-xs' : ''}>
               <span className="hidden sm:inline">Partnerships</span>
