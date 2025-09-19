@@ -12,6 +12,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
+import { useProfileViewTracking } from '@/hooks/useProfileViewTracking';
 import { SponsorPosts } from '@/components/SponsorPosts';
 import { SmartLinkManager } from '@/components/SmartLinkManager';
 import { UserSearchAndManage } from '@/components/UserSearchAndManage';
@@ -76,8 +77,16 @@ export default function BrandProfile() {
   const [followingCount, setFollowingCount] = useState(0);
   const [supporters, setSupporters] = useState([]);
   const [blockedUsers, setBlockedUsers] = useState([]);
-
-  const isOwnProfile = user?.id === profile?.user_id;
+  
+  // Determine if viewing own profile
+  const isOwnProfile = !sponsorId || (profile && profile.user_id === user?.id);
+  
+  // Track profile views
+  useProfileViewTracking({
+    profileUserId: profile?.user_id || null,
+    isOwnProfile,
+    enabled: !!profile
+  });
 
   useEffect(() => {
     if (sponsorId) {

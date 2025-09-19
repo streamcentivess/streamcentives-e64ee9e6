@@ -18,6 +18,8 @@ import { SponsorContactOptions } from '@/components/SponsorContactOptions';
 import { useUserRole } from '@/hooks/useUserRole';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
+import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
+import { useProfileViewTracking } from '@/hooks/useProfileViewTracking';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { HeartAnimation } from '@/components/ui/heart-animation';
 import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
@@ -109,6 +111,20 @@ const UniversalProfile = () => {
   const finalUserId = isUUID ? userParam : viewingUserId;
   const finalUsername = !isUUID && userParam ? userParam : viewingUsername;
   const isOwnProfile = !finalUserId && !finalUsername || finalUserId === user?.id;
+  
+  // Track profile views for non-own profiles
+  useProfileViewTracking({
+    profileUserId: finalUserId || profile?.user_id || null,
+    isOwnProfile,
+    enabled: !!profile && !isOwnProfile
+  });
+  
+  // Track profile views for non-own profiles
+  useProfileViewTracking({
+    profileUserId: finalUserId || profile?.user_id || null,
+    isOwnProfile,
+    enabled: !!profile && !isOwnProfile
+  });
   useEffect(() => {
     if (user) {
       fetchProfile();

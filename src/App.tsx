@@ -58,6 +58,7 @@ const SentimentAnalysis = lazy(() => import("./pages/SentimentAnalysis"));
 const SmartLinkPage = lazy(() => import("./pages/SmartLinkPage"));
 const SponsorOnboarding = lazy(() => import("./components/SponsorOnboarding"));
 import { NavigationIntegration } from "./components/NavigationIntegration";
+import { MobileNotificationProvider } from "./components/MobileNotificationProvider";
 
 const queryClient = new QueryClient();
 
@@ -71,8 +72,9 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <NavigationIntegration>
-              <ErrorBoundary>
+            <MobileNotificationProvider>
+              <NavigationIntegration>
+                <ErrorBoundary>
                 <div className="min-h-screen bg-background">
                   <Suspense fallback={<div className="p-6 text-muted-foreground">Loading...</div>}>
                     <Routes>
@@ -259,8 +261,11 @@ const App = () => {
                     </>
                   )}
                 </div>
+                <OfflineIndicator />
+                <PWAInstallPrompt />
               </ErrorBoundary>
-            </NavigationIntegration>
+              </NavigationIntegration>
+            </MobileNotificationProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

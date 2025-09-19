@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Heart, MessageCircle, Share, Bookmark, UserPlus, UserMinus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSocialNotifications } from '@/hooks/useSocialNotifications';
 
 interface SocialInteractionsProps {
   contentId?: string;
@@ -40,6 +41,7 @@ const EnhancedSocialInteractions: React.FC<SocialInteractionsProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { createSocialNotification } = useSocialNotifications();
   
   const [counts, setCounts] = useState<InteractionCounts>({
     like: 0,
@@ -192,6 +194,16 @@ const EnhancedSocialInteractions: React.FC<SocialInteractionsProps> = ({
         setUserInteractions(prev => ({ ...prev, [type]: true }));
         setCounts(prev => ({ ...prev, [type]: prev[type] + 1 }));
 
+        // Create notification for content owner
+        if (targetUserId) {
+          createSocialNotification(
+            targetUserId,
+            type as 'like' | 'comment' | 'share',
+            contentType,
+            contentId
+          );
+        }
+
         if (type === 'like') {
           toast({
             title: "Content liked!",
@@ -255,13 +267,7 @@ const EnhancedSocialInteractions: React.FC<SocialInteractionsProps> = ({
         setUserInteractions(prev => ({ ...prev, follow: true }));
 
         // Create notification for followed user
-        await supabase.rpc('create_notification', {
-          user_id_param: targetUserId,
-          type_param: 'follow',
-          title_param: 'New Follower',
-          message_param: 'Someone started following you!',
-          data_param: { follower_id: user.id }
-        });
+        createSocialNotification(targetUserId, 'follow');
 
         toast({
           title: "Following!",
