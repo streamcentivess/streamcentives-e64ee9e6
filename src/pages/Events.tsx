@@ -61,24 +61,33 @@ export default function Events() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      let query = supabase
+      
+      // Fetch events first
+      const { data: eventsData, error: eventsError } = await supabase
         .from('fan_events')
-        .select(`
-          *,
-          profiles (
-            username,
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('status', 'upcoming')
         .gte('event_date', new Date().toISOString())
         .order('event_date', { ascending: true });
 
-      const { data, error } = await query;
+      if (eventsError) throw eventsError;
 
-      if (error) throw error;
-      setEvents((data as any[]) || []);
+      // Then fetch creator profiles separately
+      const creatorIds = eventsData?.map(event => event.creator_id) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', creatorIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const eventsWithProfiles = eventsData?.map(event => ({
+        ...event,
+        profiles: profilesData?.find(profile => profile.user_id === event.creator_id) || null
+      })) || [];
+
+      setEvents(eventsWithProfiles);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events');
