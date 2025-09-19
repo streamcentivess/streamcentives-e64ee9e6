@@ -43,6 +43,7 @@ const CommunityHub = () => {
     is_pinned: false,
     photos: [] as File[],
     tagged_people: [] as string[],
+    tagged_users: [] as { user_id: string; username: string }[],
     location: ''
   });
   
@@ -157,7 +158,19 @@ const CommunityHub = () => {
     const validFiles = files.filter(file => 
       file.type.startsWith('image/') || file.type.startsWith('video/')
     );
-    setPostForm({...postForm, photos: [...postForm.photos, ...validFiles].slice(0, 4)}); // Max 4 media files
+    const MAX_SIZE_BYTES = 20 * 1024 * 1024; // 20MB per file
+    const sizedFiles = validFiles.filter((file) => {
+      if (file.size > MAX_SIZE_BYTES) {
+        toast({
+          title: 'File too large',
+          description: `${file.name} exceeds 20MB. Please choose a smaller file.`,
+          variant: 'destructive'
+        });
+        return false;
+      }
+      return true;
+    });
+    setPostForm({...postForm, photos: [...postForm.photos, ...sizedFiles].slice(0, 4)}); // Max 4 media files
   };
 
   const removePhoto = (index: number) => {
@@ -172,9 +185,11 @@ const CommunityHub = () => {
   };
 
   const removeTaggedPerson = (person: string) => {
+    const username = person.replace(/^@/, '');
     setPostForm({
       ...postForm,
-      tagged_people: postForm.tagged_people.filter(p => p !== person)
+      tagged_people: postForm.tagged_people.filter(p => p !== person),
+      tagged_users: postForm.tagged_users.filter(u => u.username !== username)
     });
   };
 
@@ -199,9 +214,9 @@ const CommunityHub = () => {
     try {
       let mediaUrls: string[] = [];
       
-      // Upload media files if any
+      // Upload media files concurrently if any
       if (postForm.photos.length > 0) {
-        for (const file of postForm.photos) {
+        const uploads = postForm.photos.map(async (file) => {
           const fileExt = file.name.split('.').pop();
           const fileName = `${Math.random()}.${fileExt}`;
           const filePath = `community-posts/${user.id}/${fileName}`;
@@ -212,17 +227,25 @@ const CommunityHub = () => {
           
           if (uploadError) {
             console.error('Upload error:', uploadError);
+            toast({
+              title: 'Upload failed',
+              description: uploadError.message || 'One of the files failed to upload.',
+              variant: 'destructive'
+            });
+            return null;
           } else {
             const { data: { publicUrl } } = supabase.storage
               .from('community-media')
               .getPublicUrl(filePath);
-            mediaUrls.push(publicUrl);
+            return publicUrl as string;
           }
-        }
+        });
+        const results = await Promise.all(uploads);
+        mediaUrls = results.filter((u): u is string => !!u);
       }
 
-      // Create the post using the trimmed values
-      const { data, error } = await supabase
+      // Create the post without tagged_people column (use post_tags table instead)
+      const { data: post, error } = await supabase
         .from('community_posts')
         .insert({
           author_id: user.id,
@@ -230,12 +253,28 @@ const CommunityHub = () => {
           title: trimmedTitle,
           content: trimmedContent,
           media_urls: mediaUrls.length > 0 ? mediaUrls : null,
-          tagged_people: postForm.tagged_people.length > 0 ? postForm.tagged_people : null,
           location: postForm.location.trim() || null,
           is_pinned: postForm.is_pinned
         })
         .select()
         .single();
+
+      if (error) throw error;
+
+      // Save tags into post_tags join table
+      if (postForm.tagged_users && postForm.tagged_users.length > 0) {
+        const tagRows = postForm.tagged_users.map((u) => ({
+          post_id: (post as any).id,
+          tagged_user_id: u.user_id,
+          tagged_by_user_id: user.id,
+          approved: false,
+          tag_type: 'creator'
+        }));
+        const { error: tagError } = await supabase.from('post_tags').insert(tagRows);
+        if (tagError) {
+          console.error('Error saving post tags:', tagError);
+        }
+      }
 
       if (error) throw error;
 
@@ -252,6 +291,7 @@ const CommunityHub = () => {
         is_pinned: false,
         photos: [],
         tagged_people: [],
+        tagged_users: [],
         location: ''
       });
       setTaggedPeopleInput('');
@@ -632,10 +672,12 @@ const CommunityHub = () => {
                           onChange={setTaggedPeopleInput}
                           onUserSelect={(user) => {
                             const username = `@${user.username}`;
-                            if (!postForm.tagged_people.includes(username)) {
+                            const alreadyTagged = postForm.tagged_users?.some((u) => u.user_id === user.user_id);
+                            if (!alreadyTagged) {
                               setPostForm({
                                 ...postForm,
-                                tagged_people: [...postForm.tagged_people, username]
+                                tagged_people: [...postForm.tagged_people, username],
+                                tagged_users: [...postForm.tagged_users, { user_id: user.user_id, username: user.username }]
                               });
                               console.log('User tagged:', username); // Debug log
                             }
