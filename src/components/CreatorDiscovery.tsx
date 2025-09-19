@@ -294,13 +294,13 @@ export function CreatorDiscovery() {
               <label className="text-sm font-medium">Engagement Rate</label>
               <Select
                 value={filters.engagementRange}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, engagementRange: value }))}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, engagementRange: value === "all" ? "" : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="0-5">0-5%</SelectItem>
                   <SelectItem value="5-10">5-10%</SelectItem>
                   <SelectItem value="10-15">10-15%</SelectItem>
@@ -314,13 +314,13 @@ export function CreatorDiscovery() {
               <label className="text-sm font-medium">Followers</label>
               <Select
                 value={filters.followerRange}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, followerRange: value }))}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, followerRange: value === "all" ? "" : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="0-1k">0-1K</SelectItem>
                   <SelectItem value="1k-10k">1K-10K</SelectItem>
                   <SelectItem value="10k-100k">10K-100K</SelectItem>
@@ -334,13 +334,13 @@ export function CreatorDiscovery() {
               <label className="text-sm font-medium">Country</label>
               <Select
                 value={filters.country}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, country: value }))}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, country: value === "all" ? "" : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   <SelectItem value="United States">United States</SelectItem>
                   <SelectItem value="United Kingdom">United Kingdom</SelectItem>
                   <SelectItem value="Canada">Canada</SelectItem>
@@ -360,13 +360,13 @@ export function CreatorDiscovery() {
               <label className="text-sm font-medium">Age Range</label>
               <Select
                 value={filters.ageRange}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, ageRange: value }))}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, ageRange: value === "all" ? "" : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select age" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Ages</SelectItem>
+                  <SelectItem value="all">All Ages</SelectItem>
                   <SelectItem value="18-24">18-24</SelectItem>
                   <SelectItem value="25-34">25-34</SelectItem>
                   <SelectItem value="35-44">35-44</SelectItem>
