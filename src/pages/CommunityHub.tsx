@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ import { toast } from '@/hooks/use-toast';
 
 const CommunityHub = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showCommunityDialog, setShowCommunityDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
@@ -656,35 +658,29 @@ const CommunityHub = () => {
                           <span>{community.member_count.toLocaleString()} members</span>
                           <span>Created {new Date(community.created_at).toLocaleDateString()}</span>
                         </div>
-                         <div className="flex flex-col sm:flex-row gap-2">
-                           <Button 
-                             variant="outline" 
-                             size="sm"
-                             onClick={() => {
-                               // For now, just show a message since CommunityDetail expects number
-                               toast({
-                                 title: "Community View",
-                                 description: `Opening ${community.name}...`
-                               });
-                             }}
-                             className="w-full sm:w-auto"
-                           >
-                             View
-                           </Button>
-                           <Button 
-                             variant="outline" 
-                             size="sm"
-                             onClick={() => {
-                               toast({
-                                 title: "Manage Community",
-                                 description: `Managing ${community.name}...`
-                               });
-                             }}
-                             className="w-full sm:w-auto"
-                           >
-                             Manage
-                           </Button>
-                         </div>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => navigate(`/community/${community.id}`)}
+                              className="w-full sm:w-auto"
+                            >
+                              View
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                toast({
+                                  title: "Manage Community",
+                                  description: `Managing ${community.name}...`
+                                });
+                              }}
+                              className="w-full sm:w-auto"
+                            >
+                              Manage
+                            </Button>
+                          </div>
                       </div>
                     </CardContent>
                   </Card>
