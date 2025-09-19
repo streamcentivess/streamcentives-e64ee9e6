@@ -552,7 +552,7 @@ const UniversalProfile = () => {
   // Check user roles for search results
   const checkUserRoles = async (profiles: Profile[]) => {
     const rolePromises = profiles.map(async (profile) => {
-      const role = await getUserRole(profile.user_id, profile.spotify_connected);
+      const role = await getUserRole(profile.user_id, profile.spotify_connected, profile.username);
       return { userId: profile.user_id, role };
     });
 
@@ -993,8 +993,13 @@ const UniversalProfile = () => {
     }
   };
 
-  const getUserRole = async (userId: string, spotifyConnected: boolean = false): Promise<'fan' | 'creator' | 'sponsor'> => {
+  const getUserRole = async (userId: string, spotifyConnected: boolean = false, username?: string): Promise<'fan' | 'creator' | 'sponsor'> => {
     try {
+      // Special case for streamcentives - always identify as brand
+      if (username?.toLowerCase() === 'streamcentives') {
+        return 'sponsor';
+      }
+
       // Check if user is a sponsor
       const { data: sponsorProfile } = await supabase
         .from('sponsor_profiles')
