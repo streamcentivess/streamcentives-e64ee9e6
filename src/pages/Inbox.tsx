@@ -18,6 +18,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useUserRole } from '@/hooks/useUserRole';
+import { SponsorInbox } from '@/components/SponsorInbox';
 
 interface Message {
   id: string;
@@ -43,6 +45,7 @@ const Inbox: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { role, loading: roleLoading } = useUserRole();
   const [sentMessages, setSentMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -231,6 +234,36 @@ const Inbox: React.FC = () => {
   };
 
   const sentCounts = getStatusCounts(sentMessages);
+
+  // Show sponsor-specific inbox for sponsors
+  if (role === 'sponsor') {
+    return (
+      <div className={`container mx-auto px-4 py-8 max-w-4xl ${isMobile ? 'px-2' : ''}`}>
+        <div className={`flex items-center justify-between mb-6 ${isMobile ? 'mb-4' : ''}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+              <InboxIcon className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Sponsor Inbox</h1>
+              <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Manage your partnership offers and creator communications</p>
+            </div>
+          </div>
+          {!isMobile && (
+            <Button
+              variant="outline"
+              onClick={() => navigate('/universal-profile')}
+              className="flex items-center gap-2"
+            >
+              <User className="h-4 w-4" />
+              My Profile
+            </Button>
+          )}
+        </div>
+        <SponsorInbox />
+      </div>
+    );
+  }
 
   return (
     <div className={`container mx-auto px-4 py-8 max-w-4xl ${isMobile ? 'px-2' : ''}`}>

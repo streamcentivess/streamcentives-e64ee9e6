@@ -2793,6 +2793,53 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_responses: {
+        Row: {
+          counter_amount_cents: number | null
+          counter_terms: string | null
+          created_at: string | null
+          id: string
+          message: string | null
+          offer_id: string
+          response_type: string
+          sender_id: string
+          sender_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          counter_amount_cents?: number | null
+          counter_terms?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          offer_id: string
+          response_type: string
+          sender_id: string
+          sender_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          counter_amount_cents?: number | null
+          counter_terms?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          offer_id?: string
+          response_type?: string
+          sender_id?: string
+          sender_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_responses_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string | null
@@ -4161,10 +4208,12 @@ export type Database = {
           deliverables: Json | null
           expires_at: string | null
           id: string
+          last_response_at: string | null
           offer_amount_cents: number
           offer_description: string
           offer_title: string
           responded_at: string | null
+          response_count: number | null
           sponsor_id: string
           status: string | null
           terms: string | null
@@ -4177,10 +4226,12 @@ export type Database = {
           deliverables?: Json | null
           expires_at?: string | null
           id?: string
+          last_response_at?: string | null
           offer_amount_cents: number
           offer_description: string
           offer_title: string
           responded_at?: string | null
+          response_count?: number | null
           sponsor_id: string
           status?: string | null
           terms?: string | null
@@ -4193,10 +4244,12 @@ export type Database = {
           deliverables?: Json | null
           expires_at?: string | null
           id?: string
+          last_response_at?: string | null
           offer_amount_cents?: number
           offer_description?: string
           offer_title?: string
           responded_at?: string | null
+          response_count?: number | null
           sponsor_id?: string
           status?: string | null
           terms?: string | null
