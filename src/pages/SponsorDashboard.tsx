@@ -59,11 +59,15 @@ export default function SponsorDashboard() {
             <p className="text-muted-foreground">Welcome back, {sponsorProfile.company_name}</p>
           </div>
           <div className="flex gap-3">
-            <Button asChild variant="outline">
-              <Link to="/sponsor-profile">
-                <User className="h-4 w-4 mr-2" />
-                View Profile
-              </Link>
+            <Button 
+              onClick={() => {
+                const profileTab = document.querySelector('[value="profile"]') as HTMLButtonElement;
+                profileTab?.click();
+              }}
+              variant="outline"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Edit Profile
             </Button>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -77,7 +81,7 @@ export default function SponsorDashboard() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="creators">Discover Creators</TabsTrigger>
             <TabsTrigger value="offers">My Offers</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="profile">Edit Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -156,10 +160,18 @@ export default function SponsorDashboard() {
           </TabsContent>
 
           <TabsContent value="profile">
-            <SponsorProfile 
-              existingProfile={sponsorProfile} 
-              onProfileUpdated={fetchSponsorData} 
-            />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">Edit Sponsor Profile</h2>
+                  <p className="text-muted-foreground">Update your company information and account settings</p>
+                </div>
+              </div>
+              <SponsorProfile 
+                existingProfile={sponsorProfile} 
+                onProfileUpdated={fetchSponsorData} 
+              />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

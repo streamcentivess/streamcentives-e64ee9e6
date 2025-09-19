@@ -143,7 +143,10 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
       toast({
         title: "Success!",
-        description: existingProfile ? "Profile updated successfully" : "Sponsor profile created successfully"
+        description: existingProfile 
+          ? "Sponsor profile updated successfully. Your company information has been saved." 
+          : "Sponsor profile created successfully. You can now be discovered by creators.",
+        variant: "default"
       });
 
       if (existingProfile && onProfileUpdated) {
