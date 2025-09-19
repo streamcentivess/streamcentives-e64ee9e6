@@ -1528,6 +1528,81 @@ export type Database = {
         }
         Relationships: []
       }
+      content_moderation: {
+        Row: {
+          action_taken: Database["public"]["Enums"]["moderation_action"] | null
+          ai_analysis: Json | null
+          auto_actioned: boolean | null
+          categories:
+            | Database["public"]["Enums"]["moderation_category"][]
+            | null
+          confidence: number
+          content_hash: string | null
+          content_id: string
+          content_type: Database["public"]["Enums"]["content_type"]
+          created_at: string
+          detected_language: string | null
+          flags: string[] | null
+          id: string
+          is_appropriate: boolean
+          media_urls: string[] | null
+          original_content: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: Database["public"]["Enums"]["moderation_severity"] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_taken?: Database["public"]["Enums"]["moderation_action"] | null
+          ai_analysis?: Json | null
+          auto_actioned?: boolean | null
+          categories?:
+            | Database["public"]["Enums"]["moderation_category"][]
+            | null
+          confidence?: number
+          content_hash?: string | null
+          content_id: string
+          content_type: Database["public"]["Enums"]["content_type"]
+          created_at?: string
+          detected_language?: string | null
+          flags?: string[] | null
+          id?: string
+          is_appropriate?: boolean
+          media_urls?: string[] | null
+          original_content?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: Database["public"]["Enums"]["moderation_severity"] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_taken?: Database["public"]["Enums"]["moderation_action"] | null
+          ai_analysis?: Json | null
+          auto_actioned?: boolean | null
+          categories?:
+            | Database["public"]["Enums"]["moderation_category"][]
+            | null
+          confidence?: number
+          content_hash?: string | null
+          content_id?: string
+          content_type?: Database["public"]["Enums"]["content_type"]
+          created_at?: string
+          detected_language?: string | null
+          flags?: string[] | null
+          id?: string
+          is_appropriate?: boolean
+          media_urls?: string[] | null
+          original_content?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: Database["public"]["Enums"]["moderation_severity"] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       content_moderation_queue: {
         Row: {
           automated_flags: Json | null
@@ -3209,6 +3284,142 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      moderation_appeals: {
+        Row: {
+          appeal_evidence: string | null
+          appeal_reason: string
+          created_at: string
+          decided_at: string | null
+          decision: string | null
+          id: string
+          moderation_id: string
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+          user_statement: string | null
+        }
+        Insert: {
+          appeal_evidence?: string | null
+          appeal_reason: string
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          id?: string
+          moderation_id: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          user_statement?: string | null
+        }
+        Update: {
+          appeal_evidence?: string | null
+          appeal_reason?: string
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          id?: string
+          moderation_id?: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          user_statement?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_appeals_moderation_id_fkey"
+            columns: ["moderation_id"]
+            isOneToOne: false
+            referencedRelation: "content_moderation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moderation_queue: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          escalation_reason: string | null
+          id: string
+          moderation_id: string
+          priority: number | null
+          queue_type: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          escalation_reason?: string | null
+          id?: string
+          moderation_id: string
+          priority?: number | null
+          queue_type?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          escalation_reason?: string | null
+          id?: string
+          moderation_id?: string
+          priority?: number | null
+          queue_type?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_queue_moderation_id_fkey"
+            columns: ["moderation_id"]
+            isOneToOne: false
+            referencedRelation: "content_moderation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moderation_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          setting_name: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          setting_name: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          setting_name?: string
+          setting_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
       }
       notification_deliveries: {
         Row: {
@@ -5491,6 +5702,74 @@ export type Database = {
         }
         Relationships: []
       }
+      user_moderation_history: {
+        Row: {
+          appeal_message: string | null
+          appeal_reviewed_at: string | null
+          appeal_reviewer_id: string | null
+          appeal_status: string | null
+          appeal_submitted: boolean | null
+          created_at: string
+          id: string
+          is_restricted: boolean | null
+          is_shadow_banned: boolean | null
+          moderation_id: string
+          restriction_expires_at: string | null
+          shadow_ban_expires_at: string | null
+          strike_count: number
+          strike_expires_at: string | null
+          strike_severity: Database["public"]["Enums"]["moderation_severity"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          appeal_message?: string | null
+          appeal_reviewed_at?: string | null
+          appeal_reviewer_id?: string | null
+          appeal_status?: string | null
+          appeal_submitted?: boolean | null
+          created_at?: string
+          id?: string
+          is_restricted?: boolean | null
+          is_shadow_banned?: boolean | null
+          moderation_id: string
+          restriction_expires_at?: string | null
+          shadow_ban_expires_at?: string | null
+          strike_count?: number
+          strike_expires_at?: string | null
+          strike_severity: Database["public"]["Enums"]["moderation_severity"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          appeal_message?: string | null
+          appeal_reviewed_at?: string | null
+          appeal_reviewer_id?: string | null
+          appeal_status?: string | null
+          appeal_submitted?: boolean | null
+          created_at?: string
+          id?: string
+          is_restricted?: boolean | null
+          is_shadow_banned?: boolean | null
+          moderation_id?: string
+          restriction_expires_at?: string | null
+          shadow_ban_expires_at?: string | null
+          strike_count?: number
+          strike_expires_at?: string | null
+          strike_severity?: Database["public"]["Enums"]["moderation_severity"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_moderation_history_moderation_id_fkey"
+            columns: ["moderation_id"]
+            isOneToOne: false
+            referencedRelation: "content_moderation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_quest_progress: {
         Row: {
           completed_at: string | null
@@ -5535,6 +5814,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_reports: {
+        Row: {
+          action_taken: string | null
+          additional_context: string | null
+          created_at: string
+          id: string
+          report_category: Database["public"]["Enums"]["moderation_category"]
+          report_reason: string
+          reported_content_id: string
+          reported_content_type: Database["public"]["Enums"]["content_type"]
+          reported_user_id: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+        }
+        Insert: {
+          action_taken?: string | null
+          additional_context?: string | null
+          created_at?: string
+          id?: string
+          report_category: Database["public"]["Enums"]["moderation_category"]
+          report_reason: string
+          reported_content_id: string
+          reported_content_type: Database["public"]["Enums"]["content_type"]
+          reported_user_id: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          action_taken?: string | null
+          additional_context?: string | null
+          created_at?: string
+          id?: string
+          report_category?: Database["public"]["Enums"]["moderation_category"]
+          report_reason?: string
+          reported_content_id?: string
+          reported_content_type?: Database["public"]["Enums"]["content_type"]
+          reported_user_id?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Relationships: []
       }
       user_sessions: {
         Row: {
@@ -6316,6 +6643,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_strike_count: {
+        Args: { target_user_id: string }
+        Returns: number
+      }
       handle_enhanced_xp_purchase: {
         Args: {
           creator_id_param?: string
@@ -6370,6 +6701,10 @@ export type Database = {
       increment_template_usage: {
         Args: { template_id: string }
         Returns: undefined
+      }
+      is_user_restricted: {
+        Args: { target_user_id: string }
+        Returns: boolean
       }
       mark_notifications_read: {
         Args: { notification_ids: string[] }
@@ -6467,6 +6802,36 @@ export type Database = {
       }
     }
     Enums: {
+      content_type:
+        | "community_post"
+        | "community_message"
+        | "post_comment"
+        | "user_profile"
+        | "user_bio"
+        | "shared_link"
+        | "image"
+        | "video"
+      moderation_action:
+        | "approved"
+        | "warning"
+        | "shadow_ban"
+        | "content_removed"
+        | "account_restricted"
+        | "account_suspended"
+        | "manual_review"
+        | "appealed"
+      moderation_category:
+        | "violence_incitement"
+        | "safety_harassment"
+        | "authenticity_spam"
+        | "privacy_doxxing"
+        | "intellectual_property"
+        | "regulated_goods"
+        | "community_standards"
+        | "nudity_sexual"
+        | "hate_speech"
+        | "misinformation"
+      moderation_severity: "low" | "medium" | "high" | "critical"
       transaction_type:
         | "XP_PURCHASE_FAN_SHARE"
         | "XP_PURCHASE_PLATFORM_SHARE"
@@ -6608,6 +6973,39 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      content_type: [
+        "community_post",
+        "community_message",
+        "post_comment",
+        "user_profile",
+        "user_bio",
+        "shared_link",
+        "image",
+        "video",
+      ],
+      moderation_action: [
+        "approved",
+        "warning",
+        "shadow_ban",
+        "content_removed",
+        "account_restricted",
+        "account_suspended",
+        "manual_review",
+        "appealed",
+      ],
+      moderation_category: [
+        "violence_incitement",
+        "safety_harassment",
+        "authenticity_spam",
+        "privacy_doxxing",
+        "intellectual_property",
+        "regulated_goods",
+        "community_standards",
+        "nudity_sexual",
+        "hate_speech",
+        "misinformation",
+      ],
+      moderation_severity: ["low", "medium", "high", "critical"],
       transaction_type: [
         "XP_PURCHASE_FAN_SHARE",
         "XP_PURCHASE_PLATFORM_SHARE",
