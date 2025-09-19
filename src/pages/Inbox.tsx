@@ -11,7 +11,8 @@ import CreatorInbox from '@/components/CreatorInbox';
 import MessageSettings from '@/components/MessageSettings';
 import ConversationThread from '@/components/ConversationThread';
 import MessageCreator from '@/components/MessageCreator';
-import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings, User, ArrowLeft, Trash2, Plus } from 'lucide-react';
+import { CreatorOffersTab } from '@/components/CreatorOffersTab';
+import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings, User, ArrowLeft, Trash2, Plus, TrendingUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -282,10 +283,14 @@ const Inbox: React.FC = () => {
       </Card>
 
       <Tabs defaultValue="inbox" className="w-full">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-3'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-4'}`}>
           <TabsTrigger value="inbox" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             {isMobile ? 'Inbox' : 'Inbox'}
+          </TabsTrigger>
+          <TabsTrigger value="offers" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            {isMobile ? 'Offers' : 'Offers'}
           </TabsTrigger>
           {!isMobile && (
             <TabsTrigger value="sent" className="flex items-center gap-2">
@@ -314,6 +319,10 @@ const Inbox: React.FC = () => {
               searchQuery={globalSearchQuery}
             />
           )}
+        </TabsContent>
+
+        <TabsContent value="offers" className="mt-6">
+          <CreatorOffersTab />
         </TabsContent>
 
         <TabsContent value="sent" className="space-y-4 mt-6">

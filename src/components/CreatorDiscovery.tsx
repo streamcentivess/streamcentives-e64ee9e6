@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Users, TrendingUp, MessageCircle, Filter, X } from "lucide-react";
 import { SponsorOfferModal } from "@/components/SponsorOfferModal";
+import { UserProfileModal } from "@/components/UserProfileModal";
 
 export function CreatorDiscovery() {
   const { user } = useAuth();
@@ -20,6 +21,8 @@ export function CreatorDiscovery() {
   const [showFilters, setShowFilters] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [selectedCreator, setSelectedCreator] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   
   // Filter state
   const [filters, setFilters] = useState({
@@ -203,6 +206,11 @@ export function CreatorDiscovery() {
   const handleSendOffer = (creator) => {
     setSelectedCreator(creator);
     setShowOfferModal(true);
+  };
+
+  const handleViewProfile = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowProfileModal(true);
   };
 
   if (loading) {
@@ -394,7 +402,10 @@ export function CreatorDiscovery() {
           <Card key={creator.user_id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <CardHeader className="pb-4">
               <div className="flex items-start gap-4">
-                <Avatar className="w-16 h-16">
+                <Avatar 
+                  className="w-16 h-16 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                  onClick={() => handleViewProfile(creator.user_id)}
+                >
                   <AvatarImage src={creator.avatar_url} />
                   <AvatarFallback>
                     {creator.display_name?.[0] || creator.username?.[0] || 'U'}
@@ -473,6 +484,13 @@ export function CreatorDiscovery() {
         isOpen={showOfferModal}
         onClose={() => setShowOfferModal(false)}
         creator={selectedCreator}
+      />
+      
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        userId={selectedUserId}
       />
     </div>
   );
