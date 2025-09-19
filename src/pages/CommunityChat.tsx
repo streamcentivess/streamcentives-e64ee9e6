@@ -12,6 +12,7 @@ import { ArrowLeft, Send, Image, Heart, MessageSquare, Share, Pin, Camera, X, Us
 import AppNavigation from '@/components/AppNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
 
 const CommunityChat = () => {
   const { communityId } = useParams<{ communityId: string }>();
@@ -24,6 +25,8 @@ const CommunityChat = () => {
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'posts'>('posts');
   const [loading, setLoading] = useState(false);
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [newComments, setNewComments] = useState<Record<string, string>>({});
 
   // Post form state
   const [postForm, setPostForm] = useState({
@@ -75,6 +78,16 @@ const CommunityChat = () => {
             username,
             display_name,
             avatar_url
+          ),
+          post_comments (
+            id,
+            content,
+            created_at,
+            profiles (
+              username,
+              display_name,
+              avatar_url
+            )
           )
         `)
         .eq('community_id', communityId)
@@ -218,6 +231,48 @@ const CommunityChat = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleComments = (postId: string) => {
+    const newExpanded = new Set(expandedComments);
+    if (newExpanded.has(postId)) {
+      newExpanded.delete(postId);
+    } else {
+      newExpanded.add(postId);
+    }
+    setExpandedComments(newExpanded);
+  };
+
+  const handleAddComment = async (postId: string) => {
+    const content = newComments[postId]?.trim();
+    if (!content || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from('post_comments')
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          content
+        });
+
+      if (error) throw error;
+
+      setNewComments(prev => ({ ...prev, [postId]: '' }));
+      fetchPosts(); // Refresh to show new comment
+      
+      toast({
+        title: "Success!",
+        description: "Comment added successfully"
+      });
+    } catch (error: any) {
+      console.error('Error adding comment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add comment",
+        variant: "destructive"
+      });
     }
   };
 
@@ -499,18 +554,72 @@ const CommunityChat = () => {
                     
                     {/* Post Actions */}
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <button className="flex items-center gap-1 hover:text-primary">
-                        <Heart className="h-4 w-4" />
-                        <span>{post.likes_count || 0}</span>
-                      </button>
-                      <button className="flex items-center gap-1 hover:text-primary">
+                      <EnhancedSocialInteractions
+                        contentId={post.id}
+                        contentType="post"
+                        targetUserId={post.author_id}
+                        showCounts={true}
+                        size="sm"
+                        variant="horizontal"
+                      />
+                      <button 
+                        className="flex items-center gap-1 hover:text-primary transition-colors"
+                        onClick={() => toggleComments(post.id)}
+                      >
                         <MessageSquare className="h-4 w-4" />
-                        <span>{post.comments_count || 0}</span>
-                      </button>
-                      <button className="flex items-center gap-1 hover:text-primary">
-                        <Share className="h-4 w-4" />
+                        <span>{post.post_comments?.length || 0}</span>
                       </button>
                     </div>
+                    
+                    {/* Comments Section */}
+                    {expandedComments.has(post.id) && (
+                      <div className="mt-4 space-y-3 border-t pt-4">
+                        {/* Existing Comments */}
+                        {post.post_comments?.map((comment: any) => (
+                          <div key={comment.id} className="flex gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={comment.profiles?.avatar_url} />
+                              <AvatarFallback>
+                                {comment.profiles?.display_name?.charAt(0) || comment.profiles?.username?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-medium">@{comment.profiles?.username}</span>
+                                <span className="text-muted-foreground">
+                                  {new Date(comment.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-sm mt-1">{comment.content}</p>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {/* Add Comment */}
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Add a comment..."
+                            value={newComments[post.id] || ''}
+                            onChange={(e) => setNewComments(prev => ({ 
+                              ...prev, 
+                              [post.id]: e.target.value 
+                            }))}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                handleAddComment(post.id);
+                              }
+                            }}
+                          />
+                          <Button 
+                            size="sm"
+                            onClick={() => handleAddComment(post.id)}
+                            disabled={!newComments[post.id]?.trim()}
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))
