@@ -315,146 +315,148 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
 
   return (
     <div className="space-y-6">
-      {/* Connected Platforms */}
+      {/* Connections & Links Hub */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />
-            Platform Integrations
+            Connections & Links
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {integrations.map((integration) => {
-              const Icon = integration.icon;
-              return (
-                <div key={integration.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-6 w-6 text-primary" />
-                    <div>
+          <div className="space-y-6">
+            {/* Platform Connections */}
+            <div>
+              <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
+                Platform Connections
+              </h3>
+              <div className="space-y-3">
+                {integrations.map((integration) => {
+                  const Icon = integration.icon;
+                  return (
+                    <div key={integration.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">{integration.name}</p>
+                            {integration.verified && (
+                              <Badge variant="secondary" className="text-xs">
+                                Verified
+                              </Badge>
+                            )}
+                          </div>
+                          {integration.connected && integration.username && (
+                            <p className="text-xs text-muted-foreground">
+                              {integration.username}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <p className="font-medium">{integration.name}</p>
-                        {integration.verified && (
-                          <Badge variant="secondary" className="text-xs">
-                            Verified
-                          </Badge>
+                        {integration.connected ? (
+                          <>
+                            <Badge variant="default" className="text-xs">
+                              Connected
+                            </Badge>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDisconnect(integration.id)}
+                            >
+                              Disconnect
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => handleConnect(integration.id)}
+                            className="bg-gradient-primary"
+                          >
+                            Connect
+                          </Button>
                         )}
                       </div>
-                      {integration.connected && integration.username && (
-                        <p className="text-sm text-muted-foreground">
-                          {integration.username} • {integration.followers?.toLocaleString()} followers
-                        </p>
-                      )}
-                      {integration.lastSync && (
-                        <p className="text-xs text-muted-foreground">
-                          Last sync: {new Date(integration.lastSync).toLocaleDateString()}
-                        </p>
-                      )}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {integration.connected ? (
-                      <>
-                        <Badge variant="default" className="text-green-600">
-                          Connected
-                        </Badge>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => syncIntegration(integration.id)}
-                        >
-                          <RefreshCw className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDisconnect(integration.id)}
-                        >
-                          Disconnect
-                        </Button>
-                      </>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => handleConnect(integration.id)}
-                        className="bg-gradient-primary"
-                      >
-                        Connect
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                  );
+                })}
+              </div>
+            </div>
 
-      {/* Smart Links Integration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Link2 className="h-5 w-5" />
-            Smart Links ({smartLinks.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {smartLinks.length > 0 ? (
-              <div className="space-y-2">
-                {smartLinks.slice(0, 3).map((link) => (
-                  <div key={link.id} className="flex items-center justify-between p-3 border rounded">
-                    <div>
-                      <p className="font-medium">{link.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        /link/{link.slug} • {link.total_clicks} clicks
+            {/* Smart Links */}
+            <div>
+              <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
+                Smart Links ({smartLinks.length})
+              </h3>
+              <div className="space-y-3">
+                {smartLinks.length > 0 ? (
+                  <>
+                    {smartLinks.slice(0, 2).map((link) => (
+                      <div key={link.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium text-sm">{link.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            /link/{link.slug} • {link.total_clicks} clicks
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={link.is_active ? "default" : "secondary"} className="text-xs">
+                            {link.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigator.clipboard.writeText(`${window.location.origin}/link/${link.slug}`)}
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {smartLinks.length > 2 && (
+                      <p className="text-xs text-muted-foreground text-center">
+                        +{smartLinks.length - 2} more links
                       </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={link.is_active ? "default" : "secondary"}>
-                        {link.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigator.clipboard.writeText(`${window.location.origin}/link/${link.slug}`)}
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-4 border rounded-lg border-dashed">
+                    <Link2 className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-xs text-muted-foreground mb-3">
+                      No smart links created yet
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate('/universal-profile?tab=smart-links')}
+                      className="bg-gradient-primary"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Create Smart Link
+                    </Button>
                   </div>
-                ))}
-                {smartLinks.length > 3 && (
-                  <p className="text-sm text-muted-foreground text-center">
-                    +{smartLinks.length - 3} more links
-                  </p>
                 )}
               </div>
-            ) : (
-              <div className="text-center py-6">
-                <Link2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-4">
-                  No smart links created yet
-                </p>
-                <Button
-                  size="sm"
-                  onClick={() => navigate('/universal-profile?tab=smart-links')}
-                  className="bg-gradient-primary"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Create Smart Link
-                </Button>
-              </div>
-            )}
-            
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate('/universal-profile?tab=smart-links')}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Manage All Smart Links
-            </Button>
+            </div>
+
+            {/* Manage Actions */}
+            <div className="flex gap-2 pt-2 border-t">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate('/universal-profile?tab=smart-links')}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Manage Links
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate('/social-integrations')}
+              >
+                <Link2 className="h-4 w-4 mr-2" />
+                More Integrations
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
