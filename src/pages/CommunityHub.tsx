@@ -113,7 +113,7 @@ const CommunityHub = () => {
             name,
             genre
           ),
-          profiles (
+          profiles!community_posts_author_id_fkey (
             username,
             display_name,
             avatar_url

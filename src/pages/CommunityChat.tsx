@@ -111,7 +111,7 @@ const CommunityChat = () => {
         .from('community_posts')
         .select(`
           *,
-          profiles (
+          profiles!community_posts_author_id_fkey (
             username,
             display_name,
             avatar_url
@@ -120,7 +120,7 @@ const CommunityChat = () => {
             id,
             content,
             created_at,
-            profiles (
+            profiles!post_comments_user_id_fkey (
               username,
               display_name,
               avatar_url
