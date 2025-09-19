@@ -255,7 +255,7 @@ export default function BrandProfile() {
     if (!profile?.user_id) return;
 
     try {
-      // Get followers as supporters
+      // Get followers as supporters with proper mapping
       const { data: followersData } = await supabase
         .from('follows')
         .select(`
@@ -272,7 +272,14 @@ export default function BrandProfile() {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      setSupporters(followersData || []);
+      // Map the data to match UserSearchAndManage expectations
+      const mappedSupporters = (followersData || []).map(item => ({
+        supporter_id: item.follower_id,
+        created_at: item.created_at,
+        profiles: item.profiles
+      }));
+
+      setSupporters(mappedSupporters);
 
       // If own profile, also get blocked users
       if (isOwnProfile && user?.id) {

@@ -40,7 +40,9 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
       if (error) throw error;
       
       // Filter out current user and already added users
-      const currentUserIds = currentUsers.map(u => u.user_id || u.supporter_id || u.hater_id);
+      const currentUserIds = currentUsers.map(u => 
+        u.user_id || u.supporter_id || u.hater_id || u.follower_id
+      );
       const filteredResults = (data || []).filter(profile => 
         profile.user_id !== user?.id && 
         !currentUserIds.includes(profile.user_id)
@@ -220,7 +222,7 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
         <div className="space-y-3">
           {currentUsers.map((userEntry) => {
             const profile = userEntry.profiles;
-            const userId = userEntry.supporter_id || userEntry.hater_id;
+            const userId = userEntry.supporter_id || userEntry.hater_id || userEntry.follower_id;
             
             return (
               <Card key={userId} className="p-3">
