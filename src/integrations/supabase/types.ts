@@ -1565,6 +1565,60 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_payouts: {
+        Row: {
+          bank_account_last4: string | null
+          conversion_rate: number
+          created_at: string
+          creator_id: string
+          fee_amount_cents: number
+          fiat_amount_cents: number
+          id: string
+          metadata: Json | null
+          net_amount_cents: number
+          processed_at: string | null
+          requested_at: string
+          status: string
+          stripe_payout_id: string | null
+          updated_at: string
+          xp_amount: number
+        }
+        Insert: {
+          bank_account_last4?: string | null
+          conversion_rate: number
+          created_at?: string
+          creator_id: string
+          fee_amount_cents: number
+          fiat_amount_cents: number
+          id?: string
+          metadata?: Json | null
+          net_amount_cents: number
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          stripe_payout_id?: string | null
+          updated_at?: string
+          xp_amount: number
+        }
+        Update: {
+          bank_account_last4?: string | null
+          conversion_rate?: number
+          created_at?: string
+          creator_id?: string
+          fee_amount_cents?: number
+          fiat_amount_cents?: number
+          id?: string
+          metadata?: Json | null
+          net_amount_cents?: number
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          stripe_payout_id?: string | null
+          updated_at?: string
+          xp_amount?: number
+        }
+        Relationships: []
+      }
       crypto_payments: {
         Row: {
           amount_crypto: number
@@ -1835,6 +1889,57 @@ export type Database = {
         }
         Relationships: []
       }
+      experiences: {
+        Row: {
+          created_at: string
+          creator_id: string
+          experience_type: string
+          fan_id: string
+          id: string
+          instructions: string | null
+          location: string | null
+          metadata: Json | null
+          qr_code_url: string | null
+          reward_redemption_id: string
+          scheduled_at: string | null
+          status: string
+          updated_at: string
+          verification_code: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          experience_type: string
+          fan_id: string
+          id?: string
+          instructions?: string | null
+          location?: string | null
+          metadata?: Json | null
+          qr_code_url?: string | null
+          reward_redemption_id: string
+          scheduled_at?: string | null
+          status?: string
+          updated_at?: string
+          verification_code?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          experience_type?: string
+          fan_id?: string
+          id?: string
+          instructions?: string | null
+          location?: string | null
+          metadata?: Json | null
+          qr_code_url?: string | null
+          reward_redemption_id?: string
+          scheduled_at?: string | null
+          status?: string
+          updated_at?: string
+          verification_code?: string | null
+        }
+        Relationships: []
+      }
       fan_behavior_analytics: {
         Row: {
           behavior_data: Json
@@ -1976,6 +2081,51 @@ export type Database = {
           follower_id?: string
           following_id?: string
           id?: string
+        }
+        Relationships: []
+      }
+      fulfillments: {
+        Row: {
+          created_at: string
+          creator_id: string
+          delivered_at: string | null
+          fan_id: string
+          id: string
+          notes: string | null
+          reward_redemption_id: string
+          shipped_at: string | null
+          shipping_address: Json
+          status: string
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          delivered_at?: string | null
+          fan_id: string
+          id?: string
+          notes?: string | null
+          reward_redemption_id: string
+          shipped_at?: string | null
+          shipping_address: Json
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          delivered_at?: string | null
+          fan_id?: string
+          id?: string
+          notes?: string | null
+          reward_redemption_id?: string
+          shipped_at?: string | null
+          shipping_address?: Json
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -4665,6 +4815,48 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          amount_value: number
+          created_at: string
+          currency_type: string
+          id: string
+          metadata: Json | null
+          related_user_id: string | null
+          status: string
+          stripe_id: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_value: number
+          created_at?: string
+          currency_type: string
+          id?: string
+          metadata?: Json | null
+          related_user_id?: string | null
+          status?: string
+          stripe_id?: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_value?: number
+          created_at?: string
+          currency_type?: string
+          id?: string
+          metadata?: Json | null
+          related_user_id?: string | null
+          status?: string
+          stripe_id?: string | null
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_blocks: {
         Row: {
           blocked_id: string
@@ -5174,6 +5366,30 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_conversion_rates: {
+        Row: {
+          created_at: string
+          effective_from: string
+          id: string
+          is_active: boolean
+          xp_per_dollar_cents: number
+        }
+        Insert: {
+          created_at?: string
+          effective_from?: string
+          id?: string
+          is_active?: boolean
+          xp_per_dollar_cents?: number
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          id?: string
+          is_active?: boolean
+          xp_per_dollar_cents?: number
+        }
+        Relationships: []
+      }
       xp_purchase_transactions: {
         Row: {
           created_at: string
@@ -5398,6 +5614,10 @@ export type Database = {
         Returns: Json
       }
       generate_redemption_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_verification_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
@@ -5649,6 +5869,19 @@ export type Database = {
       }
     }
     Enums: {
+      transaction_type:
+        | "XP_PURCHASE_FAN_SHARE"
+        | "XP_PURCHASE_PLATFORM_SHARE"
+        | "MARKETPLACE_SALE_XP"
+        | "MARKETPLACE_FEE_XP"
+        | "CREATOR_CASH_OUT_REQUEST"
+        | "CREATOR_CASH_OUT_PAYOUT"
+        | "CASH_OUT_FEE_FIAT"
+        | "SPONSOR_PAYMENT_FIAT"
+        | "BRAND_DEAL_FEE_FIAT"
+        | "SUBSCRIPTION_FEE_FIAT"
+        | "REWARD_SALE_XP"
+        | "TIP_PAYMENT_XP"
       xp_type: "platform" | "creator_specific" | "transferable"
     }
     CompositeTypes: {
@@ -5777,6 +6010,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      transaction_type: [
+        "XP_PURCHASE_FAN_SHARE",
+        "XP_PURCHASE_PLATFORM_SHARE",
+        "MARKETPLACE_SALE_XP",
+        "MARKETPLACE_FEE_XP",
+        "CREATOR_CASH_OUT_REQUEST",
+        "CREATOR_CASH_OUT_PAYOUT",
+        "CASH_OUT_FEE_FIAT",
+        "SPONSOR_PAYMENT_FIAT",
+        "BRAND_DEAL_FEE_FIAT",
+        "SUBSCRIPTION_FEE_FIAT",
+        "REWARD_SALE_XP",
+        "TIP_PAYMENT_XP",
+      ],
       xp_type: ["platform", "creator_specific", "transferable"],
     },
   },
