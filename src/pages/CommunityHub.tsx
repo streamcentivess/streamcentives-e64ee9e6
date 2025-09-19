@@ -244,7 +244,7 @@ const CommunityHub = () => {
         mediaUrls = results.filter((u): u is string => !!u);
       }
 
-      // Create the post without tagged_people column (use post_tags table instead)
+      // Create the post - tagged users will be saved separately in post_tags table
       const { data: post, error } = await supabase
         .from('community_posts')
         .insert({
