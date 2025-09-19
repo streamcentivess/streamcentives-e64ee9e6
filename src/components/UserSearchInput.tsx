@@ -29,6 +29,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const searchUsers = async (query: string) => {
     if (query.length < 2) {
@@ -86,7 +87,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
   // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
     };
@@ -101,7 +102,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
   }, []);
 
   return (
-    <div className="relative">
+    <div ref={wrapperRef} className="relative">
       <div className="relative">
         <UserPlus className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
@@ -119,7 +120,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
               <div
                 key={user.user_id}
                 className="px-3 py-2 hover:bg-accent cursor-pointer border-b border-border last:border-b-0"
-                onClick={() => handleUserSelect(user)}
+                onMouseDown={() => handleUserSelect(user)}
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-6 w-6">
