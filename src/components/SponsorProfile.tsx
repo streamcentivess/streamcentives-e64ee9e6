@@ -132,6 +132,28 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
       if (sponsorError) throw sponsorError;
 
+      // Also update or create the profiles table entry with company name as username
+      // This allows sponsors to sign in using their company name
+      if (formData.company_name.trim()) {
+        const profilesData = {
+          user_id: user.id,
+          username: formData.company_name.trim().toLowerCase().replace(/[^a-z0-9]/g, ''),
+          display_name: formData.company_name.trim(),
+          email: formData.email.trim() || user.email
+        };
+
+        const { error: profilesError } = await supabase
+          .from('profiles')
+          .upsert(profilesData, { 
+            onConflict: 'user_id'
+          });
+
+        if (profilesError) {
+          console.error('Error updating profiles table:', profilesError);
+          // Don't throw error here - sponsor profile was saved successfully
+        }
+      }
+
       // Update authentication email if changed
       if (formData.email && formData.email.trim() && formData.email.trim() !== user.email) {
         const { error: authEmailError } = await supabase.auth.updateUser({
