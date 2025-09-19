@@ -88,6 +88,18 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
     setLoading(true);
     try {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (formData.email && !emailRegex.test(formData.email)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       const profileData = {
         user_id: user.id,
         company_name: formData.company_name,
@@ -99,7 +111,7 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
         budget_range_max: formData.budget_range_max ? parseInt(formData.budget_range_max) : null,
       };
 
-      // Update sponsor profile
+      // Update sponsor profile first
       const { error: sponsorError } = existingProfile
         ? await supabase
             .from('sponsor_profiles')
@@ -111,19 +123,38 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
       if (sponsorError) throw sponsorError;
 
-      // Update email in profiles table if changed
-      if (formData.email && formData.email.trim()) {
-        const { error: emailError } = await supabase
-          .from('profiles')
-          .update({ email: formData.email.trim() })
-          .eq('user_id', user.id);
+      // Update authentication email if changed
+      if (formData.email && formData.email.trim() && formData.email.trim() !== user.email) {
+        const { error: authEmailError } = await supabase.auth.updateUser({
+          email: formData.email.trim()
+        });
 
-        if (emailError) {
-          console.error('Error updating email:', emailError);
+        if (authEmailError) {
+          console.error('Error updating auth email:', authEmailError);
+          let errorMessage = "Failed to update email address.";
+          
+          if (authEmailError.message.includes('already been registered')) {
+            errorMessage = "This email is already registered with another account.";
+          } else if (authEmailError.message.includes('rate limit')) {
+            errorMessage = "Too many email update attempts. Please wait before trying again.";
+          }
+          
           toast({
-            title: "Partial Success",
-            description: "Profile saved but email update failed. Please try updating email separately.",
+            title: "Email Update Failed",
+            description: errorMessage,
             variant: "destructive"
+          });
+        } else {
+          // Also update email in profiles table for consistency
+          await supabase
+            .from('profiles')
+            .update({ email: formData.email.trim() })
+            .eq('user_id', user.id);
+
+          toast({
+            title: "Email Update Confirmation",
+            description: "A confirmation email has been sent to your new email address. Please check your inbox to complete the email change.",
+            variant: "default"
           });
         }
       }
