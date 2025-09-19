@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Send, Image, Video, Heart, MessageSquare, Share, Pin, Camera, X, Users, MapPin } from 'lucide-react';
+import { ArrowLeft, Send, Image, Heart, MessageSquare, Share, Pin, Camera, X, Users, MapPin } from 'lucide-react';
 import AppNavigation from '@/components/AppNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -18,14 +17,12 @@ const CommunityChat = () => {
   const { communityId } = useParams<{ communityId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const [community, setCommunity] = useState<any>(null);
-  const [messages, setMessages] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showPostDialog, setShowPostDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'posts'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'posts'>('posts');
   const [loading, setLoading] = useState(false);
 
   // Post form state
@@ -39,19 +36,10 @@ const CommunityChat = () => {
   useEffect(() => {
     if (communityId && user) {
       fetchCommunity();
-      fetchMessages();
       fetchPosts();
       setupRealtimeSubscriptions();
     }
   }, [communityId, user]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const fetchCommunity = async () => {
     if (!communityId) return;
@@ -72,31 +60,6 @@ const CommunityChat = () => {
         description: "Failed to load community",
         variant: "destructive"
       });
-    }
-  };
-
-  const fetchMessages = async () => {
-    if (!communityId) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('community_messages')
-        .select(`
-          *,
-          profiles (
-            username,
-            display_name,
-            avatar_url
-          )
-        `)
-        .eq('community_id', communityId)
-        .order('created_at', { ascending: true })
-        .limit(50);
-      
-      if (error) throw error;
-      setMessages(data || []);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
     }
   };
 
@@ -127,22 +90,6 @@ const CommunityChat = () => {
   const setupRealtimeSubscriptions = () => {
     if (!communityId) return;
 
-    const messagesChannel = supabase
-      .channel(`community-messages-${communityId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'community_messages',
-          filter: `community_id=eq.${communityId}`
-        },
-        () => {
-          fetchMessages();
-        }
-      )
-      .subscribe();
-
     const postsChannel = supabase
       .channel(`community-posts-${communityId}`)
       .on(
@@ -160,33 +107,8 @@ const CommunityChat = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(messagesChannel);
       supabase.removeChannel(postsChannel);
     };
-  };
-
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user || !communityId) return;
-
-    try {
-      const { error } = await supabase
-        .from('community_messages')
-        .insert({
-          community_id: communityId,
-          user_id: user.id,
-          message: newMessage.trim()
-        });
-
-      if (error) throw error;
-      setNewMessage('');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
-      });
-    }
   };
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -479,39 +401,22 @@ const CommunityChat = () => {
               </CardHeader>
               <CardContent className="flex-1 flex flex-col p-0">
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {messages.map((message) => (
-                    <div key={message.id} className="flex gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={message.profiles?.avatar_url} />
-                        <AvatarFallback>
-                          {message.profiles?.display_name?.charAt(0) || message.profiles?.username?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm">
-                            {message.profiles?.display_name || message.profiles?.username}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(message.created_at).toLocaleTimeString()}
-                          </span>
-                        </div>
-                        <p className="text-sm">{message.message}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
+                  <div className="text-center text-muted-foreground py-8">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Real-time chat coming soon!</p>
+                    <p className="text-sm">Use posts to share photos and start discussions for now.</p>
+                  </div>
                 </div>
                 
                 <div className="p-4 border-t">
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Type a message..."
+                      placeholder="Real-time chat coming soon..."
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      disabled
                     />
-                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+                    <Button disabled>
                       <Send className="h-4 w-4" />
                     </Button>
                   </div>
