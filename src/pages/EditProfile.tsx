@@ -12,6 +12,7 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import SettingsTab from '@/components/SettingsTab';
+import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
 
 interface Profile {
   id: string;
@@ -502,6 +503,19 @@ const EditProfile = () => {
               </CardContent>
             </Card>
           )}
+          </CardContent>
+        </Card>
+
+        {/* Delete Account Section */}
+        <Card className="card-modern border-destructive/50">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-destructive mb-2">
+              Danger Zone
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Once you delete your account, all your data will be permanently removed and cannot be recovered.
+            </p>
+            <DeleteAccountDialog />
           </CardContent>
         </Card>
 

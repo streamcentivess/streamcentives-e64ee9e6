@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Building2, Globe, DollarSign, Lock } from "lucide-react";
+import { DeleteAccountDialog } from "@/components/DeleteAccountDialog";
 
 interface SponsorProfileProps {
   existingProfile?: any;
@@ -563,6 +564,22 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
               {passwordLoading ? "Updating Password..." : "Update Password"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+      
+      {/* Delete Account Section */}
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            Danger Zone
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Once you delete your sponsor account, all your company data, sponsorship history, and partnerships will be permanently removed and cannot be recovered.
+          </p>
+          <DeleteAccountDialog />
         </CardContent>
       </Card>
     </div>

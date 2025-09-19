@@ -5212,6 +5212,10 @@ export type Database = {
       }
     }
     Functions: {
+      anonymize_user_data: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
       apply_creator_pro_boost: {
         Args: { campaign_id_param: string; creator_id_param: string }
         Returns: Json
