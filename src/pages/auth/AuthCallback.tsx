@@ -111,7 +111,7 @@ const AuthCallback = () => {
 
           // Handle YouTube via dedicated flow (no-op here)
 
-          // Check onboarding status
+          // Check onboarding status and user role
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('onboarding_completed, user_id')
@@ -122,10 +122,24 @@ const AuthCallback = () => {
             console.error('Profile fetch error:', profileError);
           }
 
+          // Check if user is a sponsor
+          const { data: sponsorProfile } = await supabase
+            .from('sponsor_profiles')
+            .select('id')
+            .eq('user_id', data.session.user.id)
+            .maybeSingle();
+
+          const isSponsor = !!sponsorProfile;
+
           if (profile && profile.onboarding_completed) {
             toast({ title: 'Welcome back!', description: 'You have been signed in successfully.' });
-            window.history.replaceState(null, '', '/universal-profile');
-            navigate('/universal-profile', { replace: true });
+            if (isSponsor) {
+              window.history.replaceState(null, '', '/sponsor-profile');
+              navigate('/sponsor-profile', { replace: true });
+            } else {
+              window.history.replaceState(null, '', '/universal-profile');
+              navigate('/universal-profile', { replace: true });
+            }
           } else {
             toast({ title: 'Welcome to Streamcentives!', description: "Let's set up your profile." });
             window.history.replaceState(null, '', '/role-selection');

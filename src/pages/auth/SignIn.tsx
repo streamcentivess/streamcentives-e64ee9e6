@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
 import streamcentivesLogo from '@/assets/streamcentives-logo.png';
 
 const SignIn = () => {
@@ -17,9 +18,24 @@ const SignIn = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate('/universal-profile');
-    }
+    const checkUserRoleAndRedirect = async () => {
+      if (user) {
+        // Check if user is a sponsor
+        const { data: sponsorProfile } = await supabase
+          .from('sponsor_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (sponsorProfile) {
+          navigate('/sponsor-profile');
+        } else {
+          navigate('/universal-profile');
+        }
+      }
+    };
+
+    checkUserRoleAndRedirect();
   }, [user, navigate]);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -29,7 +45,21 @@ const SignIn = () => {
     const { error } = await signInWithEmail(email, password);
     
     if (!error) {
-      navigate('/universal-profile');
+      // Check if user is a sponsor after successful login
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const { data: sponsorProfile } = await supabase
+          .from('sponsor_profiles')
+          .select('id')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+
+        if (sponsorProfile) {
+          navigate('/sponsor-profile');
+        } else {
+          navigate('/universal-profile');
+        }
+      }
     }
     
     setLoading(false);
