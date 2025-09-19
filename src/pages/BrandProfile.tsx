@@ -644,45 +644,56 @@ export default function BrandProfile() {
           </TabsContent>
 
           <TabsContent value="supporters" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Brand Supporters</h2>
-              <Badge variant="outline">{supporters.length} Supporters</Badge>
-            </div>
-            
-            {supporters.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {supporters.map((supporter: any) => (
-                  <Card key={supporter.follower_id} className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={supporter.profiles?.avatar_url} />
-                        <AvatarFallback>
-                          {supporter.profiles?.display_name?.charAt(0) || supporter.profiles?.username?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h4 className="font-medium">{supporter.profiles?.display_name || supporter.profiles?.username}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          @{supporter.profiles?.username}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Following since {new Date(supporter.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+            {isOwnProfile ? (
+              <UserSearchAndManage
+                type="supporters"
+                currentUsers={supporters}
+                onUserAdded={fetchSupporters}
+                onUserRemoved={fetchSupporters}
+              />
             ) : (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No Supporters Yet</h3>
-                  <p className="text-muted-foreground">
-                    {isOwnProfile ? "Build your audience by creating engaging campaigns and content!" : "This brand doesn't have any followers yet."}
-                  </p>
-                </CardContent>
-              </Card>
+              <>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold">Brand Supporters</h2>
+                  <Badge variant="outline">{supporters.length} Supporters</Badge>
+                </div>
+                
+                {supporters.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {supporters.map((supporter: any) => (
+                      <Card key={supporter.follower_id} className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src={supporter.profiles?.avatar_url} />
+                            <AvatarFallback>
+                              {supporter.profiles?.display_name?.charAt(0) || supporter.profiles?.username?.charAt(0) || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <h4 className="font-medium">{supporter.profiles?.display_name || supporter.profiles?.username}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              @{supporter.profiles?.username}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Following since {new Date(supporter.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No Supporters Yet</h3>
+                      <p className="text-muted-foreground">
+                        This brand doesn't have any followers yet.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
           </TabsContent>
 
