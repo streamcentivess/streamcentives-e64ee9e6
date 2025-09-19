@@ -24,6 +24,7 @@ const CommunityHub = () => {
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
   const [communities, setCommunities] = useState<any[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   
   // Community creation form state
@@ -73,6 +74,7 @@ const CommunityHub = () => {
   useEffect(() => {
     if (user) {
       fetchCommunities();
+      fetchCommunityPosts();
     }
   }, [user]);
 
@@ -92,6 +94,40 @@ const CommunityHub = () => {
       toast({
         title: "Error",
         description: "Failed to fetch communities",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchCommunityPosts = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('community_posts')
+        .select(`
+          *,
+          communities!community_id (
+            id,
+            name,
+            genre
+          ),
+          profiles!author_id (
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch community posts",
         variant: "destructive"
       });
     }
@@ -297,6 +333,9 @@ const CommunityHub = () => {
       setTaggedPeopleInput('');
       setShowPostDialog(false);
       
+      // Refresh posts to show the new one
+      fetchCommunityPosts();
+      
     } catch (error: any) {
       console.error('Error creating post:', error);
       toast({
@@ -308,6 +347,31 @@ const CommunityHub = () => {
       setLoading(false);
     }
   };
+
+  // Real-time updates for posts
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('community-posts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'community_posts'
+        },
+        () => {
+          // Refresh posts when a new one is created
+          fetchCommunityPosts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
 
   const upcomingEvents = [
@@ -761,10 +825,86 @@ const CommunityHub = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="text-center text-muted-foreground py-8">
-                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No posts yet. Create the first post in your community!</p>
-              </div>
+              {posts.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No posts yet. Create the first post in your community!</p>
+                </div>
+              ) : (
+                posts.map((post) => (
+                  <Card key={post.id} className="card-modern">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={post.profiles?.avatar_url} alt={post.profiles?.display_name || post.profiles?.username} />
+                            <AvatarFallback>
+                              {(post.profiles?.display_name || post.profiles?.username)?.charAt(0)?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h4 className="font-semibold">{post.title}</h4>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span>by @{post.profiles?.username}</span>
+                              <span>•</span>
+                              <span>in {post.communities?.name}</span>
+                              <span>•</span>
+                              <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {post.is_pinned && (
+                          <Pin className="h-4 w-4 text-primary" />
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm mb-4">{post.content}</p>
+                      
+                      {/* Media Display */}
+                      {post.media_urls && post.media_urls.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                          {post.media_urls.slice(0, 4).map((url: string, index: number) => (
+                            <img
+                              key={index}
+                              src={url}
+                              alt={`Post media ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-md"
+                            />
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Location */}
+                      {post.location && (
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+                          <MapPin className="h-3 w-3" />
+                          {post.location}
+                        </div>
+                      )}
+                      
+                      {/* Post Actions */}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <button className="flex items-center gap-1 hover:text-primary">
+                          <Heart className="h-4 w-4" />
+                          <span>{post.likes_count || 0}</span>
+                        </button>
+                        <button className="flex items-center gap-1 hover:text-primary">
+                          <MessageSquare className="h-4 w-4" />
+                          <span>{post.comments_count || 0}</span>
+                        </button>
+                        <button className="flex items-center gap-1 hover:text-primary">
+                          <Repeat2 className="h-4 w-4" />
+                          <span>{post.reposts_count || 0}</span>
+                        </button>
+                        <button className="flex items-center gap-1 hover:text-primary">
+                          <Share className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
