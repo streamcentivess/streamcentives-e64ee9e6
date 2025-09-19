@@ -4,6 +4,7 @@ import { Home, Search, Plus, Heart, User, Trophy, MessageSquare, Store } from 'l
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useMobileCapabilities } from '@/hooks/useMobileCapabilities';
 import { ImpactStyle } from '@capacitor/haptics';
 
@@ -19,6 +20,7 @@ const MobileNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { role: userRole } = useUserRole();
   const { hapticImpact, isNative } = useMobileCapabilities();
 
   const navigationItems: NavigationItem[] = [
@@ -46,7 +48,7 @@ const MobileNavigation = () => {
     {
       icon: User,
       label: 'Profile',
-      path: user ? '/universal-profile' : '/sign-in',
+      path: user ? (userRole === 'sponsor' ? '/brand-profile' : '/universal-profile') : '/sign-in',
     }
   ];
 

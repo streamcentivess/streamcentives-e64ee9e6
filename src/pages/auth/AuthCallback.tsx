@@ -134,8 +134,8 @@ const AuthCallback = () => {
           if (profile && profile.onboarding_completed) {
             toast({ title: 'Welcome back!', description: 'You have been signed in successfully.' });
             if (isSponsor) {
-              window.history.replaceState(null, '', '/sponsor-profile');
-              navigate('/sponsor-profile', { replace: true });
+              window.history.replaceState(null, '', '/brand-profile');
+              navigate('/brand-profile', { replace: true });
             } else {
               window.history.replaceState(null, '', '/universal-profile');
               navigate('/universal-profile', { replace: true });

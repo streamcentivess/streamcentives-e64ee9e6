@@ -28,7 +28,7 @@ const SignIn = () => {
           .maybeSingle();
 
         if (sponsorProfile) {
-          navigate('/sponsor-profile');
+          navigate('/brand-profile');
         } else {
           navigate('/universal-profile');
         }
@@ -55,7 +55,7 @@ const SignIn = () => {
           .maybeSingle();
 
         if (sponsorProfile) {
-          navigate('/sponsor-profile');
+          navigate('/brand-profile');
         } else {
           navigate('/universal-profile');
         }

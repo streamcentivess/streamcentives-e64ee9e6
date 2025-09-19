@@ -1594,6 +1594,7 @@ const UniversalProfile = () => {
                 </div>
               </DialogContent>
             </Dialog>
+            )
             
             <Button variant="outline" onClick={signOut}>
               Sign Out

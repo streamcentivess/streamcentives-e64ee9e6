@@ -81,7 +81,7 @@ const AppNavigation = () => {
         <div className="flex justify-between h-16">
           {/* Logo and Navigation */}
           <div className="flex items-center">
-            <Link to={userRole === 'sponsor' ? '/sponsor-profile' : '/universal-profile'} className="flex items-center gap-3 mr-8">
+            <Link to={userRole === 'sponsor' ? '/brand-profile' : '/universal-profile'} className="flex items-center gap-3 mr-8">
               <img src={streamcentivesLogo} alt="Streamcentives" className="w-8 h-8 rounded-full" />
               <span className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
                 Streamcentives
@@ -169,7 +169,7 @@ const AppNavigation = () => {
                 <DropdownMenuSeparator />
                 
                 <DropdownMenuItem asChild>
-                  <Link to={userRole === 'sponsor' ? '/sponsor-profile' : '/universal-profile'} className="cursor-pointer">
+                  <Link to={userRole === 'sponsor' ? '/brand-profile' : '/universal-profile'} className="cursor-pointer">
                     <User className="h-4 w-4 mr-2" />
                     Profile
                   </Link>
