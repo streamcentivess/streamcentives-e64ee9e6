@@ -171,6 +171,179 @@ const UniversalProfile = () => {
     }
   };
 
+  const checkFollowStatus = async () => {
+    if (!profile?.user_id || !user?.id || isOwnProfile) return;
+    
+    const { data } = await supabase
+      .from('follows')
+      .select('id')
+      .eq('follower_id', user.id)
+      .eq('following_id', profile.user_id)
+      .maybeSingle();
+    
+    setFollowing(!!data);
+  };
+
+  const handleFollow = async () => {
+    if (!user?.id || !profile?.user_id) return;
+    setFollowLoading(true);
+    
+    try {
+      if (following) {
+        await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', profile.user_id);
+        setFollowing(false);
+        setFollowStats(prev => ({ ...prev, followers_count: prev.followers_count - 1 }));
+      } else {
+        await supabase
+          .from('follows')
+          .insert({ follower_id: user.id, following_id: profile.user_id });
+        setFollowing(true);
+        setFollowStats(prev => ({ ...prev, followers_count: prev.followers_count + 1 }));
+      }
+    } catch (error) {
+      console.error('Error following/unfollowing:', error);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `avatar_${user.id}_${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
+      toast({ title: 'Success', description: 'Avatar updated successfully!' });
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast({ title: 'Error', description: 'Failed to upload avatar', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url, bio')
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .limit(10);
+
+      if (error) {
+        console.error('Error searching users:', error);
+      } else {
+        setSearchResults(data || []);
+      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const fetchFollowers = async () => {
+    if (!profile?.user_id) return;
+    try {
+      // First get the follower IDs
+      const { data: followData, error } = await supabase
+        .from('follows')
+        .select('follower_id')
+        .eq('following_id', profile.user_id);
+
+      if (error) {
+        console.error('Error fetching follower IDs:', error);
+        return;
+      }
+
+      if (followData && followData.length > 0) {
+        const followerIds = followData.map(f => f.follower_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, username, display_name, avatar_url, bio')
+          .in('user_id', followerIds);
+
+        if (profilesError) {
+          console.error('Error fetching follower profiles:', profilesError);
+        } else {
+          setFollowers(profilesData || []);
+        }
+      } else {
+        setFollowers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+    }
+  };
+
+  const fetchFollowing = async () => {
+    if (!profile?.user_id) return;
+    try {
+      const { data: followData, error } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', profile.user_id);
+
+      if (error) {
+        console.error('Error fetching following IDs:', error);
+        return;
+      }
+
+      if (followData && followData.length > 0) {
+        const followingIds = followData.map(f => f.following_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, username, display_name, avatar_url, bio')
+          .in('user_id', followingIds);
+
+        if (profilesError) {
+          console.error('Error fetching following profiles:', profilesError);
+        } else {
+          setFollowingUsers(profilesData || []);
+        }
+      } else {
+        setFollowingUsers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching following:', error);
+    }
+  };
+
   const fetchJoinedCampaigns = async () => {
     if (!profile?.user_id) return;
     try {
@@ -212,11 +385,6 @@ const UniversalProfile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
-      fetchFollowStats();
-      // Force refresh XP balance if on own profile
-      if (isOwnProfile) {
-        setTimeout(() => fetchXpBalance(), 1000);
-      }
       // Clear follow states when switching profiles
       setUserFollowStates({});
       // Determine user role from sessionStorage or URL params
@@ -237,11 +405,17 @@ const UniversalProfile = () => {
     }
   }, [user, finalUserId, finalUsername]);
 
-  // Fetch campaigns after profile is loaded to ensure we have the correct user ID
+  // Fetch additional data after profile is loaded
   useEffect(() => {
-    const targetUserId = profile?.user_id || finalUserId || user?.id;
-    if (targetUserId) {
-      fetchJoinedCampaigns();
+    if (profile) {
+      fetchFollowStats();
+      fetchXpBalance();
+      checkFollowStatus();
+      
+      const targetUserId = profile?.user_id || finalUserId || user?.id;
+      if (targetUserId) {
+        fetchJoinedCampaigns();
+      }
     }
   }, [profile?.user_id, finalUserId, user?.id]);
 
@@ -356,94 +530,265 @@ const UniversalProfile = () => {
       ) : profile ? (
         <div className="container py-10">
           <Card className="w-full max-w-4xl mx-auto">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-bold">{profile.display_name || profile.username}</CardTitle>
-              <div className="flex items-center space-x-2">
-                {/* Conditional rendering based on user role */}
-                {currentUserRole === 'sponsor' && (
-                   <SponsorContactOptions 
-                     creator={{
-                       user_id: profile.user_id,
-                       username: profile.username || '',
-                       display_name: profile.display_name,
-                       avatar_url: profile.avatar_url,
-                       bio: profile.bio,
-                       followerCount: followStats.followers_count,
-                       engagementRate: 0.05, // Default engagement rate
-                       offer_receiving_rate_cents: profile.offer_receiving_rate_cents
-                     }}
-                     recipientName={profile.display_name || profile.username || 'User'}
-                   />
-                 )}
-                 {/* Universal Share Button */}
-                 <UniversalShareButton 
-                   type="profile"
-                   title={`${profile.display_name || profile.username || 'Profile'}'s Profile`}
-                   description={profile.bio}
-                   creatorName={profile.display_name || profile.username}
-                   isOwnContent={isOwnProfile}
-                 />
-              </div>
-            </CardHeader>
+             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+               <CardTitle className="text-2xl font-bold">{profile.display_name || profile.username}</CardTitle>
+               <div className="flex items-center space-x-2">
+                 {/* User Search Dialog */}
+                 <Dialog>
+                   <DialogTrigger asChild>
+                     <Button variant="outline" size="sm">
+                       <Search className="h-4 w-4" />
+                     </Button>
+                   </DialogTrigger>
+                   <DialogContent className="max-w-md">
+                     <DialogHeader>
+                       <DialogTitle>Search Users</DialogTitle>
+                     </DialogHeader>
+                     <div className="space-y-4">
+                       <Input
+                         placeholder="Search by username or name..."
+                         value={searchQuery}
+                         onChange={(e) => {
+                           setSearchQuery(e.target.value);
+                           searchUsers(e.target.value);
+                         }}
+                       />
+                       {searching && <div className="text-center text-muted-foreground">Searching...</div>}
+                       <div className="space-y-2">
+                         {searchResults.map((user) => (
+                           <div key={user.user_id} className="flex items-center justify-between">
+                             <div className="flex items-center space-x-3">
+                               <Avatar className="w-8 h-8">
+                                 <AvatarImage src={user.avatar_url} />
+                                 <AvatarFallback>{user.display_name?.charAt(0) || user.username?.charAt(0) || 'U'}</AvatarFallback>
+                               </Avatar>
+                               <div>
+                                 <p className="font-medium text-sm">{user.display_name || user.username}</p>
+                                 <p className="text-xs text-muted-foreground">{user.bio}</p>
+                               </div>
+                             </div>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               onClick={() => navigate(`/universal-profile?user=${user.user_id}`)}
+                             >
+                               View
+                             </Button>
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   </DialogContent>
+                 </Dialog>
+
+                 {/* Conditional rendering based on user role */}
+                 {currentUserRole === 'sponsor' && !isOwnProfile && (
+                    <SponsorContactOptions 
+                      creator={{
+                        user_id: profile.user_id,
+                        username: profile.username || '',
+                        display_name: profile.display_name,
+                        avatar_url: profile.avatar_url,
+                        bio: profile.bio,
+                        followerCount: followStats.followers_count,
+                        engagementRate: 0.05, // Default engagement rate
+                        offer_receiving_rate_cents: profile.offer_receiving_rate_cents
+                      }}
+                      recipientName={profile.display_name || profile.username || 'User'}
+                    />
+                  )}
+                  {/* Universal Share Button */}
+                  <UniversalShareButton 
+                    type="profile"
+                    title={`${profile.display_name || profile.username || 'Profile'}'s Profile`}
+                    description={profile.bio}
+                    creatorName={profile.display_name || profile.username}
+                    isOwnContent={isOwnProfile}
+                  />
+               </div>
+             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row items-center space-y-4 md:space-x-6 md:space-y-0">
-                <Avatar className="w-24 h-24 md:w-32 md:h-32 relative">
-                  <AvatarImage src={profile.avatar_url} alt={profile.display_name || profile.username || 'Avatar'} />
-                  <AvatarFallback>{profile.display_name?.charAt(0) || profile.username?.charAt(0) || 'U'}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex flex-col space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <h2 className="text-xl font-semibold">{profile.display_name || profile.username}</h2>
-                      {profileOwnerRole && (
-                        <Badge variant="secondary">{profileOwnerRole}</Badge>
-                      )}
-                    </div>
-                    <p className="text-muted-foreground">{profile.bio || 'No bio available.'}</p>
-                    <div className="flex items-center space-x-4">
-                      {/* Follow Stats */}
-                      <div className="flex items-center space-x-1">
-                        <Users className="h-4 w-4" />
-                        <span>{followStats.followers_count} Followers</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <UserPlus className="h-4 w-4" />
-                        <span>{followStats.following_count} Following</span>
-                      </div>
-                      {/* XP Balance Display */}
-                      {isOwnProfile && (
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 text-yellow-500" />
-                          <span>{xpBalance} XP</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <Tabs defaultValue="posts" className="w-full mt-6">
-                <TabsList className="w-full flex justify-center">
-                  <TabsTrigger value="posts">Posts</TabsTrigger>
-                  <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-                  <TabsTrigger value="social">Social</TabsTrigger>
-                  {isOwnProfile && <TabsTrigger value="settings">Settings</TabsTrigger>}
-                </TabsList>
-                 <TabsContent value="posts" className="mt-4">
-                   <PostsGrid userId={profile.user_id} isOwnProfile={isOwnProfile} />
-                 </TabsContent>
-                 <TabsContent value="campaigns" className="mt-4">
-                   <UserCampaignDisplay campaigns={joinedCampaigns} userId={profile.user_id} isOwnProfile={isOwnProfile} />
-                 </TabsContent>
-                 <TabsContent value="social" className="mt-4">
-                   <EnhancedSocialInteractions targetUserId={profile.user_id} />
-                 </TabsContent>
-                {isOwnProfile && (
-                  <TabsContent value="settings" className="mt-4">
-                    {/* Settings content here */}
-                    <Button onClick={() => signOut()} variant="destructive">Sign Out</Button>
+               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-x-6 md:space-y-0">
+                 <div className="relative">
+                   <Avatar className="w-24 h-24 md:w-32 md:h-32">
+                     <AvatarImage src={profile.avatar_url} alt={profile.display_name || profile.username || 'Avatar'} />
+                     <AvatarFallback>{profile.display_name?.charAt(0) || profile.username?.charAt(0) || 'U'}</AvatarFallback>
+                   </Avatar>
+                   {isOwnProfile && (
+                     <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/80 transition-colors">
+                       <Camera className="h-4 w-4" />
+                       <input
+                         id="avatar-upload"
+                         type="file"
+                         accept="image/*"
+                         onChange={handleAvatarUpload}
+                         className="hidden"
+                         disabled={uploading}
+                       />
+                     </label>
+                   )}
+                 </div>
+                 <div className="flex-1">
+                   <div className="flex flex-col space-y-2">
+                     <div className="flex items-center space-x-2">
+                       <h2 className="text-xl font-semibold">{profile.display_name || profile.username}</h2>
+                       {profileOwnerRole && (
+                         <Badge variant="secondary">{profileOwnerRole}</Badge>
+                       )}
+                     </div>
+                     <p className="text-muted-foreground">{profile.bio || 'No bio available.'}</p>
+                     <div className="flex items-center space-x-4">
+                       {/* Follow Stats - clickable to show lists */}
+                       <Dialog open={showFollowersList} onOpenChange={setShowFollowersList}>
+                         <DialogTrigger asChild>
+                           <Button 
+                             variant="ghost" 
+                             className="p-0 h-auto font-normal"
+                             onClick={() => {
+                               setListType('followers');
+                               fetchFollowers();
+                               setShowFollowersList(true);
+                             }}
+                           >
+                             <div className="flex items-center space-x-1">
+                               <Users className="h-4 w-4" />
+                               <span>{followStats.followers_count} Followers</span>
+                             </div>
+                           </Button>
+                         </DialogTrigger>
+                         <DialogContent className="max-w-md">
+                           <DialogHeader>
+                             <DialogTitle>
+                               {listType === 'followers' ? 'Followers' : 'Following'}
+                             </DialogTitle>
+                           </DialogHeader>
+                           <div className="space-y-4">
+                             {(listType === 'followers' ? followers : followingUsers).map((user) => (
+                               <div key={user.user_id} className="flex items-center justify-between">
+                                 <div className="flex items-center space-x-3">
+                                   <Avatar className="w-10 h-10">
+                                     <AvatarImage src={user.avatar_url} />
+                                     <AvatarFallback>{user.display_name?.charAt(0) || user.username?.charAt(0) || 'U'}</AvatarFallback>
+                                   </Avatar>
+                                   <div>
+                                     <p className="font-medium">{user.display_name || user.username}</p>
+                                     <p className="text-sm text-muted-foreground">{user.bio}</p>
+                                   </div>
+                                 </div>
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => navigate(`/universal-profile?user=${user.user_id}`)}
+                                 >
+                                   View Profile
+                                 </Button>
+                               </div>
+                             ))}
+                           </div>
+                         </DialogContent>
+                       </Dialog>
+                       
+                       <Button 
+                         variant="ghost" 
+                         className="p-0 h-auto font-normal"
+                         onClick={() => {
+                           setListType('following');
+                           fetchFollowing();
+                           setShowFollowersList(true);
+                         }}
+                       >
+                         <div className="flex items-center space-x-1">
+                           <UserPlus className="h-4 w-4" />
+                           <span>{followStats.following_count} Following</span>
+                         </div>
+                       </Button>
+
+                       {/* XP Balance Display */}
+                       {isOwnProfile && (
+                         <div className="flex items-center space-x-1">
+                           <Star className="h-4 w-4 text-yellow-500" />
+                           <span>{xpBalance} XP</span>
+                         </div>
+                       )}
+                     </div>
+                     
+                     {/* Action Buttons */}
+                     <div className="flex items-center space-x-2 mt-4">
+                       {!isOwnProfile && user && (
+                         <>
+                           <Button
+                             onClick={handleFollow}
+                             disabled={followLoading}
+                             variant={following ? "outline" : "default"}
+                           >
+                             {followLoading ? '...' : following ? 'Unfollow' : 'Follow'}
+                           </Button>
+                           <MessageCreator 
+                             recipientId={profile.user_id} 
+                             recipientName={profile.display_name || profile.username || 'User'}
+                           />
+                         </>
+                       )}
+                       {isOwnProfile && (
+                         <Button onClick={() => navigate('/profile/edit')} variant="outline">
+                           <Settings className="h-4 w-4 mr-2" />
+                           Edit Profile
+                         </Button>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+               </div>
+               <Tabs defaultValue="posts" className="w-full mt-6">
+                 <TabsList className="w-full flex justify-center">
+                   <TabsTrigger value="posts">Posts</TabsTrigger>
+                   <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+                   <TabsTrigger value="social">Social</TabsTrigger>
+                   {isOwnProfile && <TabsTrigger value="smartlink">Smart Link</TabsTrigger>}
+                   {isOwnProfile && <TabsTrigger value="settings">Settings</TabsTrigger>}
+                 </TabsList>
+                  <TabsContent value="posts" className="mt-4">
+                    <PostsGrid userId={profile.user_id} isOwnProfile={isOwnProfile} />
                   </TabsContent>
-                )}
-              </Tabs>
+                  <TabsContent value="campaigns" className="mt-4">
+                    <UserCampaignDisplay campaigns={joinedCampaigns} userId={profile.user_id} isOwnProfile={isOwnProfile} />
+                  </TabsContent>
+                  <TabsContent value="social" className="mt-4">
+                    <EnhancedSocialInteractions targetUserId={profile.user_id} />
+                  </TabsContent>
+                  {isOwnProfile && (
+                    <TabsContent value="smartlink" className="mt-4">
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <h3 className="text-lg font-medium mb-2">Your Smart Link</h3>
+                          <p className="text-muted-foreground mb-4">
+                            Share your personalized smart link to connect with fans and grow your audience.
+                          </p>
+                        </div>
+                        <SmartLinkButton 
+                          userId={profile.user_id} 
+                          displayName={profile.display_name || profile.username || 'User'}
+                          isOwnProfile={isOwnProfile}
+                        />
+                        <SmartLinkManager />
+                      </div>
+                    </TabsContent>
+                  )}
+                 {isOwnProfile && (
+                   <TabsContent value="settings" className="mt-4">
+                     <div className="space-y-4">
+                       <h3 className="text-lg font-medium">Profile Settings</h3>
+                       <Button onClick={() => navigate('/profile/edit')} variant="outline">
+                         <Settings className="h-4 w-4 mr-2" />
+                         Edit Profile
+                       </Button>
+                       <Button onClick={() => signOut()} variant="destructive">
+                         Sign Out
+                       </Button>
+                     </div>
+                   </TabsContent>
+                 )}
+               </Tabs>
             </CardContent>
           </Card>
         </div>
