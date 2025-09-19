@@ -508,7 +508,7 @@ export default function BrandProfile() {
             <TabsTrigger value="posts" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[70px] text-xs' : ''}>Posts</TabsTrigger>
             <TabsTrigger value="campaigns" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[90px] text-xs' : ''}>
               <span className="hidden sm:inline">Campaigns</span>
-              <span className="sm:hidden">Camps</span>
+              <span className="sm:hidden">Campaigns</span>
             </TabsTrigger>
             <TabsTrigger value="rewards" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px] text-xs' : ''}>Rewards</TabsTrigger>
             <TabsTrigger value="smart-links" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px] text-xs' : ''}>
