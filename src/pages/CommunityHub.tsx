@@ -274,38 +274,6 @@ const CommunityHub = () => {
     }
   };
 
-  const communityPosts = [
-    {
-      id: 1,
-      author: 'Sarah Fan',
-      authorAvatar: '',
-      title: 'Amazing new track!',
-      content: 'Just listened to the new track on repeat! Amazing work as always 🎵',
-      timestamp: '2 hours ago',
-      likes: 23,
-      comments: 5,
-      reposts: 3,
-      isPinned: false,
-      photos: [],
-      tagged_people: ['@musiclover92', '@fanclub_official'],
-      location: 'Nashville, TN'
-    },
-    {
-      id: 2,
-      author: 'Music Lover',
-      authorAvatar: '',
-      title: 'Tour Excitement!',
-      content: 'Anyone else excited for the upcoming tour? Can\'t wait to see the live performance!',
-      timestamp: '4 hours ago',
-      likes: 18,
-      comments: 12,
-      reposts: 7,
-      isPinned: true,
-      photos: [],
-      tagged_people: ['@sarah_fan'],
-      location: 'Los Angeles, CA'
-    }
-  ];
 
   const upcomingEvents = [
     {
@@ -759,92 +727,10 @@ const CommunityHub = () => {
             </div>
 
             <div className="space-y-4">
-              {communityPosts.map((post) => (
-                <Card key={post.id} className="card-modern">
-                  <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarImage src={post.authorAvatar} alt={post.author} />
-                              <AvatarFallback>{post.author.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{post.author}</p>
-                              <p className="text-sm text-muted-foreground">{post.timestamp}</p>
-                            </div>
-                          </div>
-                          {post.isPinned && <Pin className="h-4 w-4 text-primary" />}
-                        </div>
-                        
-                        {/* Post Title */}
-                        {post.title && (
-                          <h4 className="font-semibold text-base">{post.title}</h4>
-                        )}
-                        
-                        {/* Post Content */}
-                        <p className="text-sm">{post.content}</p>
-                        
-                        {/* Tagged People */}
-                        {post.tagged_people && post.tagged_people.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            <span className="text-xs text-muted-foreground">with</span>
-                            {post.tagged_people.map((person, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {person}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {/* Location */}
-                        {post.location && (
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            <span>{post.location}</span>
-                          </div>
-                        )}
-                        
-                        {/* Photos */}
-                        {post.photos && post.photos.length > 0 && (
-                          <div className={`grid gap-2 ${post.photos.length === 1 ? 'grid-cols-1' : 
-                                        post.photos.length === 2 ? 'grid-cols-2' : 
-                                        post.photos.length === 3 ? 'grid-cols-2' : 'grid-cols-2'}`}>
-                            {post.photos.map((photo, index) => (
-                              <div key={index} className={`${post.photos.length === 3 && index === 0 ? 'col-span-2' : ''}`}>
-                                <img
-                                  src={photo}
-                                  alt={`Post photo ${index + 1}`}
-                                  className="w-full h-40 object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {/* Interaction Buttons */}
-                        <div className="flex items-center gap-6 text-sm text-muted-foreground pt-2 border-t">
-                          <button className="flex items-center gap-1 hover:text-red-500 transition-colors">
-                            <Heart className="h-4 w-4" />
-                            <span>{post.likes}</span>
-                          </button>
-                          <button className="flex items-center gap-1 hover:text-blue-500 transition-colors">
-                            <MessageSquare className="h-4 w-4" />
-                            <span>{post.comments}</span>
-                          </button>
-                          <button className="flex items-center gap-1 hover:text-green-500 transition-colors">
-                            <Repeat2 className="h-4 w-4" />
-                            <span>{post.reposts}</span>
-                          </button>
-                          <button className="flex items-center gap-1 hover:text-primary transition-colors">
-                            <Share className="h-4 w-4" />
-                            <span>Share</span>
-                          </button>
-                        </div>
-                      </div>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="text-center text-muted-foreground py-8">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No posts yet. Create the first post in your community!</p>
+              </div>
             </div>
           </TabsContent>
 
