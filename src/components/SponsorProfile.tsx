@@ -121,8 +121,23 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
     if (passwordData.newPassword.length < 8) {
       toast({
-        title: "Password Too Short",
+        title: "Password Too Short", 
         description: "Password must be at least 8 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check for basic password strength
+    const hasUpperCase = /[A-Z]/.test(passwordData.newPassword);
+    const hasLowerCase = /[a-z]/.test(passwordData.newPassword);
+    const hasNumbers = /\d/.test(passwordData.newPassword);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.newPassword);
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+      toast({
+        title: "Password Not Strong Enough",
+        description: "Password must contain at least one uppercase letter, one lowercase letter, and one number.",
         variant: "destructive"
       });
       return;
@@ -134,7 +149,18 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
         password: passwordData.newPassword
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('weak') || error.message.includes('pwned') || error.message.includes('easy to guess')) {
+          toast({
+            title: "Password Too Weak",
+            description: "This password is too common or has been compromised. Please choose a unique password with uppercase, lowercase, numbers, and special characters.",
+            variant: "destructive"
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       toast({
         title: "Success!",
@@ -150,7 +176,7 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
       console.error('Error updating password:', error);
       toast({
         title: "Error",
-        description: "Failed to update password. Please try again.",
+        description: "Failed to update password. Please try again with a stronger password.",
         variant: "destructive"
       });
     } finally {
@@ -335,10 +361,13 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
                 type="password"
                 value={passwordData.newPassword}
                 onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                placeholder="Enter new password (8+ characters)"
+                placeholder="Enter strong password (8+ chars, upper, lower, number)"
                 required
                 minLength={8}
               />
+              <p className="text-xs text-muted-foreground">
+                Password must contain: uppercase letter, lowercase letter, number, and be unique (not commonly used)
+              </p>
             </div>
             
             <div className="space-y-2">
@@ -359,7 +388,13 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
             
             <Button 
               type="submit" 
-              disabled={passwordLoading || passwordData.newPassword !== passwordData.confirmPassword || !passwordData.newPassword} 
+              disabled={passwordLoading || 
+                       passwordData.newPassword !== passwordData.confirmPassword || 
+                       !passwordData.newPassword ||
+                       passwordData.newPassword.length < 8 ||
+                       !/[A-Z]/.test(passwordData.newPassword) ||
+                       !/[a-z]/.test(passwordData.newPassword) ||
+                       !/\d/.test(passwordData.newPassword)} 
               className="w-full"
             >
               {passwordLoading ? "Updating Password..." : "Update Password"}
