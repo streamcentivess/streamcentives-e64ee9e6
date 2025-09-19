@@ -133,6 +133,11 @@ export default function BrandProfile() {
     }
   };
 
+  const fetchBlockedUsers = async () => {
+    // For now, return empty array since blocking functionality needs to be implemented
+    setBlockedUsers([]);
+  };
+
   const fetchOwnProfileData = async () => {
     try {
       const { data, error } = await supabase
@@ -682,48 +687,12 @@ export default function BrandProfile() {
 
           <TabsContent value="haters" className="space-y-6">
             {isOwnProfile ? (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold">Content Moderation</h2>
-                  <Badge variant="outline">{blockedUsers.length} Blocked Users</Badge>
-                </div>
-                
-                {blockedUsers.length > 0 ? (
-                  <div className="space-y-4">
-                    {blockedUsers.map((user: any) => (
-                      <Card key={user.id} className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={user.avatar_url} />
-                              <AvatarFallback>
-                                {user.display_name?.charAt(0) || user.username?.charAt(0) || 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h4 className="font-medium">{user.display_name || user.username}</h4>
-                              <p className="text-sm text-muted-foreground">@{user.username}</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Unblock
-                          </Button>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="text-center py-12">
-                      <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">No Blocked Users</h3>
-                      <p className="text-muted-foreground">
-                        Maintain a positive environment by blocking problematic users when needed.
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
+              <UserSearchAndManage
+                type="haters"
+                currentUsers={blockedUsers}
+                onUserAdded={fetchBlockedUsers}
+                onUserRemoved={fetchBlockedUsers}
+              />
             ) : (
               <Card>
                 <CardContent className="text-center py-12">

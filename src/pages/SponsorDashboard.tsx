@@ -11,6 +11,7 @@ import { SponsorOffers } from "@/components/SponsorOffers";
 import { CreatorDiscovery } from "@/components/CreatorDiscovery";
 import { SponsorCampaignManager } from "@/components/SponsorCampaignManager";
 import { SponsorInbox } from "@/components/SponsorInbox";
+import { CreatorToolsHub } from "@/components/CreatorToolsHub";
 import { Link } from "react-router-dom";
 
 export default function SponsorDashboard() {
@@ -165,52 +166,7 @@ export default function SponsorDashboard() {
           </TabsContent>
 
           <TabsContent value="creator-tools">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-gradient-primary"></div>
-                  Creator Tools Hub
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Access premium creator tools with a subscription to enhance your brand content
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  className="w-full bg-gradient-primary text-white hover:shadow-glow transition-all" 
-                >
-                  🤖 AI Campaign Builder
-                </Button>
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                >
-                  ✨ Content Assistant
-                </Button>
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                >
-                  🎤 Shoutout Generator
-                </Button>
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                >
-                  📊 Sentiment Analysis
-                </Button>
-                <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Subscribe to unlock all creator tools for your brand campaigns
-                  </p>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                  >
-                    🚀 Upgrade to Brand Pro
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <CreatorToolsHub userRole="sponsor" profile={sponsorProfile} />
           </TabsContent>
 
           <TabsContent value="inbox">
