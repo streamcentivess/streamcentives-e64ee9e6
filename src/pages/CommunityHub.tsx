@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, MessageSquare, Calendar, MapPin, Plus, Heart, Share, Pin, Crown, Camera, X, UserPlus, Repeat2 } from 'lucide-react';
-import { CommunityDetail } from '@/components/CommunityDetail';
+import { LocationSearch } from '@/components/LocationSearch';
 import AppNavigation from '@/components/AppNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -664,19 +664,11 @@ const CommunityHub = () => {
                     </div>
 
                     {/* Location Section */}
-                    <div>
-                      <Label htmlFor="post-location">Location</Label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="post-location"
-                          placeholder="Add a location..."
-                          className="pl-10"
-                          value={postForm.location}
-                          onChange={(e) => setPostForm({...postForm, location: e.target.value})}
-                        />
-                      </div>
-                    </div>
+                    <LocationSearch
+                      value={postForm.location}
+                      onChange={(location) => setPostForm({...postForm, location})}
+                      placeholder="Add a location..."
+                    />
                     
                     <div>
                       <Label>Select Community</Label>

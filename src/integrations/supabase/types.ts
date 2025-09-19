@@ -1348,6 +1348,7 @@ export type Database = {
           id: string
           is_pinned: boolean | null
           likes_count: number | null
+          location: string | null
           media_urls: string[] | null
           title: string | null
           updated_at: string | null
@@ -1361,6 +1362,7 @@ export type Database = {
           id?: string
           is_pinned?: boolean | null
           likes_count?: number | null
+          location?: string | null
           media_urls?: string[] | null
           title?: string | null
           updated_at?: string | null
@@ -1374,6 +1376,7 @@ export type Database = {
           id?: string
           is_pinned?: boolean | null
           likes_count?: number | null
+          location?: string | null
           media_urls?: string[] | null
           title?: string | null
           updated_at?: string | null
