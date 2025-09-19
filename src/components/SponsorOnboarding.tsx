@@ -86,9 +86,8 @@ export default function SponsorOnboarding() {
 
     setLoading(true);
     try {
-      // Create/update profile
+      // Update existing profile (created during signup)
       const profileData = {
-        user_id: user.id,
         username: formData.username,
         display_name: formData.display_name || formData.company_name,
         bio: formData.company_description,
@@ -97,7 +96,8 @@ export default function SponsorOnboarding() {
 
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert([profileData]);
+        .update(profileData)
+        .eq('user_id', user.id);
 
       if (profileError) throw profileError;
 

@@ -20,8 +20,18 @@ interface SponsorProfile {
   company_description?: string;
   budget_range_min?: number;
   budget_range_max?: number;
+  target_audience?: string;
+  partnership_goals?: string[];
   created_at: string;
   updated_at: string;
+}
+
+interface UserProfile {
+  user_id: string;
+  username: string;
+  display_name?: string;
+  avatar_url?: string;
+  bio?: string;
 }
 
 interface SponsorOffer {
@@ -38,6 +48,7 @@ export default function SponsorProfileView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<SponsorProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [offers, setOffers] = useState<SponsorOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -63,16 +74,16 @@ export default function SponsorProfileView() {
 
   const fetchSponsorProfile = async () => {
     try {
-      let profileQuery;
+      let sponsorQuery, userQuery;
       
       if (viewingSponsorId) {
-        profileQuery = supabase
+        sponsorQuery = supabase
           .from('sponsor_profiles')
           .select('*')
           .eq('id', viewingSponsorId)
           .maybeSingle();
       } else if (user) {
-        profileQuery = supabase
+        sponsorQuery = supabase
           .from('sponsor_profiles')
           .select('*')
           .eq('user_id', user.id)
@@ -81,17 +92,32 @@ export default function SponsorProfileView() {
         return;
       }
 
-      const { data, error } = await profileQuery;
+      // Fetch sponsor profile
+      const { data: sponsorData, error: sponsorError } = await sponsorQuery;
 
-      if (error) {
-        console.error('Error fetching sponsor profile:', error);
+      if (sponsorError) {
+        console.error('Error fetching sponsor profile:', sponsorError);
         toast({
           title: "Error",
           description: "Failed to load sponsor profile",
           variant: "destructive"
         });
-      } else {
-        setProfile(data);
+        return;
+      }
+
+      if (sponsorData) {
+        setProfile(sponsorData);
+
+        // Fetch associated user profile
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('user_id, username, display_name, avatar_url, bio')
+          .eq('user_id', sponsorData.user_id)
+          .maybeSingle();
+
+        if (!userError && userData) {
+          setUserProfile(userData);
+        }
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -231,11 +257,20 @@ export default function SponsorProfileView() {
               <div className="space-y-3">
                 <div>
                   <h1 className="text-4xl font-bold mb-2">{profile.company_name}</h1>
+                  {userProfile?.username && (
+                    <p className="text-white/80 text-lg mb-2">@{userProfile.username}</p>
+                  )}
                   <div className="flex flex-wrap items-center gap-4">
                     {profile.industry && (
                       <Badge className="bg-white/20 text-white border-white/30 text-sm">
                         <Briefcase className="h-3 w-3 mr-1" />
                         {profile.industry}
+                      </Badge>
+                    )}
+                    {profile.target_audience && (
+                      <Badge className="bg-white/20 text-white border-white/30 text-sm">
+                        <Users className="h-3 w-3 mr-1" />
+                        {profile.target_audience}
                       </Badge>
                     )}
                     <span className="flex items-center gap-2 text-white/90 text-sm">
