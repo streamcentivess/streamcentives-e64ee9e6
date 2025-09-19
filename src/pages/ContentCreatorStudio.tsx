@@ -1,5 +1,8 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContentScheduler } from '@/components/ContentScheduler';
 import { TemplatesManager } from '@/components/TemplatesManager';
@@ -8,13 +11,23 @@ import { BulkUploadManager } from '@/components/BulkUploadManager';
 
 const ContentCreatorStudio = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Content Creator Studio
             </h1>
