@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Send, Coins, Mic, Type, MessageSquare, Zap } from 'lucide-react';
 import { VoiceMessageRecorder } from './VoiceMessageRecorder';
@@ -30,7 +30,6 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
   recipientName,
   onMessageSent
 }) => {
-  const { toast } = useToast();
   const isMobile = useIsMobile();
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);

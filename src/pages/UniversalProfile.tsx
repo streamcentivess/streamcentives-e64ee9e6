@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
+import { SponsorContactOptions } from '@/components/SponsorContactOptions';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -31,6 +32,7 @@ interface Profile {
   avatar_url?: string;
   spotify_connected?: boolean;
   created_at?: string;
+  offer_receiving_rate_cents?: number;
 }
 const UniversalProfile = () => {
   const {
@@ -1840,9 +1842,21 @@ const UniversalProfile = () => {
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                          <DialogTitle>Send Message</DialogTitle>
+                          <DialogTitle>Contact {profile.display_name || profile.username}</DialogTitle>
                         </DialogHeader>
-                        <MessageCreator recipientId={profile.user_id} recipientName={profile.display_name || 'User'} />
+                        <SponsorContactOptions 
+                          creator={{
+                            user_id: profile.user_id,
+                            username: profile.username || '',
+                            display_name: profile.display_name,
+                            avatar_url: profile.avatar_url,
+                            bio: profile.bio,
+                            followerCount: 0, // This would need to be calculated
+                            engagementRate: 0, // This would need to be calculated
+                            offer_receiving_rate_cents: profile.offer_receiving_rate_cents
+                          }}
+                          recipientName={profile.display_name || profile.username || 'User'}
+                        />
                       </DialogContent>
                     </Dialog>
                   </>}
