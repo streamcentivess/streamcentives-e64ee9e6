@@ -41,33 +41,53 @@ const CommunicationHub = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-2 md:p-4">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Communication Hub
             </h1>
-            <p className="text-muted-foreground">Manage all your fan communication in one place</p>
+            <p className="text-sm md:text-base text-muted-foreground">Manage all your fan communication in one place</p>
           </div>
         </div>
 
         <Tabs defaultValue="email" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="email">Email Marketing</TabsTrigger>
-            <TabsTrigger value="sms">SMS Campaigns</TabsTrigger>
-            <TabsTrigger value="push">Push Notifications</TabsTrigger>
-            <TabsTrigger value="video">Video Messages</TabsTrigger>
-            <TabsTrigger value="streaming">Live Streaming</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1">
+            <TabsTrigger value="email" className="text-xs md:text-sm">
+              <Mail className="h-4 w-4 md:mr-2" />
+              <span className="hidden sm:inline">Email Marketing</span>
+              <span className="sm:hidden">Email</span>
+            </TabsTrigger>
+            <TabsTrigger value="sms" className="text-xs md:text-sm">
+              <Phone className="h-4 w-4 md:mr-2" />
+              <span className="hidden sm:inline">SMS Campaigns</span>
+              <span className="sm:hidden">SMS</span>
+            </TabsTrigger>
+            <TabsTrigger value="push" className="text-xs md:text-sm">
+              <Bell className="h-4 w-4 md:mr-2" />
+              <span className="hidden sm:inline">Push Notifications</span>
+              <span className="sm:hidden">Push</span>
+            </TabsTrigger>
+            <TabsTrigger value="video" className="text-xs md:text-sm">
+              <Video className="h-4 w-4 md:mr-2" />
+              <span className="hidden sm:inline">Video Messages</span>
+              <span className="sm:hidden">Video</span>
+            </TabsTrigger>
+            <TabsTrigger value="streaming" className="text-xs md:text-sm">
+              <Users className="h-4 w-4 md:mr-2" />
+              <span className="hidden sm:inline">Live Streaming</span>
+              <span className="sm:hidden">Live</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="email" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Email Campaigns</h3>
               <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:opacity-90">
+                  <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Campaign
                   </Button>
@@ -113,21 +133,21 @@ const CommunicationHub = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Sent</p>
-                        <p className="text-xl font-bold">{campaign.sent.toLocaleString()}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-sm">
+                      <div className="text-center p-2">
+                        <p className="text-xs md:text-sm text-muted-foreground">Sent</p>
+                        <p className="text-lg md:text-xl font-bold">{campaign.sent.toLocaleString()}</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Open Rate</p>
-                        <p className="text-xl font-bold text-primary">{campaign.openRate}%</p>
+                      <div className="text-center p-2">
+                        <p className="text-xs md:text-sm text-muted-foreground">Open Rate</p>
+                        <p className="text-lg md:text-xl font-bold text-primary">{campaign.openRate}%</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Click Rate</p>
-                        <p className="text-xl font-bold text-success">{campaign.clickRate}%</p>
+                      <div className="text-center p-2">
+                        <p className="text-xs md:text-sm text-muted-foreground">Click Rate</p>
+                        <p className="text-lg md:text-xl font-bold text-success">{campaign.clickRate}%</p>
                       </div>
-                      <div className="flex items-center justify-center">
-                        <Button variant="outline" size="sm">View Details</Button>
+                      <div className="flex items-center justify-center p-2">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">View Details</Button>
                       </div>
                     </div>
                   </CardContent>
@@ -137,11 +157,11 @@ const CommunicationHub = () => {
           </TabsContent>
 
           <TabsContent value="sms" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-lg font-semibold">SMS Campaigns</h3>
               <Dialog open={showSMSDialog} onOpenChange={setShowSMSDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:opacity-90">
+                  <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     Create SMS Campaign
                   </Button>
@@ -184,21 +204,21 @@ const CommunicationHub = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Sent</p>
-                        <p className="text-xl font-bold">{campaign.sent.toLocaleString()}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-sm">
+                      <div className="text-center p-2">
+                        <p className="text-xs md:text-sm text-muted-foreground">Sent</p>
+                        <p className="text-lg md:text-xl font-bold">{campaign.sent.toLocaleString()}</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Delivery Rate</p>
-                        <p className="text-xl font-bold text-primary">{campaign.deliveryRate}%</p>
+                      <div className="text-center p-2">
+                        <p className="text-xs md:text-sm text-muted-foreground">Delivery Rate</p>
+                        <p className="text-lg md:text-xl font-bold text-primary">{campaign.deliveryRate}%</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Responses</p>
-                        <p className="text-xl font-bold text-success">{campaign.responses}</p>
+                      <div className="text-center p-2">
+                        <p className="text-xs md:text-sm text-muted-foreground">Responses</p>
+                        <p className="text-lg md:text-xl font-bold text-success">{campaign.responses}</p>
                       </div>
-                      <div className="flex items-center justify-center">
-                        <Button variant="outline" size="sm">View Details</Button>
+                      <div className="flex items-center justify-center p-2">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">View Details</Button>
                       </div>
                     </div>
                   </CardContent>
@@ -208,9 +228,9 @@ const CommunicationHub = () => {
           </TabsContent>
 
           <TabsContent value="push" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Push Notifications</h3>
-              <Button className="bg-gradient-primary hover:opacity-90">
+              <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Send Notification
               </Button>
@@ -263,11 +283,11 @@ const CommunicationHub = () => {
           </TabsContent>
 
           <TabsContent value="streaming" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Live Streaming</h3>
               <Dialog open={showStreamDialog} onOpenChange={setShowStreamDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:opacity-90">
+                  <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     Schedule Stream
                   </Button>
