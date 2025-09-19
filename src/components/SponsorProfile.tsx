@@ -27,6 +27,7 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const [formData, setFormData] = useState({
     company_name: "",
     industry: "",
@@ -157,6 +158,43 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadLoading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('sponsor-logos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('sponsor-logos')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, company_logo_url: publicUrl }));
+      
+      toast({
+        title: "Success!",
+        description: "Logo uploaded successfully"
+      });
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload logo. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <Card>
@@ -212,13 +250,23 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="company_logo_url">Company Logo URL</Label>
-                <Input
-                  id="company_logo_url"
-                  value={formData.company_logo_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company_logo_url: e.target.value }))}
-                  placeholder="https://your-logo-url.com/logo.png"
-                />
+                <Label htmlFor="company_logo">Company Logo</Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    id="company_logo"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="flex-1"
+                  />
+                  {formData.company_logo_url && (
+                    <img 
+                      src={formData.company_logo_url} 
+                      alt="Company logo preview" 
+                      className="w-10 h-10 object-cover rounded border"
+                    />
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
