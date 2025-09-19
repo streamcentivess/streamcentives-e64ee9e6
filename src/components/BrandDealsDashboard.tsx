@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useOptimizedRealtime } from '@/hooks/useOptimizedRealtime';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -176,6 +177,24 @@ export const BrandDealsDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Real-time subscription for brand deals
+  useOptimizedRealtime({
+    table: 'brand_deals',
+    filter: `creator_id=eq.${user?.id},sponsor_id=eq.${user?.id}`,
+    event: '*',
+    onUpdate: fetchData,
+    enabled: !!user,
+  });
+
+  // Real-time subscription for sponsor offers (creators only)
+  useOptimizedRealtime({
+    table: 'sponsor_offers', 
+    filter: `creator_id=eq.${user?.id}`,
+    event: '*',
+    onUpdate: fetchData,
+    enabled: !!user && role === 'creator',
+  });
 
   const handleCreateDeal = async (offerId: string) => {
     try {
