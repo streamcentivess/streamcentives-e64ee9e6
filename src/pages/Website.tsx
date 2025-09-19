@@ -220,18 +220,17 @@ const Website = () => {
               <p className="text-white">• <strong>For Creators:</strong> Transform your audience into an active community, gain powerful insights, and create new revenue streams.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth/signup">
+              <Link to="/role-selection">
                 <Button size="lg" className="text-lg px-8 bg-blue-400 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:shadow-[0_0_30px_rgba(96,165,250,0.8)] transition-all duration-300">
-                  Sign Up Here
+                  Get Started Free
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <VideoModal>
+              <Link to="/creator-subscription">
                 <Button variant="outline" size="lg" className="text-lg px-8 hover:bg-sky-400 hover:text-white hover:border-sky-400">
-                  <Play className="mr-2 w-5 h-5" />
-                  Marketing Videos
+                  Creator Pro - $29.99/mo
                 </Button>
-              </VideoModal>
+              </Link>
             </div>
           </div>
         </div>

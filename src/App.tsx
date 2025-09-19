@@ -170,6 +170,16 @@ const App = () => {
                           <ManageRewards />
                         </ProtectedRoute>
                       } />
+                      <Route path="/creator-subscription" element={
+                        <ProtectedRoute>
+                          <CreatorSubscriptionPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/brand-deals" element={
+                        <ProtectedRoute>
+                          <BrandDealsPage />
+                        </ProtectedRoute>
+                      } />
                       <Route path="/feed" element={
                         <ProtectedRoute>
                           <Feed />

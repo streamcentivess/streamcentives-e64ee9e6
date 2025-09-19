@@ -22,6 +22,7 @@ import CreatorAnalyticsDashboard from '@/components/CreatorAnalyticsDashboard';
 import CreatorEarningsTracker from '@/components/CreatorEarningsTracker';
 import { CreatorProDashboard } from '@/components/CreatorProDashboard';
 import { BrandDealsDashboard } from '@/components/BrandDealsDashboard';
+import { useCreatorSubscription } from '@/hooks/useCreatorSubscription';
 
 const CreatorDashboard = () => {
   const { user, signOut } = useAuth();
@@ -44,7 +45,7 @@ const CreatorDashboard = () => {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
-  // Real-time data hook
+  const { isProSubscriber } = useCreatorSubscription();
   const { 
     metrics, 
     activeCampaigns: realActiveCampaigns, 
@@ -339,9 +340,9 @@ const CreatorDashboard = () => {
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics Hub
             </Button>
-            <Button onClick={() => navigate('/creator-subscription')} variant="outline" size="sm">
+            <Button onClick={() => navigate('/creator-subscription')} variant={isProSubscriber ? "default" : "outline"} size="sm">
               <Trophy className="h-4 w-4 mr-2" />
-              Creator Pro
+              {isProSubscriber ? 'Creator Pro ✓' : 'Upgrade Pro'}
             </Button>
             <Button onClick={() => navigate('/brand-deals')} variant="outline" size="sm">
               <Handshake className="h-4 w-4 mr-2" />

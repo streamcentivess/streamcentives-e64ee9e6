@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Users, DollarSign, TrendingUp, Plus, MessageSquare, User } from "lucide-react";
 import { SponsorProfile } from "@/components/SponsorProfile";
+import { BrandDealsDashboard } from '@/components/BrandDealsDashboard';
 import { SponsorOffers } from "@/components/SponsorOffers";
 import { CreatorDiscovery } from "@/components/CreatorDiscovery";
 import { SponsorCampaignManager } from "@/components/SponsorCampaignManager";
@@ -216,6 +217,10 @@ export default function SponsorDashboard() {
 
           <TabsContent value="offers">
             <SponsorOffers />
+          </TabsContent>
+
+          <TabsContent value="brand-deals">
+            <BrandDealsDashboard />
           </TabsContent>
 
           <TabsContent value="creator-tools">
