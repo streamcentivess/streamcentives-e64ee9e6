@@ -18,6 +18,8 @@ import { EnhancedXPBalance } from '@/components/EnhancedXPBalance';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { IntegrationsHub } from '@/components/IntegrationsHub';
 import { CreatorToolsHub } from '@/components/CreatorToolsHub';
+import { AlgorithmicSuggestionPopup } from '@/components/AlgorithmicSuggestionPopup';
+import { useAlgorithmicSuggestions } from '@/hooks/useAlgorithmicSuggestions';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
@@ -42,6 +44,14 @@ const FanDashboard = () => {
   const [leaderboardPositions, setLeaderboardPositions] = useState<Record<string, any>>({});
   const [showXPAnimation, setShowXPAnimation] = useState(false);
   const [xpAnimationAmount, setXpAnimationAmount] = useState(0);
+  
+  // Algorithmic suggestions
+  const {
+    currentSuggestion,
+    showSuggestion,
+    dismissSuggestion,
+    handleSuggestionAction
+  } = useAlgorithmicSuggestions();
 
   // Tier system
   const nextTierXP = 2000;
@@ -697,6 +707,14 @@ const FanDashboard = () => {
           xpAmount={xpAnimationAmount}
           show={showXPAnimation}
           onComplete={() => setShowXPAnimation(false)}
+        />
+
+        {/* Algorithmic Suggestion Popup */}
+        <AlgorithmicSuggestionPopup
+          suggestion={currentSuggestion}
+          isVisible={showSuggestion}
+          onDismiss={dismissSuggestion}
+          onAction={handleSuggestionAction}
         />
       </div>
     </div>
