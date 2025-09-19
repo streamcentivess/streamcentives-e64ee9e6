@@ -47,13 +47,7 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
   useEffect(() => {
     const loadProfileData = async () => {
       if (existingProfile) {
-        // Get email from user's profile
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('user_id', user?.id)
-          .maybeSingle();
-
+        // Load sponsor profile data only - completely independent from user profiles
         setFormData({
           company_name: existingProfile.company_name || "",
           industry: existingProfile.industry || "",
@@ -62,19 +56,13 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
           company_description: existingProfile.company_description || "",
           budget_range_min: existingProfile.budget_range_min?.toString() || "",
           budget_range_max: existingProfile.budget_range_max?.toString() || "",
-          email: userProfile?.email || ""
+          email: user?.email || ""
         });
       } else if (user) {
-        // For new profiles, get current user email
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
+        // For new sponsor profiles, use auth user email directly
         setFormData(prev => ({
           ...prev,
-          email: userProfile?.email || user.email || ""
+          email: user.email || ""
         }));
       }
     };
@@ -145,12 +133,6 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
             variant: "destructive"
           });
         } else {
-          // Also update email in profiles table for consistency
-          await supabase
-            .from('profiles')
-            .update({ email: formData.email.trim() })
-            .eq('user_id', user.id);
-
           toast({
             title: "Email Update Confirmation",
             description: "A confirmation email has been sent to your new email address. Please check your inbox to complete the email change.",
