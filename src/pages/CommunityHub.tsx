@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, MessageSquare, Calendar, MapPin, Plus, Heart, Share, Pin, Crown } from 'lucide-react';
+import { Users, MessageSquare, Calendar, MapPin, Plus, Heart, Share, Pin, Crown, Camera, X, UserPlus, Repeat2 } from 'lucide-react';
 import { CommunityDetail } from '@/components/CommunityDetail';
 import AppNavigation from '@/components/AppNavigation';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +33,19 @@ const CommunityHub = () => {
     is_public: true,
     rules: ''
   });
+
+  // Post creation form state
+  const [postForm, setPostForm] = useState({
+    title: '',
+    content: '',
+    community_id: '',
+    is_pinned: false,
+    photos: [] as File[],
+    tagged_people: [] as string[],
+    location: ''
+  });
+  
+  const [taggedPeopleInput, setTaggedPeopleInput] = useState('');
 
   // Community genres similar to Reddit
   const communityGenres = [
@@ -137,26 +150,67 @@ const CommunityHub = () => {
     }
   };
 
+  // Photo upload handlers
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    setPostForm({...postForm, photos: [...postForm.photos, ...validFiles].slice(0, 4)}); // Max 4 photos
+  };
+
+  const removePhoto = (index: number) => {
+    const newPhotos = [...postForm.photos];
+    newPhotos.splice(index, 1);
+    setPostForm({...postForm, photos: newPhotos});
+  };
+
+  // Tagged people handlers
+  const addTaggedPerson = () => {
+    if (taggedPeopleInput.trim() && !postForm.tagged_people.includes(taggedPeopleInput.trim())) {
+      setPostForm({
+        ...postForm, 
+        tagged_people: [...postForm.tagged_people, taggedPeopleInput.trim()]
+      });
+      setTaggedPeopleInput('');
+    }
+  };
+
+  const removeTaggedPerson = (person: string) => {
+    setPostForm({
+      ...postForm,
+      tagged_people: postForm.tagged_people.filter(p => p !== person)
+    });
+  };
+
   const communityPosts = [
     {
       id: 1,
       author: 'Sarah Fan',
       authorAvatar: '',
+      title: 'Amazing new track!',
       content: 'Just listened to the new track on repeat! Amazing work as always 🎵',
       timestamp: '2 hours ago',
       likes: 23,
       comments: 5,
-      isPinned: false
+      reposts: 3,
+      isPinned: false,
+      photos: [],
+      tagged_people: ['@musiclover92', '@fanclub_official'],
+      location: 'Nashville, TN'
     },
     {
       id: 2,
       author: 'Music Lover',
       authorAvatar: '',
+      title: 'Tour Excitement!',
       content: 'Anyone else excited for the upcoming tour? Can\'t wait to see the live performance!',
       timestamp: '4 hours ago',
       likes: 18,
       comments: 12,
-      isPinned: true
+      reposts: 7,
+      isPinned: true,
+      photos: [],
+      tagged_people: ['@sarah_fan'],
+      location: 'Los Angeles, CA'
     }
   ];
 
@@ -426,31 +480,167 @@ const CommunityHub = () => {
                     <span className="sm:hidden">Create</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Create Community Post</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="post-title">Post Title (Optional)</Label>
-                      <Input id="post-title" placeholder="Enter post title" />
+                      <Label htmlFor="post-title">Post Title</Label>
+                      <Input 
+                        id="post-title" 
+                        placeholder="Enter post title"
+                        value={postForm.title}
+                        onChange={(e) => setPostForm({...postForm, title: e.target.value})}
+                      />
                     </div>
+                    
                     <div>
                       <Label htmlFor="post-content">Content</Label>
-                      <Textarea id="post-content" placeholder="What's on your mind?" rows={4} />
+                      <Textarea 
+                        id="post-content" 
+                        placeholder="What's on your mind?" 
+                        rows={4}
+                        value={postForm.content}
+                        onChange={(e) => setPostForm({...postForm, content: e.target.value})}
+                      />
                     </div>
+
+                    {/* Photo Upload Section */}
+                    <div>
+                      <Label>Photos (Max 4)</Label>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            id="photo-upload"
+                            multiple
+                            accept="image/*"
+                            onChange={handlePhotoUpload}
+                            className="hidden"
+                          />
+                          <Button 
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('photo-upload')?.click()}
+                            disabled={postForm.photos.length >= 4}
+                          >
+                            <Camera className="h-4 w-4 mr-2" />
+                            Add Photos
+                          </Button>
+                          <span className="text-sm text-muted-foreground">
+                            {postForm.photos.length}/4 photos
+                          </span>
+                        </div>
+                        
+                        {postForm.photos.length > 0 && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {postForm.photos.map((photo, index) => (
+                              <div key={index} className="relative">
+                                <img
+                                  src={URL.createObjectURL(photo)}
+                                  alt={`Upload ${index + 1}`}
+                                  className="w-full h-20 object-cover rounded-md"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                                  onClick={() => removePhoto(index)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tag People Section */}
+                    <div>
+                      <Label>Tag People</Label>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Type username (e.g., @username)"
+                            value={taggedPeopleInput}
+                            onChange={(e) => setTaggedPeopleInput(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTaggedPerson())}
+                          />
+                          <Button type="button" variant="outline" onClick={addTaggedPerson}>
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        {postForm.tagged_people.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {postForm.tagged_people.map((person, index) => (
+                              <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                                {person}
+                                <button
+                                  type="button"
+                                  onClick={() => removeTaggedPerson(person)}
+                                  className="ml-1 hover:text-destructive"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Location Section */}
+                    <div>
+                      <Label htmlFor="post-location">Location</Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="post-location"
+                          placeholder="Add a location..."
+                          className="pl-10"
+                          value={postForm.location}
+                          onChange={(e) => setPostForm({...postForm, location: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    
                     <div>
                       <Label>Select Community</Label>
-                      <select className="w-full p-2 border rounded-md">
-                        <option>Official Fan Community</option>
-                        <option>VIP Members Only</option>
-                      </select>
+                      <Select
+                        value={postForm.community_id}
+                        onValueChange={(value) => setPostForm({...postForm, community_id: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a community" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {communities.map((community) => (
+                            <SelectItem key={community.id} value={community.id}>
+                              {community.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
+                    
                     <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="pin-post" className="rounded" />
+                      <input 
+                        type="checkbox" 
+                        id="pin-post" 
+                        className="rounded"
+                        checked={postForm.is_pinned}
+                        onChange={(e) => setPostForm({...postForm, is_pinned: e.target.checked})}
+                      />
                       <Label htmlFor="pin-post">Pin this post</Label>
                     </div>
-                    <Button className="w-full bg-gradient-primary hover:opacity-90">Post</Button>
+                    
+                    <Button className="w-full bg-gradient-primary hover:opacity-90">
+                      Create Post
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -460,36 +650,86 @@ const CommunityHub = () => {
               {communityPosts.map((post) => (
                 <Card key={post.id} className="card-modern">
                   <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={post.authorAvatar} alt={post.author} />
-                            <AvatarFallback>{post.author.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{post.author}</p>
-                            <p className="text-sm text-muted-foreground">{post.timestamp}</p>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarImage src={post.authorAvatar} alt={post.author} />
+                              <AvatarFallback>{post.author.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{post.author}</p>
+                              <p className="text-sm text-muted-foreground">{post.timestamp}</p>
+                            </div>
                           </div>
+                          {post.isPinned && <Pin className="h-4 w-4 text-primary" />}
                         </div>
-                        {post.isPinned && <Pin className="h-4 w-4 text-primary" />}
+                        
+                        {/* Post Title */}
+                        {post.title && (
+                          <h4 className="font-semibold text-base">{post.title}</h4>
+                        )}
+                        
+                        {/* Post Content */}
+                        <p className="text-sm">{post.content}</p>
+                        
+                        {/* Tagged People */}
+                        {post.tagged_people && post.tagged_people.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-xs text-muted-foreground">with</span>
+                            {post.tagged_people.map((person, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {person}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Location */}
+                        {post.location && (
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <MapPin className="h-3 w-3" />
+                            <span>{post.location}</span>
+                          </div>
+                        )}
+                        
+                        {/* Photos */}
+                        {post.photos && post.photos.length > 0 && (
+                          <div className={`grid gap-2 ${post.photos.length === 1 ? 'grid-cols-1' : 
+                                        post.photos.length === 2 ? 'grid-cols-2' : 
+                                        post.photos.length === 3 ? 'grid-cols-2' : 'grid-cols-2'}`}>
+                            {post.photos.map((photo, index) => (
+                              <div key={index} className={`${post.photos.length === 3 && index === 0 ? 'col-span-2' : ''}`}>
+                                <img
+                                  src={photo}
+                                  alt={`Post photo ${index + 1}`}
+                                  className="w-full h-40 object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Interaction Buttons */}
+                        <div className="flex items-center gap-6 text-sm text-muted-foreground pt-2 border-t">
+                          <button className="flex items-center gap-1 hover:text-red-500 transition-colors">
+                            <Heart className="h-4 w-4" />
+                            <span>{post.likes}</span>
+                          </button>
+                          <button className="flex items-center gap-1 hover:text-blue-500 transition-colors">
+                            <MessageSquare className="h-4 w-4" />
+                            <span>{post.comments}</span>
+                          </button>
+                          <button className="flex items-center gap-1 hover:text-green-500 transition-colors">
+                            <Repeat2 className="h-4 w-4" />
+                            <span>{post.reposts}</span>
+                          </button>
+                          <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                            <Share className="h-4 w-4" />
+                            <span>Share</span>
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-sm">{post.content}</p>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <button className="flex items-center gap-1 hover:text-primary">
-                          <Heart className="h-4 w-4" />
-                          {post.likes}
-                        </button>
-                        <button className="flex items-center gap-1 hover:text-primary">
-                          <MessageSquare className="h-4 w-4" />
-                          {post.comments}
-                        </button>
-                        <button className="flex items-center gap-1 hover:text-primary">
-                          <Share className="h-4 w-4" />
-                          Share
-                        </button>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               ))}
