@@ -622,152 +622,153 @@ const CommunityChat = () => {
                   showReportButton={true}
                 >
                   <Card className="card-modern">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar 
-                          className="h-10 w-10 cursor-pointer" 
-                          onClick={() => navigateToProfile(post.profiles?.username)}
-                        >
-                          <AvatarImage src={post.profiles?.avatar_url} />
-                          <AvatarFallback>
-                            {post.profiles?.display_name?.charAt(0) || post.profiles?.username?.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h4 className="font-semibold">{post.title}</h4>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span 
-                              className="cursor-pointer hover:text-primary transition-colors"
-                              onClick={() => navigateToProfile(post.profiles?.username)}
-                            >
-                              by @{post.profiles?.username}
-                            </span>
-                            <span>•</span>
-                            <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </div>
-                      {post.is_pinned && (
-                        <Pin className="h-4 w-4 text-primary" />
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm mb-4">{post.content}</p>
-                    
-                    {/* Media Display */}
-                    {post.media_urls && post.media_urls.length > 0 && (
-                      <div className="grid grid-cols-2 gap-2 mb-4">
-                        {post.media_urls.slice(0, 4).map((url: string, index: number) => {
-                          const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.avi') || url.includes('.webm');
-                          return isVideo ? (
-                            <video
-                              key={index}
-                              src={url}
-                              className="w-full h-32 object-cover rounded-md cursor-pointer"
-                              controls
-                              preload="metadata"
-                            />
-                          ) : (
-                            <img
-                              key={index}
-                              src={url}
-                              alt={`Post media ${index + 1}`}
-                              className="w-full h-32 object-cover rounded-md cursor-pointer"
-                              onClick={() => window.open(url, '_blank')}
-                            />
-                          );
-                        })}
-                      </div>
-                    )}
-                    
-                    {/* Location */}
-                    {post.location && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
-                        <MapPin className="h-3 w-3" />
-                        {post.location}
-                      </div>
-                    )}
-                    
-                    {/* Post Actions */}
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <EnhancedSocialInteractions
-                        contentId={post.id}
-                        contentType="post"
-                        targetUserId={post.author_id}
-                        showCounts={true}
-                        size="sm"
-                        variant="horizontal"
-                      />
-                      <button 
-                        className="flex items-center gap-1 hover:text-primary transition-colors"
-                        onClick={() => toggleComments(post.id)}
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                        <span>{post.post_comments?.length || 0}</span>
-                      </button>
-                    </div>
-                    
-                    {/* Comments Section */}
-                    {expandedComments.has(post.id) && (
-                      <div className="mt-4 space-y-3 border-t pt-4">
-                        {/* Existing Comments */}
-                        {post.post_comments?.map((comment: any) => (
-                          <div key={comment.id} className="flex gap-3">
-                            <Avatar 
-                              className="h-8 w-8 cursor-pointer" 
-                              onClick={() => navigateToProfile(comment.profiles?.username)}
-                            >
-                              <AvatarImage src={comment.profiles?.avatar_url} />
-                              <AvatarFallback>
-                                {comment.profiles?.display_name?.charAt(0) || comment.profiles?.username?.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 text-sm">
-                                <span 
-                                  className="font-medium cursor-pointer hover:text-primary transition-colors"
-                                  onClick={() => navigateToProfile(comment.profiles?.username)}
-                                >
-                                  @{comment.profiles?.username}
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {new Date(comment.created_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className="text-sm mt-1">{comment.content}</p>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar 
+                            className="h-10 w-10 cursor-pointer" 
+                            onClick={() => navigateToProfile(post.profiles?.username)}
+                          >
+                            <AvatarImage src={post.profiles?.avatar_url} />
+                            <AvatarFallback>
+                              {post.profiles?.display_name?.charAt(0) || post.profiles?.username?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h4 className="font-semibold">{post.title}</h4>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span 
+                                className="cursor-pointer hover:text-primary transition-colors"
+                                onClick={() => navigateToProfile(post.profiles?.username)}
+                              >
+                                by @{post.profiles?.username}
+                              </span>
+                              <span>•</span>
+                              <span>{new Date(post.created_at).toLocaleDateString()}</span>
                             </div>
                           </div>
-                        ))}
-                        
-                        {/* Add Comment */}
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add a comment..."
-                            value={newComments[post.id] || ''}
-                            onChange={(e) => setNewComments(prev => ({ 
-                              ...prev, 
-                              [post.id]: e.target.value 
-                            }))}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                handleAddComment(post.id);
-                              }
-                            }}
-                          />
-                          <Button 
-                            size="sm"
-                            onClick={() => handleAddComment(post.id)}
-                            disabled={!newComments[post.id]?.trim()}
-                          >
-                            <Send className="h-4 w-4" />
-                          </Button>
                         </div>
+                        {post.is_pinned && (
+                          <Pin className="h-4 w-4 text-primary" />
+                        )}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm mb-4">{post.content}</p>
+                      
+                      {/* Media Display */}
+                      {post.media_urls && post.media_urls.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                          {post.media_urls.slice(0, 4).map((url: string, index: number) => {
+                            const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.avi') || url.includes('.webm');
+                            return isVideo ? (
+                              <video
+                                key={index}
+                                src={url}
+                                className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                controls
+                                preload="metadata"
+                              />
+                            ) : (
+                              <img
+                                key={index}
+                                src={url}
+                                alt={`Post media ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                onClick={() => window.open(url, '_blank')}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                      
+                      {/* Location */}
+                      {post.location && (
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+                          <MapPin className="h-3 w-3" />
+                          {post.location}
+                        </div>
+                      )}
+                      
+                      {/* Post Actions */}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <EnhancedSocialInteractions
+                          contentId={post.id}
+                          contentType="post"
+                          targetUserId={post.author_id}
+                          showCounts={true}
+                          size="sm"
+                          variant="horizontal"
+                        />
+                        <button 
+                          className="flex items-center gap-1 hover:text-primary transition-colors"
+                          onClick={() => toggleComments(post.id)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          <span>{post.post_comments?.length || 0}</span>
+                        </button>
+                      </div>
+                      
+                      {/* Comments Section */}
+                      {expandedComments.has(post.id) && (
+                        <div className="mt-4 space-y-3 border-t pt-4">
+                          {/* Existing Comments */}
+                          {post.post_comments?.map((comment: any) => (
+                            <div key={comment.id} className="flex gap-3">
+                              <Avatar 
+                                className="h-8 w-8 cursor-pointer" 
+                                onClick={() => navigateToProfile(comment.profiles?.username)}
+                              >
+                                <AvatarImage src={comment.profiles?.avatar_url} />
+                                <AvatarFallback>
+                                  {comment.profiles?.display_name?.charAt(0) || comment.profiles?.username?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span 
+                                    className="font-medium cursor-pointer hover:text-primary transition-colors"
+                                    onClick={() => navigateToProfile(comment.profiles?.username)}
+                                  >
+                                    @{comment.profiles?.username}
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {new Date(comment.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <p className="text-sm mt-1">{comment.content}</p>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {/* Add Comment */}
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Add a comment..."
+                              value={newComments[post.id] || ''}
+                              onChange={(e) => setNewComments(prev => ({ 
+                                ...prev, 
+                                [post.id]: e.target.value 
+                              }))}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleAddComment(post.id);
+                                }
+                              }}
+                            />
+                            <Button 
+                              size="sm"
+                              onClick={() => handleAddComment(post.id)}
+                              disabled={!newComments[post.id]?.trim()}
+                            >
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </ContentModerationWrapper>
               ))
             )}
           </div>
