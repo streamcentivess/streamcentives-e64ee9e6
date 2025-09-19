@@ -42,8 +42,12 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
   const [campaigns, setCampaigns] = useState([]);
   const [posts, setPosts] = useState([]);
   const [supporters, setSupporters] = useState([]);
+  const [haters, setHaters] = useState([]);
+  const [smartLinks, setSmartLinks] = useState([]);
+  const [allCampaigns, setAllCampaigns] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [postStats, setPostStats] = useState<{[key: string]: any}>({});
+  const [profileAnalytics, setProfileAnalytics] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -87,7 +91,7 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
         setIsFollowing(!!followData);
       }
 
-      // Get user's active campaigns
+      // Get user's active campaigns (limited for header stats)
       const { data: campaignData } = await supabase
         .from('campaigns')
         .select('id, title, description, xp_reward, current_progress, target_value, status')
@@ -96,6 +100,28 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
         .limit(6);
       
       setCampaigns(campaignData || []);
+
+      // Get ALL user's campaigns for comprehensive view
+      const { data: allCampaignsData } = await supabase
+        .from('campaigns')
+        .select(`
+          id, title, description, xp_reward, cash_reward, current_progress, 
+          target_value, status, created_at, end_date, image_url, type,
+          campaign_participants(count)
+        `)
+        .eq('creator_id', userId)
+        .order('created_at', { ascending: false });
+      
+      setAllCampaigns(allCampaignsData || []);
+
+      // Get user's smart links
+      const { data: smartLinksData } = await supabase
+        .from('smart_links')
+        .select('id, title, description, slug, total_clicks, total_xp_awarded, created_at, is_active')
+        .eq('creator_id', userId)
+        .order('created_at', { ascending: false });
+      
+      setSmartLinks(smartLinksData || []);
 
       // Get user's recent posts with enhanced data
       const { data: postData } = await supabase
@@ -143,25 +169,59 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
           )
         `)
         .eq('following_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(20);
+        .order('created_at', { ascending: false });
       
       setSupporters(supportersData || []);
 
-      // Get recent activity
+      // Get haters/negative interactions
+      const { data: hatersData } = await supabase
+        .from('social_interactions')
+        .select(`
+          created_at, interaction_type,
+          user:profiles!social_interactions_user_id_fkey(
+            user_id, username, display_name, avatar_url
+          )
+        `)
+        .eq('target_user_id', userId)
+        .in('interaction_type', ['dislike', 'report', 'block'])
+        .order('created_at', { ascending: false });
+      
+      setHaters(hatersData || []);
+
+      // Get recent activity (all interactions)
       const { data: activityData } = await supabase
         .from('social_interactions')
         .select(`
-          id, interaction_type, created_at,
+          id, interaction_type, created_at, content_type, target_content_id,
           user:profiles!social_interactions_user_id_fkey(
             user_id, username, display_name, avatar_url
           )
         `)
         .eq('target_user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(15);
+        .limit(50);
       
       setRecentActivity(activityData || []);
+
+      // Get profile analytics summary
+      const { data: analyticsData } = await supabase
+        .from('creator_analytics')
+        .select('*')
+        .eq('creator_id', userId)
+        .order('date', { ascending: false })
+        .limit(30);
+      
+      if (analyticsData?.length) {
+        const latest = analyticsData[0];
+        const totalEngagement = analyticsData.reduce((sum, day) => 
+          sum + (day.total_messages_received || 0), 0);
+        
+        setProfileAnalytics({
+          ...latest,
+          total_engagement: totalEngagement,
+          avg_daily_engagement: totalEngagement / analyticsData.length
+        });
+      }
 
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -343,6 +403,10 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                      <div className="font-bold">{posts.length}</div>
                      <div className="text-sm text-muted-foreground">Posts</div>
                    </div>
+                   <div className="text-center">
+                     <div className="font-bold">{smartLinks.length}</div>
+                     <div className="text-sm text-muted-foreground">Smart Links</div>
+                   </div>
                   </div>
                 </div>
 
@@ -382,10 +446,12 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
 
               {/* Content Tabs */}
               <Tabs defaultValue="posts" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="posts">Posts</TabsTrigger>
                   <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
                   <TabsTrigger value="supporters">Supporters</TabsTrigger>
+                  <TabsTrigger value="haters">Critics</TabsTrigger>
+                  <TabsTrigger value="smartlinks">Smart Links</TabsTrigger>
                   <TabsTrigger value="activity">Activity</TabsTrigger>
                 </TabsList>
 
@@ -437,26 +503,51 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                 </TabsContent>
 
                 <TabsContent value="campaigns" className="space-y-4">
-                  {campaigns.length === 0 ? (
+                  {allCampaigns.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-muted-foreground">No active campaigns</p>
+                      <p className="text-muted-foreground">No campaigns created</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {campaigns.map((campaign: any) => (
+                    <div className="space-y-4">
+                      {allCampaigns.map((campaign: any) => (
                         <Card key={campaign.id}>
                           <CardContent className="p-4">
-                            <h3 className="font-semibold mb-2">{campaign.title}</h3>
-                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                              {campaign.description}
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <Badge variant="secondary">
-                                {campaign.xp_reward} XP
-                              </Badge>
-                              <span className="text-sm text-muted-foreground">
-                                {campaign.current_progress}/{campaign.target_value}
-                              </span>
+                            <div className="flex items-start gap-4">
+                              {campaign.image_url && (
+                                <img 
+                                  src={campaign.image_url} 
+                                  alt="Campaign"
+                                  className="w-16 h-16 object-cover rounded-lg"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h3 className="font-semibold">{campaign.title}</h3>
+                                  <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
+                                    {campaign.status}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                                  {campaign.description}
+                                </p>
+                                <div className="flex items-center justify-between text-sm">
+                                  <div className="flex items-center gap-4">
+                                    <span className="font-medium">
+                                      {campaign.xp_reward} XP
+                                      {campaign.cash_reward > 0 && ` + $${campaign.cash_reward}`}
+                                    </span>
+                                    <span>
+                                      {campaign.current_progress}/{campaign.target_value} completed
+                                    </span>
+                                    <span>
+                                      {campaign.campaign_participants?.[0]?.count || 0} participants
+                                    </span>
+                                  </div>
+                                  <span className="text-muted-foreground">
+                                    {new Date(campaign.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -466,33 +557,116 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                 </TabsContent>
 
                 <TabsContent value="supporters" className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Supporters ({supporters.length})</h3>
+                  </div>
                   {supporters.length === 0 ? (
                     <div className="text-center py-8">
                       <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                       <p className="text-muted-foreground">No supporters yet</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {supporters.map((supporter: any, index) => (
-                        <Card key={index} className="hover:shadow-md transition-shadow">
+                        <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
                           <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10">
+                            <div className="flex flex-col items-center text-center">
+                              <Avatar className="h-12 w-12 mb-2">
                                 <AvatarImage src={supporter.follower?.avatar_url} />
                                 <AvatarFallback>
                                   {supporter.follower?.display_name?.[0] || supporter.follower?.username?.[0] || 'U'}
                                 </AvatarFallback>
                               </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm truncate">
-                                  {supporter.follower?.display_name || supporter.follower?.username}
-                                </p>
-                                <p className="text-xs text-muted-foreground truncate">
-                                  @{supporter.follower?.username}
+                              <p className="font-medium text-sm truncate w-full">
+                                {supporter.follower?.display_name || supporter.follower?.username}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate w-full">
+                                @{supporter.follower?.username}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(supporter.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="haters" className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Critics ({haters.length})</h3>
+                  </div>
+                  {haters.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No negative interactions</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {haters.map((hater: any, index) => (
+                        <Card key={index}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={hater.user?.avatar_url} />
+                                <AvatarFallback>
+                                  {hater.user?.display_name?.[0] || hater.user?.username?.[0] || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <p className="font-medium text-sm">
+                                  {hater.user?.display_name || hater.user?.username}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                  Followed {new Date(supporter.created_at).toLocaleDateString()}
+                                  {hater.interaction_type} • {new Date(hater.created_at).toLocaleDateString()}
                                 </p>
+                              </div>
+                              <Badge variant="destructive" className="text-xs">
+                                {hater.interaction_type}
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="smartlinks" className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Smart Links ({smartLinks.length})</h3>
+                  </div>
+                  {smartLinks.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No smart links created</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {smartLinks.map((link: any) => (
+                        <Card key={link.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h3 className="font-semibold">{link.title}</h3>
+                                  <Badge variant={link.is_active ? 'default' : 'secondary'}>
+                                    {link.is_active ? 'Active' : 'Inactive'}
+                                  </Badge>
+                                </div>
+                                {link.description && (
+                                  <p className="text-sm text-muted-foreground mb-3">
+                                    {link.description}
+                                  </p>
+                                )}
+                                <div className="flex items-center gap-4 text-sm">
+                                  <span className="font-medium">/{link.slug}</span>
+                                  <span>{link.total_clicks} clicks</span>
+                                  <span>{link.total_xp_awarded} XP awarded</span>
+                                  <span className="text-muted-foreground">
+                                    Created {new Date(link.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </CardContent>
@@ -503,6 +677,39 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                 </TabsContent>
 
                 <TabsContent value="activity" className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Recent Activity ({recentActivity.length})</h3>
+                  </div>
+                  
+                  {/* Analytics Summary */}
+                  {profileAnalytics && (
+                    <Card className="mb-6">
+                      <CardHeader>
+                        <h4 className="font-semibold">Analytics Summary</h4>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                          <div>
+                            <div className="font-bold text-lg">{profileAnalytics.total_fans}</div>
+                            <div className="text-sm text-muted-foreground">Total Fans</div>
+                          </div>
+                          <div>
+                            <div className="font-bold text-lg">{profileAnalytics.total_xp_awarded}</div>
+                            <div className="text-sm text-muted-foreground">XP Distributed</div>
+                          </div>
+                          <div>
+                            <div className="font-bold text-lg">${profileAnalytics.total_cash_awarded}</div>
+                            <div className="text-sm text-muted-foreground">Cash Awarded</div>
+                          </div>
+                          <div>
+                            <div className="font-bold text-lg">{Math.round(profileAnalytics.avg_daily_engagement)}</div>
+                            <div className="text-sm text-muted-foreground">Avg Daily Engagement</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {recentActivity.length === 0 ? (
                     <div className="text-center py-8">
                       <Activity className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
@@ -525,19 +732,25 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                                   <span className="font-medium">
                                     {activity.user?.display_name || activity.user?.username}
                                   </span>
-                                  {activity.interaction_type === 'like' && ' liked your content'}
-                                  {activity.interaction_type === 'comment' && ' commented on your post'}
-                                  {activity.interaction_type === 'repost' && ' reposted your content'}
+                                  {activity.interaction_type === 'like' && ` liked ${activity.content_type || 'your content'}`}
+                                  {activity.interaction_type === 'comment' && ` commented on your ${activity.content_type || 'post'}`}
+                                  {activity.interaction_type === 'repost' && ` reposted your ${activity.content_type || 'content'}`}
+                                  {activity.interaction_type === 'share' && ` shared your ${activity.content_type || 'content'}`}
                                   {activity.interaction_type === 'follow' && ' started following you'}
+                                  {activity.interaction_type === 'dislike' && ` disliked your ${activity.content_type || 'content'}`}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                  {new Date(activity.created_at).toLocaleDateString()}
+                                  {new Date(activity.created_at).toLocaleDateString()} • {new Date(activity.created_at).toLocaleTimeString()}
                                 </p>
                               </div>
-                              {activity.interaction_type === 'like' && <Heart className="h-4 w-4 text-red-500" />}
-                              {activity.interaction_type === 'comment' && <MessageSquare className="h-4 w-4 text-blue-500" />}
-                              {activity.interaction_type === 'repost' && <Share2 className="h-4 w-4 text-green-500" />}
-                              {activity.interaction_type === 'follow' && <UserPlus className="h-4 w-4 text-purple-500" />}
+                              <div className="flex items-center gap-2">
+                                {activity.interaction_type === 'like' && <Heart className="h-4 w-4 text-red-500" />}
+                                {activity.interaction_type === 'comment' && <MessageSquare className="h-4 w-4 text-blue-500" />}
+                                {activity.interaction_type === 'repost' && <Share2 className="h-4 w-4 text-green-500" />}
+                                {activity.interaction_type === 'share' && <Share2 className="h-4 w-4 text-blue-500" />}
+                                {activity.interaction_type === 'follow' && <UserPlus className="h-4 w-4 text-purple-500" />}
+                                {activity.interaction_type === 'dislike' && <Badge variant="destructive" className="text-xs">Dislike</Badge>}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
