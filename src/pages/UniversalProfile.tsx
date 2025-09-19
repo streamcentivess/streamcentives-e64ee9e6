@@ -590,410 +590,358 @@ const UniversalProfile = () => {
       ) : profile ? (
         <div className="container py-10">
           <Card className="w-full max-w-4xl mx-auto">
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-               <CardTitle className="text-2xl font-bold">{profile.display_name || profile.username}</CardTitle>
-               <div className="flex items-center space-x-2">
-                 {/* User Search Dialog */}
-                 <Dialog>
-                   <DialogTrigger asChild>
-                     <Button variant="outline" size="sm">
-                       <Search className="h-4 w-4" />
-                     </Button>
-                   </DialogTrigger>
-                   <DialogContent className="max-w-md">
-                     <DialogHeader>
-                       <DialogTitle>Search Users</DialogTitle>
-                     </DialogHeader>
-                     <div className="space-y-4">
-                       <Input
-                         placeholder="Search by username or name..."
-                         value={searchQuery}
-                         onChange={(e) => {
-                           setSearchQuery(e.target.value);
-                           searchUsers(e.target.value);
-                         }}
-                       />
-                       {searching && <div className="text-center text-muted-foreground">Searching...</div>}
-                       <div className="space-y-2">
-                         {searchResults.map((user) => (
-                           <div key={user.user_id} className="flex items-center justify-between">
-                             <div className="flex items-center space-x-3">
-                               <Avatar className="w-8 h-8">
-                                 <AvatarImage src={user.avatar_url} />
-                                 <AvatarFallback>{user.display_name?.charAt(0) || user.username?.charAt(0) || 'U'}</AvatarFallback>
-                               </Avatar>
-                               <div>
-                                 <p className="font-medium text-sm">{user.display_name || user.username}</p>
-                                 <p className="text-xs text-muted-foreground">{user.bio}</p>
-                               </div>
-                             </div>
-                             <Button
-                               size="sm"
-                               variant="outline"
-                               onClick={() => navigate(`/universal-profile?user=${user.user_id}`)}
-                             >
-                               View
-                             </Button>
-                           </div>
-                         ))}
-                       </div>
-                     </div>
-                   </DialogContent>
-                 </Dialog>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold">{profile.display_name || profile.username}</CardTitle>
+              <div className="flex items-center space-x-2">
+                {/* User Search Dialog */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Search Users</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Search by username or name..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          searchUsers(e.target.value);
+                        }}
+                      />
+                      {searching && <div className="text-center text-muted-foreground">Searching...</div>}
+                      <div className="space-y-2">
+                        {searchResults.map((user) => (
+                          <div key={user.user_id} className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="w-8 h-8">
+                                <AvatarImage src={user.avatar_url} />
+                                <AvatarFallback>{user.display_name?.charAt(0) || user.username?.charAt(0) || 'U'}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm">{user.display_name || user.username}</p>
+                                <p className="text-xs text-muted-foreground">{user.bio}</p>
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => navigate(`/universal-profile?user=${user.user_id}`)}
+                            >
+                              View
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
 
-                 {/* Conditional rendering based on user role */}
-                 {currentUserRole === 'sponsor' && !isOwnProfile && (
-                    <SponsorContactOptions 
-                      creator={{
-                        user_id: profile.user_id,
-                        username: profile.username || '',
-                        display_name: profile.display_name,
-                        avatar_url: profile.avatar_url,
-                        bio: profile.bio,
-                        followerCount: followStats.followers_count,
-                        engagementRate: 0.05, // Default engagement rate
-                        offer_receiving_rate_cents: profile.offer_receiving_rate_cents
-                      }}
-                      recipientName={profile.display_name || profile.username || 'User'}
-                    />
-                  )}
-                  {/* Universal Share Button */}
-                  <UniversalShareButton 
-                    type="profile"
-                    title={`${profile.display_name || profile.username || 'Profile'}'s Profile`}
-                    description={profile.bio}
-                    creatorName={profile.display_name || profile.username}
-                    isOwnContent={isOwnProfile}
-                  />
-               </div>
-             </CardHeader>
+                {/* Conditional rendering based on user role */}
+                {currentUserRole === 'sponsor' && !isOwnProfile && (
+                   <SponsorContactOptions 
+                     creator={{
+                       user_id: profile.user_id,
+                       username: profile.username || '',
+                       display_name: profile.display_name,
+                       avatar_url: profile.avatar_url,
+                       bio: profile.bio,
+                       followerCount: followStats.followers_count,
+                       engagementRate: 0.05, // Default engagement rate
+                       offer_receiving_rate_cents: profile.offer_receiving_rate_cents
+                     }}
+                     recipientName={profile.display_name || profile.username || 'User'}
+                   />
+                 )}
+                 {/* Universal Share Button */}
+                 <UniversalShareButton 
+                   type="profile"
+                   title={`${profile.display_name || profile.username || 'Profile'}'s Profile`}
+                   description={profile.bio}
+                   creatorName={profile.display_name || profile.username}
+                   isOwnContent={isOwnProfile}
+                 />
+              </div>
+            </CardHeader>
             <CardContent>
-               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-x-6 md:space-y-0">
-                 <div className="relative">
-                   <Avatar className="w-24 h-24 md:w-32 md:h-32">
-                     <AvatarImage src={profile.avatar_url} alt={profile.display_name || profile.username || 'Avatar'} />
-                     <AvatarFallback>{profile.display_name?.charAt(0) || profile.username?.charAt(0) || 'U'}</AvatarFallback>
-                   </Avatar>
-                   {isOwnProfile && (
-                     <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/80 transition-colors">
-                       <Camera className="h-4 w-4" />
-                       <input
-                         id="avatar-upload"
-                         type="file"
-                         accept="image/*"
-                         onChange={handleAvatarUpload}
-                         className="hidden"
-                         disabled={uploading}
-                       />
-                     </label>
-                   )}
-                 </div>
-                 <div className="flex-1">
-                   <div className="flex flex-col space-y-2">
-                     <div className="flex items-center space-x-2">
-                       <h2 className="text-xl font-semibold">{profile.display_name || profile.username}</h2>
-                       {profileOwnerRole && (
-                         <Badge variant="secondary">{profileOwnerRole}</Badge>
-                       )}
-                     </div>
-                     <p className="text-muted-foreground">{profile.bio || 'No bio available.'}</p>
-                     <div className="flex items-center space-x-4">
-                       {/* Follow Stats - clickable to show lists */}
-                       <Dialog open={showFollowersList} onOpenChange={setShowFollowersList}>
-                         <DialogTrigger asChild>
-                           <Button 
-                             variant="ghost" 
-                             className="p-0 h-auto font-normal"
-                             onClick={() => {
-                               setListType('followers');
-                               fetchFollowers();
-                               setShowFollowersList(true);
-                             }}
-                           >
-                             <div className="flex items-center space-x-1">
-                               <Users className="h-4 w-4" />
-                               <span>{followStats.followers_count} Followers</span>
-                             </div>
-                           </Button>
-                         </DialogTrigger>
-                         <DialogContent className="max-w-md">
-                           <DialogHeader>
-                             <DialogTitle>
-                               {listType === 'followers' ? 'Followers' : 'Following'}
-                             </DialogTitle>
-                           </DialogHeader>
-                           <div className="space-y-4">
-                             {(listType === 'followers' ? followers : followingUsers).map((user) => (
-                               <div key={user.user_id} className="flex items-center justify-between">
-                                 <div className="flex items-center space-x-3">
-                                   <Avatar className="w-10 h-10">
-                                     <AvatarImage src={user.avatar_url} />
-                                     <AvatarFallback>{user.display_name?.charAt(0) || user.username?.charAt(0) || 'U'}</AvatarFallback>
-                                   </Avatar>
-                                   <div>
-                                     <p className="font-medium">{user.display_name || user.username}</p>
-                                     <p className="text-sm text-muted-foreground">{user.bio}</p>
-                                   </div>
-                                 </div>
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => navigate(`/universal-profile?user=${user.user_id}`)}
-                                 >
-                                   View Profile
-                                 </Button>
-                               </div>
-                             ))}
-                           </div>
-                         </DialogContent>
-                       </Dialog>
-                       
-                       <Button 
-                         variant="ghost" 
-                         className="p-0 h-auto font-normal"
-                         onClick={() => {
-                           setListType('following');
-                           fetchFollowing();
-                           setShowFollowersList(true);
-                         }}
-                       >
-                         <div className="flex items-center space-x-1">
-                           <UserPlus className="h-4 w-4" />
-                           <span>{followStats.following_count} Following</span>
-                         </div>
-                       </Button>
+              <div className="flex flex-col md:flex-row items-center space-y-4 md:space-x-6 md:space-y-0">
+                <div className="relative">
+                  <Avatar className="w-24 h-24 md:w-32 md:h-32">
+                    <AvatarImage src={profile.avatar_url} alt={profile.display_name || profile.username || 'Avatar'} />
+                    <AvatarFallback>{profile.display_name?.charAt(0) || profile.username?.charAt(0) || 'U'}</AvatarFallback>
+                  </Avatar>
+                  {isOwnProfile && (
+                    <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/80 transition-colors">
+                      <Camera className="h-4 w-4" />
+                      <input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                    </label>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <h2 className="text-xl font-semibold">{profile.display_name || profile.username}</h2>
+                      {profileOwnerRole && (
+                        <Badge variant="secondary">{profileOwnerRole}</Badge>
+                      )}
+                    </div>
+                    
+                    {/* Spotify Connected Badge */}
+                    {profile.spotify_connected && (
+                      <div className="flex items-center space-x-1 mt-2">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                          <Music className="h-3 w-3 mr-1" />
+                          Spotify Connected
+                        </Badge>
+                      </div>
+                    )}
 
-                       {/* XP Balance Display */}
-                       {isOwnProfile && (
-                         <div className="flex items-center space-x-1">
-                           <Star className="h-4 w-4 text-yellow-500" />
-                           <span>{xpBalance} XP</span>
-                         </div>
-                       )}
-                     </div>
-                     
-                     {/* Spotify Connected Badge */}
-                     {profile.spotify_connected && (
-                       <div className="flex items-center space-x-1 mt-2">
-                         <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
-                           <Music className="h-3 w-3 mr-1" />
-                           Spotify Connected
-                         </Badge>
-                       </div>
-                     )}
+                    {/* User Level Badge */}
+                    <div className="flex items-center space-x-1 mt-2">
+                      <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                        <Trophy className="h-3 w-3 mr-1" />
+                        Bronze Level
+                      </Badge>
+                    </div>
+                    
+                    <p className="text-muted-foreground">{profile.bio || 'No bio available.'}</p>
+                    <div className="flex items-center space-x-4">
+                      {/* Follow Stats - clickable to show lists */}
+                      <Dialog open={showFollowersList} onOpenChange={setShowFollowersList}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            className="p-0 h-auto font-normal"
+                            onClick={() => {
+                              setListType('followers');
+                              fetchFollowers();
+                              setShowFollowersList(true);
+                            }}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <Users className="h-4 w-4" />
+                              <span>{followStats.followers_count} Followers</span>
+                            </div>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>
+                              {listType === 'followers' ? 'Followers' : 'Following'}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            {(listType === 'followers' ? followers : followingUsers).map((user) => (
+                              <div key={user.user_id} className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <Avatar className="w-10 h-10">
+                                    <AvatarImage src={user.avatar_url} />
+                                    <AvatarFallback>{user.display_name?.charAt(0) || user.username?.charAt(0) || 'U'}</AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium">{user.display_name || user.username}</p>
+                                    <p className="text-sm text-muted-foreground">{user.bio}</p>
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => navigate(`/universal-profile?user=${user.user_id}`)}
+                                >
+                                  View Profile
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      <Button 
+                        variant="ghost" 
+                        className="p-0 h-auto font-normal"
+                        onClick={() => {
+                          setListType('following');
+                          fetchFollowing();
+                          setShowFollowersList(true);
+                        }}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <UserPlus className="h-4 w-4" />
+                          <span>{followStats.following_count} Following</span>
+                        </div>
+                      </Button>
 
-                     {/* User Level Badge */}
-                     <div className="flex items-center space-x-1 mt-2">
-                       <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
-                         <Trophy className="h-3 w-3 mr-1" />
-                         Bronze Level
-                       </Badge>
-                     </div>
-                     
-                     {/* Action Buttons */}
-                     <div className="flex items-center space-x-2 mt-4">
-                       {!isOwnProfile && user && (
-                         <>
-                           <Button
-                             onClick={handleFollow}
-                             disabled={followLoading}
-                             variant={following ? "outline" : "default"}
-                           >
-                             {followLoading ? '...' : following ? 'Unfollow' : 'Follow'}
-                           </Button>
-                           <MessageCreator 
-                             recipientId={profile.user_id} 
-                             recipientName={profile.display_name || profile.username || 'User'}
-                           />
-                           <Button
-                             variant="ghost"
-                             size="sm"
-                             onClick={() => {
-                               // Handle adding to supporters
-                               setConfirmAddSupporter({ show: true, profile });
-                             }}
-                           >
-                             <Heart className="h-4 w-4" />
-                           </Button>
-                           <Button
-                             variant="ghost"
-                             size="sm"
-                             onClick={() => {
-                               // Handle adding to haters
-                               setConfirmAddHater({ show: true, profile });
-                             }}
-                           >
-                             <UserX className="h-4 w-4" />
-                           </Button>
-                         </>
-                       )}
-                       {isOwnProfile && (
-                         <>
-                           <Button onClick={() => navigate('/profile/edit')} variant="outline">
-                             <Settings className="h-4 w-4 mr-2" />
-                             Edit Profile
-                           </Button>
-                           {profileOwnerRole === 'fan' && (
-                             <Button onClick={() => navigate('/fan-dashboard')} variant="outline">
-                               <BarChart3 className="h-4 w-4 mr-2" />
-                               Fan Dashboard
-                             </Button>
-                           )}
-                           {profileOwnerRole === 'creator' && (
-                             <Button onClick={() => navigate('/creator-dashboard')} variant="outline">
-                               <Users className="h-4 w-4 mr-2" />
-                               Creator Dashboard
-                             </Button>
-                           )}
-                         </>
-                       )}
-                     </div>
-                   </div>
-                 </div>
-               </div>
-               <Tabs defaultValue="posts" className="w-full mt-6">
-                 <TabsList className="w-full flex justify-center">
-                   <TabsTrigger value="posts">Posts</TabsTrigger>
-                   <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-                   <TabsTrigger value="social">Social</TabsTrigger>
-                   {isOwnProfile && <TabsTrigger value="xp">Buy XP</TabsTrigger>}
-                   {isOwnProfile && <TabsTrigger value="supporters">Supporters</TabsTrigger>}
-                   {isOwnProfile && <TabsTrigger value="smartlink">Smart Link</TabsTrigger>}
-                   {isOwnProfile && <TabsTrigger value="settings">Settings</TabsTrigger>}
-                 </TabsList>
-                  <TabsContent value="posts" className="mt-4">
-                    <PostsGrid userId={profile.user_id} isOwnProfile={isOwnProfile} />
-                  </TabsContent>
-                  <TabsContent value="campaigns" className="mt-4">
-                    <UserCampaignDisplay campaigns={joinedCampaigns} userId={profile.user_id} isOwnProfile={isOwnProfile} />
-                  </TabsContent>
-                  <TabsContent value="social" className="mt-4">
-                    <EnhancedSocialInteractions targetUserId={profile.user_id} />
-                  </TabsContent>
-                  {isOwnProfile && (
-                    <TabsContent value="xp" className="mt-4">
-                      <div className="space-y-4">
-                        <div className="text-center">
-                          <h3 className="text-lg font-medium mb-2">Purchase XP</h3>
-                          <p className="text-muted-foreground mb-4">
-                            Buy XP to support creators and unlock exclusive content.
-                          </p>
+                      {/* XP Balance Display */}
+                      {isOwnProfile && (
+                        <div className="flex items-center space-x-1">
+                          <Star className="h-4 w-4 text-yellow-500" />
+                          <span>{xpBalance} XP</span>
                         </div>
-                        <div className="grid gap-4 md:grid-cols-3">
-                          <Card className="p-4 text-center">
-                            <h4 className="font-medium">100 XP</h4>
-                            <p className="text-2xl font-bold mt-2">$1.00</p>
-                            <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=100')}>
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Buy Now
+                      )}
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex items-center space-x-2 mt-4">
+                      {!isOwnProfile && user && (
+                        <>
+                          <Button
+                            onClick={handleFollow}
+                            disabled={followLoading}
+                            variant={following ? "outline" : "default"}
+                          >
+                            {followLoading ? '...' : following ? 'Unfollow' : 'Follow'}
+                          </Button>
+                          <MessageCreator 
+                            recipientId={profile.user_id} 
+                            recipientName={profile.display_name || profile.username || 'User'}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              // Handle adding to supporters
+                              setConfirmAddSupporter({ show: true, profile });
+                            }}
+                          >
+                            <Heart className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              // Handle adding to haters
+                              setConfirmAddHater({ show: true, profile });
+                            }}
+                          >
+                            <UserX className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                      {isOwnProfile && (
+                        <>
+                          <Button onClick={() => navigate('/profile/edit')} variant="outline">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Edit Profile
+                          </Button>
+                          {profileOwnerRole === 'fan' && (
+                            <Button onClick={() => navigate('/fan-dashboard')} variant="outline">
+                              <BarChart3 className="h-4 w-4 mr-2" />
+                              Fan Dashboard
                             </Button>
-                          </Card>
-                          <Card className="p-4 text-center">
-                            <h4 className="font-medium">500 XP</h4>
-                            <p className="text-2xl font-bold mt-2">$5.00</p>
-                            <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=500')}>
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Buy Now
+                          )}
+                          {profileOwnerRole === 'creator' && (
+                            <Button onClick={() => navigate('/creator-dashboard')} variant="outline">
+                              <Users className="h-4 w-4 mr-2" />
+                              Creator Dashboard
                             </Button>
-                          </Card>
-                          <Card className="p-4 text-center">
-                            <h4 className="font-medium">1000 XP</h4>
-                            <p className="text-2xl font-bold mt-2">$10.00</p>
-                            <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=1000')}>
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Buy Now
-                            </Button>
-                          </Card>
-                        </div>
-                      </div>
-                    </TabsContent>
-                  )}
-                  {isOwnProfile && (
-                    <TabsContent value="supporters" className="mt-4">
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-lg font-medium">Your Supporters & Haters</h3>
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <Card className="p-4">
-                            <h4 className="font-medium text-green-600 mb-4 flex items-center">
-                              <Heart className="h-4 w-4 mr-2" />
-                              Supporters ({supporters.length})
-                            </h4>
-                            <div className="space-y-2">
-                              {supporters.length > 0 ? (
-                                supporters.map((supporter) => (
-                                  <div key={supporter.user_id} className="flex items-center space-x-3">
-                                    <Avatar className="w-8 h-8">
-                                      <AvatarImage src={supporter.avatar_url} />
-                                      <AvatarFallback>{supporter.display_name?.charAt(0) || 'U'}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm">{supporter.display_name || supporter.username}</span>
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-muted-foreground text-sm">No supporters yet</p>
-                              )}
-                            </div>
-                          </Card>
-                          <Card className="p-4">
-                            <h4 className="font-medium text-red-600 mb-4 flex items-center">
-                              <UserX className="h-4 w-4 mr-2" />
-                              Haters ({haters.length})
-                            </h4>
-                            <div className="space-y-2">
-                              {haters.length > 0 ? (
-                                haters.map((hater) => (
-                                  <div key={hater.user_id} className="flex items-center space-x-3">
-                                    <Avatar className="w-8 h-8">
-                                      <AvatarImage src={hater.avatar_url} />
-                                      <AvatarFallback>{hater.display_name?.charAt(0) || 'U'}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm">{hater.display_name || hater.username}</span>
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-muted-foreground text-sm">No haters yet</p>
-                              )}
-                            </div>
-                          </Card>
-                        </div>
-                      </div>
-                    </TabsContent>
-                  )}
-                  {isOwnProfile && (
-                    <TabsContent value="smartlink" className="mt-4">
-                      <div className="space-y-4">
-                        <div className="text-center">
-                          <h3 className="text-lg font-medium mb-2">Your Smart Link</h3>
-                          <p className="text-muted-foreground mb-4">
-                            Share your personalized smart link to connect with fans and grow your audience.
-                          </p>
-                        </div>
-                        <SmartLinkButton 
-                          userId={profile.user_id} 
-                          displayName={profile.display_name || profile.username || 'User'}
-                          isOwnProfile={isOwnProfile}
-                        />
-                        <SmartLinkManager />
-                      </div>
-                    </TabsContent>
-                  )}
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Tabs defaultValue="posts" className="w-full mt-6">
+                <TabsList className="w-full flex justify-center">
+                  <TabsTrigger value="posts">Posts</TabsTrigger>
+                  <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+                  <TabsTrigger value="social">Social</TabsTrigger>
+                  {isOwnProfile && <TabsTrigger value="xp">Buy XP</TabsTrigger>}
+                  {isOwnProfile && <TabsTrigger value="supporters">Supporters</TabsTrigger>}
+                  {isOwnProfile && <TabsTrigger value="smartlink">Smart Link</TabsTrigger>}
+                  {isOwnProfile && <TabsTrigger value="settings">Settings</TabsTrigger>}
+                </TabsList>
+                 <TabsContent value="posts" className="mt-4">
+                   <PostsGrid userId={profile.user_id} isOwnProfile={isOwnProfile} />
+                 </TabsContent>
+                 <TabsContent value="campaigns" className="mt-4">
+                   <UserCampaignDisplay campaigns={joinedCampaigns} userId={profile.user_id} isOwnProfile={isOwnProfile} />
+                 </TabsContent>
+                 <TabsContent value="social" className="mt-4">
+                   <EnhancedSocialInteractions targetUserId={profile.user_id} />
+                 </TabsContent>
                  {isOwnProfile && (
-                   <TabsContent value="settings" className="mt-4">
-                     <div className="space-y-4">
-                       <h3 className="text-lg font-medium">Profile Settings</h3>
-                       <Button onClick={() => navigate('/profile/edit')} variant="outline">
-                         <Settings className="h-4 w-4 mr-2" />
-                         Edit Profile
-                       </Button>
-                       <Button onClick={() => signOut()} variant="destructive">
-                         Sign Out
-                       </Button>
+                   <TabsContent value="xp" className="mt-4">
+                     <div className="grid gap-4 md:grid-cols-3">
+                       <Card className="p-4 text-center">
+                         <h4 className="font-medium">100 XP</h4>
+                         <p className="text-2xl font-bold mt-2">$1.00</p>
+                         <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=100')}>
+                           <DollarSign className="h-4 w-4 mr-2" />
+                           Buy Now
+                         </Button>
+                       </Card>
+                       <Card className="p-4 text-center">
+                         <h4 className="font-medium">500 XP</h4>
+                         <p className="text-2xl font-bold mt-2">$5.00</p>
+                         <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=500')}>
+                           Buy Now
+                         </Button>
+                       </Card>
+                       <Card className="p-4 text-center">
+                         <h4 className="font-medium">1000 XP</h4>
+                         <p className="text-2xl font-bold mt-2">$10.00</p>
+                         <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=1000')}>
+                           Buy Now
+                         </Button>
+                       </Card>
                      </div>
                    </TabsContent>
                  )}
-               </Tabs>
+                 {isOwnProfile && (
+                   <TabsContent value="supporters" className="mt-4">
+                     <div className="grid gap-4 md:grid-cols-2">
+                       <Card className="p-4">
+                         <h4 className="font-medium text-green-600 mb-4 flex items-center">
+                           <Heart className="h-4 w-4 mr-2" />
+                           Supporters ({supporters.length})
+                         </h4>
+                         <div className="space-y-2">
+                           {supporters.length > 0 ? (
+                             supporters.map((supporter) => (
+                               <div key={supporter.user_id} className="flex items-center space-x-3">
+                                 <Avatar className="w-8 h-8">
+                                   <AvatarImage src={supporter.avatar_url} />
+                                   <AvatarFallback>{supporter.display_name?.charAt(0) || 'U'}</AvatarFallback>
+                                 </Avatar>
+                                 <span className="text-sm">{supporter.display_name || supporter.username}</span>
+                               </div>
+                             ))
+                           ) : (
+                             <p className="text-muted-foreground text-sm">No supporters yet</p>
+                           )}
+                         </div>
+                       </Card>
+                     </div>
+                   </TabsContent>
+                 )}
+                 {isOwnProfile && (
+                   <TabsContent value="smartlink" className="mt-4">
+                     <SmartLinkButton 
+                       userId={profile.user_id} 
+                       displayName={profile.display_name || profile.username || 'User'}
+                       isOwnProfile={isOwnProfile}
+                     />
+                     <SmartLinkManager />
+                   </TabsContent>
+                 )}
+                {isOwnProfile && (
+                  <TabsContent value="settings" className="mt-4">
+                    <Button onClick={() => signOut()} variant="destructive">Sign Out</Button>
+                  </TabsContent>
+                )}
+              </Tabs>
             </CardContent>
           </Card>
         </div>
@@ -1009,7 +957,7 @@ const UniversalProfile = () => {
           <DialogHeader>
             <DialogTitle>Add to Supporters</DialogTitle>
           </DialogHeader>
-          <p>Are you sure you want to add {confirmAddSupporter.profile?.display_name || confirmAddSupporter.profile?.username} to your supporters list?</p>
+          <p>Are you sure you want to add {confirmAddSupporter.profile?.display_name} to your supporters?</p>
           <div className="flex justify-end space-x-2 mt-4">
             <Button variant="outline" onClick={() => setConfirmAddSupporter({ show: false, profile: null })}>
               Cancel
@@ -1026,7 +974,7 @@ const UniversalProfile = () => {
           <DialogHeader>
             <DialogTitle>Add to Haters</DialogTitle>
           </DialogHeader>
-          <p>Are you sure you want to add {confirmAddHater.profile?.display_name || confirmAddHater.profile?.username} to your haters list?</p>
+          <p>Are you sure you want to add {confirmAddHater.profile?.display_name} to your haters?</p>
           <div className="flex justify-end space-x-2 mt-4">
             <Button variant="outline" onClick={() => setConfirmAddHater({ show: false, profile: null })}>
               Cancel
