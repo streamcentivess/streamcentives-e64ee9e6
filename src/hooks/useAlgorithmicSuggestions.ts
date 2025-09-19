@@ -284,29 +284,36 @@ export const useAlgorithmicSuggestions = () => {
     }
   };
 
-  // Auto-trigger suggestions based on user behavior
+  // Auto-trigger suggestions based on user behavior - REMOVED TIMER LOGIC
   useEffect(() => {
+    if (user) {
+      fetchUserEngagement();
+    }
+  }, [user]);
+
+  // Trigger suggestion manually with throttling
+  const triggerSuggestion = async () => {
     if (!user) return;
 
-    const checkForSuggestions = async () => {
-      // Check if we should show a suggestion
-      const lastSuggestionTime = localStorage.getItem(`lastSuggestion_${user.id}`);
-      const now = new Date().getTime();
-      const minInterval = 30 * 60 * 1000; // 30 minutes
+    // Check if we should show a suggestion (throttling)
+    const lastSuggestionTime = localStorage.getItem(`lastSuggestion_${user.id}`);
+    const now = new Date().getTime();
+    const minInterval = 10 * 60 * 1000; // 10 minutes between suggestions
 
-      if (!lastSuggestionTime || (now - parseInt(lastSuggestionTime)) > minInterval) {
-        // Random chance to show suggestion (30% chance)
-        if (Math.random() < 0.3) {
-          setTimeout(() => {
-            showAlgorithmicSuggestion();
-            localStorage.setItem(`lastSuggestion_${user.id}`, now.toString());
-          }, 5000); // Show after 5 seconds on page load
-        }
-      }
-    };
+    if (lastSuggestionTime && (now - parseInt(lastSuggestionTime)) < minInterval) {
+      return; // Too soon to show another suggestion
+    }
 
-    checkForSuggestions();
-  }, [user]);
+    // Random chance to show suggestion based on engagement
+    const engagement = await fetchUserEngagement();
+    if (!engagement) return;
+
+    const chanceToShow = engagement.isNewUser ? 0.7 : 0.4; // Higher chance for new users
+    if (Math.random() < chanceToShow) {
+      await showAlgorithmicSuggestion();
+      localStorage.setItem(`lastSuggestion_${user.id}`, now.toString());
+    }
+  };
 
   const dismissSuggestion = () => {
     setShowSuggestion(false);
@@ -341,6 +348,6 @@ export const useAlgorithmicSuggestions = () => {
     userEngagement,
     dismissSuggestion,
     handleSuggestionAction,
-    showAlgorithmicSuggestion
+    triggerSuggestion
   };
 };

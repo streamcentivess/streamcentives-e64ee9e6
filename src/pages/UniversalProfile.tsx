@@ -16,6 +16,53 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
 import { SponsorContactOptions } from '@/components/SponsorContactOptions';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useProfileViewTracking } from '@/hooks/useProfileViewTracking';
+import { useRealTimeProfiles } from '@/hooks/useRealTimeProfiles';
+import { useCreatorRealtimeData } from '@/hooks/useCreatorRealtimeData';
+import { useCreatorSubscription } from '@/hooks/useCreatorSubscription';
+import MessageCreator from '@/components/MessageCreator';
+import { SponsorContactOptions } from '@/components/SponsorContactOptions';
+import { useUserRole } from '@/hooks/useUserRole';
+import { UniversalShareButton } from '@/components/UniversalShareButton';
+import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
+import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
+import { useProfileViewTracking } from '@/hooks/useProfileViewTracking';
+import { useRealTimeProfiles } from '@/hooks/useRealTimeProfiles';
+import { useCreatorRealtimeData } from '@/hooks/useCreatorRealtimeData';
+import { useCreatorSubscription } from '@/hooks/useCreatorSubscription';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { HeartAnimation } from '@/components/ui/heart-animation';
+import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { SmartLinkManager } from '@/components/SmartLinkManager';
+import { SmartLinkButton } from '@/components/SmartLinkButton';
+import { AlgorithmicSuggestionPopup } from '@/components/AlgorithmicSuggestionPopup';
+import { useAlgorithmicSuggestions } from '@/hooks/useAlgorithmicSuggestions';
+import { useScrollTrigger } from '@/hooks/useScrollTrigger';
+interface Profile {
+import MessageCreator from '@/components/MessageCreator';
+import { SponsorContactOptions } from '@/components/SponsorContactOptions';
+import { useUserRole } from '@/hooks/useUserRole';
+import { UniversalShareButton } from '@/components/UniversalShareButton';
+import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
+import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
+import { useProfileViewTracking } from '@/hooks/useProfileViewTracking';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { HeartAnimation } from '@/components/ui/heart-animation';
+import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { SmartLinkManager } from '@/components/SmartLinkManager';
+import { SmartLinkButton } from '@/components/SmartLinkButton';
+import { AlgorithmicSuggestionPopup } from '@/components/AlgorithmicSuggestionPopup';
+import { useAlgorithmicSuggestions } from '@/hooks/useAlgorithmicSuggestions';
+import { useScrollTrigger } from '@/hooks/useScrollTrigger';
+import { useProfileViewTracking } from '@/hooks/useProfileViewTracking';
+import { useRealTimeProfiles } from '@/hooks/useRealTimeProfiles';
+import { useCreatorRealtimeData } from '@/hooks/useCreatorRealtimeData';
+import { useCreatorSubscription } from '@/hooks/useCreatorSubscription';
+import { AlgorithmicSuggestionPopup } from '@/components/AlgorithmicSuggestionPopup';
+import { useAlgorithmicSuggestions } from '@/hooks/useAlgorithmicSuggestions';
+import { useScrollTrigger } from '@/hooks/useScrollTrigger';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
@@ -28,6 +75,22 @@ import { SmartLinkManager } from '@/components/SmartLinkManager';
 import { SmartLinkButton } from '@/components/SmartLinkButton';
 interface Profile {
   id?: string;
+  user_id: string;
+  username?: string;
+  display_name?: string;
+  bio?: string;
+  avatar_url?: string;
+  spotify_connected?: boolean;
+  created_at?: string;
+  offer_receiving_rate_cents?: number;
+}
+
+const UniversalProfile = () => {
+  const { user, signOut } = useAuth();
+  const { role: currentUserRole } = useUserRole();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isMobile = useIsMobile();
   user_id: string;
   username?: string;
   display_name?: string;
@@ -111,6 +174,23 @@ const UniversalProfile = () => {
   const finalUserId = isUUID ? userParam : viewingUserId;
   const finalUsername = !isUUID && userParam ? userParam : viewingUsername;
   const isOwnProfile = !finalUserId && !finalUsername || finalUserId === user?.id;
+
+  // Algorithmic suggestions (only for profile owners)
+  const {
+    currentSuggestion,
+    showSuggestion,
+    dismissSuggestion,
+    handleSuggestionAction,
+    triggerSuggestion
+  } = useAlgorithmicSuggestions();
+
+  // Trigger suggestions on scroll when viewing own profile
+  useScrollTrigger({
+    onTrigger: triggerSuggestion,
+    threshold: 600,
+    cooldown: 60000, // 1 minute between suggestions on profile
+    enabled: !!user && isOwnProfile // Only trigger for profile owners
+  });
   
   // Track profile views for non-own profiles
   useProfileViewTracking({
@@ -2601,6 +2681,16 @@ const UniversalProfile = () => {
           </div>
         )}
       </div>
+
+      {/* Algorithmic Suggestion Popup - Only for profile owners */}
+      {isOwnProfile && (
+        <AlgorithmicSuggestionPopup
+          suggestion={currentSuggestion}
+          isVisible={showSuggestion}
+          onDismiss={dismissSuggestion}
+          onAction={handleSuggestionAction}
+        />
+      )}
     </div>;
 };
 export default UniversalProfile;

@@ -44,14 +44,6 @@ const FanDashboard = () => {
   const [leaderboardPositions, setLeaderboardPositions] = useState<Record<string, any>>({});
   const [showXPAnimation, setShowXPAnimation] = useState(false);
   const [xpAnimationAmount, setXpAnimationAmount] = useState(0);
-  
-  // Algorithmic suggestions
-  const {
-    currentSuggestion,
-    showSuggestion,
-    dismissSuggestion,
-    handleSuggestionAction
-  } = useAlgorithmicSuggestions();
 
   // Tier system
   const nextTierXP = 2000;
@@ -707,14 +699,6 @@ const FanDashboard = () => {
           xpAmount={xpAnimationAmount}
           show={showXPAnimation}
           onComplete={() => setShowXPAnimation(false)}
-        />
-
-        {/* Algorithmic Suggestion Popup */}
-        <AlgorithmicSuggestionPopup
-          suggestion={currentSuggestion}
-          isVisible={showSuggestion}
-          onDismiss={dismissSuggestion}
-          onAction={handleSuggestionAction}
         />
       </div>
     </div>
