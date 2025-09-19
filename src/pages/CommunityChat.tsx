@@ -13,6 +13,7 @@ import AppNavigation from '@/components/AppNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
+import { ClickableMentions } from '@/components/ui/clickable-mentions';
 
 const CommunityChat = () => {
   const { communityId } = useParams<{ communityId: string }>();
@@ -566,7 +567,10 @@ const CommunityChat = () => {
                               {new Date(message.created_at).toLocaleTimeString()}
                             </span>
                           </div>
-                          <p className="text-sm mt-1">{message.message}</p>
+                          <ClickableMentions 
+                            text={message.message} 
+                            className="text-sm mt-1"
+                          />
                         </div>
                       </div>
                     ))

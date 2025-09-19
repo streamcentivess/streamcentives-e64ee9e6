@@ -1371,6 +1371,27 @@ export type Database = {
             referencedRelation: "communities"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_community_messages_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_community_messages_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_community_messages_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_follow_stats"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       community_posts: {
@@ -1444,6 +1465,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "communities"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_community_posts_author_id"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_community_posts_author_id"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_community_posts_author_id"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "user_follow_stats"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3514,7 +3556,36 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_post_comments_post_id"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_post_comments_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_post_comments_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_post_comments_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_follow_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       post_likes: {
         Row: {
