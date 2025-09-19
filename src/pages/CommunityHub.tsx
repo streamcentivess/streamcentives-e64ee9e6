@@ -440,29 +440,7 @@ const CommunityHub = () => {
   }, [user]);
 
 
-  const upcomingEvents = [
-    {
-      id: 1,
-      name: 'Virtual Meet & Greet',
-      date: '2024-03-20',
-      time: '19:00',
-      type: 'virtual',
-      attendees: 45,
-      maxAttendees: 50,
-      ticketPrice: 25.00
-    },
-    {
-      id: 2,
-      name: 'Fan Meetup - NYC',
-      date: '2024-03-25',
-      time: '18:30',
-      type: 'in-person',
-      location: 'Central Park, NYC',
-      attendees: 23,
-      maxAttendees: 30,
-      ticketPrice: 0
-    }
-  ];
+  const upcomingEvents: any[] = [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -1043,7 +1021,9 @@ const CommunityHub = () => {
                         <Input id="ticket-price" type="number" placeholder="0.00" />
                       </div>
                     </div>
-                    <Button className="w-full bg-gradient-primary hover:opacity-90">Create Event</Button>
+                    <Button onClick={() => navigate('/events')} className="bg-gradient-primary hover:opacity-90">
+                      View All Events
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>

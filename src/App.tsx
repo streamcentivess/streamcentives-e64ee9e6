@@ -23,6 +23,8 @@ const MonetizationTools = lazy(() => import("./pages/MonetizationTools"));
 const ContentCreatorStudio = lazy(() => import("./pages/ContentCreatorStudio"));
 const CommunityHub = lazy(() => import("./pages/CommunityHub"));
 const CommunityChat = lazy(() => import("./pages/CommunityChat"));
+const Events = lazy(() => import("./pages/Events"));
+const CreateEvent = lazy(() => import("./pages/CreateEvent"));
 const Index = lazy(() => import("./pages/Index"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const Inbox = lazy(() => import("./pages/Inbox"));
@@ -256,8 +258,18 @@ const App = () => {
                         <ProtectedRoute>
                           <ContentCreatorStudio />
                         </ProtectedRoute>
-                      } />
-                      <Route path="/community-hub" element={
+                       } />
+                       <Route path="/events" element={
+                         <ProtectedRoute>
+                           <Events />
+                         </ProtectedRoute>
+                       } />
+                       <Route path="/create-event" element={
+                         <ProtectedRoute>
+                           <CreateEvent />
+                         </ProtectedRoute>
+                       } />
+                       <Route path="/community-hub" element={
                         <ProtectedRoute>
                           <CommunityHub />
                         </ProtectedRoute>
