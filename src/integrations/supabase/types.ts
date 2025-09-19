@@ -1762,6 +1762,48 @@ export type Database = {
         }
         Relationships: []
       }
+      digital_asset_access_logs: {
+        Row: {
+          accessed_at: string | null
+          asset_bucket: string
+          asset_key: string
+          created_at: string | null
+          download_url: string
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          reward_redemption_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accessed_at?: string | null
+          asset_bucket: string
+          asset_key: string
+          created_at?: string | null
+          download_url: string
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          reward_redemption_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accessed_at?: string | null
+          asset_bucket?: string
+          asset_key?: string
+          created_at?: string | null
+          download_url?: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          reward_redemption_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       discovery_funnel_analytics: {
         Row: {
           content_id: string | null
@@ -1948,6 +1990,81 @@ export type Database = {
           id?: string
           ticket_id?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      experience_templates: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          duration_minutes: number | null
+          id: string
+          is_active: boolean | null
+          max_participants: number | null
+          requires_verification: boolean | null
+          template_data: Json | null
+          template_description: string | null
+          template_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          requires_verification?: boolean | null
+          template_data?: Json | null
+          template_description?: string | null
+          template_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          requires_verification?: boolean | null
+          template_data?: Json | null
+          template_description?: string | null
+          template_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      experience_verifications: {
+        Row: {
+          created_at: string | null
+          experience_id: string
+          id: string
+          location_data: Json | null
+          verification_data: Json | null
+          verification_method: string
+          verified_at: string | null
+          verified_by_user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          experience_id: string
+          id?: string
+          location_data?: Json | null
+          verification_data?: Json | null
+          verification_method?: string
+          verified_at?: string | null
+          verified_by_user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          experience_id?: string
+          id?: string
+          location_data?: Json | null
+          verification_data?: Json | null
+          verification_method?: string
+          verified_at?: string | null
+          verified_by_user_id?: string
         }
         Relationships: []
       }
