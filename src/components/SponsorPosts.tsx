@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { PostsGrid } from "@/components/PostsGrid";
-import { Plus, Image, Video, AtSign } from "lucide-react";
+import { Plus, Image, Video, AtSign, Upload, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function SponsorPosts() {
@@ -20,10 +20,11 @@ export function SponsorPosts() {
   const [creating, setCreating] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [creators, setCreators] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     content: "",
-    image_url: "",
-    video_url: "",
     tagged_creators: []
   });
 
@@ -85,20 +86,85 @@ export function SponsorPosts() {
     }).filter(Boolean);
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const isValidType = file.type.startsWith('image/') || file.type.startsWith('video/');
+    if (!isValidType) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please select an image or video file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (50MB limit)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({
+        title: "File Too Large",
+        description: "Please select a file smaller than 50MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    setFilePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview);
+      setFilePreview(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     setCreating(true);
     try {
+      let contentUrl = '';
+      let contentType = 'text';
+
+      // Upload file if selected
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('posts')
+          .upload(filePath, selectedFile);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('posts')
+          .getPublicUrl(filePath);
+
+        contentUrl = publicUrlData.publicUrl;
+        contentType = selectedFile.type.startsWith('image/') ? 'image' : 'video';
+      }
+
       // Create the post
       const { data: post, error: postError } = await supabase
         .from('posts')
         .insert([{
           user_id: user.id,
           caption: formData.content,
-          content_url: formData.image_url || formData.video_url || '',
-          content_type: formData.image_url ? 'image' : (formData.video_url ? 'video' : 'text'),
+          content_url: contentUrl,
+          content_type: contentType,
           is_community_post: true, // Make sure sponsor posts appear in main feed
         }])
         .select()
@@ -132,10 +198,9 @@ export function SponsorPosts() {
       // Reset form and refresh posts
       setFormData({
         content: "",
-        image_url: "",
-        video_url: "",
         tagged_creators: []
       });
+      handleRemoveFile();
       setShowCreatePost(false);
       fetchPosts();
     } catch (error) {
@@ -199,34 +264,70 @@ export function SponsorPosts() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">Image URL (optional)</Label>
-                  <div className="relative">
-                    <Image className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="image_url"
-                      value={formData.image_url}
-                      onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                      placeholder="https://example.com/image.jpg"
-                      className="pl-10"
-                    />
+              {/* Media Upload Section */}
+              <div className="space-y-2">
+                <Label>Upload Media (optional)</Label>
+                {!selectedFile ? (
+                  <div 
+                    className="border-2 border-dashed border-primary/30 rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-8 w-8 text-primary mx-auto mb-2" />
+                    <p className="font-medium mb-1">Upload Image or Video</p>
+                    <p className="text-muted-foreground text-sm">
+                      Click to select files (Max: 50MB)
+                    </p>
+                    <div className="flex justify-center gap-4 text-xs text-muted-foreground mt-2">
+                      <div className="flex items-center gap-1">
+                        <Image className="h-3 w-3" />
+                        Images
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Video className="h-3 w-3" />
+                        Videos
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="relative rounded-xl overflow-hidden bg-black">
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 z-10 h-6 w-6"
+                        onClick={handleRemoveFile}
+                        type="button"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                      
+                      {selectedFile.type.startsWith('video/') ? (
+                        <video 
+                          src={filePreview} 
+                          controls 
+                          className="w-full max-h-48 object-contain"
+                        />
+                      ) : (
+                        <img 
+                          src={filePreview} 
+                          alt="Preview" 
+                          className="w-full max-h-48 object-cover"
+                        />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground text-center">
+                      {selectedFile.name} ({(selectedFile.size / (1024 * 1024)).toFixed(1)} MB)
+                    </p>
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="video_url">Video URL (optional)</Label>
-                  <div className="relative">
-                    <Video className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="video_url"
-                      value={formData.video_url}
-                      onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                      placeholder="https://example.com/video.mp4"
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
               </div>
 
               {/* Quick Creator Tag Buttons */}
