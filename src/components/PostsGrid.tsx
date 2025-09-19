@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ShareButton } from './ShareButton';
 import { UniversalShareButton } from './UniversalShareButton';
+import { ClickableMentions } from './ui/clickable-mentions';
 import { useNavigate } from 'react-router-dom';
 import CrossPostToggle from './CrossPostToggle';
 
@@ -306,7 +307,7 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
                 </div>
 
                 {selectedPost.caption && (
-                  <p className="text-sm">{selectedPost.caption}</p>
+                  <ClickableMentions text={selectedPost.caption} className="text-sm" />
                 )}
 
                 <div className="flex items-center space-x-4">
@@ -364,7 +365,7 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
                             {comment.profiles.display_name}
                           </span>
                         </div>
-                        <p className="text-sm">{comment.content}</p>
+                        <ClickableMentions text={comment.content} className="text-sm" />
                       </div>
                     </div>
                   ))}

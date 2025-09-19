@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ClickableMentions } from '@/components/ui/clickable-mentions';
 import { Check, X, MessageCircle, Clock, Coins } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -129,7 +130,7 @@ export const InboxMessage: React.FC<InboxMessageProps> = ({ message, onMessageUp
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <p className="text-sm leading-relaxed">{message.content}</p>
+          <ClickableMentions text={message.content} className="text-sm leading-relaxed" />
           
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">

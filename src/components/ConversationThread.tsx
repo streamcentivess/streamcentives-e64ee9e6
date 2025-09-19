@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { ClickableMentions } from '@/components/ui/clickable-mentions';
 import { Send, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -275,7 +276,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId,
                         />
                       </div>
                     ) : (
-                      <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                      <ClickableMentions text={message.content} className="text-sm whitespace-pre-wrap break-words" />
                     )}
                     <div className="flex items-center gap-2 mt-2 text-xs opacity-70">
                       <span>{format(new Date(message.created_at), 'HH:mm')}</span>

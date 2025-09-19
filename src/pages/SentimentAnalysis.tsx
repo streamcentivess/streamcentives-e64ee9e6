@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ClickableMentions } from '@/components/ui/clickable-mentions';
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, MessageCircle, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -266,7 +267,7 @@ const SentimentAnalysis = () => {
                         {new Date(message.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-sm leading-relaxed mb-2">{message.content}</p>
+                    <ClickableMentions text={message.content} className="text-sm leading-relaxed mb-2" />
                     {message.flagged_reason && (
                       <p className="text-xs text-destructive">Reason: {message.flagged_reason}</p>
                     )}

@@ -12,6 +12,7 @@ import MessageSettings from '@/components/MessageSettings';
 import ConversationThread from '@/components/ConversationThread';
 import MessageCreator from '@/components/MessageCreator';
 import { CreatorOffersTab } from '@/components/CreatorOffersTab';
+import { ClickableMentions } from '@/components/ui/clickable-mentions';
 import { MessageCircle, Inbox as InboxIcon, Send, Search, Filter, Mail, Settings, User, ArrowLeft, Trash2, Plus, TrendingUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -464,7 +465,7 @@ const Inbox: React.FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm leading-relaxed mb-2">{message.content}</p>
+                  <ClickableMentions text={message.content} className="text-sm leading-relaxed mb-2" />
                   <p className="text-xs text-muted-foreground">
                     Sent {new Date(message.created_at).toLocaleDateString()}
                   </p>

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ClickableMentions } from "@/components/ui/clickable-mentions";
 import { MessageCircle, Mail, TrendingUp, Search, DollarSign, Clock, Check, X, Send, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorMessageComposer } from "@/components/SponsorMessageComposer";
@@ -522,7 +523,7 @@ export function SponsorInbox() {
                       </Badge>
                     </div>
                   </div>
-                  <p className="text-sm mb-2">{message.content}</p>
+                  <ClickableMentions text={message.content} className="text-sm mb-2" />
                   <p className="text-xs text-muted-foreground">
                     Received {new Date(message.created_at).toLocaleString()}
                   </p>

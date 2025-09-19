@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { PostsGrid } from "@/components/PostsGrid";
+import { ClickableMentions } from "@/components/ui/clickable-mentions";
 import { Plus, Image, Video, AtSign, Upload, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -387,7 +388,7 @@ export function SponsorPosts() {
                     className="w-full h-48 object-cover rounded-lg mb-4"
                   />
                 )}
-                <p className="text-sm mb-4">{post.caption}</p>
+                <ClickableMentions text={post.caption} className="text-sm mb-4" />
                 <p className="text-xs text-muted-foreground">
                   {new Date(post.created_at).toLocaleDateString()}
                 </p>
