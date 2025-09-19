@@ -194,18 +194,53 @@ const CommunityHub = () => {
       file.type.startsWith('image/') || file.type.startsWith('video/')
     );
     const MAX_SIZE_BYTES = 20 * 1024 * 1024; // 20MB per file
-    const sizedFiles = validFiles.filter((file) => {
+    const MAX_VIDEO_DURATION = 5 * 60; // 5 minutes in seconds
+    
+    const processedFiles: File[] = [];
+    
+    for (const file of validFiles) {
       if (file.size > MAX_SIZE_BYTES) {
         toast({
           title: 'File too large',
           description: `${file.name} exceeds 20MB. Please choose a smaller file.`,
           variant: 'destructive'
         });
-        return false;
+        continue;
       }
-      return true;
-    });
-    setPostForm({...postForm, photos: [...postForm.photos, ...sizedFiles].slice(0, 4)}); // Max 4 media files
+      
+      // Check video duration for video files
+      if (file.type.startsWith('video/')) {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        
+        video.onloadedmetadata = () => {
+          if (video.duration > MAX_VIDEO_DURATION) {
+            toast({
+              title: 'Video too long',
+              description: `${file.name} exceeds 5 minutes. Please choose a shorter video.`,
+              variant: 'destructive'
+            });
+            return;
+          }
+          processedFiles.push(file);
+          setPostForm(prev => ({
+            ...prev, 
+            photos: [...prev.photos, ...processedFiles].slice(0, 4)
+          }));
+        };
+        
+        video.src = URL.createObjectURL(file);
+      } else {
+        processedFiles.push(file);
+      }
+    }
+    
+    if (processedFiles.length > 0) {
+      setPostForm(prev => ({
+        ...prev, 
+        photos: [...prev.photos, ...processedFiles].slice(0, 4)
+      }));
+    }
   };
 
   const removePhoto = (index: number) => {
@@ -345,12 +380,12 @@ const CommunityHub = () => {
     }
   };
 
-  // Real-time updates for posts
+  // Real-time updates for posts and communities
   useEffect(() => {
     if (!user) return;
 
     const channel = supabase
-      .channel('community-posts-changes')
+      .channel('community-hub-changes')
       .on(
         'postgres_changes',
         {
@@ -359,8 +394,40 @@ const CommunityHub = () => {
           table: 'community_posts'
         },
         () => {
-          // Refresh posts when a new one is created
           fetchCommunityPosts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'community_posts'
+        },
+        () => {
+          fetchCommunityPosts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'communities'
+        },
+        () => {
+          fetchCommunities();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'communities'
+        },
+        () => {
+          fetchCommunities();
         }
       )
       .subscribe();
@@ -701,12 +768,19 @@ const CommunityHub = () => {
                                     className="w-full h-20 object-cover rounded-md"
                                   />
                                 ) : (
-                                  <video
-                                    src={URL.createObjectURL(file)}
-                                    className="w-full h-20 object-cover rounded-md"
-                                    controls={false}
-                                    muted
-                                  />
+                                  <div className="relative">
+                                    <video
+                                      src={URL.createObjectURL(file)}
+                                      className="w-full h-20 object-cover rounded-md"
+                                      controls={false}
+                                      muted
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md">
+                                      <div className="text-white text-xs bg-black/70 px-2 py-1 rounded">
+                                        Video ({file.name})
+                                      </div>
+                                    </div>
+                                  </div>
                                 )}
                                 <Button
                                   type="button"
@@ -860,14 +934,26 @@ const CommunityHub = () => {
                       {/* Media Display */}
                       {post.media_urls && post.media_urls.length > 0 && (
                         <div className="grid grid-cols-2 gap-2 mb-4">
-                          {post.media_urls.slice(0, 4).map((url: string, index: number) => (
-                            <img
-                              key={index}
-                              src={url}
-                              alt={`Post media ${index + 1}`}
-                              className="w-full h-32 object-cover rounded-md"
-                            />
-                          ))}
+                          {post.media_urls.slice(0, 4).map((url: string, index: number) => {
+                            const isVideo = url.includes('.mp4') || url.includes('.mov') || url.includes('.avi') || url.includes('.webm');
+                            return isVideo ? (
+                              <video
+                                key={index}
+                                src={url}
+                                className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                controls
+                                preload="metadata"
+                              />
+                            ) : (
+                              <img
+                                key={index}
+                                src={url}
+                                alt={`Post media ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                onClick={() => window.open(url, '_blank')}
+                              />
+                            );
+                          })}
                         </div>
                       )}
                       
