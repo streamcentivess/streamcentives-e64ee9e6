@@ -99,6 +99,7 @@ export function SponsorPosts() {
           caption: formData.content,
           content_url: formData.image_url || formData.video_url || '',
           content_type: formData.image_url ? 'image' : (formData.video_url ? 'video' : 'text'),
+          is_community_post: true, // Make sure sponsor posts appear in main feed
         }])
         .select()
         .single();

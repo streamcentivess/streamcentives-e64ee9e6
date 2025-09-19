@@ -12,6 +12,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
+import { SponsorPosts } from '@/components/SponsorPosts';
 
 interface SponsorProfile {
   id: string;
@@ -378,8 +379,9 @@ export default function BrandProfile() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="rewards">Rewards</TabsTrigger>
             <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
@@ -461,6 +463,10 @@ export default function BrandProfile() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="posts" className="space-y-6">
+            <SponsorPosts />
           </TabsContent>
 
           <TabsContent value="campaigns" className="space-y-6">
