@@ -344,6 +344,65 @@ const UniversalProfile = () => {
     }
   };
 
+  const fetchSupportersAndHaters = async () => {
+    if (!user?.id) return;
+    try {
+      // This would need a supporters/haters table - for now using mock data
+      setSupporters([]);
+      setHaters([]);
+    } catch (error) {
+      console.error('Error fetching supporters and haters:', error);
+    }
+  };
+
+  const handleAddSupporter = async (targetProfile: Profile | null) => {
+    if (!targetProfile || !user?.id) return;
+    
+    try {
+      // Add logic to save supporter relationship
+      setSupporters(prev => [...prev, targetProfile]);
+      setSupporterStates(prev => ({ ...prev, [targetProfile.user_id]: true }));
+      
+      toast({
+        title: 'Success',
+        description: `Added ${targetProfile.display_name || targetProfile.username} to supporters`,
+      });
+      
+      setConfirmAddSupporter({ show: false, profile: null });
+    } catch (error) {
+      console.error('Error adding supporter:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add supporter',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleAddHater = async (targetProfile: Profile | null) => {
+    if (!targetProfile || !user?.id) return;
+    
+    try {
+      // Add logic to save hater relationship
+      setHaters(prev => [...prev, targetProfile]);
+      setHaterStates(prev => ({ ...prev, [targetProfile.user_id]: true }));
+      
+      toast({
+        title: 'Success',
+        description: `Added ${targetProfile.display_name || targetProfile.username} to haters`,
+      });
+      
+      setConfirmAddHater({ show: false, profile: null });
+    } catch (error) {
+      console.error('Error adding hater:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add hater',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const fetchJoinedCampaigns = async () => {
     if (!profile?.user_id) return;
     try {
@@ -411,6 +470,7 @@ const UniversalProfile = () => {
       fetchFollowStats();
       fetchXpBalance();
       checkFollowStatus();
+      fetchSupportersAndHaters();
       
       const targetUserId = profile?.user_id || finalUserId || user?.id;
       if (targetUserId) {
@@ -712,6 +772,24 @@ const UniversalProfile = () => {
                        )}
                      </div>
                      
+                     {/* Spotify Connected Badge */}
+                     {profile.spotify_connected && (
+                       <div className="flex items-center space-x-1 mt-2">
+                         <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                           <Music className="h-3 w-3 mr-1" />
+                           Spotify Connected
+                         </Badge>
+                       </div>
+                     )}
+
+                     {/* User Level Badge */}
+                     <div className="flex items-center space-x-1 mt-2">
+                       <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                         <Trophy className="h-3 w-3 mr-1" />
+                         Bronze Level
+                       </Badge>
+                     </div>
+                     
                      {/* Action Buttons */}
                      <div className="flex items-center space-x-2 mt-4">
                        {!isOwnProfile && user && (
@@ -727,13 +805,47 @@ const UniversalProfile = () => {
                              recipientId={profile.user_id} 
                              recipientName={profile.display_name || profile.username || 'User'}
                            />
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => {
+                               // Handle adding to supporters
+                               setConfirmAddSupporter({ show: true, profile });
+                             }}
+                           >
+                             <Heart className="h-4 w-4" />
+                           </Button>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => {
+                               // Handle adding to haters
+                               setConfirmAddHater({ show: true, profile });
+                             }}
+                           >
+                             <UserX className="h-4 w-4" />
+                           </Button>
                          </>
                        )}
                        {isOwnProfile && (
-                         <Button onClick={() => navigate('/profile/edit')} variant="outline">
-                           <Settings className="h-4 w-4 mr-2" />
-                           Edit Profile
-                         </Button>
+                         <>
+                           <Button onClick={() => navigate('/profile/edit')} variant="outline">
+                             <Settings className="h-4 w-4 mr-2" />
+                             Edit Profile
+                           </Button>
+                           {profileOwnerRole === 'fan' && (
+                             <Button onClick={() => navigate('/fan-dashboard')} variant="outline">
+                               <BarChart3 className="h-4 w-4 mr-2" />
+                               Fan Dashboard
+                             </Button>
+                           )}
+                           {profileOwnerRole === 'creator' && (
+                             <Button onClick={() => navigate('/creator-dashboard')} variant="outline">
+                               <Users className="h-4 w-4 mr-2" />
+                               Creator Dashboard
+                             </Button>
+                           )}
+                         </>
                        )}
                      </div>
                    </div>
@@ -744,6 +856,8 @@ const UniversalProfile = () => {
                    <TabsTrigger value="posts">Posts</TabsTrigger>
                    <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
                    <TabsTrigger value="social">Social</TabsTrigger>
+                   {isOwnProfile && <TabsTrigger value="xp">Buy XP</TabsTrigger>}
+                   {isOwnProfile && <TabsTrigger value="supporters">Supporters</TabsTrigger>}
                    {isOwnProfile && <TabsTrigger value="smartlink">Smart Link</TabsTrigger>}
                    {isOwnProfile && <TabsTrigger value="settings">Settings</TabsTrigger>}
                  </TabsList>
@@ -756,6 +870,97 @@ const UniversalProfile = () => {
                   <TabsContent value="social" className="mt-4">
                     <EnhancedSocialInteractions targetUserId={profile.user_id} />
                   </TabsContent>
+                  {isOwnProfile && (
+                    <TabsContent value="xp" className="mt-4">
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <h3 className="text-lg font-medium mb-2">Purchase XP</h3>
+                          <p className="text-muted-foreground mb-4">
+                            Buy XP to support creators and unlock exclusive content.
+                          </p>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-3">
+                          <Card className="p-4 text-center">
+                            <h4 className="font-medium">100 XP</h4>
+                            <p className="text-2xl font-bold mt-2">$1.00</p>
+                            <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=100')}>
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              Buy Now
+                            </Button>
+                          </Card>
+                          <Card className="p-4 text-center">
+                            <h4 className="font-medium">500 XP</h4>
+                            <p className="text-2xl font-bold mt-2">$5.00</p>
+                            <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=500')}>
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              Buy Now
+                            </Button>
+                          </Card>
+                          <Card className="p-4 text-center">
+                            <h4 className="font-medium">1000 XP</h4>
+                            <p className="text-2xl font-bold mt-2">$10.00</p>
+                            <Button className="w-full mt-4" onClick={() => navigate('/purchase-xp?amount=1000')}>
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              Buy Now
+                            </Button>
+                          </Card>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  )}
+                  {isOwnProfile && (
+                    <TabsContent value="supporters" className="mt-4">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-medium">Your Supporters & Haters</h3>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <Card className="p-4">
+                            <h4 className="font-medium text-green-600 mb-4 flex items-center">
+                              <Heart className="h-4 w-4 mr-2" />
+                              Supporters ({supporters.length})
+                            </h4>
+                            <div className="space-y-2">
+                              {supporters.length > 0 ? (
+                                supporters.map((supporter) => (
+                                  <div key={supporter.user_id} className="flex items-center space-x-3">
+                                    <Avatar className="w-8 h-8">
+                                      <AvatarImage src={supporter.avatar_url} />
+                                      <AvatarFallback>{supporter.display_name?.charAt(0) || 'U'}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm">{supporter.display_name || supporter.username}</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-muted-foreground text-sm">No supporters yet</p>
+                              )}
+                            </div>
+                          </Card>
+                          <Card className="p-4">
+                            <h4 className="font-medium text-red-600 mb-4 flex items-center">
+                              <UserX className="h-4 w-4 mr-2" />
+                              Haters ({haters.length})
+                            </h4>
+                            <div className="space-y-2">
+                              {haters.length > 0 ? (
+                                haters.map((hater) => (
+                                  <div key={hater.user_id} className="flex items-center space-x-3">
+                                    <Avatar className="w-8 h-8">
+                                      <AvatarImage src={hater.avatar_url} />
+                                      <AvatarFallback>{hater.display_name?.charAt(0) || 'U'}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm">{hater.display_name || hater.username}</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-muted-foreground text-sm">No haters yet</p>
+                              )}
+                            </div>
+                          </Card>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  )}
                   {isOwnProfile && (
                     <TabsContent value="smartlink" className="mt-4">
                       <div className="space-y-4">
@@ -797,6 +1002,41 @@ const UniversalProfile = () => {
           Profile not found.
         </div>
       )}
+
+      {/* Confirmation Dialogs */}
+      <Dialog open={confirmAddSupporter.show} onOpenChange={(open) => setConfirmAddSupporter({ show: open, profile: null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add to Supporters</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to add {confirmAddSupporter.profile?.display_name || confirmAddSupporter.profile?.username} to your supporters list?</p>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={() => setConfirmAddSupporter({ show: false, profile: null })}>
+              Cancel
+            </Button>
+            <Button onClick={() => handleAddSupporter(confirmAddSupporter.profile)}>
+              Add Supporter
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmAddHater.show} onOpenChange={(open) => setConfirmAddHater({ show: open, profile: null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add to Haters</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to add {confirmAddHater.profile?.display_name || confirmAddHater.profile?.username} to your haters list?</p>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={() => setConfirmAddHater({ show: false, profile: null })}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => handleAddHater(confirmAddHater.profile)}>
+              Add Hater
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
