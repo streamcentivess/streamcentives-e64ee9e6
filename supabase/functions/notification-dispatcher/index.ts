@@ -142,7 +142,7 @@ async function sendEmailNotification(eventType: string, userId: string, data: an
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'StreamCentives <noreply@streamcentives.com>',
+      from: `StreamCentives <${Deno.env.get('SENDER_EMAIL') || 'noreply@streamcentives.com'}>`,
       to: [data.user_email],
       subject: template.subject,
       html: template.html,
