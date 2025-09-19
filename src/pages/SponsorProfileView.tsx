@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building2, Globe, DollarSign, Users, Briefcase, Calendar, Star, Edit, TrendingUp, Target, Award, ArrowRight, Mail, Phone } from 'lucide-react';
+import { Building2, Globe, DollarSign, Users, Briefcase, Calendar, Star, Edit, TrendingUp, Target, Award, ArrowRight, Mail, Phone, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -284,13 +284,22 @@ export default function SponsorProfileView() {
             
             <div className="lg:ml-auto flex flex-col lg:flex-row gap-4">
               {isOwnProfile && (
-                <Button 
-                  onClick={() => navigate('/sponsor-dashboard')}
-                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Profile
-                </Button>
+                <>
+                  <Button 
+                    onClick={() => navigate('/sponsor-dashboard?tab=inbox')}
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Inbox
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/sponsor-dashboard')}
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </>
               )}
               {profile.website_url && (
                 <Button 
