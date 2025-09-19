@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import AppNavigation from '@/components/AppNavigation';
 import CommunityUpload from '@/components/CommunityUpload';
 import UserProfileSearch from '@/components/UserProfileSearch';
+import { FeedPopupSystem } from '@/components/FeedPopupSystem';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -837,6 +838,7 @@ const Feed = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppNavigation />
+      <FeedPopupSystem />
       
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6 text-center">
