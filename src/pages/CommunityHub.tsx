@@ -22,7 +22,6 @@ const CommunityHub = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showCommunityDialog, setShowCommunityDialog] = useState(false);
-  const [showEventDialog, setShowEventDialog] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
   const [communities, setCommunities] = useState<any[]>([]);
@@ -967,66 +966,14 @@ const CommunityHub = () => {
           <TabsContent value="events" className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <h3 className="text-lg font-semibold">Fan Events</h3>
-              <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
-                    <Plus className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Create Event</span>
-                    <span className="sm:hidden">Create</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create Fan Event</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="event-name">Event Name</Label>
-                      <Input id="event-name" placeholder="Enter event name" />
-                    </div>
-                    <div>
-                      <Label htmlFor="event-description">Description</Label>
-                      <Textarea id="event-description" placeholder="Describe your event..." rows={3} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="event-date">Event Date</Label>
-                        <Input id="event-date" type="date" />
-                      </div>
-                      <div>
-                        <Label htmlFor="event-time">Time</Label>
-                        <Input id="event-time" type="time" />
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Event Type</Label>
-                      <div className="flex gap-4 mt-2">
-                        <label className="flex items-center space-x-2">
-                          <input type="radio" name="event-type" value="virtual" className="rounded" />
-                          <span className="text-sm">Virtual</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input type="radio" name="event-type" value="in-person" className="rounded" />
-                          <span className="text-sm">In-Person</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="max-attendees">Max Attendees</Label>
-                        <Input id="max-attendees" type="number" placeholder="50" />
-                      </div>
-                      <div>
-                        <Label htmlFor="ticket-price">Ticket Price ($)</Label>
-                        <Input id="ticket-price" type="number" placeholder="0.00" />
-                      </div>
-                    </div>
-                    <Button onClick={() => navigate('/create-event')} className="bg-gradient-primary hover:opacity-90">
-                      Create Event
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                onClick={() => navigate('/create-event')}
+                className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Create Event</span>
+                <span className="sm:hidden">Create</span>
+              </Button>
             </div>
 
             <div className="grid gap-4">
