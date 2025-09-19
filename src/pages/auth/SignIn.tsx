@@ -123,18 +123,18 @@ const SignIn = () => {
               <Separator />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with username/email</span>
+              <span className="bg-card px-2 text-muted-foreground">Or continue with username/company/email</span>
             </div>
           </div>
 
           {/* Email Form */}
           <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Username or Email</Label>
+              <Label htmlFor="email">Username, Company Name, or Email</Label>
               <Input
                 id="email"
                 type="text"
-                placeholder="Enter username or email"
+                placeholder="Enter username, company name, or email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

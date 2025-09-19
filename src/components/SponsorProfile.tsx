@@ -35,7 +35,8 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
     company_logo_url: "",
     company_description: "",
     budget_range_min: "",
-    budget_range_max: ""
+    budget_range_max: "",
+    email: ""
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -44,18 +45,42 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
   });
 
   useEffect(() => {
-    if (existingProfile) {
-      setFormData({
-        company_name: existingProfile.company_name || "",
-        industry: existingProfile.industry || "",
-        website_url: existingProfile.website_url || "",
-        company_logo_url: existingProfile.company_logo_url || "",
-        company_description: existingProfile.company_description || "",
-        budget_range_min: existingProfile.budget_range_min?.toString() || "",
-        budget_range_max: existingProfile.budget_range_max?.toString() || ""
-      });
-    }
-  }, [existingProfile]);
+    const loadProfileData = async () => {
+      if (existingProfile) {
+        // Get email from user's profile
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('user_id', user?.id)
+          .maybeSingle();
+
+        setFormData({
+          company_name: existingProfile.company_name || "",
+          industry: existingProfile.industry || "",
+          website_url: existingProfile.website_url || "",
+          company_logo_url: existingProfile.company_logo_url || "",
+          company_description: existingProfile.company_description || "",
+          budget_range_min: existingProfile.budget_range_min?.toString() || "",
+          budget_range_max: existingProfile.budget_range_max?.toString() || "",
+          email: userProfile?.email || ""
+        });
+      } else if (user) {
+        // For new profiles, get current user email
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        setFormData(prev => ({
+          ...prev,
+          email: userProfile?.email || user.email || ""
+        }));
+      }
+    };
+
+    loadProfileData();
+  }, [existingProfile, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +99,8 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
         budget_range_max: formData.budget_range_max ? parseInt(formData.budget_range_max) : null,
       };
 
-      const { error } = existingProfile
+      // Update sponsor profile
+      const { error: sponsorError } = existingProfile
         ? await supabase
             .from('sponsor_profiles')
             .update(profileData)
@@ -83,7 +109,24 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
             .from('sponsor_profiles')
             .insert([profileData]);
 
-      if (error) throw error;
+      if (sponsorError) throw sponsorError;
+
+      // Update email in profiles table if changed
+      if (formData.email && formData.email.trim()) {
+        const { error: emailError } = await supabase
+          .from('profiles')
+          .update({ email: formData.email.trim() })
+          .eq('user_id', user.id);
+
+        if (emailError) {
+          console.error('Error updating email:', emailError);
+          toast({
+            title: "Partial Success",
+            description: "Profile saved but email update failed. Please try updating email separately.",
+            variant: "destructive"
+          });
+        }
+      }
 
       toast({
         title: "Success!",
@@ -242,6 +285,21 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
                   required
                   placeholder="Your company name"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                  placeholder="your-email@company.com"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This email will be used for sign-in and communications
+                </p>
               </div>
 
               <div className="space-y-2">

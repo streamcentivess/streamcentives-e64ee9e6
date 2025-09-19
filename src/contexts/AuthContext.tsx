@@ -260,9 +260,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       let actualEmail = input;
 
-      // If it's not an email, treat it as a username and look up the email
+      // If it's not an email, treat it as a username/company name and look up the email
       if (!input.includes('@')) {
         const normalized = input.toLowerCase();
+        
+        // First check profiles table for username
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('email, username')
@@ -271,25 +273,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (profileError) {
           console.error('Profile lookup error:', profileError);
-          toast({
-            title: 'Sign In Failed',
-            description: 'Error looking up username. Please try again.',
-            variant: 'destructive',
-          });
-          return { error: profileError };
         }
 
-        if (!profile?.email) {
-          toast({
-            title: 'Username Not Found',
-            description:
-              "We couldn't find that username. Please check it or try signing in with your email.",
-            variant: 'destructive',
-          });
-          return { error: new Error('Username not found') };
-        }
+        // If found in profiles, use that email
+        if (profile?.email) {
+          actualEmail = profile.email;
+        } else {
+          // If not found in profiles, check sponsor_profiles for company name
+          const { data: sponsorProfile, error: sponsorError } = await supabase
+            .from('sponsor_profiles')
+            .select('user_id')
+            .ilike('company_name', normalized)
+            .maybeSingle();
 
-        actualEmail = profile.email;
+          if (sponsorError) {
+            console.error('Sponsor profile lookup error:', sponsorError);
+          }
+
+          if (sponsorProfile?.user_id) {
+            // Get the email from profiles table using the user_id
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('email')
+              .eq('user_id', sponsorProfile.user_id)
+              .maybeSingle();
+
+            if (userProfile?.email) {
+              actualEmail = userProfile.email;
+            } else {
+              toast({
+                title: 'Company Not Found',
+                description:
+                  "We couldn't find that company name. Please check it or try signing in with your email.",
+                variant: 'destructive',
+              });
+              return { error: new Error('Company not found') };
+            }
+          } else {
+            toast({
+              title: 'Username/Company Not Found',
+              description:
+                "We couldn't find that username or company name. Please check it or try signing in with your email.",
+              variant: 'destructive',
+            });
+            return { error: new Error('Username/company not found') };
+          }
+        }
       }
 
       const { error } = await supabase.auth.signInWithPassword({
