@@ -5613,6 +5613,16 @@ export type Database = {
         }
         Returns: Json
       }
+      execute_marketplace_purchase_xp: {
+        Args: {
+          buyer_id_param: string
+          listing_id_param: string
+          platform_fee_xp_param: number
+          seller_net_xp_param: number
+          total_xp_amount_param: number
+        }
+        Returns: Json
+      }
       generate_redemption_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -5768,11 +5778,31 @@ export type Database = {
           user_id: string
         }[]
       }
+      handle_enhanced_xp_purchase: {
+        Args: {
+          creator_id_param?: string
+          fan_xp_share_param: number
+          payment_amount_cents_param: number
+          platform_xp_share_param: number
+          user_id_param: string
+          xp_type_param?: Database["public"]["Enums"]["xp_type"]
+        }
+        Returns: Json
+      }
       handle_post_share: {
         Args: {
           platform_param?: string
           post_id_param: string
           share_type_param: string
+        }
+        Returns: Json
+      }
+      handle_reward_sale_xp: {
+        Args: {
+          buyer_id_param: string
+          reward_id_param: string
+          seller_id_param: string
+          xp_price_param: number
         }
         Returns: Json
       }
@@ -5802,6 +5832,14 @@ export type Database = {
       mark_notifications_read: {
         Args: { notification_ids: string[] }
         Returns: number
+      }
+      process_creator_payout: {
+        Args: {
+          bank_account_last4_param?: string
+          payout_request_id_param: string
+          stripe_payout_id_param: string
+        }
+        Returns: Json
       }
       process_marketplace_transaction: {
         Args: {

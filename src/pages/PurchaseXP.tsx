@@ -200,55 +200,41 @@ export default function PurchaseXP() {
       toast({
         title: "Authentication Required",
         description: "Please sign in to purchase XP",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
-    if (pkg.type === 'creator_specific' && !selectedCreator) {
-      toast({
-        title: "Creator Required",
-        description: "Please select a creator for creator-specific XP",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    setLoading(pkg.id);
     try {
-      setLoading(pkg.id);
-      
-      if (pkg.type === 'creator_specific') {
-        // Use enhanced XP purchase for creator-specific XP
-        const { data, error } = await supabase.functions.invoke('enhanced-xp-purchase', {
-          body: {
-            xpAmount: pkg.xp,
-            priceId: pkg.id,
-            creatorId: selectedCreator,
-            xpType: pkg.type
-          }
-        });
-
-        if (error) throw error;
-
-        if (data?.url) {
-          window.location.href = data.url;
+      const { data, error } = await supabase.functions.invoke('enhanced-xp-purchase-v2', {
+        body: {
+          xpAmount: pkg.xp,
+          priceId: pkg.id,
+          creatorId: pkg.type === 'creator_specific' ? selectedCreator : null,
+          xpType: pkg.type === 'creator_specific' ? 'creator_specific' : 'platform'
         }
+      });
+
+      if (error) throw error;
+
+      if (data?.checkout_url) {
+        // Show revenue split information
+        if (data.fan_xp_share && data.platform_xp_share) {
+          toast({
+            title: "Checkout Created",
+            description: `You'll receive ${data.fan_xp_share} XP (80% of ${pkg.xp} XP purchased)`,
+          });
+        }
+        window.location.href = data.checkout_url;
       } else {
-        // Use regular XP purchase for platform XP
-        const { data, error } = await supabase.functions.invoke('create-xp-checkout', {
-          body: { priceId: pkg.id }
-        });
-
-        if (error) throw error;
-
-        if (data?.url) {
-          window.open(data.url, '_blank');
-        }
+        throw new Error('No checkout URL received');
       }
     } catch (error: any) {
+      console.error('Purchase error:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to create checkout session",
+        title: "Purchase Failed",
+        description: error.message || "Failed to initiate purchase",
         variant: "destructive",
       });
     } finally {
@@ -261,15 +247,23 @@ export default function PurchaseXP() {
   };
 
   const getRevenueBreakdown = (cents: number, type: 'platform' | 'creator_specific') => {
-    const streamcentivesFee = 50; // 50 cents
-    const creatorShare = type === 'creator_specific' ? cents - streamcentivesFee : 0;
-    
-    return {
-      total: cents,
-      streamcentivesFee,
-      creatorShare,
-      platformShare: type === 'platform' ? cents - streamcentivesFee : 0
-    };
+    if (type === 'platform') {
+      // New 80/20 split: 80% to fan, 20% to platform
+      return {
+        total: cents,
+        streamcentivesFee: Math.floor(cents * 0.20), // 20%
+        platformShare: Math.floor(cents * 0.20), // 20%
+        fanShare: Math.floor(cents * 0.80) // 80%
+      };
+    } else {
+      // Creator-specific XP: same 80/20 split, but shows creator support
+      return {
+        total: cents,
+        streamcentivesFee: Math.floor(cents * 0.20), // 20%
+        creatorShare: Math.floor(cents * 0.60), // 60%
+        fanShare: Math.floor(cents * 0.20) // 20%
+      };
+    }
   };
 
   return (
