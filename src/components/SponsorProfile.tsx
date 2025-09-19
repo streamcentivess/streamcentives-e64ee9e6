@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Globe, DollarSign } from "lucide-react";
+import { Building2, Globe, DollarSign, Lock } from "lucide-react";
 
 interface SponsorProfileProps {
   existingProfile?: any;
@@ -26,6 +26,7 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [formData, setFormData] = useState({
     company_name: "",
     industry: "",
@@ -34,6 +35,11 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
     company_description: "",
     budget_range_min: "",
     budget_range_max: ""
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
   });
 
   useEffect(() => {
@@ -97,6 +103,57 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "New passwords do not match.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 8 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Password updated successfully"
+      });
+
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (error) {
+      console.error('Error updating password:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update password. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -208,6 +265,56 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? "Saving..." : existingProfile ? "Update Profile" : "Create Profile"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+      
+      {/* Password Update Section */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            Update Password
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordUpdate} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password *</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                placeholder="Enter new password (8+ characters)"
+                required
+                minLength={8}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password *</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                placeholder="Confirm new password"
+                required
+                minLength={8}
+              />
+              {passwordData.newPassword !== passwordData.confirmPassword && passwordData.confirmPassword && (
+                <p className="text-sm text-destructive">Passwords do not match</p>
+              )}
+            </div>
+            
+            <Button 
+              type="submit" 
+              disabled={passwordLoading || passwordData.newPassword !== passwordData.confirmPassword || !passwordData.newPassword} 
+              className="w-full"
+            >
+              {passwordLoading ? "Updating Password..." : "Update Password"}
             </Button>
           </form>
         </CardContent>
