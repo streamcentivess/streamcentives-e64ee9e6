@@ -43,7 +43,6 @@ const CommunityHub = () => {
     community_id: '',
     is_pinned: false,
     photos: [] as File[],
-    tagged_people: [] as string[],
     tagged_users: [] as { user_id: string; username: string }[],
     location: ''
   });
@@ -224,7 +223,6 @@ const CommunityHub = () => {
     const username = person.replace(/^@/, '');
     setPostForm({
       ...postForm,
-      tagged_people: postForm.tagged_people.filter(p => p !== person),
       tagged_users: postForm.tagged_users.filter(u => u.username !== username)
     });
   };
@@ -326,7 +324,6 @@ const CommunityHub = () => {
         community_id: '',
         is_pinned: false,
         photos: [],
-        tagged_people: [],
         tagged_users: [],
         location: ''
       });
@@ -740,7 +737,6 @@ const CommunityHub = () => {
                             if (!alreadyTagged) {
                               setPostForm({
                                 ...postForm,
-                                tagged_people: [...postForm.tagged_people, username],
                                 tagged_users: [...postForm.tagged_users, { user_id: user.user_id, username: user.username }]
                               });
                               console.log('User tagged:', username); // Debug log
@@ -750,14 +746,14 @@ const CommunityHub = () => {
                           placeholder="Search users to tag..."
                         />
                         
-                        {postForm.tagged_people.length > 0 && (
+                        {postForm.tagged_users.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {postForm.tagged_people.map((person, index) => (
+                            {postForm.tagged_users.map((user, index) => (
                               <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                                {person}
+                                @{user.username}
                                 <button
                                   type="button"
-                                  onClick={() => removeTaggedPerson(person)}
+                                  onClick={() => removeTaggedPerson(`@${user.username}`)}
                                   className="ml-1 hover:text-destructive"
                                 >
                                   <X className="h-3 w-3" />
