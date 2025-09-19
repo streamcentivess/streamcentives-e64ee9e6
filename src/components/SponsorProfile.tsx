@@ -72,10 +72,30 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to save your profile.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setLoading(true);
     try {
+      // Check if session is valid before saving
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast({
+          title: "Session Expired",
+          description: "Please sign in again to save changes.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (formData.email && !emailRegex.test(formData.email)) {
@@ -169,6 +189,15 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to update your password.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast({
         title: "Password Mismatch",
@@ -204,6 +233,19 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
     setPasswordLoading(true);
     try {
+      // Check if session is valid before updating password
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast({
+          title: "Session Expired",
+          description: "Please sign in again to update your password.",
+          variant: "destructive"
+        });
+        setPasswordLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: passwordData.newPassword
       });
@@ -216,7 +258,17 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
             variant: "destructive"
           });
         } else {
-          throw error;
+          console.error('Password update error:', error);
+          let errorMessage = "Failed to update password. Please try again with a stronger password.";
+          if (error.message?.includes('JWT') || error.message?.includes('session')) {
+            errorMessage = "Your session has expired. Please sign in again.";
+          }
+          
+          toast({
+            title: "Error",
+            description: errorMessage,
+            variant: "destructive"
+          });
         }
         return;
       }
@@ -231,11 +283,17 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
         newPassword: "",
         confirmPassword: ""
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating password:', error);
+      
+      let errorMessage = "Failed to update password. Please try again with a stronger password.";
+      if (error.message?.includes('JWT') || error.message?.includes('session')) {
+        errorMessage = "Your session has expired. Please sign in again.";
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to update password. Please try again with a stronger password.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -245,18 +303,41 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to upload a logo.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setUploadLoading(true);
     try {
+      // Check if session is valid before uploading
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast({
+          title: "Session Expired",
+          description: "Please sign in again to upload files.",
+          variant: "destructive"
+        });
+        setUploadLoading(false);
+        return;
+      }
+
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('sponsor-logos')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('sponsor-logos')
@@ -268,11 +349,19 @@ export function SponsorProfile({ existingProfile, onProfileCreated, onProfileUpd
         title: "Success!",
         description: "Logo uploaded successfully"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading logo:', error);
+      
+      let errorMessage = "Failed to upload logo. Please try again.";
+      if (error.message?.includes('row-level security')) {
+        errorMessage = "Authentication error. Please sign in again and try uploading.";
+      } else if (error.message?.includes('JWT')) {
+        errorMessage = "Your session has expired. Please sign in again.";
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to upload logo. Please try again.",
+        title: "Upload Error",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
