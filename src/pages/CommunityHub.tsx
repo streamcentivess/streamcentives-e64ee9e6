@@ -625,15 +625,21 @@ const CommunityHub = () => {
                         value={postForm.community_id}
                         onValueChange={(value) => setPostForm({...postForm, community_id: value})}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose a community" />
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={communities.length === 0 ? "No communities available" : "Choose a community"} />
                         </SelectTrigger>
-                        <SelectContent>
-                          {communities.map((community) => (
-                            <SelectItem key={community.id} value={community.id}>
-                              {community.name}
+                        <SelectContent className="bg-background border border-border shadow-lg z-50">
+                          {communities.length === 0 ? (
+                            <SelectItem value="no-communities" disabled>
+                              Create a community first
                             </SelectItem>
-                          ))}
+                          ) : (
+                            communities.map((community) => (
+                              <SelectItem key={community.id} value={community.id} className="hover:bg-accent">
+                                {community.name}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
