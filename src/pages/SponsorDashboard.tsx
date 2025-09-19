@@ -61,16 +61,25 @@ export default function SponsorDashboard() {
             <h1 className="text-3xl font-bold text-foreground">Sponsor Dashboard</h1>
             <p className="text-muted-foreground">Welcome back, {sponsorProfile.company_name}</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Link to="/brand-profile">
-              <Button variant="outline">
+              <Button variant="outline" size="sm" className="sm:size-default">
                 <User className="h-4 w-4 mr-2" />
-                View Brand Profile
+                <span className="hidden sm:inline">View Brand Profile</span>
+                <span className="sm:hidden">Brand</span>
               </Button>
             </Link>
-            <Button>
+            <Link to="/sponsor-profile">
+              <Button variant="outline" size="sm" className="sm:size-default">
+                <Building2 className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Sponsor Profile</span>
+                <span className="sm:hidden">Profile</span>
+              </Button>
+            </Link>
+            <Button size="sm" className="sm:size-default">
               <Plus className="h-4 w-4 mr-2" />
-              New Campaign
+              <span className="hidden sm:inline">New Campaign</span>
+              <span className="sm:hidden">New</span>
             </Button>
           </div>
         </div>
