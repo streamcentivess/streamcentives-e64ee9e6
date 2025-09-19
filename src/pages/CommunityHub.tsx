@@ -183,6 +183,92 @@ const CommunityHub = () => {
     });
   };
 
+  const handleCreatePost = async () => {
+    if (!user) return;
+    
+    if (!postForm.title || !postForm.content || !postForm.community_id) {
+      toast({
+        title: "Error",
+        description: "Please fill in title, content, and select a community",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      let mediaUrls: string[] = [];
+      
+      // Upload media files if any
+      if (postForm.photos.length > 0) {
+        for (const file of postForm.photos) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const filePath = `community-posts/${user.id}/${fileName}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('community-media')
+            .upload(filePath, file);
+          
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from('community-media')
+              .getPublicUrl(filePath);
+            mediaUrls.push(publicUrl);
+          }
+        }
+      }
+
+      // Create the post
+      const { data, error } = await supabase
+        .from('community_posts')
+        .insert({
+          author_id: user.id,
+          community_id: postForm.community_id,
+          title: postForm.title,
+          content: postForm.content,
+          media_urls: mediaUrls.length > 0 ? mediaUrls : null,
+          tagged_people: postForm.tagged_people.length > 0 ? postForm.tagged_people : null,
+          location: postForm.location || null,
+          is_pinned: postForm.is_pinned
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Post created successfully"
+      });
+      
+      // Reset form
+      setPostForm({
+        title: '',
+        content: '',
+        community_id: '',
+        is_pinned: false,
+        photos: [],
+        tagged_people: [],
+        location: ''
+      });
+      setTaggedPeopleInput('');
+      setShowPostDialog(false);
+      
+    } catch (error: any) {
+      console.error('Error creating post:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create post",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const communityPosts = [
     {
       id: 1,
@@ -655,8 +741,12 @@ const CommunityHub = () => {
                       <Label htmlFor="pin-post">Pin this post</Label>
                     </div>
                     
-                    <Button className="w-full bg-gradient-primary hover:opacity-90">
-                      Create Post
+                    <Button 
+                      className="w-full bg-gradient-primary hover:opacity-90"
+                      onClick={handleCreatePost}
+                      disabled={loading}
+                    >
+                      {loading ? "Creating..." : "Create Post"}
                     </Button>
                   </div>
                 </DialogContent>
