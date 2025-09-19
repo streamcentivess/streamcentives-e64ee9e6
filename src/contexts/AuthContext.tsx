@@ -263,11 +263,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // If it's not an email, treat it as a username/company name and look up the email
       if (!input.includes('@')) {
         const normalized = input.toLowerCase();
+        console.log('Looking up username:', normalized);
         
         // First check profiles table for username
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('email, username')
+          .select('email, username, user_id')
           .ilike('username', normalized)
           .maybeSingle();
 
@@ -275,9 +276,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Profile lookup error:', profileError);
         }
 
+        console.log('Profile lookup result:', profile);
+
         // If found in profiles, use that email
         if (profile?.email) {
           actualEmail = profile.email;
+          console.log('Using email from profile:', actualEmail);
         } else {
           // If not found in profiles, check sponsor_profiles for company name
           const { data: sponsorProfile, error: sponsorError } = await supabase
