@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -86,9 +86,9 @@ serve(async (req) => {
     const marketScarcityMultiplier = Math.max(0.5, Math.min(2.0, avgQuantityInCategory / quantity));
     rarityScore = Math.min(100, rarityScore * marketScarcityMultiplier);
 
-    // Use AI for enhanced rarity analysis if OpenAI is available
+    // Use AI for enhanced rarity analysis if Gemini is available
     let aiEnhancedRarity = rarity;
-    if (openAIApiKey) {
+    if (geminiApiKey) {
       try {
         const aiPrompt = `
 Analyze this reward's rarity based on the following data:
@@ -110,25 +110,33 @@ Based on exclusivity, demand potential, and market context, what should the rari
 Respond with only one word: legendary, epic, rare, uncommon, or common
 `;
 
-        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-5-mini-2025-08-07',
-            messages: [
-              { role: 'system', content: 'You are a marketplace rarity expert. Analyze reward data and suggest appropriate rarity levels.' },
-              { role: 'user', content: aiPrompt }
+            contents: [
+              {
+                parts: [
+                  {
+                    text: aiPrompt
+                  }
+                ]
+              }
             ],
-            max_completion_tokens: 10,
+            generationConfig: {
+              temperature: 0.1,
+              topK: 1,
+              topP: 0.1,
+              maxOutputTokens: 10,
+            }
           }),
         });
 
         if (aiResponse.ok) {
           const aiData = await aiResponse.json();
-          const aiRarity = aiData.choices[0].message.content.trim().toLowerCase();
+          const aiRarity = aiData.candidates[0].content.parts[0].text.trim().toLowerCase();
           
           if (['legendary', 'epic', 'rare', 'uncommon', 'common'].includes(aiRarity)) {
             aiEnhancedRarity = aiRarity;
