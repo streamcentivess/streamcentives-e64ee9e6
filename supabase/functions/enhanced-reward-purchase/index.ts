@@ -121,6 +121,45 @@ serve(async (req) => {
         throw redemptionError;
       }
 
+      // Handle instant delivery based on delivery type
+      if (redemptionResult.instant_delivery) {
+        const deliveryData = JSON.parse(redemptionResult.delivery_data || '{}');
+        
+        // Handle different delivery types
+        if (reward.delivery_type === 'digital_asset') {
+          // Digital assets are handled via the secure URL generation function
+          // No additional processing needed here
+        } else if (reward.delivery_type === 'experience') {
+          // Create experience record with verification code
+          const { data: experienceData, error: expError } = await supabaseService
+            .from('experiences')
+            .insert({
+              reward_redemption_id: redemptionResult.redemption_id,
+              creator_id: reward.creator_id,
+              fan_id: user.id,
+              experience_type: reward.experience_type || 'meet_greet',
+              verification_code: deliveryData.verification_code,
+              status: 'scheduled',
+              instructions: reward.instructions || 'Present this ticket to the creator for verification.'
+            })
+            .select()
+            .single();
+
+          if (expError) {
+            console.error('Experience creation error:', expError);
+          }
+
+          // Generate QR code for the experience
+          if (experienceData) {
+            await supabaseService.functions.invoke('manage-experiences', {
+              body: {
+                action: 'generate-qr',
+                experienceId: experienceData.id
+              }
+            });
+          }
+      }
+
       return new Response(
         JSON.stringify({ 
           success: true, 
