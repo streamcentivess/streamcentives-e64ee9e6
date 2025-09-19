@@ -70,6 +70,8 @@ const EnhancedManageRewards = () => {
   const [listingPrice, setListingPrice] = useState('');
   const [listingPriceXP, setListingPriceXP] = useState('');
   const [listingDescription, setListingDescription] = useState('');
+  const [aiInsights, setAiInsights] = useState<any>(null);
+  const [calculatingRarity, setCalculatingRarity] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -496,6 +498,70 @@ const EnhancedManageRewards = () => {
     }
   };
 
+  const calculateRarity = async () => {
+    if (!formData.title || !formData.quantity_available) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in title and quantity first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCalculatingRarity(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-rarity-calculator', {
+        body: {
+          rewardData: formData,
+          userId: user?.id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setFormData(prev => ({ ...prev, rarity: data.rarity }));
+        setAiInsights(data.insights);
+        toast({
+          title: "AI Analysis Complete",
+          description: `Suggested rarity: ${data.rarity}`,
+        });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Error calculating rarity:', error);
+      toast({
+        title: "AI Analysis Failed",
+        description: "Using manual rarity selection",
+        variant: "destructive",
+      });
+    } finally {
+      setCalculatingRarity(false);
+    }
+  };
+
+  // Set up real-time subscriptions for rewards
+  useOptimizedRealtime({
+    table: 'rewards',
+    event: '*',
+    filter: `creator_id=eq.${user?.id}`,
+    onUpdate: () => {
+      console.log('Real-time reward update');
+      fetchRewards();
+    }
+  });
+
+  // Set up real-time subscriptions for marketplace
+  useOptimizedRealtime({
+    table: 'marketplace_listings',
+    event: '*',
+    onUpdate: () => {
+      console.log('Real-time marketplace update');
+      fetchUserRedemptions();
+    }
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -767,6 +833,258 @@ const EnhancedManageRewards = () => {
           </TabsContent>
         </Tabs>
 
+        {/* Create/Edit Reward Dialog */}
+        <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingReward ? 'Edit Reward' : 'Create New Reward'}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Basic Information</h3>
+                
+                <div>
+                  <Label htmlFor="title">Title *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    placeholder="Enter reward title"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="Describe your reward..."
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="type">Type</Label>
+                    <Select value={formData.type} onValueChange={(value) => handleInputChange('type', value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="merchandise">Merchandise</SelectItem>
+                        <SelectItem value="experience">Experience</SelectItem>
+                        <SelectItem value="digital">Digital</SelectItem>
+                        <SelectItem value="access">Access</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="quantity">Quantity Available *</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min="1"
+                      value={formData.quantity_available}
+                      onChange={(e) => handleInputChange('quantity_available', e.target.value)}
+                      placeholder="0"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Pricing (Set at least one)</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="xp_cost">XP Cost</Label>
+                    <Input
+                      id="xp_cost"
+                      type="number"
+                      min="0"
+                      value={formData.xp_cost}
+                      onChange={(e) => handleInputChange('xp_cost', e.target.value)}
+                      placeholder="Enter XP amount"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="cash_price">Cash Price ($)</Label>
+                    <Input
+                      id="cash_price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.cash_price}
+                      onChange={(e) => handleInputChange('cash_price', e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Rarity & Insights */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Rarity & Market Insights</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => calculateRarity()}
+                    disabled={!formData.title || !formData.quantity_available || calculatingRarity}
+                  >
+                    {calculatingRarity ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>🤖 AI Analysis</>
+                    )}
+                  </Button>
+                </div>
+                
+                {aiInsights && (
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <h4 className="font-semibold mb-2">🤖 AI Market Insights</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><strong>Suggested Rarity:</strong> {aiInsights.suggestedRarity}</p>
+                      <p><strong>Market Position:</strong> {aiInsights.marketPosition}</p>
+                      <p><strong>Category Average:</strong> {aiInsights.categoryStats.averageQuantity} items</p>
+                      {aiInsights.recommendations.length > 0 && (
+                        <div>
+                          <strong>Recommendations:</strong>
+                          <ul className="list-disc list-inside ml-2">
+                            {aiInsights.recommendations.map((rec: string, idx: number) => (
+                              <li key={idx}>{rec}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                <div>
+                  <Label htmlFor="rarity">Rarity</Label>
+                  <Select value={formData.rarity} onValueChange={(value) => handleInputChange('rarity', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="common">Common</SelectItem>
+                      <SelectItem value="uncommon">Uncommon</SelectItem>
+                      <SelectItem value="rare">Rare</SelectItem>
+                      <SelectItem value="epic">Epic</SelectItem>
+                      <SelectItem value="legendary">Legendary</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Media */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Media</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="image_upload">Main Image</Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="image_upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                      />
+                      {formData.image_url && (
+                        <img src={formData.image_url} alt="Preview" className="w-full h-24 object-cover rounded" />
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="cover_upload">Cover Photo</Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="cover_upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverPhotoUpload}
+                        disabled={uploadingCover}
+                      />
+                      {formData.cover_photo_url && (
+                        <img src={formData.cover_photo_url} alt="Cover Preview" className="w-full h-24 object-cover rounded" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Settings */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Additional Settings</h3>
+                
+                <div>
+                  <Label htmlFor="tags">Tags (comma separated)</Label>
+                  <Input
+                    id="tags"
+                    value={formData.tags}
+                    onChange={(e) => handleInputChange('tags', e.target.value)}
+                    placeholder="gaming, exclusive, limited edition"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="delivery_type">Delivery Method</Label>
+                  <Select value={formData.delivery_type} onValueChange={(value) => handleInputChange('delivery_type', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="manual">Manual</SelectItem>
+                      <SelectItem value="instant">Instant</SelectItem>
+                      <SelectItem value="code">Redemption Code</SelectItem>
+                      <SelectItem value="follow">Auto Follow</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="external_url">External URL (optional)</Label>
+                  <Input
+                    id="external_url"
+                    type="url"
+                    value={formData.external_url}
+                    onChange={(e) => handleInputChange('external_url', e.target.value)}
+                    placeholder="https://example.com"
+                  />
+                </div>
+              </div>
+              
+              {/* Form Actions */}
+              <div className="flex gap-3 pt-4">
+                <Button type="submit" className="flex-1 bg-gradient-primary">
+                  {editingReward ? 'Update Reward' : 'Create Reward'}
+                </Button>
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
         {/* Create Listing Dialog */}
         <Dialog open={showListingDialog} onOpenChange={setShowListingDialog}>
           <DialogContent>
@@ -792,7 +1110,7 @@ const EnhancedManageRewards = () => {
                 
                 <Tabs defaultValue="cash" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="cash">Cash Price</TabsTrigger>
+                    <TabsTrigger value="cash">Cash Price (Stripe)</TabsTrigger>
                     <TabsTrigger value="xp">XP Price</TabsTrigger>
                   </TabsList>
                   
@@ -807,6 +1125,9 @@ const EnhancedManageRewards = () => {
                         value={listingPrice}
                         onChange={(e) => setListingPrice(e.target.value)}
                       />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Payments processed securely via Stripe
+                      </p>
                     </div>
                   </TabsContent>
                   
