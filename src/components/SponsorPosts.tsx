@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useOptimizedRealtime } from "@/hooks/useOptimizedRealtime";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,6 +74,14 @@ export function SponsorPosts() {
       console.error('Error fetching creators:', error);
     }
   };
+
+  // Add real-time updates for posts
+  useOptimizedRealtime({
+    table: 'posts',
+    filter: `user_id=eq.${user?.id}`,
+    onUpdate: fetchPosts,
+    enabled: !!user,
+  });
 
   const parseCreatorTags = (content: string) => {
     const mentionRegex = /@(\w+)/g;
