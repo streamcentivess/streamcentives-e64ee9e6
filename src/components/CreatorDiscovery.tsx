@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Users, TrendingUp, MessageCircle, Filter, X } from "lucide-react";
+import { SponsorOfferModal } from "@/components/SponsorOfferModal";
 
 export function CreatorDiscovery() {
   const { user } = useAuth();
@@ -17,6 +18,8 @@ export function CreatorDiscovery() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCreators, setFilteredCreators] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [selectedCreator, setSelectedCreator] = useState(null);
   
   // Filter state
   const [filters, setFilters] = useState({
@@ -153,6 +156,7 @@ export function CreatorDiscovery() {
           bio,
           country_name,
           age,
+          offer_receiving_rate_cents,
           created_at
         `)
         .not('username', 'is', null)
@@ -196,10 +200,9 @@ export function CreatorDiscovery() {
     }
   };
 
-  const handleSendOffer = (creatorId: string) => {
-    // Navigate to offer creation or open modal
-    // This would integrate with the SponsorOffers component
-    console.log('Send offer to creator:', creatorId);
+  const handleSendOffer = (creator) => {
+    setSelectedCreator(creator);
+    setShowOfferModal(true);
   };
 
   if (loading) {
@@ -440,7 +443,7 @@ export function CreatorDiscovery() {
               {/* Action Button */}
               <Button 
                 className="w-full" 
-                onClick={() => handleSendOffer(creator.user_id)}
+                onClick={() => handleSendOffer(creator)}
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
                 Send Offer
@@ -464,6 +467,13 @@ export function CreatorDiscovery() {
           </CardContent>
         </Card>
       )}
+      
+      {/* Sponsor Offer Modal */}
+      <SponsorOfferModal
+        isOpen={showOfferModal}
+        onClose={() => setShowOfferModal(false)}
+        creator={selectedCreator}
+      />
     </div>
   );
 }
