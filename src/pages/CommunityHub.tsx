@@ -637,6 +637,7 @@ const CommunityHub = () => {
                                 ...postForm,
                                 tagged_people: [...postForm.tagged_people, username]
                               });
+                              console.log('User tagged:', username); // Debug log
                             }
                             setTaggedPeopleInput('');
                           }}

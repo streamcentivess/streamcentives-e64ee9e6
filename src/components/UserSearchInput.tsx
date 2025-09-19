@@ -78,9 +78,9 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
 
   const handleUserSelect = (user: User) => {
     onUserSelect(user);
+    onChange(''); // Clear the input
     setShowSuggestions(false);
     setUsers([]);
-    inputRef.current?.blur();
   };
 
   // Close suggestions when clicking outside
