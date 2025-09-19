@@ -226,11 +226,14 @@ const Website = () => {
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Link to="/creator-subscription">
-                <Button variant="outline" size="lg" className="text-lg px-8 hover:bg-sky-400 hover:text-white hover:border-sky-400">
-                  Creator Pro - $29.99/mo
-                </Button>
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <VideoModal>
+                  <Button variant="outline" size="lg" className="text-lg px-6 hover:bg-purple-500/20 hover:text-purple-300 hover:border-purple-400 group transition-all duration-300">
+                    <Play className="mr-2 w-5 h-5 group-hover:text-purple-300" />
+                    Watch Marketing Videos
+                  </Button>
+                </VideoModal>
+              </div>
             </div>
           </div>
         </div>
