@@ -186,7 +186,12 @@ const CommunityHub = () => {
   const handleCreatePost = async () => {
     if (!user) return;
     
-    if (!postForm.title || !postForm.content || !postForm.community_id) {
+    // Trim whitespace and check for empty values
+    const trimmedTitle = postForm.title.trim();
+    const trimmedContent = postForm.content.trim();
+    const selectedCommunity = postForm.community_id.trim();
+    
+    if (!trimmedTitle || !trimmedContent || !selectedCommunity) {
       toast({
         title: "Error",
         description: "Please fill in title, content, and select a community",
@@ -221,17 +226,17 @@ const CommunityHub = () => {
         }
       }
 
-      // Create the post
+      // Create the post using the trimmed values
       const { data, error } = await supabase
         .from('community_posts')
         .insert({
           author_id: user.id,
-          community_id: postForm.community_id,
-          title: postForm.title,
-          content: postForm.content,
+          community_id: selectedCommunity,
+          title: trimmedTitle,
+          content: trimmedContent,
           media_urls: mediaUrls.length > 0 ? mediaUrls : null,
           tagged_people: postForm.tagged_people.length > 0 ? postForm.tagged_people : null,
-          location: postForm.location || null,
+          location: postForm.location.trim() || null,
           is_pinned: postForm.is_pinned
         })
         .select()
