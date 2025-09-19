@@ -107,12 +107,12 @@ const CommunityHub = () => {
         .from('community_posts')
         .select(`
           *,
-          communities!community_id (
+          communities (
             id,
             name,
             genre
           ),
-          profiles!author_id (
+          profiles (
             username,
             display_name,
             avatar_url
