@@ -1021,8 +1021,8 @@ const CommunityHub = () => {
                         <Input id="ticket-price" type="number" placeholder="0.00" />
                       </div>
                     </div>
-                    <Button onClick={() => navigate('/events')} className="bg-gradient-primary hover:opacity-90">
-                      View All Events
+                    <Button onClick={() => navigate('/create-event')} className="bg-gradient-primary hover:opacity-90">
+                      Create Event
                     </Button>
                   </div>
                 </DialogContent>

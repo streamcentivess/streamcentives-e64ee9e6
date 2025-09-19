@@ -168,13 +168,21 @@ export default function Events() {
             <h1 className="text-3xl font-bold gradient-text">Fan Events</h1>
             <p className="text-muted-foreground">Discover and join events from your favorite creators</p>
           </div>
-          <Button 
-            onClick={() => navigate('/create-event')}
-            className="bg-gradient-primary hover:opacity-90 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Event
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => navigate('/community-hub')}
+              variant="outline"
+            >
+              View Community Hub
+            </Button>
+            <Button 
+              onClick={() => navigate('/create-event')}
+              className="bg-gradient-primary hover:opacity-90 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Event
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
