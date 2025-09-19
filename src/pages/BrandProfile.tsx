@@ -16,6 +16,7 @@ import { useProfileViewTracking } from '@/hooks/useProfileViewTracking';
 import { SponsorPosts } from '@/components/SponsorPosts';
 import { SmartLinkManager } from '@/components/SmartLinkManager';
 import { UserSearchAndManage } from '@/components/UserSearchAndManage';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SponsorProfile {
   id: string;
@@ -67,6 +68,7 @@ export default function BrandProfile() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sponsorId = searchParams.get('sponsor_id');
+  const isMobile = useIsMobile();
   
   const [profile, setProfile] = useState<SponsorProfile | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -392,72 +394,74 @@ export default function BrandProfile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header Section */}
-        <Card className="mb-6 overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/20">
-          <CardContent className="p-8">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
-                <Avatar className="h-24 w-24 border-4 border-primary/20">
+        <Card className="mb-4 sm:mb-6 overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/20">
+          <CardContent className="p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 sm:gap-6">
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-primary/20">
                 <AvatarImage src={profile.company_logo_url} alt={profile.company_name} />
-                <AvatarFallback className="text-2xl bg-primary/10">
+                <AvatarFallback className="text-lg sm:text-2xl bg-primary/10">
                   {profile.company_name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-bold text-foreground">{profile.company_name}</h1>
-                  <Badge variant="secondary" className="flex items-center gap-1">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">{profile.company_name}</h1>
+                  <Badge variant="secondary" className="flex items-center gap-1 w-fit">
                     {getIndustryIcon(profile.industry)}
-                    {profile.industry}
+                    <span className="text-xs sm:text-sm">{profile.industry}</span>
                   </Badge>
                 </div>
                 
-                <p className="text-lg text-muted-foreground max-w-2xl">
+                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl">
                   {profile.company_description}
                 </p>
                 
-                <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
                   {profile.location && (
                     <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {profile.location}
+                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="truncate max-w-[120px] sm:max-w-none">{profile.location}</span>
                     </div>
                   )}
                   {profile.website_url && (
                     <div className="flex items-center gap-1">
-                      <Globe className="h-4 w-4" />
+                      <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
                       <a 
                         href={profile.website_url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="hover:text-primary transition-colors"
+                        className="hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-none"
                       >
                         Website
                       </a>
                     </div>
                   )}
                   <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    Member since {new Date(profile.created_at).toLocaleDateString()}
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Member since {new Date(profile.created_at).toLocaleDateString()}</span>
+                    <span className="sm:hidden">Joined {new Date(profile.created_at).getFullYear()}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 text-sm">
-                  <span><strong>{followerCount}</strong> Followers</span>
+                <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 sm:gap-6 text-xs sm:text-sm">
+                  <span><strong>{followerCount}</strong> <span className="hidden sm:inline">Followers</span><span className="sm:hidden">Fans</span></span>
                   <span><strong>{followingCount}</strong> Following</span>
-                  <span><strong>{campaigns.length}</strong> Active Campaigns</span>
-                  <span><strong>{rewards.length}</strong> Rewards Available</span>
+                  <span><strong>{campaigns.length}</strong> <span className="hidden sm:inline">Active Campaigns</span><span className="sm:hidden">Campaigns</span></span>
+                  <span><strong>{rewards.length}</strong> Rewards</span>
                 </div>
               </div>
               
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2 sm:gap-3 w-full sm:w-auto">
                 {!isOwnProfile && user && (
                   <>
                     <Button 
                       onClick={handleFollow}
                       variant={isFollowing ? "outline" : "default"}
-                      className="min-w-[120px]"
+                      className="w-full sm:min-w-[120px]"
+                      size={isMobile ? "sm" : "default"}
                     >
                       <Users className="h-4 w-4 mr-2" />
                       {isFollowing ? 'Following' : 'Follow'}
@@ -465,6 +469,8 @@ export default function BrandProfile() {
                     <Button 
                       variant="outline"
                       onClick={() => navigate(`/inbox?sponsor_id=${profile.user_id}`)}
+                      className="w-full sm:w-auto"
+                      size={isMobile ? "sm" : "default"}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Message
@@ -475,6 +481,8 @@ export default function BrandProfile() {
                   <Button 
                     onClick={() => navigate('/sponsor-dashboard')}
                     variant="outline"
+                    className="w-full sm:w-auto"
+                    size={isMobile ? "sm" : "default"}
                   >
                     Dashboard
                   </Button>
@@ -491,49 +499,70 @@ export default function BrandProfile() {
         </Card>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-            <TabsTrigger value="rewards">Rewards</TabsTrigger>
-            <TabsTrigger value="smart-links">Smart Links</TabsTrigger>
-            <TabsTrigger value="supporters">Supporters</TabsTrigger>
-            <TabsTrigger value="haters">Haters</TabsTrigger>
-            <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+          <TabsList className={`w-full ${isMobile ? 'flex overflow-x-auto gap-1' : 'grid grid-cols-8'}`}>
+            <TabsTrigger value="overview" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px]' : ''}>
+              <span className="hidden sm:inline">Overview</span>
+              <span className="sm:hidden">Home</span>
+            </TabsTrigger>
+            <TabsTrigger value="posts" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[70px]' : ''}>Posts</TabsTrigger>
+            <TabsTrigger value="campaigns" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[90px]' : ''}>
+              <span className="hidden sm:inline">Campaigns</span>
+              <span className="sm:hidden">Camps</span>
+            </TabsTrigger>
+            <TabsTrigger value="rewards" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px]' : ''}>Rewards</TabsTrigger>
+            <TabsTrigger value="smart-links" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[80px]' : ''}>
+              <span className="hidden sm:inline">Smart Links</span>
+              <span className="sm:hidden">Links</span>
+            </TabsTrigger>
+            <TabsTrigger value="supporters" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[90px]' : ''}>
+              <span className="hidden sm:inline">Supporters</span>
+              <span className="sm:hidden">Fans</span>
+            </TabsTrigger>
+            <TabsTrigger value="haters" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[70px]' : ''}>
+              <span className="hidden sm:inline">Haters</span>
+              <span className="sm:hidden">Hate</span>
+            </TabsTrigger>
+            <TabsTrigger value="partnerships" className={isMobile ? 'whitespace-nowrap flex-shrink-0 min-w-[100px]' : ''}>
+              <span className="hidden sm:inline">Partnerships</span>
+              <span className="sm:hidden">Partners</span>
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Target className="h-4 w-4 sm:h-5 sm:w-5" />
                     Company Info
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {profile.budget_range_min && profile.budget_range_max && (
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Budget: ${profile.budget_range_min.toLocaleString()} - ${profile.budget_range_max.toLocaleString()}</span>
+                      <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                      <span className="text-xs sm:text-sm">
+                        <span className="hidden sm:inline">Budget: ${profile.budget_range_min.toLocaleString()} - ${profile.budget_range_max.toLocaleString()}</span>
+                        <span className="sm:hidden">${profile.budget_range_min.toLocaleString()}+</span>
+                      </span>
                     </div>
                   )}
                   {profile.target_audience && (
                     <div className="flex items-start gap-2">
-                      <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium">Target Audience</p>
-                        <p className="text-sm text-muted-foreground">{profile.target_audience}</p>
+                        <p className="text-xs sm:text-sm font-medium">Target Audience</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{profile.target_audience}</p>
                       </div>
                     </div>
                   )}
                   {profile.partnership_goals && (
                     <div className="flex items-start gap-2">
-                      <Award className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <Award className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium">Partnership Goals</p>
-                        <p className="text-sm text-muted-foreground">{typeof profile.partnership_goals === 'string' ? profile.partnership_goals : 'Various partnership opportunities'}</p>
+                        <p className="text-xs sm:text-sm font-medium">Partnership Goals</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{typeof profile.partnership_goals === 'string' ? profile.partnership_goals : 'Various partnership opportunities'}</p>
                       </div>
                     </div>
                   )}
@@ -542,31 +571,40 @@ export default function BrandProfile() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                     Activity Stats
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Active Campaigns</span>
-                    <span className="font-medium">{campaigns.length}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">
+                      <span className="hidden sm:inline">Active Campaigns</span>
+                      <span className="sm:hidden">Campaigns</span>
+                    </span>
+                    <span className="font-medium text-sm sm:text-base">{campaigns.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Rewards Available</span>
-                    <span className="font-medium">{rewards.length}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">
+                      <span className="hidden sm:inline">Rewards Available</span>
+                      <span className="sm:hidden">Rewards</span>
+                    </span>
+                    <span className="font-medium text-sm sm:text-base">{rewards.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total Followers</span>
-                    <span className="font-medium">{followerCount}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">
+                      <span className="hidden sm:inline">Total Followers</span>
+                      <span className="sm:hidden">Followers</span>
+                    </span>
+                    <span className="font-medium text-sm sm:text-base">{followerCount}</span>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Share2 className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
                     Social Activity
                   </CardTitle>
                 </CardHeader>
@@ -585,18 +623,21 @@ export default function BrandProfile() {
             <SponsorPosts />
           </TabsContent>
 
-          <TabsContent value="campaigns" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Active Campaigns</h2>
+          <TabsContent value="campaigns" className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+              <h2 className="text-xl sm:text-2xl font-bold">Active Campaigns</h2>
               {isOwnProfile && (
-                <Button onClick={() => navigate('/campaigns')}>
+                <Button 
+                  onClick={() => navigate('/campaigns')}
+                  size={isMobile ? "sm" : "default"}
+                >
                   Manage Campaigns
                 </Button>
               )}
             </div>
             
             {campaigns.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {campaigns.map((campaign) => (
                   <Card key={campaign.id} className="overflow-hidden">
                     <CardHeader>
