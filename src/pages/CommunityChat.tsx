@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
 import { ClickableMentions } from '@/components/ui/clickable-mentions';
+import { ContentModerationWrapper } from '@/components/ContentModerationWrapper';
 
 const CommunityChat = () => {
   const { communityId } = useParams<{ communityId: string }>();
@@ -613,7 +614,14 @@ const CommunityChat = () => {
               </div>
             ) : (
               posts.map((post) => (
-                <Card key={post.id} className="card-modern">
+                <ContentModerationWrapper
+                  key={post.id}
+                  contentId={post.id}
+                  contentType="community_post"
+                  userId={post.author_id}
+                  showReportButton={true}
+                >
+                  <Card className="card-modern">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
