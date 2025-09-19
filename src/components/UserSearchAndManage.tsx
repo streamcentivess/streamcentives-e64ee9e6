@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Search, Plus, X, UserPlus, UserMinus } from "lucide-react";
@@ -74,6 +74,23 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
     
     try {
       if (type === 'supporters') {
+        // Check if relationship already exists to avoid duplicate error
+        const { data: existingFollow } = await supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', targetUserId)
+          .eq('following_id', user.id)
+          .single();
+        
+        if (existingFollow) {
+          toast({
+            title: "Already Added",
+            description: "This user is already in your supporters",
+            variant: "default"
+          });
+          return;
+        }
+        
         // Add as a follower relationship
         const { error } = await supabase
           .from('follows')
@@ -159,6 +176,9 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add User to {type}</DialogTitle>
+              <DialogDescription>
+                Search for users to add to your {type} list
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="relative">

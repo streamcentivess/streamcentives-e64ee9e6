@@ -255,18 +255,12 @@ export default function BrandProfile() {
     if (!profile?.user_id) return;
 
     try {
-      // Get followers as supporters with proper mapping
+      // Get followers as supporters with explicit join instead of foreign key hint
       const { data: followersData } = await supabase
         .from('follows')
         .select(`
           follower_id,
-          created_at,
-          profiles!follows_follower_id_fkey (
-            user_id,
-            username,
-            display_name,
-            avatar_url
-          )
+          created_at
         `)
         .eq('following_id', profile.user_id)
         .order('created_at', { ascending: false })
@@ -274,12 +268,27 @@ export default function BrandProfile() {
 
       console.log('Raw followers data:', followersData);
 
+      if (!followersData || followersData.length === 0) {
+        setSupporters([]);
+        return;
+      }
+
+      // Get profile data for each follower
+      const followerIds = followersData.map(f => f.follower_id);
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', followerIds);
+
       // Map the data to match UserSearchAndManage expectations
-      const mappedSupporters = (followersData || []).map(item => ({
-        supporter_id: item.follower_id,
-        created_at: item.created_at,
-        profiles: item.profiles
-      }));
+      const mappedSupporters = (followersData || []).map(item => {
+        const profile = (profilesData || []).find(p => p.user_id === item.follower_id);
+        return {
+          supporter_id: item.follower_id,
+          created_at: item.created_at,
+          profiles: profile
+        };
+      });
 
       console.log('Mapped supporters:', mappedSupporters);
       setSupporters(mappedSupporters);
