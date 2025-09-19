@@ -88,6 +88,7 @@ export default function BrandProfile() {
       // If no sponsor_id provided, show current user's profile if they're a sponsor
       fetchOwnProfileData();
       fetchSupporters();
+      fetchBlockedUsers();
     }
   }, [sponsorId, user]);
 
@@ -135,8 +136,47 @@ export default function BrandProfile() {
   };
 
   const fetchBlockedUsers = async () => {
-    // For now, return empty array since blocking functionality needs to be implemented
-    setBlockedUsers([]);
+    if (!user?.id) return;
+    
+    try {
+      // Get blocked users (haters)
+      const { data: blocksData } = await supabase
+        .from('user_blocks')
+        .select(`
+          blocked_id,
+          created_at
+        `)
+        .eq('blocker_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (!blocksData || blocksData.length === 0) {
+        setBlockedUsers([]);
+        return;
+      }
+
+      // Get profile data for each blocked user
+      const blockedIds = blocksData.map(b => b.blocked_id);
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', blockedIds);
+
+      // Map the data to match UserSearchAndManage expectations
+      const mappedHaters = (blocksData || []).map(item => {
+        const profile = (profilesData || []).find(p => p.user_id === item.blocked_id);
+        return {
+          hater_id: item.blocked_id,
+          created_at: item.created_at,
+          profiles: profile
+        };
+      });
+
+      setBlockedUsers(mappedHaters);
+    } catch (error) {
+      console.error('Error fetching blocked users:', error);
+      setBlockedUsers([]);
+    }
   };
 
   const fetchOwnProfileData = async () => {

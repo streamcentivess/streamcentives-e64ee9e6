@@ -80,7 +80,7 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
           .select('id')
           .eq('follower_id', targetUserId)
           .eq('following_id', user.id)
-          .single();
+          .maybeSingle();
         
         if (existingFollow) {
           toast({
@@ -96,15 +96,29 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
           .from('follows')
           .insert({ follower_id: targetUserId, following_id: user.id });
         if (error) throw error;
-      } else {
-        // For haters, we'd need a separate blocking mechanism
-        // This would require a user_blocks table to be created
-        toast({
-          title: "Feature Coming Soon",
-          description: "User blocking functionality will be available soon",
-          variant: "default"
-        });
-        return;
+      } else if (type === 'haters') {
+        // Check if user is already blocked
+        const { data: existingBlock } = await supabase
+          .from('user_blocks')
+          .select('id')
+          .eq('blocker_id', user.id)
+          .eq('blocked_id', targetUserId)
+          .maybeSingle();
+        
+        if (existingBlock) {
+          toast({
+            title: "Already Blocked",
+            description: "This user is already blocked",
+            variant: "default"
+          });
+          return;
+        }
+        
+        // Add to blocked users
+        const { error } = await supabase
+          .from('user_blocks')
+          .insert({ blocker_id: user.id, blocked_id: targetUserId });
+        if (error) throw error;
       }
       
       toast({
@@ -137,13 +151,13 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
           .eq('follower_id', targetUserId)
           .eq('following_id', user.id);
         if (error) throw error;
-      } else {
-        toast({
-          title: "Feature Coming Soon", 
-          description: "User unblocking functionality will be available soon",
-          variant: "default"
-        });
-        return;
+      } else if (type === 'haters') {
+        const { error } = await supabase
+          .from('user_blocks')
+          .delete()
+          .eq('blocker_id', user.id)
+          .eq('blocked_id', targetUserId);
+        if (error) throw error;
       }
       
       toast({
