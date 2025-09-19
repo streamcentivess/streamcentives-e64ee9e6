@@ -170,11 +170,19 @@ const SignIn = () => {
             </div>
           </form>
 
-          <div className="text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
-            <Link to="/auth/signup" className="text-primary hover:underline font-medium">
-              Sign up
-            </Link>
+          <div className="text-center text-sm space-y-2">
+            <p>
+              <span className="text-muted-foreground">Don't have an account? </span>
+              <Link to="/auth/signup" className="text-primary hover:underline font-medium">
+                Sign up
+              </Link>
+            </p>
+            <p>
+              <span className="text-muted-foreground">Looking to sponsor creators? </span>
+              <Link to="/auth/sponsor-signup" className="text-primary hover:underline font-medium">
+                Sponsor signup
+              </Link>
+            </p>
           </div>
         </CardContent>
       </Card>

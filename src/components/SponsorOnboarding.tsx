@@ -39,7 +39,7 @@ export default function SponsorOnboarding() {
 
   const [formData, setFormData] = useState({
     // Step 1: Company Info
-    company_name: "",
+    company_name: sessionStorage.getItem('sponsor_company_name') || "",
     industry: "",
     website_url: "",
     company_logo_url: "",
@@ -134,6 +134,9 @@ export default function SponsorOnboarding() {
         title: "Welcome to StreamCentives!",
         description: "Your sponsor profile has been created successfully."
       });
+
+      // Clear the stored company name
+      sessionStorage.removeItem('sponsor_company_name');
 
       setShowWelcomeModal(true);
     } catch (error) {

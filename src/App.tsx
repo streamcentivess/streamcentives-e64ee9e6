@@ -26,6 +26,7 @@ const Inbox = lazy(() => import("./pages/Inbox"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SignIn = lazy(() => import("./pages/auth/SignIn"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
+const SponsorSignUp = lazy(() => import("./pages/auth/SponsorSignUp"));
 const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
 const EmailConfirmation = lazy(() => import("./pages/auth/EmailConfirmation"));
 const UniversalProfile = lazy(() => import("./pages/UniversalProfile"));
@@ -80,6 +81,7 @@ const App = () => {
                       <Route path="/website" element={<Website />} />
                       <Route path="/auth/signin" element={<SignIn />} />
                       <Route path="/auth/signup" element={<SignUp />} />
+                      <Route path="/auth/sponsor-signup" element={<SponsorSignUp />} />
                         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/youtube/callback" element={<YouTubeCallback />} />
         <Route path="/youtube-configurator" element={

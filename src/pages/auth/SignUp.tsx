@@ -161,11 +161,19 @@ const SignUp = () => {
             </Button>
           </form>
 
-          <div className="text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
-            <Link to="/auth/signin" className="text-primary hover:underline font-medium">
-              Sign in
-            </Link>
+          <div className="text-center text-sm space-y-2">
+            <p>
+              <span className="text-muted-foreground">Already have an account? </span>
+              <Link to="/auth/signin" className="text-primary hover:underline font-medium">
+                Sign in
+              </Link>
+            </p>
+            <p>
+              <span className="text-muted-foreground">Looking to sponsor creators? </span>
+              <Link to="/auth/sponsor-signup" className="text-primary hover:underline font-medium">
+                Sponsor signup
+              </Link>
+            </p>
           </div>
         </CardContent>
       </Card>
