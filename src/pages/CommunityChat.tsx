@@ -21,12 +21,14 @@ const CommunityChat = () => {
   
   const [community, setCommunity] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'posts'>('posts');
   const [loading, setLoading] = useState(false);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [newComments, setNewComments] = useState<Record<string, string>>({});
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Post form state
   const [postForm, setPostForm] = useState({
@@ -40,9 +42,18 @@ const CommunityChat = () => {
     if (communityId && user) {
       fetchCommunity();
       fetchPosts();
+      fetchMessages();
       setupRealtimeSubscriptions();
     }
   }, [communityId, user]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const fetchCommunity = async () => {
     if (!communityId) return;
@@ -63,6 +74,30 @@ const CommunityChat = () => {
         description: "Failed to load community",
         variant: "destructive"
       });
+    }
+  };
+
+  const fetchMessages = async () => {
+    if (!communityId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('community_messages')
+        .select(`
+          *,
+          profiles (
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('community_id', communityId)
+        .order('created_at', { ascending: true });
+      
+      if (error) throw error;
+      setMessages(data || []);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
     }
   };
 
@@ -119,9 +154,55 @@ const CommunityChat = () => {
       )
       .subscribe();
 
+    const messagesChannel = supabase
+      .channel(`community-messages-${communityId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'community_messages',
+          filter: `community_id=eq.${communityId}`
+        },
+        () => {
+          fetchMessages();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(postsChannel);
+      supabase.removeChannel(messagesChannel);
     };
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !user || !communityId) return;
+
+    try {
+      const { error } = await supabase
+        .from('community_messages')
+        .insert({
+          community_id: communityId,
+          user_id: user.id,
+          message: newMessage.trim()
+        });
+
+      if (error) throw error;
+
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const navigateToProfile = (username: string) => {
+    navigate(`/universal-profile?username=${username}`);
   };
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -456,22 +537,59 @@ const CommunityChat = () => {
               </CardHeader>
               <CardContent className="flex-1 flex flex-col p-0">
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  <div className="text-center text-muted-foreground py-8">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Real-time chat coming soon!</p>
-                    <p className="text-sm">Use posts to share photos and start discussions for now.</p>
-                  </div>
+                  {messages.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">
+                      <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No messages yet. Be the first to say something!</p>
+                    </div>
+                  ) : (
+                    messages.map((message) => (
+                      <div key={message.id} className="flex gap-3">
+                        <Avatar 
+                          className="h-8 w-8 cursor-pointer" 
+                          onClick={() => navigateToProfile(message.profiles?.username)}
+                        >
+                          <AvatarImage src={message.profiles?.avatar_url} />
+                          <AvatarFallback>
+                            {message.profiles?.display_name?.charAt(0) || message.profiles?.username?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 text-sm">
+                            <span 
+                              className="font-medium cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => navigateToProfile(message.profiles?.username)}
+                            >
+                              @{message.profiles?.username}
+                            </span>
+                            <span className="text-muted-foreground text-xs">
+                              {new Date(message.created_at).toLocaleTimeString()}
+                            </span>
+                          </div>
+                          <p className="text-sm mt-1">{message.message}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <div ref={messagesEndRef} />
                 </div>
                 
                 <div className="p-4 border-t">
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Real-time chat coming soon..."
+                      placeholder="Type a message..."
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      disabled
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSendMessage();
+                        }
+                      }}
                     />
-                    <Button disabled>
+                    <Button 
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim()}
+                    >
                       <Send className="h-4 w-4" />
                     </Button>
                   </div>
@@ -495,7 +613,10 @@ const CommunityChat = () => {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
+                        <Avatar 
+                          className="h-10 w-10 cursor-pointer" 
+                          onClick={() => navigateToProfile(post.profiles?.username)}
+                        >
                           <AvatarImage src={post.profiles?.avatar_url} />
                           <AvatarFallback>
                             {post.profiles?.display_name?.charAt(0) || post.profiles?.username?.charAt(0)}
@@ -504,7 +625,12 @@ const CommunityChat = () => {
                         <div>
                           <h4 className="font-semibold">{post.title}</h4>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>by @{post.profiles?.username}</span>
+                            <span 
+                              className="cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => navigateToProfile(post.profiles?.username)}
+                            >
+                              by @{post.profiles?.username}
+                            </span>
                             <span>•</span>
                             <span>{new Date(post.created_at).toLocaleDateString()}</span>
                           </div>
@@ -577,7 +703,10 @@ const CommunityChat = () => {
                         {/* Existing Comments */}
                         {post.post_comments?.map((comment: any) => (
                           <div key={comment.id} className="flex gap-3">
-                            <Avatar className="h-8 w-8">
+                            <Avatar 
+                              className="h-8 w-8 cursor-pointer" 
+                              onClick={() => navigateToProfile(comment.profiles?.username)}
+                            >
                               <AvatarImage src={comment.profiles?.avatar_url} />
                               <AvatarFallback>
                                 {comment.profiles?.display_name?.charAt(0) || comment.profiles?.username?.charAt(0)}
@@ -585,7 +714,12 @@ const CommunityChat = () => {
                             </Avatar>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 text-sm">
-                                <span className="font-medium">@{comment.profiles?.username}</span>
+                                <span 
+                                  className="font-medium cursor-pointer hover:text-primary transition-colors"
+                                  onClick={() => navigateToProfile(comment.profiles?.username)}
+                                >
+                                  @{comment.profiles?.username}
+                                </span>
                                 <span className="text-muted-foreground">
                                   {new Date(comment.created_at).toLocaleDateString()}
                                 </span>
