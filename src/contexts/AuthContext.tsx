@@ -10,7 +10,7 @@ interface AuthContextType {
   signInWithSpotify: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
-  signInWithApple: () => Promise<void>;
+  
   signInWithEmail: (email: string, password: string) => Promise<{ error: any }>;
   signUpWithEmail: (email: string, password: string) => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
@@ -217,33 +217,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signInWithApple = async () => {
-    try {
-      const redirectUrl = getRedirectUrl();
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: redirectUrl,
-        }
-      });
-
-      if (error) {
-        toast({
-          title: "Authentication Error",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Apple auth error:', error);
-      toast({
-        title: "Authentication Error",
-        description: "Failed to connect with Apple",
-        variant: "destructive"
-      });
-    }
-  };
 
   const signInWithEmail = async (emailOrUsername: string, password: string) => {
     try {
@@ -460,7 +433,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithSpotify,
     signInWithGoogle,
     signInWithFacebook,
-    signInWithApple,
+    
     signInWithEmail,
     signUpWithEmail,
     resetPassword,
