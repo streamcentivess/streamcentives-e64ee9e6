@@ -1266,6 +1266,51 @@ export type Database = {
         }
         Relationships: []
       }
+      communities: {
+        Row: {
+          avatar_url: string | null
+          banner_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          genre: string
+          id: string
+          is_public: boolean
+          member_count: number
+          name: string
+          rules: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          banner_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          genre: string
+          id?: string
+          is_public?: boolean
+          member_count?: number
+          name: string
+          rules?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          banner_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          genre?: string
+          id?: string
+          is_public?: boolean
+          member_count?: number
+          name?: string
+          rules?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_members: {
         Row: {
           community_id: string
