@@ -11,10 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones, Share, Handshake } from 'lucide-react';
+import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones, Share, Handshake, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { AICampaignBuilder } from '@/components/AICampaignBuilder';
 import { ContentAssistant } from '@/components/ContentAssistant';
 import { IntegrationsHub } from '@/components/IntegrationsHub';
 import { CreatorEarningsDashboard } from '@/components/CreatorEarningsDashboard';
@@ -33,7 +32,6 @@ const CreatorDashboard = () => {
   // State for merch store
   const [profile, setProfile] = useState<any>(null);
   const [showMerchDialog, setShowMerchDialog] = useState(false);
-  const [showAICampaignBuilder, setShowAICampaignBuilder] = useState(false);
   const [showContentAssistant, setShowContentAssistant] = useState(false);
   const [showAnalyticsDashboard, setShowAnalyticsDashboard] = useState(false);
   const [showEarningsTracker, setShowEarningsTracker] = useState(false);
@@ -631,7 +629,7 @@ const CreatorDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button 
-                  onClick={() => setShowAICampaignBuilder(true)} 
+                  onClick={() => navigate('/campaigns')} 
                   variant="outline" 
                   className="w-full justify-start"
                 >
@@ -639,12 +637,13 @@ const CreatorDashboard = () => {
                   AI Campaign Builder
                 </Button>
                 <Button 
-                  onClick={() => setShowContentAssistant(true)} 
+                  onClick={() => isProSubscriber ? setShowContentAssistant(true) : navigate('/creator-subscription')} 
                   variant="outline" 
                   className="w-full justify-start"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Content Assistant
+                  {!isProSubscriber && <Lock className="h-3 w-3 ml-auto" />}
                 </Button>
                 <Button 
                   onClick={() => navigate('/content-creator-studio')} 
@@ -684,16 +683,16 @@ const CreatorDashboard = () => {
               <CardContent className="space-y-3">
                 <Button 
                   className="w-full bg-gradient-primary text-white hover:shadow-glow transition-all" 
-                  onClick={() => setShowAICampaignBuilder(true)}
+                  onClick={() => navigate('/campaigns')}
                 >
                   🤖 AI Campaign Builder
                 </Button>
                 <Button 
                   className="w-full" 
                   variant="outline"
-                  onClick={() => setShowContentAssistant(true)}
+                  onClick={() => isProSubscriber ? setShowContentAssistant(true) : navigate('/creator-subscription')}
                 >
-                  ✨ Content Assistant
+                  ✨ Content Assistant {!isProSubscriber && "🔒"}
                 </Button>
                 <Button 
                   className="w-full" 
@@ -793,13 +792,8 @@ const CreatorDashboard = () => {
         </div>
       </div>
       
-      <AICampaignBuilder
-        isOpen={showAICampaignBuilder} 
-        onClose={() => setShowAICampaignBuilder(false)} 
-      />
-      
       {/* Content Assistant Modal */}
-      {showContentAssistant && (
+      {showContentAssistant && isProSubscriber && (
         <ContentAssistant 
           profile={profile}
           onClose={() => setShowContentAssistant(false)} 
