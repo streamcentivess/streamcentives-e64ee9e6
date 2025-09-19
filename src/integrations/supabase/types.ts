@@ -3057,6 +3057,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_views: {
+        Row: {
+          created_at: string | null
+          id: string
+          source: string | null
+          viewed_at: string | null
+          viewed_user_id: string
+          viewer_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          source?: string | null
+          viewed_at?: string | null
+          viewed_user_id: string
+          viewer_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          source?: string | null
+          viewed_at?: string | null
+          viewed_user_id?: string
+          viewer_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: string | null
@@ -5456,6 +5483,8 @@ export type Database = {
           country_name: string
           created_at: string
           display_name: string
+          merch_store_connected: boolean
+          spotify_connected: boolean
           user_id: string
           username: string
         }[]

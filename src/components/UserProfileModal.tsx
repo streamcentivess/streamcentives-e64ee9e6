@@ -390,7 +390,11 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
       <SponsorOfferModal
         isOpen={showOfferModal}
         onClose={() => setShowOfferModal(false)}
-        creator={profile}
+        creator={profile ? {
+          ...profile,
+          followerCount: followerCount,
+          engagementRate: 0 // Default value for modal compatibility
+        } : null}
       />
     </>
   );

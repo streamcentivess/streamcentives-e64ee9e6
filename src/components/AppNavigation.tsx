@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { EnhancedNotificationCenter } from '@/components/EnhancedNotificationCenter';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -122,6 +123,25 @@ const AppNavigation = () => {
                   </Button>
                 </Link>
               ))}
+            </div>
+
+            {/* Notifications and User Menu */}
+            <div className="flex items-center gap-2">
+              <EnhancedNotificationCenter />
+              
+              <Link to="/inbox" className="relative">
+                <Button variant="ghost" size="sm">
+                  <Mail className="h-4 w-4" />
+                  {unreadCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-[20px]"
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
             </div>
 
             {/* User Menu */}
