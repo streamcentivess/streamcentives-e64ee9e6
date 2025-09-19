@@ -37,6 +37,7 @@ const FanCampaigns = lazy(() => import("./pages/FanCampaigns"));
 const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
 const SponsorDashboard = lazy(() => import("./pages/SponsorDashboard"));
 const SponsorProfileView = lazy(() => import("./pages/SponsorProfileView"));
+const BrandProfile = lazy(() => import("./pages/BrandProfile"));
 const Campaigns = lazy(() => import("./pages/Campaigns"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Leaderboards = lazy(() => import("./pages/Leaderboards"));
@@ -143,11 +144,12 @@ const App = () => {
                            <SponsorDashboard />
                          </ProtectedRoute>
                        } />
-                       <Route path="/sponsor-profile" element={
-                         <ProtectedRoute>
-                           <SponsorProfileView />
-                         </ProtectedRoute>
-                       } />
+                        <Route path="/sponsor-profile" element={
+                          <ProtectedRoute>
+                            <SponsorProfileView />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/brand-profile" element={<BrandProfile />} />
                       <Route path="/campaigns" element={
                         <ProtectedRoute>
                           <Campaigns />

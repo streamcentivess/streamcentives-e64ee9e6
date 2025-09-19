@@ -61,10 +61,10 @@ export default function SponsorDashboard() {
             <p className="text-muted-foreground">Welcome back, {sponsorProfile.company_name}</p>
           </div>
           <div className="flex gap-3">
-            <Link to="/sponsor-profile">
+            <Link to="/brand-profile">
               <Button variant="outline">
                 <User className="h-4 w-4 mr-2" />
-                View Profile
+                View Brand Profile
               </Button>
             </Link>
             <Button>
