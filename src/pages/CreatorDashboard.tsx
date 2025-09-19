@@ -678,7 +678,7 @@ const CreatorDashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-gradient-primary"></div>
-                  AI Tools
+                  Advanced A.I Tools
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
