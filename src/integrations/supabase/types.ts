@@ -3529,6 +3529,7 @@ export type Database = {
           onboarding_completed: boolean | null
           profile_boost_score: number | null
           spotify_connected: boolean | null
+          stripe_connect_account_id: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_expires_at: string | null
@@ -3565,6 +3566,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           profile_boost_score?: number | null
           spotify_connected?: boolean | null
+          stripe_connect_account_id?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_expires_at?: string | null
@@ -3601,6 +3603,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           profile_boost_score?: number | null
           spotify_connected?: boolean | null
+          stripe_connect_account_id?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_expires_at?: string | null

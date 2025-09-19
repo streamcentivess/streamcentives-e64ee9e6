@@ -161,29 +161,21 @@ const ProfileSetup = () => {
   const handleWelcomeModalClose = () => {
     setShowWelcomeModal(false);
     
-    // Redirect based on role after closing welcome modal
-    switch (selectedRole) {
-      case 'fan':
-        console.log('Redirecting to fan dashboard');
-        navigate('/fan-dashboard');
-        break;
-      case 'creator':
-        console.log('Redirecting to creator dashboard');
-        navigate('/creator-dashboard');
-        break;
-      case 'sponsor':
-        console.log('Redirecting to sponsor dashboard');
-        navigate('/sponsor-dashboard');
-        break;
-      default:
-        console.log('Redirecting to universal profile');
-        navigate('/universal-profile');
-    }
-    
     toast({
       title: "Profile Created!",
       description: "Welcome to Streamcentives!",
     });
+    
+    // Offer financial onboarding for creators and sponsors
+    if (selectedRole === 'creator' || selectedRole === 'sponsor') {
+      navigate('/financial-onboarding');
+    } else if (selectedRole === 'fan') {
+      console.log('Redirecting to fan dashboard');
+      navigate('/fan-dashboard');
+    } else {
+      console.log('Redirecting to universal profile');
+      navigate('/universal-profile');
+    }
   };
 
   if (!selectedRole) {

@@ -42,7 +42,7 @@ export const StripeConnectOnboarding = ({ onComplete }: StripeConnectOnboardingP
         .from('profiles')
         .select('stripe_connect_account_id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (profile?.stripe_connect_account_id) {
         setStripeAccountId(profile.stripe_connect_account_id);

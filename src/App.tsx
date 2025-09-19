@@ -59,6 +59,7 @@ const MessageTemplates = lazy(() => import("./pages/MessageTemplates"));
 const SentimentAnalysis = lazy(() => import("./pages/SentimentAnalysis"));
 const SmartLinkPage = lazy(() => import("./pages/SmartLinkPage"));
 const SponsorOnboarding = lazy(() => import("./components/SponsorOnboarding"));
+const FinancialOnboardingPage = lazy(() => import("./pages/FinancialOnboardingPage"));
 import { NavigationIntegration } from "./components/NavigationIntegration";
 import { MobileNotificationProvider } from "./components/MobileNotificationProvider";
 
@@ -126,6 +127,11 @@ const App = () => {
                       <Route path="/billing-payments" element={
                         <ProtectedRoute>
                           <BillingPayments />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/financial-onboarding" element={
+                        <ProtectedRoute>
+                          <FinancialOnboardingPage />
                         </ProtectedRoute>
                       } />
                       <Route path="/fan-dashboard" element={
