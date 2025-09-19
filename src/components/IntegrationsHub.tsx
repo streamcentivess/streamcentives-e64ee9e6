@@ -325,7 +325,7 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
                 Smart Links
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Create branded links for your fans to complete actions and earn XP
+                Create branded links to complete actions and earn XP
               </p>
             </div>
             <Button
