@@ -59,16 +59,12 @@ export default function SponsorDashboard() {
             <p className="text-muted-foreground">Welcome back, {sponsorProfile.company_name}</p>
           </div>
           <div className="flex gap-3">
-            <Button 
-              onClick={() => {
-                const profileTab = document.querySelector('[value="profile"]') as HTMLButtonElement;
-                profileTab?.click();
-              }}
-              variant="outline"
-            >
-              <User className="h-4 w-4 mr-2" />
-              Edit Profile
-            </Button>
+            <Link to="/sponsor-profile">
+              <Button variant="outline">
+                <User className="h-4 w-4 mr-2" />
+                View Profile
+              </Button>
+            </Link>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               New Campaign
