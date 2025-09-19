@@ -45,6 +45,7 @@ const UniversalProfile = () => {
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileOwnerRole, setProfileOwnerRole] = useState<'fan' | 'creator' | 'sponsor' | null>(null);
   const [loading, setLoading] = useState(true);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -63,6 +64,7 @@ const UniversalProfile = () => {
   const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
   const [listType, setListType] = useState<'followers' | 'following'>('followers');
   const [userFollowStates, setUserFollowStates] = useState<Record<string, boolean>>({});
+  const [userRoles, setUserRoles] = useState<Record<string, 'fan' | 'creator' | 'sponsor'>>({});
   const [postCount, setPostCount] = useState(0);
   const [xpBalance, setXpBalance] = useState(0);
   const [supporters, setSupporters] = useState<Profile[]>([]);
@@ -181,7 +183,31 @@ const UniversalProfile = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.user_id, finalUserId, user?.id]);
+   }, [profile?.user_id, finalUserId, user?.id]);
+
+  const checkProfileOwnerRole = async () => {
+    if (!profile?.user_id) return;
+    
+    try {
+      // Check if profile owner is a sponsor
+      const { data: sponsorProfile } = await supabase
+        .from('sponsor_profiles')
+        .select('id')
+        .eq('user_id', profile.user_id)
+        .maybeSingle();
+
+      if (sponsorProfile) {
+        setProfileOwnerRole('sponsor');
+      } else if (profile.spotify_connected) {
+        setProfileOwnerRole('creator');
+      } else {
+        setProfileOwnerRole('fan');
+      }
+    } catch (error) {
+      console.error('Error checking profile owner role:', error);
+      setProfileOwnerRole('fan'); // Default fallback
+    }
+  };
 
   const fetchProfile = async () => {
     const targetUserId = finalUsername ? null : finalUserId || user?.id;
@@ -219,6 +245,10 @@ const UniversalProfile = () => {
         });
       } else {
         setProfile(data);
+        // Check profile owner role after setting profile
+        if (data) {
+          setTimeout(() => checkProfileOwnerRole(), 100);
+        }
         // If loaded by username, fetch follow stats now that we have user_id
         if (finalUsername) {
           fetchFollowStats();
@@ -517,6 +547,23 @@ const UniversalProfile = () => {
     } catch (error) {
       console.error('Error fetching joined campaigns:', error);
     }
+  };
+
+  // Check user roles for search results
+  const checkUserRoles = async (profiles: Profile[]) => {
+    const rolePromises = profiles.map(async (profile) => {
+      const role = await getUserRole(profile.user_id, profile.spotify_connected);
+      return { userId: profile.user_id, role };
+    });
+
+    const rolesData = await Promise.all(rolePromises);
+    const newUserRoles: Record<string, 'fan' | 'creator' | 'sponsor'> = {};
+    
+    rolesData.forEach(({ userId, role }) => {
+      newUserRoles[userId] = role;
+    });
+
+    setUserRoles(prev => ({ ...prev, ...newUserRoles }));
   };
 
   // Check supporter states for search results
@@ -946,6 +993,28 @@ const UniversalProfile = () => {
     }
   };
 
+  const getUserRole = async (userId: string, spotifyConnected: boolean = false): Promise<'fan' | 'creator' | 'sponsor'> => {
+    try {
+      // Check if user is a sponsor
+      const { data: sponsorProfile } = await supabase
+        .from('sponsor_profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (sponsorProfile) {
+        return 'sponsor';
+      } else if (spotifyConnected) {
+        return 'creator';
+      } else {
+        return 'fan';
+      }
+    } catch (error) {
+      console.error('Error checking user role:', error);
+      return 'fan'; // Default fallback
+    }
+  };
+
   const searchUsers = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -969,9 +1038,10 @@ const UniversalProfile = () => {
         });
       } else {
         setSearchResults((data || []) as unknown as Profile[]);
-        // Check supporter states for search results
+        // Check supporter states and roles for search results
         if (data && data.length > 0) {
           checkSupporterStates((data || []) as unknown as Profile[]);
+          checkUserRoles((data || []) as unknown as Profile[]);
         }
       }
     } catch (error) {
@@ -1663,10 +1733,15 @@ const UniversalProfile = () => {
                             Creator
                           </Badge>}
                         <Badge variant="secondary" className="text-xs">
-                          {currentUserRole === 'sponsor' ? (
+                          {userRoles[result.user_id] === 'sponsor' ? (
                             <>
                               <Building2 className="h-3 w-3 mr-1" />
                               Brand
+                            </>
+                          ) : userRoles[result.user_id] === 'creator' ? (
+                            <>
+                              <Music className="h-3 w-3 mr-1" />
+                              Creator
                             </>
                           ) : (
                             <>
