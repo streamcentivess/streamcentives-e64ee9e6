@@ -258,7 +258,7 @@ export default function SponsorProfileView() {
                 <div>
                   <h1 className="text-4xl font-bold mb-2">{profile.company_name}</h1>
                   {userProfile?.username && (
-                    <p className="text-white/80 text-lg mb-2">@{userProfile.username}</p>
+                    <p className="text-white/80 text-lg mb-2">streamcentives</p>
                   )}
                   <div className="flex flex-wrap items-center gap-4">
                     {profile.industry && (
