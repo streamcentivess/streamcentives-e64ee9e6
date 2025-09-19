@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, UserX, MessageCircle, Search, Share2, Mail, Heart, DollarSign, Link2 } from 'lucide-react';
+import { Camera, MapPin, Globe, Calendar, Star, Trophy, Gift, BarChart3, Users, Music, Settings, UserPlus, UserMinus, UserX, MessageCircle, Search, Share2, Mail, Heart, DollarSign, Link2, Building2 } from 'lucide-react';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { supabase } from '@/integrations/supabase/client';
 import { PostsGrid } from '@/components/PostsGrid';
@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
 import { SponsorContactOptions } from '@/components/SponsorContactOptions';
+import { useUserRole } from '@/hooks/useUserRole';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -39,6 +40,7 @@ const UniversalProfile = () => {
     user,
     signOut
   } = useAuth();
+  const { role: currentUserRole } = useUserRole();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isMobile = useIsMobile();
@@ -1661,8 +1663,17 @@ const UniversalProfile = () => {
                             Creator
                           </Badge>}
                         <Badge variant="secondary" className="text-xs">
-                          <Users className="h-3 w-3 mr-1" />
-                          Fan
+                          {currentUserRole === 'sponsor' ? (
+                            <>
+                              <Building2 className="h-3 w-3 mr-1" />
+                              Brand
+                            </>
+                          ) : (
+                            <>
+                              <Users className="h-3 w-3 mr-1" />
+                              Fan
+                            </>
+                          )}
                         </Badge>
                       </div>
                       
