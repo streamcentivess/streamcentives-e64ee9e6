@@ -9,6 +9,7 @@ import { Building2, Users, DollarSign, TrendingUp, Plus, MessageSquare, User } f
 import { SponsorProfile } from "@/components/SponsorProfile";
 import { SponsorOffers } from "@/components/SponsorOffers";
 import { CreatorDiscovery } from "@/components/CreatorDiscovery";
+import { SponsorCampaignManager } from "@/components/SponsorCampaignManager";
 import { Link } from "react-router-dom";
 
 export default function SponsorDashboard() {
@@ -73,8 +74,9 @@ export default function SponsorDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="creators">Discover Creators</TabsTrigger>
             <TabsTrigger value="offers">My Offers</TabsTrigger>
             <TabsTrigger value="profile">Edit Profile</TabsTrigger>
@@ -145,6 +147,10 @@ export default function SponsorDashboard() {
                 </Button>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="campaigns">
+            <SponsorCampaignManager />
           </TabsContent>
 
           <TabsContent value="creators">

@@ -17,6 +17,7 @@ import { useOptimizedRealtime } from '@/hooks/useOptimizedRealtime';
 import { useDebounced } from '@/hooks/useDebounced';
 import { SkeletonGrid, SkeletonCard } from '@/components/ui/skeleton-loader';
 import { CampaignCard } from '@/components/CampaignCard';
+import { CampaignCollaboratorSelector } from '@/components/CampaignCollaboratorSelector';
 
 interface Campaign {
   id: string;
@@ -39,6 +40,20 @@ interface Campaign {
   completed_count?: number;
   total_xp_distributed?: number;
   total_cash_distributed?: number;
+  collaboration_enabled?: boolean;
+  collaborator_count?: number;
+  user_role?: string;
+  is_creator?: boolean;
+  is_collaborator?: boolean;
+  permissions?: any;
+}
+
+interface Collaborator {
+  user_id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  role: 'creator' | 'sponsor' | 'collaborator';
 }
 
 interface Participant {
@@ -109,6 +124,10 @@ const Campaigns = () => {
   const [userPosts, setUserPosts] = useState<any[]>([]);
   const [selectedPostId, setSelectedPostId] = useState<string>('');
   const [loadingPosts, setLoadingPosts] = useState(false);
+  
+  // Collaboration states
+  const [selectedCollaborators, setSelectedCollaborators] = useState<Collaborator[]>([]);
+  const [collaborationEnabled, setCollaborationEnabled] = useState(false);
 
   // Fetch user's posts for share campaigns
   const fetchUserPosts = useCallback(async () => {
@@ -137,29 +156,54 @@ const Campaigns = () => {
     }
   }, [user?.id, toast]);
 
-  // Optimized campaign fetching with better performance
+  // Fetch campaigns including collaborative campaigns
   const fetchCampaigns = useCallback(async () => {
     if (!user?.id) return;
     
     try {
       setLoading(true);
       
-      // Fetch campaigns with basic query
-      const { data, error } = await supabase
+      // Get user's campaigns (created + collaborative)
+      const { data: userCampaigns, error: userError } = await supabase.rpc('get_user_campaigns', {
+        target_user_id: user.id
+      });
+
+      if (userError) throw userError;
+
+      if (!userCampaigns?.length) {
+        setCampaigns([]);
+        return;
+      }
+
+      const campaignIds = userCampaigns.map(uc => uc.campaign_id);
+
+      // Fetch full campaign data
+      const { data: campaignData, error: campaignError } = await supabase
         .from('campaigns')
         .select('*')
-        .eq('creator_id', user.id)
+        .in('id', campaignIds)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (campaignError) throw campaignError;
 
       // Fetch stats for each campaign in parallel
       const campaignsWithStats = await Promise.all(
-        (data || []).map(async (campaign) => {
+        (campaignData || []).map(async (campaign) => {
           const { data: stats } = await supabase.rpc('get_campaign_stats', {
             campaign_id_param: campaign.id
           });
-          return { ...campaign, ...stats?.[0] };
+
+          // Find user's role in this campaign
+          const userRole = userCampaigns.find(uc => uc.campaign_id === campaign.id);
+          
+          return { 
+            ...campaign, 
+            ...stats?.[0],
+            user_role: userRole?.role,
+            is_creator: userRole?.is_creator,
+            is_collaborator: userRole?.is_collaborator,
+            permissions: userRole?.permissions
+          };
         })
       );
 
@@ -324,6 +368,8 @@ const Campaigns = () => {
     setEditingCampaign(null);
     setShareContentSource('existing');
     setSelectedPostId('');
+    setSelectedCollaborators([]);
+    setCollaborationEnabled(false);
   };
 
   // File upload handlers
@@ -466,6 +512,7 @@ const Campaigns = () => {
         image_url: coverImageUrl || null,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : null,
         creator_id: user.id,
+        collaboration_enabled: collaborationEnabled,
       };
 
       let campaignResult;
@@ -486,6 +533,30 @@ const Campaigns = () => {
         
         if (error) throw error;
         campaignResult = { data };
+      }
+
+      // Add collaborators if any
+      if (selectedCollaborators.length > 0 && campaignResult.data) {
+        const collaboratorInserts = selectedCollaborators.map(collaborator => ({
+          campaign_id: campaignResult.data.id,
+          user_id: collaborator.user_id,
+          role: collaborator.role,
+          invited_by: user.id,
+          permissions: {
+            can_edit: true,
+            can_invite: false,
+            can_delete: false
+          }
+        }));
+
+        const { error: collabError } = await supabase
+          .from('campaign_collaborators')
+          .insert(collaboratorInserts);
+
+        if (collabError) {
+          console.error('Error adding collaborators:', collabError);
+          // Continue anyway as main campaign was created
+        }
       }
 
       if (contentUrl && campaignResult.data && formData.type !== 'share') {
@@ -1249,6 +1320,32 @@ const Campaigns = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Collaboration Section */}
+              <div className="col-span-2">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="collaboration-enabled"
+                      checked={collaborationEnabled}
+                      onChange={(e) => setCollaborationEnabled(e.target.checked)}
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <Label htmlFor="collaboration-enabled" className="text-sm font-medium">
+                      Enable Collaboration
+                    </Label>
+                  </div>
+                  
+                  {collaborationEnabled && (
+                    <CampaignCollaboratorSelector
+                      selectedCollaborators={selectedCollaborators}
+                      onCollaboratorsChange={setSelectedCollaborators}
+                      isEditMode={!!editingCampaign}
+                    />
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-4">

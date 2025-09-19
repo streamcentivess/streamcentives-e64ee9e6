@@ -695,6 +695,47 @@ export type Database = {
           },
         ]
       }
+      campaign_collaborators: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          invited_by: string | null
+          joined_at: string | null
+          permissions: Json | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          joined_at?: string | null
+          permissions?: Json | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          joined_at?: string | null
+          permissions?: Json | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_collaborators_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_interactions: {
         Row: {
           campaign_id: string
@@ -978,6 +1019,8 @@ export type Database = {
           boost_multiplier: number | null
           boost_score: number | null
           cash_reward: number | null
+          collaboration_enabled: boolean | null
+          collaborator_count: number | null
           created_at: string
           creator_id: string
           current_progress: number | null
@@ -1007,6 +1050,8 @@ export type Database = {
           boost_multiplier?: number | null
           boost_score?: number | null
           cash_reward?: number | null
+          collaboration_enabled?: boolean | null
+          collaborator_count?: number | null
           created_at?: string
           creator_id: string
           current_progress?: number | null
@@ -1036,6 +1081,8 @@ export type Database = {
           boost_multiplier?: number | null
           boost_score?: number | null
           cash_reward?: number | null
+          collaboration_enabled?: boolean | null
+          collaborator_count?: number | null
           created_at?: string
           creator_id?: string
           current_progress?: number | null
@@ -5404,6 +5451,16 @@ export type Database = {
           masked_key: string
           permissions: Json
           rate_limit: number
+        }[]
+      }
+      get_user_campaigns: {
+        Args: { target_user_id: string }
+        Returns: {
+          campaign_id: string
+          is_collaborator: boolean
+          is_creator: boolean
+          permissions: Json
+          role: string
         }[]
       }
       get_user_follow_stats_safe: {
