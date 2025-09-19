@@ -151,33 +151,57 @@ const Leaderboards = () => {
     try {
       setLoading(true);
       
-      // Fetch creator leaderboards with category data
-      const { data: leaderboardData, error } = await supabase
+      // Fetch creator leaderboards data
+      const { data: leaderboardData, error: leaderboardError } = await supabase
         .from('creator_fan_leaderboards')
-        .select(`
-          *,
-          creator:profiles!creator_user_id(user_id, username, display_name, avatar_url),
-          fan:profiles!fan_user_id(user_id, username, display_name, avatar_url)
-        `)
+        .select('*')
         .order('total_xp_earned', { ascending: false });
 
-      if (error) throw error;
+      if (leaderboardError) throw leaderboardError;
+
+      // Fetch all unique user IDs for profiles
+      const userIds = new Set<string>();
+      leaderboardData?.forEach(entry => {
+        userIds.add(entry.creator_user_id);
+        userIds.add(entry.fan_user_id);
+      });
+
+      // Fetch profiles for all users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', Array.from(userIds));
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of profiles for quick lookup
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.user_id, profile);
+      });
+
+      // Combine leaderboard data with profiles
+      const enrichedData = leaderboardData?.map(entry => ({
+        ...entry,
+        creator: profilesMap.get(entry.creator_user_id),
+        fan: profilesMap.get(entry.fan_user_id)
+      }));
 
       // Transform data into categories
       const creatorMap = new Map<string, CreatorLeaderboard>();
       
-      (leaderboardData || []).forEach((entry: any) => {
+      (enrichedData || []).forEach((entry: any) => {
         const creatorId = entry.creator_user_id;
         
         if (!creatorMap.has(creatorId)) {
           creatorMap.set(creatorId, {
             id: creatorId,
             creator: {
-              user_id: entry.creator.user_id,
-              name: entry.creator.display_name || entry.creator.username,
-              username: entry.creator.username,
-              avatar: entry.creator.avatar_url || '',
-              verified: true // You might want to add a verified field to profiles
+              user_id: entry.creator?.user_id || creatorId,
+              name: entry.creator?.display_name || entry.creator?.username || 'Unknown Creator',
+              username: entry.creator?.username || 'unknown',
+              avatar: entry.creator?.avatar_url || '',
+              verified: true
             },
             categories: {
               merchMonster: [],
@@ -195,10 +219,10 @@ const Leaderboards = () => {
           id: entry.fan_user_id,
           rank: 0, // Will be calculated after sorting
           user: {
-            user_id: entry.fan.user_id,
-            name: entry.fan.display_name || entry.fan.username,
-            username: entry.fan.username,
-            avatar: entry.fan.avatar_url || '',
+            user_id: entry.fan?.user_id || entry.fan_user_id,
+            name: entry.fan?.display_name || entry.fan?.username || 'Unknown Fan',
+            username: entry.fan?.username || 'unknown',
+            avatar: entry.fan?.avatar_url || '',
             verified: false
           },
           value: entry.total_xp_earned,
@@ -239,14 +263,14 @@ const Leaderboards = () => {
       setCreatorLeaderboards(creatorBoards);
       
       // Create global leaderboard from all fans
-      const allFans = leaderboardData?.map((entry: any, index: number) => ({
+      const allFans = enrichedData?.map((entry: any, index: number) => ({
         id: entry.fan_user_id,
         rank: index + 1,
         user: {
-          user_id: entry.fan.user_id,
-          name: entry.fan.display_name || entry.fan.username,
-          username: entry.fan.username,
-          avatar: entry.fan.avatar_url || '',
+          user_id: entry.fan?.user_id || entry.fan_user_id,
+          name: entry.fan?.display_name || entry.fan?.username || 'Unknown Fan',
+          username: entry.fan?.username || 'unknown',
+          avatar: entry.fan?.avatar_url || '',
           verified: false
         },
         value: entry.total_xp_earned,
