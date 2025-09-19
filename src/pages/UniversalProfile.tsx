@@ -2114,9 +2114,114 @@ const UniversalProfile = () => {
           <TabsContent value="rewards" className="mt-6">
             <Card className="card-modern">
               <CardContent className="p-6">
-                <div className="text-center mb-6">
-                  <Gift className="h-12 w-12 mx-auto mb-2 opacity-50 text-muted-foreground" />
-                  <p className="text-muted-foreground">No rewards yet. Earn XP to unlock amazing rewards!</p>
+                {/* Marketplace & History Section */}
+                <div className="space-y-6">
+                  {/* Marketplace Header */}
+                  <div className="text-center mb-6">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <Gift className="h-6 w-6 text-primary" />
+                      <h2 className="text-xl font-semibold">Marketplace & Rewards</h2>
+                    </div>
+                    <p className="text-muted-foreground">Browse available rewards and view your purchase history</p>
+                  </div>
+
+                  {/* Marketplace Tabs */}
+                  <Tabs defaultValue="marketplace" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="marketplace">Available Rewards</TabsTrigger>
+                      <TabsTrigger value="history">My Rewards</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="marketplace" className="mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Placeholder marketplace items */}
+                        <div className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                          <div className="aspect-square bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg mb-3 flex items-center justify-center">
+                            <Trophy className="h-8 w-8 text-primary" />
+                          </div>
+                          <h3 className="font-medium mb-1">Exclusive Badge</h3>
+                          <p className="text-sm text-muted-foreground mb-2">Show your supporter status</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">500 XP</span>
+                            <Button size="sm">Redeem</Button>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                          <div className="aspect-square bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg mb-3 flex items-center justify-center">
+                            <Star className="h-8 w-8 text-accent" />
+                          </div>
+                          <h3 className="font-medium mb-1">VIP Access</h3>
+                          <p className="text-sm text-muted-foreground mb-2">Early access to new content</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">1000 XP</span>
+                            <Button size="sm">Redeem</Button>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                          <div className="aspect-square bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-lg mb-3 flex items-center justify-center">
+                            <Heart className="h-8 w-8 text-secondary" />
+                          </div>
+                          <h3 className="font-medium mb-1">Special Shoutout</h3>
+                          <p className="text-sm text-muted-foreground mb-2">Personal message from creator</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">2000 XP</span>
+                            <Button size="sm">Redeem</Button>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="history" className="mt-6">
+                      <div className="space-y-4">
+                        {/* Redemption History */}
+                        <div className="border rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Trophy className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <h3 className="font-medium">Exclusive Badge</h3>
+                                <Badge variant="outline" className="text-xs">Redeemed</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">Redeemed on March 15, 2024</p>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">500 XP</span>
+                                <Button size="sm" variant="outline" className="text-xs">View Details</Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="border rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Star className="h-6 w-6 text-accent" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <h3 className="font-medium">VIP Access</h3>
+                                <Badge className="text-xs">Active</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">Activated on March 10, 2024</p>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded">1000 XP</span>
+                                <Button size="sm" variant="outline" className="text-xs">Manage</Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Empty state if no history */}
+                        <div className="text-center py-8 opacity-50">
+                          <Gift className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-muted-foreground">No more reward history</p>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
 
                 {/* Share & Earn Section */}
