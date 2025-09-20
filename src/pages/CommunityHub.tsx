@@ -26,6 +26,7 @@ const CommunityHub = () => {
   const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
   const [communities, setCommunities] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   
   // Community creation form state
@@ -75,6 +76,7 @@ const CommunityHub = () => {
     if (user) {
       fetchCommunities();
       fetchCommunityPosts();
+      fetchEvents();
     }
   }, [user]);
 
@@ -128,6 +130,44 @@ const CommunityHub = () => {
       toast({
         title: "Error",
         description: "Failed to fetch community posts",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchEvents = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('fan_events')
+        .select('*')
+        .eq('creator_id', user.id)
+        .order('event_date', { ascending: true });
+      
+      if (eventsError) throw eventsError;
+
+      // Get profiles for each event creator
+      const eventIds = eventsData?.map(event => event.creator_id) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', eventIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine events with profile data
+      const eventsWithProfiles = eventsData?.map(event => ({
+        ...event,
+        profiles: profilesData?.find(profile => profile.user_id === event.creator_id)
+      })) || [];
+
+      setEvents(eventsWithProfiles);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch events",
         variant: "destructive"
       });
     }
@@ -431,15 +471,34 @@ const CommunityHub = () => {
           fetchCommunities();
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'fan_events'
+        },
+        () => {
+          fetchEvents();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'fan_events'
+        },
+        () => {
+          fetchEvents();
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [user]);
-
-
-  const upcomingEvents: any[] = [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -977,46 +1036,53 @@ const CommunityHub = () => {
             </div>
 
             <div className="grid gap-4">
-              {upcomingEvents.map((event) => (
-                <Card key={event.id} className="card-modern">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
-                      {event.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{new Date(event.date + 'T' + event.time).toLocaleString()}</span>
-                        {event.type === 'in-person' && event.location && (
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {event.location}
-                          </div>
-                        )}
-                        <Badge variant="outline" className="text-xs">
-                          {event.type === 'virtual' ? 'Virtual' : 'In-Person'}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                          <span className="text-sm text-muted-foreground">
-                            {event.attendees}/{event.maxAttendees} attendees
-                          </span>
-                          {event.ticketPrice > 0 && (
-                            <Badge variant="secondary">${event.ticketPrice}</Badge>
+              {events.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No events yet. Create your first event to get started!</p>
+                </div>
+              ) : (
+                events.map((event) => (
+                  <Card key={event.id} className="card-modern">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5" />
+                        {event.event_name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>{new Date(event.event_date).toLocaleString()}</span>
+                          {!event.is_virtual && event.location_data && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {event.location_data.label || 'Location provided'}
+                            </div>
                           )}
+                          <Badge variant="outline" className="text-xs">
+                            {event.is_virtual ? 'Virtual' : 'In-Person'}
+                          </Badge>
                         </div>
-                         <div className="flex flex-col sm:flex-row gap-2">
-                           <Button variant="outline" size="sm" className="w-full sm:w-auto">View Details</Button>
-                           <Button variant="outline" size="sm" className="w-full sm:w-auto">Manage</Button>
-                         </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-4">
+                            <span className="text-sm text-muted-foreground">
+                              {event.current_attendees || 0}/{event.max_attendees || 'Unlimited'} attendees
+                            </span>
+                            {event.ticket_price_cents && event.ticket_price_cents > 0 && (
+                              <Badge variant="secondary">${(event.ticket_price_cents / 100).toFixed(2)}</Badge>
+                            )}
+                          </div>
+                           <div className="flex flex-col sm:flex-row gap-2">
+                            <Button variant="outline" size="sm" className="w-full sm:w-auto">View Details</Button>
+                            <Button variant="outline" size="sm" className="w-full sm:w-auto">Manage</Button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
