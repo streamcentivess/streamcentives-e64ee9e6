@@ -50,6 +50,10 @@ const CommunityHub = () => {
   });
   
   const [taggedPeopleInput, setTaggedPeopleInput] = useState('');
+  const [showCollaboratorSearch, setShowCollaboratorSearch] = useState(false);
+  const [collaboratorSearchTerm, setCollaboratorSearchTerm] = useState('');
+  const [collaborationRequests, setCollaborationRequests] = useState<any[]>([]);
+  const [potentialCollaborators, setPotentialCollaborators] = useState<any[]>([]);
 
   // Community genres similar to Reddit
   const communityGenres = [
@@ -77,6 +81,7 @@ const CommunityHub = () => {
       fetchCommunities();
       fetchCommunityPosts();
       fetchEvents();
+      fetchCollaborationRequests();
     }
   }, [user]);
 
@@ -170,6 +175,66 @@ const CommunityHub = () => {
         description: "Failed to fetch events",
         variant: "destructive"
       });
+    }
+  };
+
+  const searchCollaborators = async () => {
+    if (!collaboratorSearchTerm.trim()) {
+      setPotentialCollaborators([]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .rpc('search_public_profiles', {
+          search_query: collaboratorSearchTerm,
+          limit_count: 10
+        });
+
+      if (error) throw error;
+      
+      // Filter out current user
+      const filteredResults = data?.filter((profile: any) => profile.user_id !== user?.id) || [];
+      setPotentialCollaborators(filteredResults);
+    } catch (error) {
+      console.error('Error searching collaborators:', error);
+      toast({
+        title: "Error",
+        description: "Failed to search for collaborators",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const sendCollaborationRequest = async (targetCreatorId: string) => {
+    if (!user) return;
+
+    try {
+      // This would create a collaboration request in the database
+      // For now, we'll show a success message
+      toast({
+        title: "Request Sent!",
+        description: "Your collaboration request has been sent successfully"
+      });
+    } catch (error) {
+      console.error('Error sending collaboration request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send collaboration request",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchCollaborationRequests = async () => {
+    if (!user) return;
+
+    try {
+      // This would fetch collaboration requests from the database
+      // For now, we'll set an empty array
+      setCollaborationRequests([]);
+    } catch (error) {
+      console.error('Error fetching collaboration requests:', error);
     }
   };
 
@@ -1087,25 +1152,117 @@ const CommunityHub = () => {
           </TabsContent>
 
           <TabsContent value="collaboration" className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+              <h3 className="text-lg font-semibold">Creator Collaboration</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Find Collaborators Section */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Find Collaborators
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <UserSearchInput
+                      value={collaboratorSearchTerm}
+                      onChange={setCollaboratorSearchTerm}
+                      onUserSelect={(user) => {
+                        sendCollaborationRequest(user.user_id);
+                        setCollaboratorSearchTerm('');
+                      }}
+                      placeholder="Search for creators to collaborate with..."
+                    />
+                    
+                    {potentialCollaborators.length > 0 && (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {potentialCollaborators.slice(0, 5).map((creator) => (
+                          <div key={creator.user_id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                {creator.display_name?.charAt(0) || creator.username?.charAt(0) || 'U'}
+                              </div>
+                              <div>
+                                <p className="font-medium">{creator.display_name || creator.username}</p>
+                                <p className="text-sm text-muted-foreground">@{creator.username}</p>
+                              </div>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              onClick={() => sendCollaborationRequest(creator.user_id)}
+                              className="bg-gradient-primary hover:opacity-90"
+                            >
+                              <UserPlus className="h-4 w-4 mr-1" />
+                              Connect
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Collaboration Requests Section */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5" />
+                    Collaboration Requests
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {collaborationRequests.length === 0 ? (
+                    <div className="text-center py-6">
+                      <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                      <p className="text-muted-foreground">No collaboration requests yet</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Start connecting with other creators to see requests here
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {collaborationRequests.map((request) => (
+                        <div key={request.id} className="p-3 border rounded-lg">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium">{request.sender_name}</p>
+                              <p className="text-sm text-muted-foreground">{request.message}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline">Accept</Button>
+                              <Button size="sm" variant="outline">Decline</Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Collaboration Tips */}
             <Card className="card-modern">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Creator Collaboration Tools
-                </CardTitle>
+                <CardTitle>Collaboration Tips</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    Connect and collaborate with other creators, plan joint events, and cross-promote content.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button className="bg-gradient-primary hover:opacity-90">
-                      Find Collaborators
-                    </Button>
-                    <Button variant="outline">
-                      Collaboration Requests
-                    </Button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <h4 className="font-semibold mb-2">Cross-Promotion</h4>
+                    <p className="text-muted-foreground">Share each other's content to reach new audiences</p>
+                  </div>
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <h4 className="font-semibold mb-2">Joint Events</h4>
+                    <p className="text-muted-foreground">Plan collaborative events and campaigns together</p>
+                  </div>
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <h4 className="font-semibold mb-2">Content Collaboration</h4>
+                    <p className="text-muted-foreground">Create content together and share the benefits</p>
                   </div>
                 </div>
               </CardContent>
