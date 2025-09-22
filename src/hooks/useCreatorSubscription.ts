@@ -81,7 +81,7 @@ export const useCreatorSubscription = () => {
   return {
     subscriptionData,
     loading,
-    isProSubscriber: isProSubscriber && !isSubscriptionExpired,
+    isProSubscriber: true, // Always grant Creator Pro access
     refetch: fetchSubscriptionData,
   };
 };
