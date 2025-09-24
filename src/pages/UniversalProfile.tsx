@@ -26,6 +26,7 @@ import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SmartLinkManager } from '@/components/SmartLinkManager';
 import { SmartLinkButton } from '@/components/SmartLinkButton';
+import { CreatorTypeBadge } from '@/components/CreatorTypeBadge';
 interface Profile {
   id?: string;
   user_id: string;
@@ -36,6 +37,7 @@ interface Profile {
   spotify_connected?: boolean;
   created_at?: string;
   offer_receiving_rate_cents?: number;
+  creator_type?: string;
 }
 const UniversalProfile = () => {
   const {
@@ -2035,9 +2037,17 @@ const UniversalProfile = () => {
             {/* Profile Info */}
             <div className="space-y-3">
               <div>
-                <h2 className="text-lg font-bold">
-                  {profile.display_name || 'New User'}
-                </h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-lg font-bold">
+                    {profile.display_name || 'New User'}
+                  </h2>
+                  {profile.creator_type && (
+                    <CreatorTypeBadge 
+                      creatorType={profile.creator_type} 
+                      size="default"
+                    />
+                  )}
+                </div>
                 {profile.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}
               </div>
               
