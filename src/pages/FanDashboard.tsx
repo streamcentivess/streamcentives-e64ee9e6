@@ -425,10 +425,16 @@ const FanDashboard = () => {
                         <p className="text-sm text-muted-foreground mb-4">
                           Earn your first XP by streaming music, joining campaigns, and engaging with creators
                         </p>
-                        <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Browse Campaigns
-                        </Button>
+                        <div className="flex gap-2 flex-col sm:flex-row">
+                          <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Browse Campaigns
+                          </Button>
+                          <Button onClick={() => navigate('/streamseeker')} variant="outline" className="border-primary text-primary hover:bg-primary/10">
+                            <Music className="h-4 w-4 mr-2" />
+                            Discover Creators
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-2">

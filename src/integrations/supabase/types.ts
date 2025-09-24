@@ -4004,6 +4004,7 @@ export type Database = {
           country_code: string | null
           country_name: string | null
           created_at: string
+          creator_type: Database["public"]["Enums"]["creator_type"] | null
           display_name: string | null
           email: string | null
           id: string
@@ -4041,6 +4042,7 @@ export type Database = {
           country_code?: string | null
           country_name?: string | null
           created_at?: string
+          creator_type?: Database["public"]["Enums"]["creator_type"] | null
           display_name?: string | null
           email?: string | null
           id?: string
@@ -4078,6 +4080,7 @@ export type Database = {
           country_code?: string | null
           country_name?: string | null
           created_at?: string
+          creator_type?: Database["public"]["Enums"]["creator_type"] | null
           display_name?: string | null
           email?: string | null
           id?: string
@@ -7076,6 +7079,23 @@ export type Database = {
         | "shared_link"
         | "image"
         | "video"
+      creator_type:
+        | "musician"
+        | "podcaster"
+        | "video_creator"
+        | "comedian"
+        | "author"
+        | "artist"
+        | "dancer"
+        | "gamer"
+        | "fitness_trainer"
+        | "chef"
+        | "educator"
+        | "lifestyle_influencer"
+        | "tech_creator"
+        | "beauty_creator"
+        | "travel_creator"
+        | "other"
       moderation_action:
         | "approved"
         | "warning"
@@ -7248,6 +7268,24 @@ export const Constants = {
         "shared_link",
         "image",
         "video",
+      ],
+      creator_type: [
+        "musician",
+        "podcaster",
+        "video_creator",
+        "comedian",
+        "author",
+        "artist",
+        "dancer",
+        "gamer",
+        "fitness_trainer",
+        "chef",
+        "educator",
+        "lifestyle_influencer",
+        "tech_creator",
+        "beauty_creator",
+        "travel_creator",
+        "other",
       ],
       moderation_action: [
         "approved",

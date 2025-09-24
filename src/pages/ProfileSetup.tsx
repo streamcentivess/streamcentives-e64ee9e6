@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -24,7 +25,8 @@ const ProfileSetup = () => {
     age: '',
     bio: '',
     location: '',
-    interests: ''
+    interests: '',
+    creator_type: ''
   });
 
   useEffect(() => {
@@ -80,6 +82,7 @@ const ProfileSetup = () => {
             age: profileData.age,
             location: profileData.location,
             interests: selectedRole === 'sponsor' ? '' : profileData.interests, // Don't store company name in interests
+            creator_type: selectedRole === 'creator' && profileData.creator_type ? profileData.creator_type as any : null,
             onboarding_completed: true,
           },
           { onConflict: 'user_id' }
@@ -186,13 +189,53 @@ const ProfileSetup = () => {
     );
   }
 
+  const creatorTypes = [
+    { value: 'musician', label: 'Musician', icon: '🎵', description: 'Create and share music' },
+    { value: 'podcaster', label: 'Podcaster', icon: '🎙️', description: 'Host podcasts and conversations' },
+    { value: 'video_creator', label: 'Video Creator', icon: '🎥', description: 'Create video content' },
+    { value: 'comedian', label: 'Comedian', icon: '😄', description: 'Make people laugh' },
+    { value: 'author', label: 'Author', icon: '📚', description: 'Write books and stories' },
+    { value: 'artist', label: 'Visual Artist', icon: '🎨', description: 'Create visual art' },
+    { value: 'dancer', label: 'Dancer', icon: '💃', description: 'Dance and movement arts' },
+    { value: 'gamer', label: 'Gamer', icon: '🎮', description: 'Gaming and streaming' },
+    { value: 'fitness_trainer', label: 'Fitness Trainer', icon: '💪', description: 'Health and fitness content' },
+    { value: 'chef', label: 'Chef', icon: '👨‍🍳', description: 'Cooking and recipes' },
+    { value: 'educator', label: 'Educator', icon: '🎓', description: 'Educational content' },
+    { value: 'lifestyle_influencer', label: 'Lifestyle Influencer', icon: '✨', description: 'Lifestyle and inspiration' },
+    { value: 'tech_creator', label: 'Tech Creator', icon: '💻', description: 'Technology content' },
+    { value: 'beauty_creator', label: 'Beauty Creator', icon: '💄', description: 'Beauty and makeup' },
+    { value: 'travel_creator', label: 'Travel Creator', icon: '✈️', description: 'Travel and adventure' },
+    { value: 'other', label: 'Other', icon: '🌟', description: 'Other creative content' }
+  ];
+
   const getRoleSpecificFields = () => {
     switch (selectedRole) {
       case 'creator':
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="genre">Music Genre</Label>
+              <Label htmlFor="creator-type">What type of creator are you? *</Label>
+              <Select onValueChange={(value) => handleInputChange('creator_type', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your creator type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {creatorTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{type.icon}</span>
+                        <div>
+                          <div>{type.label}</div>
+                          <div className="text-xs text-muted-foreground">{type.description}</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="genre">Specialty/Genre</Label>
               <Input
                 id="genre"
                 placeholder="e.g., Hip-Hop, Pop, Rock"
@@ -324,7 +367,7 @@ const ProfileSetup = () => {
               type="submit" 
               className="w-full" 
               size="lg" 
-              disabled={loading || !profileData.username || !profileData.display_name || !profileData.age}
+              disabled={loading || !profileData.username || !profileData.display_name || !profileData.age || (selectedRole === 'creator' && !profileData.creator_type)}
             >
               {loading ? 'Creating Profile...' : 'Complete Setup'}
             </Button>

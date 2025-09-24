@@ -13,6 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import SettingsTab from '@/components/SettingsTab';
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 interface Profile {
   id: string;
@@ -21,6 +23,7 @@ interface Profile {
   display_name?: string;
   bio?: string;
   avatar_url?: string;
+  creator_type?: string;
   spotify_connected: boolean;
   created_at: string;
 }
@@ -43,7 +46,8 @@ const EditProfile = () => {
     display_name: '',
     username: '',
     bio: '',
-    email: ''
+    email: '',
+    creator_type: ''
   });
 
   useEffect(() => {
@@ -78,7 +82,8 @@ const EditProfile = () => {
           display_name: data.display_name || '',
           username: data.username || '',
           bio: data.bio || '',
-          email: user.email || ''
+          email: user.email || '',
+          creator_type: data.creator_type || ''
         });
       }
     } catch (error) {
@@ -107,7 +112,8 @@ const EditProfile = () => {
           display_name: formData.display_name,
           username: formData.username,
           bio: formData.bio,
-          email: formData.email
+          email: formData.email,
+          creator_type: formData.creator_type || null as any
         })
         .eq('user_id', user.id);
 
@@ -384,6 +390,39 @@ const EditProfile = () => {
                 This email will be used for account recovery and can be used to sign in
               </p>
             </div>
+
+            {/* Creator Type Selection */}
+            {formData.creator_type !== undefined && (
+              <div className="space-y-2">
+                <Label htmlFor="creator-type">Creator Type</Label>
+                <Select onValueChange={(value) => handleInputChange('creator_type', value)} value={formData.creator_type}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your creator type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="musician">🎵 Musician</SelectItem>
+                    <SelectItem value="podcaster">🎙️ Podcaster</SelectItem>
+                    <SelectItem value="video_creator">🎥 Video Creator</SelectItem>
+                    <SelectItem value="comedian">😄 Comedian</SelectItem>
+                    <SelectItem value="author">📚 Author</SelectItem>
+                    <SelectItem value="artist">🎨 Visual Artist</SelectItem>
+                    <SelectItem value="dancer">💃 Dancer</SelectItem>
+                    <SelectItem value="gamer">🎮 Gamer</SelectItem>
+                    <SelectItem value="fitness_trainer">💪 Fitness Trainer</SelectItem>
+                    <SelectItem value="chef">👨‍🍳 Chef</SelectItem>
+                    <SelectItem value="educator">🎓 Educator</SelectItem>
+                    <SelectItem value="lifestyle_influencer">✨ Lifestyle Influencer</SelectItem>
+                    <SelectItem value="tech_creator">💻 Tech Creator</SelectItem>
+                    <SelectItem value="beauty_creator">💄 Beauty Creator</SelectItem>
+                    <SelectItem value="travel_creator">✈️ Travel Creator</SelectItem>
+                    <SelectItem value="other">🌟 Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Your creator type helps fans discover you in Streamseeker
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -18,7 +18,11 @@ import {
   Users,
   Star,
   CheckCircle,
-  Settings
+  Settings,
+  Mic,
+  Video,
+  Target,
+  Palette
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -45,7 +49,7 @@ interface DailyQuest {
 const StreamseekerDashboard = () => {
   const { role } = useUserRole();
   const navigate = useNavigate();
-  const [selectedContentType, setSelectedContentType] = useState('music');
+  const [selectedContentType, setSelectedContentType] = useState('musician');
   const [currentArtist, setCurrentArtist] = useState<SuggestedArtist | null>(null);
   const [loading, setLoading] = useState(false);
   const [dailyQuest, setDailyQuest] = useState<DailyQuest>({ 
@@ -59,9 +63,69 @@ const StreamseekerDashboard = () => {
   const { toast } = useToast();
 
   const contentTypes = [
-    { id: 'music', label: 'Music', icon: Music, color: 'from-pink-500 to-rose-500' },
-    { id: 'gaming', label: 'Gaming', icon: Gamepad, color: 'from-purple-500 to-indigo-500' },
-    { id: 'sports', label: 'Sports', icon: Trophy, color: 'from-amber-500 to-orange-500' },
+    { 
+      id: 'musician', 
+      label: 'Musicians', 
+      icon: Music, 
+      gradient: 'from-pink-500 to-purple-600',
+      description: 'Discover amazing artists and tracks'
+    },
+    { 
+      id: 'podcaster', 
+      label: 'Podcasters', 
+      icon: Mic, 
+      gradient: 'from-blue-500 to-indigo-600',
+      description: 'Find interesting conversations and stories'
+    },
+    { 
+      id: 'video_creator', 
+      label: 'Video Creators', 
+      icon: Video, 
+      gradient: 'from-orange-500 to-red-600',
+      description: 'Watch creative video content'
+    },
+    { 
+      id: 'comedian', 
+      label: 'Comedians', 
+      icon: Sparkles, 
+      gradient: 'from-yellow-500 to-orange-600',
+      description: 'Laugh with amazing comedians'
+    },
+    { 
+      id: 'gamer', 
+      label: 'Gamers', 
+      icon: Target, 
+      gradient: 'from-green-500 to-blue-600',
+      description: 'Watch epic gaming content'
+    },
+    { 
+      id: 'fitness_trainer', 
+      label: 'Fitness', 
+      icon: TrendingUp, 
+      gradient: 'from-emerald-500 to-teal-600',
+      description: 'Get fit with amazing trainers'
+    },
+    { 
+      id: 'chef', 
+      label: 'Chefs', 
+      icon: Users, 
+      gradient: 'from-red-500 to-pink-600',
+      description: 'Cook with culinary masters'
+    },
+    { 
+      id: 'artist', 
+      label: 'Visual Artists', 
+      icon: Palette, 
+      gradient: 'from-purple-500 to-indigo-600',
+      description: 'Explore amazing visual art'
+    },
+    { 
+      id: 'other', 
+      label: 'Other Creators', 
+      icon: Star, 
+      gradient: 'from-gray-500 to-slate-600',
+      description: 'Discover unique content creators'
+    }
   ];
 
   const fetchDailyQuest = async () => {
@@ -409,7 +473,7 @@ const StreamseekerDashboard = () => {
                 onClick={() => setSelectedContentType(type.id)}
                 className={`relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${
                   isSelected
-                    ? `bg-gradient-to-r ${type.color} text-white shadow-2xl border-2 border-white/20`
+                    ? `bg-gradient-to-r ${type.gradient} text-white shadow-2xl border-2 border-white/20`
                     : "glass-card text-muted-foreground hover:text-foreground border-2 border-transparent"
                 }`}
               >
