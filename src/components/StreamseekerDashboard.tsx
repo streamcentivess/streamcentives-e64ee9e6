@@ -229,166 +229,196 @@ const StreamseekerDashboard = () => {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Daily Quest Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Daily Discovery Quest
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Progress: {dailyQuest.discoveries_completed}/3 discoveries
-              </p>
-              <p className="text-lg font-semibold">
-                {dailyQuest.total_xp_earned} XP earned today
-              </p>
-            </div>
-            <Badge variant={dailyQuest.quest_completed ? "default" : "secondary"}>
-              {dailyQuest.quest_completed ? "Quest Complete!" : "In Progress"}
-            </Badge>
-          </div>
-          <div className="w-full bg-muted rounded-full h-2 mt-2">
-            <div 
-              className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(dailyQuest.discoveries_completed / 3) * 100}%` }}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Content Type Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>What are you looking to discover?</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3 flex-wrap">
-            {contentTypes.map((type) => {
-              const Icon = type.icon;
-              return (
-                <Button
-                  key={type.id}
-                  variant={selectedContentType === type.id ? "default" : "outline"}
-                  onClick={() => setSelectedContentType(type.id)}
-                  className="flex items-center gap-2"
-                >
-                  <Icon className="h-4 w-4" />
-                  {type.label}
-                </Button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Shuffle Button */}
-      <div className="text-center">
-        <Button
-          onClick={shuffleNewArtist}
-          disabled={loading}
-          size="lg"
-          className="flex items-center gap-2"
-        >
-          <Shuffle className="h-5 w-5" />
-          {loading ? "Discovering..." : "Discover New Talent"}
-        </Button>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 p-8 text-center">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Streamseeker
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Discover amazing independent creators and earn rewards for your engagement
+          </p>
+          <p className="text-sm text-muted-foreground/80">
+            Try Streamseeker as your new way to discover incredible creators
+          </p>
+        </div>
       </div>
 
-      {/* Artist Discovery Card */}
-      {currentArtist && (
-        <Card>
-          <CardHeader>
-            <CardTitle>New Discovery</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-start gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={currentArtist.avatar_url} />
-                <AvatarFallback>
+      <div className="max-w-md mx-auto px-4 pb-8">
+        {/* Daily Quest Progress - Compact */}
+        <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-4 mb-6 border border-border/50">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium">Daily Quest</span>
+            <Badge variant={dailyQuest.quest_completed ? "default" : "secondary"} className="text-xs">
+              {dailyQuest.discoveries_completed}/3
+            </Badge>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <div className="w-full bg-muted/50 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${(dailyQuest.discoveries_completed / 3) * 100}%` }}
+                />
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-semibold">{dailyQuest.total_xp_earned}</div>
+              <div className="text-xs text-muted-foreground">XP</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Type Pills */}
+        <div className="flex gap-2 mb-6 justify-center">
+          {contentTypes.map((type) => {
+            const Icon = type.icon;
+            return (
+              <button
+                key={type.id}
+                onClick={() => setSelectedContentType(type.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  selectedContentType === type.id
+                    ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                    : "bg-card/80 text-muted-foreground hover:bg-card hover:scale-105 border border-border/50"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {type.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Main Streamseek Button */}
+        <div className="text-center mb-6">
+          <button
+            onClick={shuffleNewArtist}
+            disabled={loading}
+            className="group relative bg-gradient-to-r from-primary via-secondary to-accent text-primary-foreground px-8 py-4 rounded-full font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center gap-3">
+              <Shuffle className={`h-6 w-6 transition-transform duration-300 ${loading ? "animate-spin" : "group-hover:rotate-180"}`} />
+              {loading ? "Discovering..." : "Streamseek"}
+            </div>
+          </button>
+        </div>
+
+        {/* Artist Discovery Card - Instagram Story Style */}
+        {currentArtist && (
+          <div className="relative bg-gradient-to-b from-card/80 to-card/60 backdrop-blur-lg rounded-3xl overflow-hidden shadow-2xl border border-border/50">
+            {/* Artist Header */}
+            <div className="p-6 text-center">
+              <Avatar className="h-32 w-32 mx-auto mb-4 ring-4 ring-primary/20 shadow-xl">
+                <AvatarImage src={currentArtist.avatar_url} className="object-cover" />
+                <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-secondary text-primary-foreground">
                   {(currentArtist.display_name || currentArtist.username)?.[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold">
+              
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold">
                   {currentArtist.display_name || currentArtist.username}
                 </h3>
-                <p className="text-muted-foreground mb-2">@{currentArtist.username}</p>
-                <Badge variant="outline">{currentArtist.discovery_pool}</Badge>
-                <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
+                <p className="text-muted-foreground">@{currentArtist.username}</p>
+                
+                <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
                   <span>{currentArtist.follower_count} followers</span>
+                  <span>•</span>
                   <span>{currentArtist.content_count} tracks</span>
                 </div>
+                
+                <Badge variant="outline" className="mt-2">
+                  {currentArtist.discovery_pool}
+                </Badge>
               </div>
+
+              {currentArtist.bio && (
+                <p className="text-muted-foreground mt-4 max-w-xs mx-auto leading-relaxed">
+                  {currentArtist.bio}
+                </p>
+              )}
             </div>
 
-            {currentArtist.bio && (
-              <p className="text-muted-foreground">{currentArtist.bio}</p>
-            )}
-
-            {/* Mock Content Player */}
-            <div className="bg-muted rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={handleEngagement}
-                  size="sm"
-                  variant={hasEngaged ? "default" : "outline"}
-                  disabled={hasEngaged}
-                >
-                  <Play className="h-4 w-4" />
-                </Button>
-                <div className="flex-1">
-                  <div className="font-medium">Featured Track</div>
-                  <div className="text-sm text-muted-foreground">
-                    {hasEngaged ? "✓ Listened (30s)" : "Listen to earn 20 XP"}
+            {/* Content Player */}
+            <div className="px-6 pb-4">
+              <div className="bg-gradient-to-r from-muted/50 to-muted/30 rounded-2xl p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleEngagement}
+                    disabled={hasEngaged}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      hasEngaged 
+                        ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg" 
+                        : "bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:scale-110 shadow-lg"
+                    }`}
+                  >
+                    <Play className="h-5 w-5" />
+                  </button>
+                  <div className="flex-1">
+                    <div className="font-medium">Featured Track</div>
+                    <div className="text-sm text-muted-foreground">
+                      {hasEngaged ? "✓ Listened (30s) +20 XP" : "Listen for 30s to earn 20 XP"}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
-              <Button
-                onClick={handleFollow}
-                variant={hasFollowed ? "default" : "outline"}
-                disabled={hasFollowed}
-                className="flex items-center gap-2"
+            <div className="p-6 pt-0 space-y-3">
+              <div className="flex gap-3">
+                <button
+                  onClick={handleFollow}
+                  disabled={hasFollowed}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-medium transition-all duration-300 ${
+                    hasFollowed
+                      ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
+                      : "bg-gradient-to-r from-red-500 to-pink-500 text-white hover:scale-105 shadow-lg"
+                  }`}
+                >
+                  <Heart className={`h-5 w-5 ${hasFollowed ? "fill-current" : ""}`} />
+                  {hasFollowed ? "Following" : "Follow (+50 XP)"}
+                </button>
+                
+                <button className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-card/80 hover:bg-card border border-border/50 transition-all duration-300 hover:scale-105">
+                  <Share className="h-5 w-5" />
+                </button>
+              </div>
+
+              <button 
+                onClick={completeDiscovery}
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-accent to-secondary text-accent-foreground font-medium hover:scale-105 transition-all duration-300 shadow-lg"
               >
-                <Heart className={hasFollowed ? "h-4 w-4 fill-current" : "h-4 w-4"} />
-                {hasFollowed ? "Following" : "Follow (+50 XP)"}
-              </Button>
-              
-              <Button variant="outline" className="flex items-center gap-2">
-                <Share className="h-4 w-4" />
-                Share
-              </Button>
-
-              <Button onClick={completeDiscovery} className="ml-auto">
                 Complete Discovery
-              </Button>
+              </button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      {/* Getting Started */}
-      {!currentArtist && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <div className="space-y-4">
-              <div className="text-6xl">🎵</div>
-              <h3 className="text-xl font-semibold">Ready to discover new talent?</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Click "Discover New Talent" to find amazing independent artists and earn XP for engaging with their content!
+        {/* Getting Started - No Artist */}
+        {!currentArtist && (
+          <div className="text-center py-12 space-y-6">
+            <div className="relative">
+              <div className="text-8xl opacity-20 animate-pulse">🎵</div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-4xl animate-bounce">✨</div>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Ready for your next discovery?
+              </h3>
+              <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                Tap "Streamseek" above to find incredible independent creators and earn XP for engaging with their content!
               </p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -241,11 +241,20 @@ const StreamseekerArtistOnboarding = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
-      <Card>
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+          Join Streamseeker
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Complete your artist checklist to get discovered by fans
+        </p>
+      </div>
+
+      <Card className="border-2 border-primary/20 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Music className="h-6 w-6" />
-            Streamseeker Artist Onboarding
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Music className="h-6 w-6 text-primary" />
+            Artist Eligibility Checklist
           </CardTitle>
           <p className="text-muted-foreground">
             Complete these steps to be eligible for discovery by fans on Streamseeker

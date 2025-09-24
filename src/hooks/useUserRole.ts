@@ -31,8 +31,29 @@ export const useUserRole = () => {
           return;
         }
 
-        // For now, default to fan if not a sponsor
-        // Later we can add logic to detect creators
+        // Check if user is a creator by looking for creator-related data
+        const { data: creatorData } = await supabase
+          .from('campaigns')
+          .select('id')
+          .eq('creator_id', user.id)
+          .limit(1)
+          .maybeSingle();
+
+        const { data: streamseekerData } = await supabase
+          .from('streamseeker_checklist')
+          .select('id')
+          .eq('artist_id', user.id)
+          .limit(1)
+          .maybeSingle();
+
+        // If user has created campaigns or has streamseeker data, they're a creator
+        if (creatorData || streamseekerData) {
+          setRole('creator');
+          setLoading(false);
+          return;
+        }
+
+        // Default to fan
         setRole('fan');
       } catch (error) {
         console.error('Error checking user role:', error);
