@@ -316,8 +316,6 @@ const UniversalProfile = () => {
           variant: "destructive"
         });
       } else {
-        console.log('Fetched profile data:', data);
-        console.log('Creator type from profile:', data?.creator_type);
         setProfile(data);
         // Check profile owner role after setting profile
         if (data) {

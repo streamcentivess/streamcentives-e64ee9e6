@@ -106,16 +106,16 @@ const EditProfile = () => {
     setSaving(true);
     try {
       // Update profile data
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          display_name: formData.display_name,
-          username: formData.username,
-          bio: formData.bio,
-          email: formData.email,
-          creator_type: formData.creator_type || null as any
-        })
-        .eq('user_id', user.id);
+       const { error: profileError } = await supabase
+         .from('profiles')
+         .update({
+           display_name: formData.display_name,
+           username: formData.username,
+           bio: formData.bio,
+           email: formData.email,
+           creator_type: (formData.creator_type === '' ? null : formData.creator_type) as any
+         })
+         .eq('user_id', user.id);
 
       if (profileError) throw profileError;
 
@@ -392,37 +392,35 @@ const EditProfile = () => {
             </div>
 
             {/* Creator Type Selection */}
-            {formData.creator_type !== undefined && (
-              <div className="space-y-2">
-                <Label htmlFor="creator-type">Creator Type</Label>
-                <Select onValueChange={(value) => handleInputChange('creator_type', value)} value={formData.creator_type}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your creator type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="musician">🎵 Musician</SelectItem>
-                    <SelectItem value="podcaster">🎙️ Podcaster</SelectItem>
-                    <SelectItem value="video_creator">🎥 Video Creator</SelectItem>
-                    <SelectItem value="comedian">😄 Comedian</SelectItem>
-                    <SelectItem value="author">📚 Author</SelectItem>
-                    <SelectItem value="artist">🎨 Visual Artist</SelectItem>
-                    <SelectItem value="dancer">💃 Dancer</SelectItem>
-                    <SelectItem value="gamer">🎮 Gamer</SelectItem>
-                    <SelectItem value="fitness_trainer">💪 Fitness Trainer</SelectItem>
-                    <SelectItem value="chef">👨‍🍳 Chef</SelectItem>
-                    <SelectItem value="educator">🎓 Educator</SelectItem>
-                    <SelectItem value="lifestyle_influencer">✨ Lifestyle Influencer</SelectItem>
-                    <SelectItem value="tech_creator">💻 Tech Creator</SelectItem>
-                    <SelectItem value="beauty_creator">💄 Beauty Creator</SelectItem>
-                    <SelectItem value="travel_creator">✈️ Travel Creator</SelectItem>
-                    <SelectItem value="other">🌟 Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Your creator type helps fans discover you in Streamseeker
-                </p>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="creator-type">Creator Type</Label>
+              <Select onValueChange={(value) => handleInputChange('creator_type', value)} value={formData.creator_type}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your creator type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="musician">🎵 Musician</SelectItem>
+                  <SelectItem value="podcaster">🎙️ Podcaster</SelectItem>
+                  <SelectItem value="video_creator">🎥 Video Creator</SelectItem>
+                  <SelectItem value="comedian">😄 Comedian</SelectItem>
+                  <SelectItem value="author">📚 Author</SelectItem>
+                  <SelectItem value="artist">🎨 Visual Artist</SelectItem>
+                  <SelectItem value="dancer">💃 Dancer</SelectItem>
+                  <SelectItem value="gamer">🎮 Gamer</SelectItem>
+                  <SelectItem value="fitness_trainer">💪 Fitness Trainer</SelectItem>
+                  <SelectItem value="chef">👨‍🍳 Chef</SelectItem>
+                  <SelectItem value="educator">🎓 Educator</SelectItem>
+                  <SelectItem value="lifestyle_influencer">✨ Lifestyle Influencer</SelectItem>
+                  <SelectItem value="tech_creator">💻 Tech Creator</SelectItem>
+                  <SelectItem value="beauty_creator">💄 Beauty Creator</SelectItem>
+                  <SelectItem value="travel_creator">✈️ Travel Creator</SelectItem>
+                  <SelectItem value="other">🌟 Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Your creator type helps fans discover you in Streamseeker
+              </p>
+            </div>
           </CardContent>
         </Card>
 
