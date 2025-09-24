@@ -5324,6 +5324,165 @@ export type Database = {
         }
         Relationships: []
       }
+      streamseeker_artists: {
+        Row: {
+          approved_at: string | null
+          content_count: number | null
+          created_at: string
+          discovery_pool: string
+          eligibility_status: string
+          id: string
+          last_discovered_at: string | null
+          pro_registration_info: Json | null
+          profile_completion_score: number | null
+          social_links_count: number | null
+          total_discoveries: number | null
+          total_follows_from_discovery: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          content_count?: number | null
+          created_at?: string
+          discovery_pool?: string
+          eligibility_status?: string
+          id?: string
+          last_discovered_at?: string | null
+          pro_registration_info?: Json | null
+          profile_completion_score?: number | null
+          social_links_count?: number | null
+          total_discoveries?: number | null
+          total_follows_from_discovery?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          content_count?: number | null
+          created_at?: string
+          discovery_pool?: string
+          eligibility_status?: string
+          id?: string
+          last_discovered_at?: string | null
+          pro_registration_info?: Json | null
+          profile_completion_score?: number | null
+          social_links_count?: number | null
+          total_discoveries?: number | null
+          total_follows_from_discovery?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      streamseeker_checklist: {
+        Row: {
+          artist_id: string
+          checklist_score: number | null
+          content_uploaded: boolean | null
+          created_at: string
+          id: string
+          pro_registration: boolean | null
+          profile_complete: boolean | null
+          social_media_linked: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          checklist_score?: number | null
+          content_uploaded?: boolean | null
+          created_at?: string
+          id?: string
+          pro_registration?: boolean | null
+          profile_complete?: boolean | null
+          social_media_linked?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          checklist_score?: number | null
+          content_uploaded?: boolean | null
+          created_at?: string
+          id?: string
+          pro_registration?: boolean | null
+          profile_complete?: boolean | null
+          social_media_linked?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      streamseeker_daily_quests: {
+        Row: {
+          created_at: string
+          discoveries_completed: number | null
+          id: string
+          quest_completed: boolean | null
+          quest_date: string | null
+          total_xp_earned: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discoveries_completed?: number | null
+          id?: string
+          quest_completed?: boolean | null
+          quest_date?: string | null
+          total_xp_earned?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discoveries_completed?: number | null
+          id?: string
+          quest_completed?: boolean | null
+          quest_date?: string | null
+          total_xp_earned?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      streamseeker_discoveries: {
+        Row: {
+          artist_id: string
+          content_type: string
+          created_at: string
+          discovery_date: string | null
+          engagement_completed: boolean | null
+          engagement_duration_seconds: number | null
+          fan_id: string
+          followed: boolean | null
+          id: string
+          skipped: boolean | null
+          xp_earned: number | null
+        }
+        Insert: {
+          artist_id: string
+          content_type?: string
+          created_at?: string
+          discovery_date?: string | null
+          engagement_completed?: boolean | null
+          engagement_duration_seconds?: number | null
+          fan_id: string
+          followed?: boolean | null
+          id?: string
+          skipped?: boolean | null
+          xp_earned?: number | null
+        }
+        Update: {
+          artist_id?: string
+          content_type?: string
+          created_at?: string
+          discovery_date?: string | null
+          engagement_completed?: boolean | null
+          engagement_duration_seconds?: number | null
+          fan_id?: string
+          followed?: boolean | null
+          id?: string
+          skipped?: boolean | null
+          xp_earned?: number | null
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -6437,6 +6596,17 @@ export type Database = {
         Args: { campaign_id_param: string; interaction_data_param?: Json }
         Returns: Json
       }
+      complete_streamseeker_discovery: {
+        Args: {
+          artist_user_id: string
+          content_type_param?: string
+          engagement_completed_param?: boolean
+          engagement_duration_param?: number
+          fan_user_id: string
+          followed_param?: boolean
+        }
+        Returns: Json
+      }
       create_encrypted_api_key: {
         Args: {
           p_expires_at?: string
@@ -6611,6 +6781,23 @@ export type Database = {
           interaction_type: string
         }[]
       }
+      get_streamseeker_suggestions: {
+        Args: {
+          content_type_param?: string
+          exclude_discovered?: boolean
+          fan_user_id: string
+        }
+        Returns: {
+          artist_id: string
+          avatar_url: string
+          bio: string
+          content_count: number
+          discovery_pool: string
+          display_name: string
+          follower_count: number
+          username: string
+        }[]
+      }
       get_user_api_keys: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -6777,6 +6964,10 @@ export type Database = {
           xp_cost_param: number
         }
         Returns: string
+      }
+      update_artist_eligibility: {
+        Args: { artist_user_id: string }
+        Returns: Json
       }
       update_creator_subscription_status: {
         Args: {

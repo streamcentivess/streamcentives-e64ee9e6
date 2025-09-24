@@ -61,6 +61,7 @@ const ShoutoutGenerator = lazy(() => import("./pages/ShoutoutGenerator"));
 const MessageTemplates = lazy(() => import("./pages/MessageTemplates"));
 const SentimentAnalysis = lazy(() => import("./pages/SentimentAnalysis"));
 const SmartLinkPage = lazy(() => import("./pages/SmartLinkPage"));
+const StreamseekerPage = lazy(() => import("./pages/StreamseekerPage"));
 const SponsorOnboarding = lazy(() => import("./components/SponsorOnboarding"));
 const FinancialOnboardingPage = lazy(() => import("./pages/FinancialOnboardingPage"));
 import { NavigationIntegration } from "./components/NavigationIntegration";
@@ -232,6 +233,11 @@ const App = () => {
                       <Route path="/social-integrations" element={
                         <ProtectedRoute>
                           <SocialIntegrationsPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/streamseeker" element={
+                        <ProtectedRoute>
+                          <StreamseekerPage />
                         </ProtectedRoute>
                       } />
                       <Route path="/security" element={
