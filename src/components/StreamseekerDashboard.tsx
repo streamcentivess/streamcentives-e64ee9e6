@@ -16,10 +16,14 @@ import {
   Sparkles,
   TrendingUp,
   Users,
-  Star
+  Star,
+  CheckCircle,
+  Settings
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useNavigate } from 'react-router-dom';
 
 interface SuggestedArtist {
   artist_id: string;
@@ -39,6 +43,8 @@ interface DailyQuest {
 }
 
 const StreamseekerDashboard = () => {
+  const { role } = useUserRole();
+  const navigate = useNavigate();
   const [selectedContentType, setSelectedContentType] = useState('music');
   const [currentArtist, setCurrentArtist] = useState<SuggestedArtist | null>(null);
   const [loading, setLoading] = useState(false);
@@ -299,6 +305,36 @@ const StreamseekerDashboard = () => {
           </motion.div>
         </div>
       </motion.div>
+
+      {/* Creator Verification Banner */}
+      {role === 'creator' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-6xl mx-auto px-6 mb-8"
+        >
+          <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-3xl p-6 border border-primary/20 backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-primary/20 rounded-full">
+                  <CheckCircle className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">Get Verified as an Artist</h3>
+                  <p className="text-muted-foreground">Complete your verification checklist to be discovered by fans</p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => navigate('/streamseeker/admin')}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Manage Profile
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       <div className="max-w-md mx-auto px-6 pb-8 space-y-8">
         {/* Daily Quest Progress - TikTok Style */}

@@ -11,11 +11,7 @@ const StreamseekerPage = () => {
     <div className="min-h-screen bg-background">
       <AppNavigation />
       <main className="py-6">
-        {role === 'creator' ? (
-          <StreamseekerArtistOnboarding />
-        ) : (
-          <StreamseekerDashboard />
-        )}
+        <StreamseekerDashboard />
       </main>
     </div>
   );
