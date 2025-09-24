@@ -64,47 +64,106 @@ export default {
 				warning: 'hsl(var(--warning))',
 			},
 			fontFamily: {
-				'orbitron': ['Orbitron', 'sans-serif'],
-				'exo': ['Exo 2', 'sans-serif'],
+				'inter': ['Inter', 'system-ui', 'sans-serif'],
+				'mono': ['JetBrains Mono', 'Consolas', 'monospace'],
+				'display': ['Inter', 'system-ui', 'sans-serif'],
+			},
+			fontSize: {
+				'xs': ['0.75rem', { lineHeight: '1rem' }],
+				'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+				'base': ['1rem', { lineHeight: '1.5rem' }],
+				'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+				'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+				'2xl': ['1.5rem', { lineHeight: '2rem' }],
+				'3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+				'4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+				'5xl': ['3rem', { lineHeight: '1' }],
+				'6xl': ['3.75rem', { lineHeight: '1' }],
+			},
+			spacing: {
+				'xs': 'var(--space-xs)',
+				'sm': 'var(--space-sm)',
+				'md': 'var(--space-md)',
+				'lg': 'var(--space-lg)',
+				'xl': 'var(--space-xl)',
+				'2xl': 'var(--space-2xl)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			backdropBlur: {
+				'xs': '2px',
+				'sm': '4px',
+				'md': '8px',
+				'lg': '12px',
+				'xl': '16px',
+				'2xl': '24px',
+				'3xl': '40px',
+			},
+			boxShadow: {
+				'glow': 'var(--shadow-glow)',
+				'neon': 'var(--shadow-neon)',
+				'colored': 'var(--shadow-colored)',
+				'elegant': 'var(--shadow-lg)',
+			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0', opacity: '0' },
+					to: { height: 'var(--radix-accordion-content-height)', opacity: '1' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)', opacity: '1' },
+					to: { height: '0', opacity: '0' }
 				},
-				'fly': {
-					'0%': {
-						transform: 'translateX(-200px) translateY(0px) rotate(0deg)'
-					},
-					'50%': {
-						transform: 'translateX(0px) translateY(0px) rotate(0deg)'
-					},
-					'100%': {
-						transform: 'translateX(200px) translateY(0px) rotate(0deg)'
-					}
+				'slide-up-fade': {
+					'0%': { opacity: '0', transform: 'translateY(40px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' }
+				},
+				'slide-down-fade': {
+					'0%': { opacity: '0', transform: 'translateY(-20px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' }
+				},
+				'slide-in-right': {
+					'0%': { opacity: '0', transform: 'translateX(30px)' },
+					'100%': { opacity: '1', transform: 'translateX(0)' }
+				},
+				'scale-bounce': {
+					'0%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(1.05)' },
+					'100%': { transform: 'scale(1)' }
+				},
+				'bounce-in': {
+					'0%': { opacity: '0', transform: 'scale(0.3)' },
+					'50%': { opacity: '1', transform: 'scale(1.05)' },
+					'70%': { transform: 'scale(0.9)' },
+					'100%': { opacity: '1', transform: 'scale(1)' }
+				},
+				'gradient-shift': {
+					'0%, 100%': { backgroundPosition: '0% 50%' },
+					'50%': { backgroundPosition: '100% 50%' }
+				},
+				'pulse-glow': {
+					'0%, 100%': { boxShadow: 'var(--shadow-glow)' },
+					'50%': { boxShadow: 'var(--shadow-neon)' }
+				},
+				'shimmer': {
+					'0%': { transform: 'translateX(-100%)' },
+					'100%': { transform: 'translateX(100%)' }
 				}
 			},
 			animation: {
-				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fly': 'fly 3s ease-in-out infinite'
+				'accordion-down': 'accordion-down 0.3s ease-out',
+				'accordion-up': 'accordion-up 0.3s ease-out',
+				'slide-up': 'slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+				'slide-down': 'slide-down-fade 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+				'slide-right': 'slide-in-right 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+				'bounce-in': 'bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+				'scale-bounce': 'scale-bounce 2s ease-in-out infinite',
+				'gradient': 'gradient-shift 3s ease-in-out infinite',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'shimmer': 'shimmer 2s ease-in-out infinite',
 			}
 		}
 	},
