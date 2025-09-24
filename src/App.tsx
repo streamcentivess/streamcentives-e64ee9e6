@@ -62,6 +62,7 @@ const MessageTemplates = lazy(() => import("./pages/MessageTemplates"));
 const SentimentAnalysis = lazy(() => import("./pages/SentimentAnalysis"));
 const SmartLinkPage = lazy(() => import("./pages/SmartLinkPage"));
 const StreamseekerPage = lazy(() => import("./pages/StreamseekerPage"));
+const StreamseekerAdminPage = lazy(() => import("./pages/StreamseekerAdminPage"));
 const SponsorOnboarding = lazy(() => import("./components/SponsorOnboarding"));
 const FinancialOnboardingPage = lazy(() => import("./pages/FinancialOnboardingPage"));
 import { NavigationIntegration } from "./components/NavigationIntegration";
@@ -238,6 +239,11 @@ const App = () => {
                       <Route path="/streamseeker" element={
                         <ProtectedRoute>
                           <StreamseekerPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/streamseeker/admin" element={
+                        <ProtectedRoute>
+                          <StreamseekerAdminPage />
                         </ProtectedRoute>
                       } />
                       <Route path="/security" element={

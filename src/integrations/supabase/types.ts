@@ -5324,6 +5324,42 @@ export type Database = {
         }
         Relationships: []
       }
+      streamseeker_admin_actions: {
+        Row: {
+          action_type: string
+          admin_id: string
+          admin_notes: string | null
+          artist_id: string
+          created_at: string
+          id: string
+          new_status: string | null
+          previous_status: string | null
+          rejection_reason: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          admin_notes?: string | null
+          artist_id: string
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          previous_status?: string | null
+          rejection_reason?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          admin_notes?: string | null
+          artist_id?: string
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          previous_status?: string | null
+          rejection_reason?: string | null
+        }
+        Relationships: []
+      }
       streamseeker_artists: {
         Row: {
           approved_at: string | null
@@ -6022,6 +6058,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_sessions: {
         Row: {
           created_at: string | null
@@ -6576,6 +6633,15 @@ export type Database = {
       }
     }
     Functions: {
+      admin_review_streamseeker_artist: {
+        Args: {
+          action_type_param: string
+          admin_notes_param?: string
+          artist_user_id: string
+          rejection_reason_param?: string
+        }
+        Returns: Json
+      }
       anonymize_user_data: {
         Args: { target_user_id: string }
         Returns: undefined
@@ -6885,6 +6951,13 @@ export type Database = {
         }
         Returns: Json
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       increment_template_usage: {
         Args: { template_id: string }
         Returns: undefined
@@ -6993,6 +7066,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "creator" | "fan" | "sponsor"
       content_type:
         | "community_post"
         | "community_message"
@@ -7164,6 +7238,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "creator", "fan", "sponsor"],
       content_type: [
         "community_post",
         "community_message",
