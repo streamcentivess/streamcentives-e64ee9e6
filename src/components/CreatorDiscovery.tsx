@@ -118,13 +118,18 @@ export function CreatorDiscovery() {
 
   const getCreatorTypes = (creator) => {
     const types = [];
-    if (creator.followerCount > 100000) types.push("Influencer");
+    
+    // Use the actual creator_type field if available
+    if (creator.creator_type) {
+      types.push(creator.creator_type);
+    }
+    
+    // Add additional contextual tags based on stats
+    if (creator.followerCount > 100000) types.push("Large Following");
     if (creator.campaignCount > 5) types.push("Active Creator");
     if (creator.engagementRate > 12) types.push("High Engagement");
     if (creator.followerCount < 10000) types.push("Micro Creator");
-    if (creator.bio?.toLowerCase().includes('music')) types.push("Music");
-    if (creator.bio?.toLowerCase().includes('gaming')) types.push("Gaming");
-    if (creator.bio?.toLowerCase().includes('lifestyle')) types.push("Lifestyle");
+    
     return types.length > 0 ? types : ["Creator"];
   };
 
@@ -159,6 +164,7 @@ export function CreatorDiscovery() {
           bio,
           country_name,
           age,
+          creator_type,
           offer_receiving_rate_cents,
           created_at
         `)
@@ -273,7 +279,7 @@ export function CreatorDiscovery() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Creator Type</label>
               <div className="space-y-2">
-                {["Influencer", "Micro Creator", "Active Creator", "High Engagement", "Music", "Gaming", "Lifestyle"].map((type) => (
+                {["musician", "podcaster", "streamer", "youtuber", "tiktoker", "instagrammer", "photographer", "artist", "comedian", "fitness_trainer", "chef", "fashion_designer", "dancer", "gamer", "educator", "other"].map((type) => (
                   <div key={type} className="flex items-center space-x-2">
                     <Checkbox
                       id={type}
@@ -293,7 +299,7 @@ export function CreatorDiscovery() {
                       }}
                     />
                     <label htmlFor={type} className="text-sm cursor-pointer">
-                      {type}
+                      {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </label>
                   </div>
                 ))}
