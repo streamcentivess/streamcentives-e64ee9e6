@@ -562,7 +562,7 @@ const EditProfile = () => {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-gradient-primary hover:opacity-90 h-12 text-lg"
+          className="w-full btn-primary h-12 text-lg"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </Button>
