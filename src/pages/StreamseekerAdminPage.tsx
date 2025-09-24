@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAdminRole } from '@/hooks/useAdminRole';
+import { useUserRole } from '@/hooks/useUserRole';
 import StreamseekerAdminPanel from '@/components/StreamseekerAdminPanel';
 import AppNavigation from '@/components/AppNavigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Shield, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const StreamseekerAdminPage = () => {
-  const { isAdmin, loading } = useAdminRole();
+  const { isAdmin, loading: adminLoading } = useAdminRole();
+  const { role, loading: roleLoading } = useUserRole();
+  const navigate = useNavigate();
 
-  if (loading) {
+  // Redirect creators to the main streamseeker page
+  useEffect(() => {
+    if (!adminLoading && !roleLoading && !isAdmin && role === 'creator') {
+      navigate('/streamseeker');
+    }
+  }, [isAdmin, role, adminLoading, roleLoading, navigate]);
+
+  if (adminLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background">
         <AppNavigation />
