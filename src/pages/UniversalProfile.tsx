@@ -1705,7 +1705,7 @@ const UniversalProfile = () => {
               </Button>}
             <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-gradient-primary hover:opacity-90 px-2 text-xs">
+                <Button size="sm" className="btn-primary px-2 text-xs">
                   <span className="hidden sm:inline">Switch Dashboard</span>
                   <span className="sm:hidden">Switch</span>
                 </Button>
@@ -2109,11 +2109,11 @@ const UniversalProfile = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2">
-                {isOwnProfile ? <Button onClick={() => navigate('/profile/edit')} className="flex-1 bg-gradient-primary hover:opacity-90">
+                {isOwnProfile ? <Button onClick={() => navigate('/profile/edit')} className="flex-1 btn-primary">
                     <Settings className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button> : <>
-                    <Button onClick={handleFollowToggle} disabled={followLoading} variant={following ? "outline" : "default"} className={`flex-1 ${following ? "" : "bg-gradient-primary hover:opacity-90"}`}>
+                    <Button onClick={handleFollowToggle} disabled={followLoading} variant={following ? "outline" : "default"} className={`flex-1 ${following ? "" : "btn-primary"}`}>
                       {following ? <>
                           <UserMinus className="h-4 w-4 mr-2" />
                           Unfollow

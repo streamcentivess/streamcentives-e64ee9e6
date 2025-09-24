@@ -153,18 +153,15 @@ export default {
 					'100%': { transform: 'translateX(100%)' }
 				}
 			},
-			animation: {
-				'accordion-down': 'accordion-down 0.3s ease-out',
-				'accordion-up': 'accordion-up 0.3s ease-out',
-				'slide-up': 'slide-up-fade 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-				'slide-down': 'slide-down-fade 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-				'slide-right': 'slide-in-right 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-				'bounce-in': 'bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-				'scale-bounce': 'scale-bounce 2s ease-in-out infinite',
-				'gradient': 'gradient-shift 3s ease-in-out infinite',
-				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-				'shimmer': 'shimmer 2s ease-in-out infinite',
-			}
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-secondary': 'var(--gradient-secondary)',
+				'gradient-accent': 'var(--gradient-accent)',
+				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-surface': 'var(--gradient-surface)',
+				'gradient-glass': 'var(--gradient-glass)',
+				'gradient-hero': 'var(--gradient-hero)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
