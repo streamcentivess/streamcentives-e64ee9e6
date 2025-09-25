@@ -8,10 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Eye, ShoppingCart, Tag, Filter, Search, Star, TrendingUp } from 'lucide-react';
+import { Heart, Eye, ShoppingCart, Tag, Filter, Search, Star, TrendingUp, Sparkles, Flame, Zap } from 'lucide-react';
 import { useMobileCapabilities } from '@/hooks/useMobileCapabilities';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MobileContainer, MobileCard } from '@/components/ui/mobile-container';
 
 interface MarketplaceItem {
   id: string;
@@ -111,12 +113,78 @@ const EnhancedMarketplaceV3 = () => {
   };
 
   return (
-    <div className={`${isMobile ? 'space-y-4 pb-20 px-2' : 'space-y-6'}`}>
-      {/* Header */}
-      <div>
-        <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-2`}>Enhanced Marketplace</h1>
-        <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Discover exclusive items from your favorite creators</p>
-      </div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={`${isMobile ? 'space-y-4 pb-20 px-2' : 'space-y-6'} min-h-screen bg-gradient-to-br from-background via-surface to-background`}
+    >
+      {/* Hero Section - TikTok Style */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative overflow-hidden hero-gradient py-8 text-center mb-6 rounded-3xl"
+      >
+        <div className="absolute inset-0 bg-grid-subtle opacity-20"></div>
+        <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6, type: "spring" }}
+            className="flex items-center justify-center gap-3"
+          >
+            <motion.div
+              animate={{ 
+                rotate: [0, 10, -10, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center"
+            >
+              <ShoppingCart className="h-6 w-6 text-white" />
+            </motion.div>
+            <h1 className="text-4xl font-black text-gradient-primary">
+              Fan Marketplace
+            </h1>
+            <motion.div
+              animate={{ 
+                rotate: [0, -10, 10, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity,
+                repeatType: "reverse",
+                delay: 0.5
+              }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center"
+            >
+              <Sparkles className="h-6 w-6 text-white" />
+            </motion.div>
+          </motion.div>
+          
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="text-lg font-medium text-muted-foreground"
+          >
+            Discover exclusive treasures from your favorite creators 🛍️✨
+          </motion.p>
+        </div>
+      </motion.div>
+
+      <MobileContainer>
+        {/* Header */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
+        >
 
       {/* Search and Filters */}
       <Card>
@@ -171,6 +239,7 @@ const EnhancedMarketplaceV3 = () => {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Featured Items */}
       <div>
@@ -347,7 +416,8 @@ const EnhancedMarketplaceV3 = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </MobileContainer>
+    </motion.div>
   );
 };
 

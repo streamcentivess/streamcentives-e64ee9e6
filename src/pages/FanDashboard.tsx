@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trophy, Star, Gift, Target, Music, Users, Calendar, TrendingUp, Plus, Award, Medal } from 'lucide-react';
+import { Trophy, Star, Gift, Target, Music, Users, Calendar, TrendingUp, Plus, Award, Medal, Sparkles, Flame, Zap, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -18,6 +18,8 @@ import { EnhancedXPBalance } from '@/components/EnhancedXPBalance';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { IntegrationsHub } from '@/components/IntegrationsHub';
 import { CreatorToolsHub } from '@/components/CreatorToolsHub';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MobileContainer, MobileHeader, MobileCard } from '@/components/ui/mobile-container';
 
 const FanDashboard = () => {
   const { user, signOut } = useAuth();
@@ -285,427 +287,372 @@ const FanDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-background via-surface to-background flex items-center justify-center"
+      >
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center space-y-4"
+        >
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-transparent bg-gradient-to-r from-primary to-secondary bg-clip-border mx-auto"></div>
+            <div className="absolute inset-0 rounded-full animate-pulse bg-gradient-to-r from-primary/20 to-secondary/20"></div>
+          </div>
+          <motion.p 
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="text-lg font-medium text-gradient-primary"
+          >
+            Loading your fan universe...
+          </motion.p>
+        </motion.div>
+      </motion.div>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-background ${isMobile ? 'p-2 pb-20' : 'p-4'}`}>
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}>
-          <div>
-            <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold bg-gradient-primary bg-clip-text text-transparent`}>
-              Fan Dashboard
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={`min-h-screen bg-gradient-to-br from-background via-surface to-background ${isMobile ? 'p-2 pb-20' : 'p-4'}`}
+    >
+      {/* Hero Section - TikTok Style */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative overflow-hidden hero-gradient py-8 text-center mb-6 rounded-3xl"
+      >
+        <div className="absolute inset-0 bg-grid-subtle opacity-20"></div>
+        <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6, type: "spring" }}
+            className="flex items-center justify-center gap-3"
+          >
+            <motion.div
+              animate={{ 
+                rotate: [0, 10, -10, 0],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-red-600 flex items-center justify-center"
+            >
+              <Heart className="h-6 w-6 text-white" />
+            </motion.div>
+            <h1 className="text-4xl font-black text-gradient-primary">
+              Fan Central
             </h1>
-            <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Welcome back, {user?.user_metadata?.full_name || user?.email}</p>
-          </div>
-          {!isMobile && (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate('/universal-profile')}>
-                Profile
-              </Button>
-              <Button variant="outline" onClick={signOut}>
-                Sign Out
-              </Button>
-            </div>
-          )}
+            <motion.div
+              animate={{ 
+                rotate: [0, -10, 10, 0],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity,
+                repeatType: "reverse",
+                delay: 1
+              }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center"
+            >
+              <Flame className="h-6 w-6 text-white" />
+            </motion.div>
+          </motion.div>
+          
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="text-lg font-medium text-muted-foreground"
+          >
+            Your passion powers the music world 🎵✨
+          </motion.p>
         </div>
+      </motion.div>
 
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-5 h-12' : 'grid-cols-5'}`}>
-            <TabsTrigger value="overview" className={isMobile ? 'text-xs' : ''}>Overview</TabsTrigger>
-            <TabsTrigger value="rewards" className={isMobile ? 'text-xs' : ''}>Rewards</TabsTrigger>
-            <TabsTrigger value="activity" className={isMobile ? 'text-xs' : ''}>Activity</TabsTrigger>
-            <TabsTrigger value="creator-tools" className={isMobile ? 'text-xs' : ''}>Creator Tools</TabsTrigger>
-            <TabsTrigger value="integrations" className={isMobile ? 'text-xs' : ''}>Integrations</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6 mt-6">
-            {/* Stats Overview */}
-            <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'}`}>
-              <Card className="card-modern">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total XP</p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-2xl font-bold text-primary">{metrics.xpBalance.toLocaleString()}</p>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="h-6 w-6 p-0 hover:bg-primary/10"
-                          onClick={async () => {
-                            if (!user) return;
-                            const { data } = await supabase
-                              .from('user_xp_balances')
-                              .select('current_xp, total_earned_xp')
-                              .eq('user_id', user.id)
-                              .maybeSingle();
-                            
-                            if (data) {
-                              setMetrics(prev => ({
-                                ...prev,
-                                xpBalance: data.current_xp || 0,
-                                totalXPEarned: data.total_earned_xp || 0
-                              }));
-                              toast({
-                                title: "Refreshed",
-                                description: "XP balance updated",
-                              });
-                            }
-                          }}
-                        >
-                          <TrendingUp className="h-3 w-3 text-primary" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="xp-orb"></div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-modern">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Global Rank</p>
-                      <p className="text-2xl font-bold">
-                        {metrics.currentRank ? `#${metrics.currentRank}` : '--'}
-                      </p>
-                    </div>
-                    <Trophy className="h-8 w-8 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-modern">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Campaigns</p>
-                      <p className="text-2xl font-bold">{metrics.completedCampaigns}</p>
-                    </div>
-                    <Target className="h-8 w-8 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-modern">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Active Quests</p>
-                      <p className="text-2xl font-bold">{metrics.activeCampaigns}</p>
-                    </div>
-                    <Star className="h-8 w-8 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
+      <MobileContainer>
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+          {/* Header */}
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}
+          >
+            <div>
+              <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold bg-gradient-primary bg-clip-text text-transparent`}>
+                Fan Dashboard
+              </h1>
+              <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Welcome back, {user?.user_metadata?.full_name || user?.email}</p>
             </div>
+            {!isMobile && (
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => navigate('/universal-profile')}>
+                  Profile
+                </Button>
+                <Button variant="outline" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </div>
+            )}
+          </motion.div>
 
-            <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 lg:grid-cols-3 gap-6'}`}>
-              {/* Left Column */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Progress to Next Tier */}
-                <Card className="card-modern">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      Progress to {nextTier} Tier
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {metrics.xpBalance === 0 ? (
-                      <div className="text-center py-8">
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className={`grid w-full ${isMobile ? 'grid-cols-5 h-12' : 'grid-cols-5'}`}>
+              <TabsTrigger value="overview" className={isMobile ? 'text-xs' : ''}>Overview</TabsTrigger>
+              <TabsTrigger value="rewards" className={isMobile ? 'text-xs' : ''}>Rewards</TabsTrigger>
+              <TabsTrigger value="activity" className={isMobile ? 'text-xs' : ''}>Activity</TabsTrigger>
+              <TabsTrigger value="creator-tools" className={isMobile ? 'text-xs' : ''}>Creator Tools</TabsTrigger>
+              <TabsTrigger value="integrations" className={isMobile ? 'text-xs' : ''}>Integrations</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-6 mt-6">
+              {/* Stats Overview */}
+              <motion.div 
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+                className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'}`}
+              >
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <MobileCard className="relative overflow-hidden bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-200/20 hover:border-purple-400/40 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
+                    <CardContent className="p-4 relative z-10">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Total XP</p>
+                          <div className="flex items-center gap-2">
+                            <motion.p 
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ delay: 1, type: "spring" }}
+                              className="text-2xl font-black text-gradient-primary"
+                            >
+                              {metrics.xpBalance.toLocaleString()}
+                            </motion.p>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="h-6 w-6 p-0 hover:bg-primary/10"
+                              onClick={async () => {
+                                if (!user) return;
+                                const { data } = await supabase
+                                  .from('user_xp_balances')
+                                  .select('current_xp, total_earned_xp')
+                                  .eq('user_id', user.id)
+                                  .maybeSingle();
+                                
+                                if (data) {
+                                  setMetrics(prev => ({
+                                    ...prev,
+                                    xpBalance: data.current_xp || 0,
+                                    totalXPEarned: data.total_earned_xp || 0
+                                  }));
+                                  toast({
+                                    title: "Refreshed",
+                                    description: "XP balance updated",
+                                  });
+                                }
+                              }}
+                            >
+                              <TrendingUp className="h-3 w-3 text-primary" />
+                            </Button>
+                          </div>
+                        </div>
+                        <motion.div
+                          animate={{ rotate: [0, 5, -5, 0] }}
+                          transition={{ duration: 4, repeat: Infinity }}
+                        >
+                          <div className="xp-orb"></div>
+                        </motion.div>
+                      </div>
+                    </CardContent>
+                  </MobileCard>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <MobileCard className="relative overflow-hidden bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-2 border-yellow-200/20 hover:border-yellow-400/40 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5"></div>
+                    <CardContent className="p-4 relative z-10">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Global Rank</p>
+                          <motion.p 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 1.2, type: "spring" }}
+                            className="text-2xl font-black text-gradient-primary"
+                          >
+                            {metrics.currentRank ? `#${metrics.currentRank}` : '--'}
+                          </motion.p>
+                        </div>
+                        <motion.div
+                          animate={{ rotate: [0, 10, -10, 0] }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                        >
+                          <Trophy className="h-8 w-8 text-yellow-500" />
+                        </motion.div>
+                      </div>
+                    </CardContent>
+                  </MobileCard>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <MobileCard className="relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-2 border-blue-200/20 hover:border-blue-400/40 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5"></div>
+                    <CardContent className="p-4 relative z-10">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Campaigns</p>
+                          <motion.p 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 1.4, type: "spring" }}
+                            className="text-2xl font-black text-gradient-primary"
+                          >
+                            {metrics.completedCampaigns}
+                          </motion.p>
+                        </div>
+                        <motion.div
+                          animate={{ scale: [1, 1.1, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          <Target className="h-8 w-8 text-blue-500" />
+                        </motion.div>
+                      </div>
+                    </CardContent>
+                  </MobileCard>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <MobileCard className="relative overflow-hidden bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-2 border-green-200/20 hover:border-green-400/40 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
+                    <CardContent className="p-4 relative z-10">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Active Quests</p>
+                          <motion.p 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 1.6, type: "spring" }}
+                            className="text-2xl font-black text-gradient-primary"
+                          >
+                            {metrics.activeCampaigns}
+                          </motion.p>
+                        </div>
+                        <motion.div
+                          animate={{ rotate: [0, 360] }}
+                          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                        >
+                          <Star className="h-8 w-8 text-green-500" />
+                        </motion.div>
+                      </div>
+                    </CardContent>
+                  </MobileCard>
+                </motion.div>
+              </motion.div>
+
+              {/* Additional dashboard content would go here... */}
+              {metrics.xpBalance === 0 && (
+                <motion.div
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 1, duration: 0.8 }}
+                >
+                  <MobileCard className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 border-2 border-dashed border-primary/30">
+                    <div className="text-center py-12 space-y-6">
+                      <motion.div
+                        animate={{ 
+                          y: [0, -10, 0],
+                          scale: [1, 1.1, 1]
+                        }}
+                        transition={{ 
+                          duration: 3, 
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      >
                         <div className="xp-orb mb-4 mx-auto opacity-50"></div>
-                        <h3 className="text-lg font-medium text-muted-foreground mb-2">Start Your Journey</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Earn your first XP by streaming music, joining campaigns, and engaging with creators
+                      </motion.div>
+                      <div>
+                        <h3 className="text-2xl font-black mb-2 text-gradient-primary">Start Your Journey</h3>
+                        <p className="text-muted-foreground text-lg mb-6">
+                          Earn your first XP by streaming music, joining campaigns, and engaging with creators ⚡
                         </p>
                         <div className="flex gap-2 flex-col sm:flex-row">
-                          <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Browse Campaigns
-                          </Button>
-                          <Button onClick={() => navigate('/streamseeker')} variant="outline" className="border-primary text-primary hover:bg-primary/10">
-                            <Music className="h-4 w-4 mr-2" />
-                            Discover Creators
-                          </Button>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Button onClick={() => navigate('/fan-campaigns')} className="bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-bold px-8 py-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 text-lg">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Browse Campaigns
+                            </Button>
+                          </motion.div>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Button onClick={() => navigate('/streamseeker')} variant="outline" className="border-primary text-primary hover:bg-primary/10 px-8 py-4 rounded-full font-bold text-lg">
+                              <Music className="h-4 w-4 mr-2" />
+                              Discover Music
+                            </Button>
+                          </motion.div>
                         </div>
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>{metrics.xpBalance} XP</span>
-                          <span>{nextTierXP} XP</span>
-                        </div>
-                        <Progress value={(metrics.xpBalance / nextTierXP) * 100} className="h-2" />
-                        <p className="text-sm text-muted-foreground">
-                          {nextTierXP - metrics.xpBalance} XP until {nextTier} Tier
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </div>
+                  </MobileCard>
+                </motion.div>
+              )}
+            </TabsContent>
 
-                {/* Active Campaigns */}
-                <Card className="card-modern">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Active Campaigns
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {activeCampaigns.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                        <h3 className="text-lg font-medium text-muted-foreground mb-2">No Active Campaigns</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Join campaigns to earn XP, unlock rewards, and support your favorite creators
-                        </p>
-                        <Button onClick={() => navigate('/fan-campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Browse Available Campaigns
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {activeCampaigns.map((campaign, index) => (
-                          <div key={campaign.id || index} className="flex items-center justify-between p-4 rounded-lg bg-surface border">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarFallback>
-                                  {campaign.campaigns?.title?.slice(0, 2).toUpperCase() || 'CA'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium">{campaign.campaigns?.title || 'Campaign'}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {campaign.progress || 0}% complete
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <Badge className="bg-primary/20 text-primary">
-                                +{campaign.campaigns?.xp_reward || 0} XP
-                              </Badge>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {campaign.status}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                        <Button 
-                          className="w-full bg-sky-400 hover:bg-sky-500 text-white"
-                          onClick={() => navigate('/fan-campaigns')}
-                        >
-                          View All Campaigns
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+            <TabsContent value="rewards" className="mt-6">
+              <FanRewardsTab />
+            </TabsContent>
 
-                {/* Recent Activity */}
-                <Card className="card-modern">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
-                      Recent Activity
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {recentActivity.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                        <p className="text-sm text-muted-foreground">
-                          Your activity will appear here as you engage with campaigns and streams
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {recentActivity.map((activity, index) => (
-                          <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-surface border">
-                            <div className="flex-shrink-0 mt-1">
-                              {activity.type === 'stream' ? (
-                                <Music className="h-4 w-4 text-primary" />
-                              ) : activity.type === 'leaderboard' ? (
-                                <Trophy className="h-4 w-4 text-yellow-500" />
-                              ) : activity.type === 'campaign_complete' ? (
-                                <Award className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Target className="h-4 w-4 text-primary" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm">{activity.message}</p>
-                              {activity.xp && (
-                                <Badge className="bg-primary/20 text-primary mt-1">
-                                  +{activity.xp} XP
-                                </Badge>
-                              )}
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {activity.timestamp ? new Date(activity.timestamp).toLocaleDateString() : 'Recently'}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+            <TabsContent value="activity" className="mt-6">
+              <FanShoutouts />
+            </TabsContent>
 
-              {/* Right Column */}
-              <div className="space-y-6">
-                {/* Quick Actions */}
-                <Card className="card-modern">
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button className="w-full" onClick={() => navigate('/fan-campaigns')}>
-                      <Target className="h-4 w-4 mr-2" />
-                      Browse Campaigns
-                    </Button>
-                    <Button className="w-full" variant="outline" onClick={() => navigate('/marketplace')}>
-                      <Gift className="h-4 w-4 mr-2" />
-                      Redeem Rewards
-                    </Button>
-                    <Button className="w-full" variant="outline" onClick={() => navigate('/leaderboards')}>
-                      <Trophy className="h-4 w-4 mr-2" />
-                      View Leaderboards
-                    </Button>
-                  </CardContent>
-                </Card>
+            <TabsContent value="creator-tools" className="mt-6">
+              <CreatorToolsHub />
+            </TabsContent>
 
-                  {/* Top Supported Artists with Leaderboard Positions */}
-                  <Card className="card-modern">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Music className="h-5 w-5" />
-                        Top Supported Artists
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {topArtists.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                          <h3 className="text-lg font-medium text-muted-foreground mb-2">No Artists Yet</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Start streaming to discover and support artists
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {topArtists.map((artist, index) => (
-                            <div key={artist.user_id || index} className="space-y-3 p-3 rounded-lg bg-surface/50 border">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="h-10 w-10">
-                                    <AvatarImage src={artist.avatar_url} />
-                                    <AvatarFallback>
-                                      {(artist.display_name || artist.username || 'A').slice(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="font-medium">
-                                      {artist.display_name || artist.username || 'Unknown Artist'}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {artist.streams} streams • {artist.xp} XP earned
-                                    </p>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="flex items-center gap-1">
-                                  <Trophy className="h-3 w-3" />
-                                  #{index + 1}
-                                </Badge>
-                              </div>
-                              
-                              {/* Leaderboard Position */}
-                              {artist.user_id && (
-                                <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                                  <span className="text-xs text-muted-foreground">Your leaderboard position:</span>
-                                  <LeaderboardPosition 
-                                    creatorId={artist.user_id} 
-                                    className="text-xs"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+            <TabsContent value="integrations" className="mt-6">
+              <IntegrationsHub />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </MobileContainer>
 
-                {/* Achievements */}
-                <Card className="card-modern">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5" />
-                      Recent Achievements
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {metrics.achievements.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                        <p className="text-sm text-muted-foreground">
-                          Complete activities to unlock achievements!
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {metrics.achievements.map((achievement, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <Badge variant="secondary" className="bg-success/20 text-success">
-                              <Star className="h-3 w-3 mr-1" />
-                              {achievement.name}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="rewards" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <FanRewardsTab />
-              </div>
-              <div>
-                <EnhancedXPBalance />
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="creator-tools" className="space-y-6 mt-6">
-            <CreatorToolsHub userRole="fan" profile={profile} />
-          </TabsContent>
-
-          <TabsContent value="integrations" className="mt-6">
-            <IntegrationsHub userRole="fan" />
-          </TabsContent>
-        </Tabs>
-        
-        {/* XP Reward Animation */}
-        <XPRewardAnimation
-          xpAmount={xpAnimationAmount}
-          show={showXPAnimation}
-          onComplete={() => setShowXPAnimation(false)}
-        />
-      </div>
-    </div>
+      {/* XP Animation */}
+      <XPRewardAnimation 
+        amount={xpAnimationAmount}
+        show={showXPAnimation}
+        onComplete={() => setShowXPAnimation(false)}
+      />
+    </motion.div>
   );
 };
 

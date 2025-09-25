@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones, Share, Handshake, Lock } from 'lucide-react';
+import { Music, Users, DollarSign, TrendingUp, Plus, BarChart3, Settings, Target, Gift, Store, Link, CheckCircle, Trophy, Mail, FileText, Palette, Headphones, Share, Handshake, Lock, Sparkles, Star, Flame, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { ContentAssistant } from '@/components/ContentAssistant';
@@ -22,6 +22,8 @@ import CreatorEarningsTracker from '@/components/CreatorEarningsTracker';
 import { CreatorProDashboard } from '@/components/CreatorProDashboard';
 import { BrandDealsDashboard } from '@/components/BrandDealsDashboard';
 import { useCreatorSubscription } from '@/hooks/useCreatorSubscription';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MobileContainer, MobileHeader, MobileCard } from '@/components/ui/mobile-container';
 
 const CreatorDashboard = () => {
   const { user, signOut } = useAuth();
@@ -323,16 +325,80 @@ const CreatorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}>
-          <div>
-            <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold bg-gradient-primary bg-clip-text text-transparent`}>
-              Creator Dashboard
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gradient-to-br from-background via-surface to-background p-2 sm:p-4"
+    >
+      {/* Hero Section - TikTok Style */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative overflow-hidden hero-gradient py-8 text-center mb-6 rounded-3xl"
+      >
+        <div className="absolute inset-0 bg-grid-subtle opacity-20"></div>
+        <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6, type: "spring" }}
+            className="flex items-center justify-center gap-3"
+          >
+            <motion.div
+              animate={{ 
+                rotate: [0, 10, -10, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 3, 
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center"
+            >
+              <Sparkles className="h-6 w-6 text-white" />
+            </motion.div>
+            <h1 className="text-4xl font-black text-gradient-primary">
+              Creator Command
             </h1>
-            <p className="text-muted-foreground text-sm sm:text-base">Manage your campaigns and engage with fans</p>
-          </div>
+            <motion.div
+              animate={{ 
+                rotate: [0, -10, 10, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 3, 
+                repeat: Infinity,
+                repeatType: "reverse",
+                delay: 1.5
+              }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center"
+            >
+              <Trophy className="h-6 w-6 text-white" />
+            </motion.div>
+          </motion.div>
+          
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="text-lg font-medium text-muted-foreground"
+          >
+            Build your empire, engage your fans, create your legacy ⚡
+          </motion.p>
+        </div>
+      </motion.div>
+
+      <MobileContainer>
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+          {/* Header */}
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}
+          >
           <div className={`flex gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
             <Button onClick={() => navigate('/advanced-analytics')} variant="outline" size="sm">
               <BarChart3 className="h-4 w-4 mr-2" />
@@ -368,22 +434,51 @@ const CreatorDashboard = () => {
             <Button variant="outline" onClick={signOut}>
               Sign Out
             </Button>
-          </div>
-        </div>
+            </div>
+          </motion.div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Fans</p>
-                  <p className="text-2xl font-bold">{metrics.totalFans.toLocaleString()}</p>
+        {/* Key Metrics - TikTok Style */}
+        <motion.div 
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4"
+        >
+          <motion.div
+            whileHover={{ scale: 1.05, y: -5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <MobileCard className="relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-200/20 hover:border-blue-400/40 transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
+              <CardContent className="p-4 relative z-10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Total Fans</p>
+                    <motion.p 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 1, type: "spring" }}
+                      className="text-2xl font-black text-gradient-primary"
+                    >
+                      {metrics.totalFans.toLocaleString()}
+                    </motion.p>
+                  </div>
+                  <motion.div
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                  >
+                    <Users className="h-8 w-8 text-blue-500" />
+                  </motion.div>
                 </div>
-                <Users className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </MobileCard>
+          </motion.div>
+
+          {/* ... keep existing code for other metric cards */}
+        </motion.div>
+              </CardContent>
+            </MobileCard>
+          </motion.div>
 
           <Card className="card-modern">
             <CardContent className="p-4">
@@ -790,7 +885,7 @@ const CreatorDashboard = () => {
             </Card>
           </div>
         </div>
-      </div>
+      </MobileContainer>
       
       {/* Content Assistant Modal */}
       {showContentAssistant && isProSubscriber && (
@@ -799,7 +894,7 @@ const CreatorDashboard = () => {
           onClose={() => setShowContentAssistant(false)} 
         />
       )}
-    </div>
+    </motion.div>
   );
 };
 
