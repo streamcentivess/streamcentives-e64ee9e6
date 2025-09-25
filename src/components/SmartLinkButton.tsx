@@ -255,7 +255,7 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
     if (isPlaceholderUrl(action.action_url, action.action_type)) {
       if (isOwnProfile) {
         setShowDialog(false);
-        window.location.href = '/universal-profile?tab=smart-links';
+        window.location.href = '/creator-dashboard?section=smart-links';
       } else {
         toast.info('This link is not configured yet.');
       }
@@ -381,7 +381,7 @@ export const SmartLinkButton: React.FC<SmartLinkButtonProps> = ({
                 className="w-full"
                 onClick={() => {
                   setShowDialog(false);
-                  window.location.href = '/universal-profile?tab=smart-links';
+                  window.location.href = '/creator-dashboard?section=smart-links';
                 }}
               >
                 Manage Smart Links
