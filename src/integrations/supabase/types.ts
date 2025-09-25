@@ -6779,6 +6779,24 @@ export type Database = {
           total_xp_distributed: number
         }[]
       }
+      get_creators_by_category: {
+        Args: {
+          category_filter?: string
+          fan_user_id?: string
+          limit_count?: number
+        }
+        Returns: {
+          avatar_url: string
+          bio: string
+          content_count: number
+          creator_type: string
+          display_name: string
+          follower_count: number
+          spotify_connected: boolean
+          user_id: string
+          username: string
+        }[]
+      }
       get_my_complete_profile: {
         Args: Record<PropertyKey, never>
         Returns: {

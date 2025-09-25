@@ -30,14 +30,15 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate } from 'react-router-dom';
 
 interface SuggestedArtist {
-  artist_id: string;
+  user_id: string;
   username: string;
   display_name: string;
   avatar_url: string;
   bio: string;
-  discovery_pool: string;
-  content_count: number;
+  creator_type: string;
+  spotify_connected: boolean;
   follower_count: number;
+  content_count: number;
 }
 
 interface DailyQuest {
@@ -78,39 +79,11 @@ const StreamseekerDashboard = () => {
       description: 'Find interesting conversations and stories'
     },
     { 
-      id: 'video_creator', 
-      label: 'Video Creators', 
-      icon: Video, 
-      gradient: 'from-orange-500 to-red-600',
-      description: 'Watch creative video content'
-    },
-    { 
-      id: 'comedian', 
-      label: 'Comedians', 
-      icon: Sparkles, 
-      gradient: 'from-yellow-500 to-orange-600',
-      description: 'Laugh with amazing comedians'
-    },
-    { 
       id: 'gamer', 
       label: 'Gamers', 
       icon: Target, 
       gradient: 'from-green-500 to-blue-600',
       description: 'Watch epic gaming content'
-    },
-    { 
-      id: 'fitness_trainer', 
-      label: 'Fitness', 
-      icon: TrendingUp, 
-      gradient: 'from-emerald-500 to-teal-600',
-      description: 'Get fit with amazing trainers'
-    },
-    { 
-      id: 'chef', 
-      label: 'Chefs', 
-      icon: Users, 
-      gradient: 'from-red-500 to-pink-600',
-      description: 'Cook with culinary masters'
     },
     { 
       id: 'artist', 
@@ -120,9 +93,16 @@ const StreamseekerDashboard = () => {
       description: 'Explore amazing visual art'
     },
     { 
+      id: 'influencer', 
+      label: 'Influencers', 
+      icon: Star, 
+      gradient: 'from-yellow-500 to-orange-600',
+      description: 'Connect with amazing influencers'
+    },
+    { 
       id: 'other', 
       label: 'Other Creators', 
-      icon: Star, 
+      icon: Sparkles, 
       gradient: 'from-gray-500 to-slate-600',
       description: 'Discover unique content creators'
     }
@@ -174,28 +154,47 @@ const StreamseekerDashboard = () => {
         return;
       }
 
-      const { data, error } = await supabase.rpc('get_streamseeker_suggestions', {
+      // Use the new get_creators_by_category function
+      const { data, error } = await supabase.rpc('get_creators_by_category', {
+        category_filter: selectedContentType,
         fan_user_id: user.id,
-        content_type_param: selectedContentType,
-        exclude_discovered: true
+        limit_count: 1
       });
 
       if (error) {
-        console.error('Error fetching suggestion:', error);
+        console.error('Error fetching creators by category:', error);
         toast({
-          title: "No New Artists",
-          description: "No new artists available right now. Try again later!",
+          title: "No Creators Found",
+          description: `No ${contentTypes.find(t => t.id === selectedContentType)?.label.toLowerCase()} available right now. Try another category!`,
           variant: "default"
         });
         return;
       }
 
       if (data && data.length > 0) {
-        setCurrentArtist(data[0]);
+        const creator = data[0];
+        // Transform the data to match our interface
+        setCurrentArtist({
+          user_id: creator.user_id,
+          username: creator.username,
+          display_name: creator.display_name,
+          avatar_url: creator.avatar_url,
+          bio: creator.bio,
+          creator_type: creator.creator_type,
+          spotify_connected: creator.spotify_connected,
+          follower_count: creator.follower_count,
+          content_count: creator.content_count
+        });
+        
+        toast({
+          title: `${creator.creator_type ? creator.creator_type.charAt(0).toUpperCase() + creator.creator_type.slice(1) : 'Creator'} Found!`,
+          description: `Discover ${creator.display_name || creator.username}`,
+          variant: "default"
+        });
       } else {
         toast({
           title: "All Discovered!",
-          description: "You've discovered all available artists for today. Great job!",
+          description: `You've discovered all available ${contentTypes.find(t => t.id === selectedContentType)?.label.toLowerCase()} for now. Try another category!`,
           variant: "default"
         });
       }
@@ -203,7 +202,7 @@ const StreamseekerDashboard = () => {
       console.error('Error in shuffleNewArtist:', error);
       toast({
         title: "Error",
-        description: "Failed to get new artist suggestion",
+        description: "Failed to get new creator suggestion",
         variant: "destructive"
       });
     } finally {
@@ -242,7 +241,7 @@ const StreamseekerDashboard = () => {
         .from('follows')
         .insert({
           follower_id: user.id,
-          following_id: currentArtist.artist_id
+          following_id: currentArtist.user_id
         });
 
       if (error) {
@@ -274,7 +273,7 @@ const StreamseekerDashboard = () => {
 
       const { data, error } = await supabase.rpc('complete_streamseeker_discovery', {
         fan_user_id: user.id,
-        artist_user_id: currentArtist.artist_id,
+        artist_user_id: currentArtist.user_id,
         content_type_param: selectedContentType,
         engagement_completed_param: hasEngaged,
         followed_param: hasFollowed,
@@ -537,7 +536,7 @@ const StreamseekerDashboard = () => {
         <AnimatePresence mode="wait">
           {currentArtist && (
             <motion.div
-              key={currentArtist.artist_id}
+              key={currentArtist.user_id}
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: -20 }}
@@ -593,7 +592,7 @@ const StreamseekerDashboard = () => {
                   </div>
                   
                   <Badge variant="outline" className="text-sm font-medium px-4 py-1 border-brand-primary/30 text-brand-primary">
-                    {currentArtist.discovery_pool}
+                    {currentArtist.creator_type ? currentArtist.creator_type.charAt(0).toUpperCase() + currentArtist.creator_type.slice(1) : 'Creator'}
                   </Badge>
                 </motion.div>
 
