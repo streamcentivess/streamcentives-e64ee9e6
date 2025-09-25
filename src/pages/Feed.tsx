@@ -107,7 +107,8 @@ const Feed = () => {
   const [newComment, setNewComment] = useState('');
   const [feedFilters, setFeedFilters] = useState<FeedFilterState>({
     contentType: 'all',
-    creatorTypes: []
+    creatorTypes: [],
+    sponsorTypes: []
   });
   const POSTS_PER_PAGE = 5;
 
@@ -215,6 +216,64 @@ const Feed = () => {
           query = query.in('user_id', userIds);
         } else {
           // No fans found, return empty
+          setPosts([]);
+          return;
+        }
+      } else if (feedFilters.contentType === 'sponsors') {
+        // Get posts from users who have a sponsor profile
+        const { data: sponsorProfiles } = await supabase
+          .from('sponsor_profiles')
+          .select('user_id');
+        
+        if (sponsorProfiles && sponsorProfiles.length > 0) {
+          userIds = sponsorProfiles.map(p => p.user_id);
+          query = query.in('user_id', userIds);
+        } else {
+          // No sponsors found, return empty
+          setPosts([]);
+          return;
+        }
+      }
+
+      // Apply creator type filter if selected
+      if (feedFilters.creatorTypes.length > 0 && (feedFilters.contentType === 'all' || feedFilters.contentType === 'creators')) {
+        const { data: filteredCreatorProfiles } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .in('creator_type', feedFilters.creatorTypes as any);
+        
+        if (filteredCreatorProfiles && filteredCreatorProfiles.length > 0) {
+          const creatorUserIds = filteredCreatorProfiles.map(p => p.user_id);
+          if (userIds.length > 0) {
+            // Intersect with existing userIds
+            userIds = userIds.filter(id => creatorUserIds.includes(id));
+          } else {
+            userIds = creatorUserIds;
+          }
+          query = query.in('user_id', userIds);
+        } else {
+          setPosts([]);
+          return;
+        }
+      }
+
+      // Apply sponsor type filter if selected
+      if (feedFilters.sponsorTypes.length > 0 && (feedFilters.contentType === 'all' || feedFilters.contentType === 'sponsors')) {
+        const { data: filteredSponsorProfiles } = await supabase
+          .from('sponsor_profiles')
+          .select('user_id')
+          .in('industry', feedFilters.sponsorTypes);
+        
+        if (filteredSponsorProfiles && filteredSponsorProfiles.length > 0) {
+          const sponsorUserIds = filteredSponsorProfiles.map(p => p.user_id);
+          if (userIds.length > 0) {
+            // Intersect with existing userIds
+            userIds = userIds.filter(id => sponsorUserIds.includes(id));
+          } else {
+            userIds = sponsorUserIds;
+          }
+          query = query.in('user_id', userIds);
+        } else {
           setPosts([]);
           return;
         }

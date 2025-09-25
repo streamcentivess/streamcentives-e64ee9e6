@@ -12,21 +12,30 @@ interface FeedFiltersProps {
 }
 
 export interface FeedFilterState {
-  contentType: 'all' | 'creators' | 'fans';
+  contentType: 'all' | 'creators' | 'fans' | 'sponsors';
   creatorTypes: string[];
+  sponsorTypes: string[];
 }
 
 export function FeedFilters({ onFiltersChange, initialFilters }: FeedFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FeedFilterState>(initialFilters || {
     contentType: 'all',
-    creatorTypes: []
+    creatorTypes: [],
+    sponsorTypes: []
   });
 
   const creatorTypeOptions = [
-    "musician", "podcaster", "streamer", "youtuber", "tiktoker", 
-    "instagrammer", "photographer", "artist", "comedian", "fitness_trainer", 
-    "chef", "fashion_designer", "dancer", "gamer", "educator", "other"
+    "musician", "podcaster", "video_creator", "comedian", "author", 
+    "artist", "dancer", "gamer", "fitness_trainer", "chef", 
+    "educator", "lifestyle_influencer", "tech_creator", "beauty_creator", 
+    "travel_creator", "other"
+  ];
+
+  const sponsorTypeOptions = [
+    "Technology", "Fashion & Beauty", "Food & Beverage", "Fitness & Health",
+    "Gaming", "Travel", "Automotive", "Finance", "Entertainment", "Education",
+    "Real Estate", "Retail", "Healthcare", "Sports", "Music", "Other"
   ];
 
   const updateFilters = (newFilters: Partial<FeedFilterState>) => {
@@ -38,20 +47,22 @@ export function FeedFilters({ onFiltersChange, initialFilters }: FeedFiltersProp
   const clearFilters = () => {
     const clearedFilters = {
       contentType: 'all' as const,
-      creatorTypes: []
+      creatorTypes: [],
+      sponsorTypes: []
     };
     setFilters(clearedFilters);
     onFiltersChange(clearedFilters);
   };
 
   const hasActiveFilters = () => {
-    return filters.contentType !== 'all' || filters.creatorTypes.length > 0;
+    return filters.contentType !== 'all' || filters.creatorTypes.length > 0 || filters.sponsorTypes.length > 0;
   };
 
   const getActiveFilterCount = () => {
     let count = 0;
     if (filters.contentType !== 'all') count++;
     if (filters.creatorTypes.length > 0) count += filters.creatorTypes.length;
+    if (filters.sponsorTypes.length > 0) count += filters.sponsorTypes.length;
     return count;
   };
 
@@ -90,7 +101,7 @@ export function FeedFilters({ onFiltersChange, initialFilters }: FeedFiltersProp
               <label className="text-sm font-semibold text-foreground">Content Type</label>
               <Select
                 value={filters.contentType}
-                onValueChange={(value: 'all' | 'creators' | 'fans') => updateFilters({ contentType: value })}
+                onValueChange={(value: 'all' | 'creators' | 'fans' | 'sponsors') => updateFilters({ contentType: value })}
               >
                 <SelectTrigger className="bg-background/50 border-primary/20">
                   <SelectValue placeholder="Select content type" />
@@ -99,19 +110,20 @@ export function FeedFilters({ onFiltersChange, initialFilters }: FeedFiltersProp
                   <SelectItem value="all">All Content</SelectItem>
                   <SelectItem value="creators">Creators Only</SelectItem>
                   <SelectItem value="fans">Fans Only</SelectItem>
+                  <SelectItem value="sponsors">Sponsors Only</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Creator Types Filter - Only show when content type is 'all' or 'creators' */}
-            {filters.contentType !== 'fans' && (
+            {(filters.contentType === 'all' || filters.contentType === 'creators') && (
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-foreground">Creator Types</label>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {creatorTypeOptions.map((type) => (
                     <div key={type} className="flex items-center space-x-2">
                       <Checkbox
-                        id={`filter-${type}`}
+                        id={`filter-creator-${type}`}
                         checked={filters.creatorTypes.includes(type)}
                         onCheckedChange={(checked) => {
                           if (checked) {
@@ -126,8 +138,40 @@ export function FeedFilters({ onFiltersChange, initialFilters }: FeedFiltersProp
                         }}
                         className="border-primary/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
-                      <label htmlFor={`filter-${type}`} className="text-xs cursor-pointer font-medium">
+                      <label htmlFor={`filter-creator-${type}`} className="text-xs cursor-pointer font-medium">
                         {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sponsor Types Filter - Only show when content type is 'all' or 'sponsors' */}
+            {(filters.contentType === 'all' || filters.contentType === 'sponsors') && (
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-foreground">Sponsor Categories</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {sponsorTypeOptions.map((type) => (
+                    <div key={type} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`filter-sponsor-${type}`}
+                        checked={filters.sponsorTypes.includes(type)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateFilters({
+                              sponsorTypes: [...filters.sponsorTypes, type]
+                            });
+                          } else {
+                            updateFilters({
+                              sponsorTypes: filters.sponsorTypes.filter(t => t !== type)
+                            });
+                          }
+                        }}
+                        className="border-primary/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      />
+                      <label htmlFor={`filter-sponsor-${type}`} className="text-xs cursor-pointer font-medium">
+                        {type}
                       </label>
                     </div>
                   ))}
@@ -140,12 +184,18 @@ export function FeedFilters({ onFiltersChange, initialFilters }: FeedFiltersProp
               <div className="flex flex-wrap gap-2">
                 {filters.contentType !== 'all' && (
                   <Badge variant="secondary" className="bg-gradient-to-r from-primary/20 to-accent/20">
-                    {filters.contentType === 'creators' ? 'Creators Only' : 'Fans Only'}
+                    {filters.contentType === 'creators' ? 'Creators Only' : 
+                     filters.contentType === 'fans' ? 'Fans Only' : 'Sponsors Only'}
                   </Badge>
                 )}
                 {filters.creatorTypes.map(type => (
                   <Badge key={type} variant="outline" className="border-primary/30 text-primary">
                     {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </Badge>
+                ))}
+                {filters.sponsorTypes.map(type => (
+                  <Badge key={type} variant="outline" className="border-orange-500/30 text-orange-600 dark:text-orange-400">
+                    {type}
                   </Badge>
                 ))}
               </div>
