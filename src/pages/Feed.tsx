@@ -89,9 +89,11 @@ const Feed = () => {
   const isMobile = useIsMobile();
   const [posts, setPosts] = useState<Post[]>([]);
   const [reposts, setReposts] = useState<Repost[]>([]);
+  const [trendingCreators, setTrendingCreators] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [activeTab, setActiveTab] = useState('community');
+  const [activeView, setActiveView] = useState<'trending' | 'community' | 'fanlove'>('community');
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [hasMoreReposts, setHasMoreReposts] = useState(true);
   const [page, setPage] = useState(0);
@@ -104,9 +106,65 @@ const Feed = () => {
 
   useEffect(() => {
     if (user) {
-      fetchPosts(0, true);
+      if (activeView === 'trending') {
+        fetchTrendingCreators();
+      } else if (activeView === 'community') {
+        fetchPosts(0, true);
+      } else if (activeView === 'fanlove') {
+        fetchReposts(0, true);
+      }
     }
-  }, [user]);
+  }, [user, activeView]);
+
+  const fetchTrendingCreators = async () => {
+    try {
+      setLoading(true);
+      
+      // Get creators with high engagement based on recent activity
+      const { data: analyticsData, error } = await supabase
+        .from('creator_analytics')
+        .select(`
+          creator_id,
+          engagement_rate,
+          total_fans,
+          new_fans,
+          total_xp_awarded,
+          profiles!creator_analytics_creator_id_fkey (
+            display_name,
+            username,
+            avatar_url,
+            bio
+          )
+        `)
+        .order('engagement_rate', { ascending: false })
+        .order('total_fans', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      
+      setTrendingCreators(analyticsData || []);
+    } catch (error) {
+      console.error('Error fetching trending creators:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load trending creators",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNavigationClick = (view: 'trending' | 'community' | 'fanlove') => {
+    if (view === 'community' && activeView !== 'community') {
+      // Navigate to community hub
+      navigate('/community-hub');
+      return;
+    }
+    setActiveView(view);
+    setPage(0);
+    setRepostPage(0);
+  };
 
   const fetchPosts = async (pageNum: number = 0, reset: boolean = false) => {
     try {
@@ -930,22 +988,49 @@ const Feed = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="flex items-center justify-center gap-6 text-sm text-muted-foreground/80"
+            className="flex items-center justify-center gap-6 text-sm"
           >
-            <div className="flex items-center gap-2">
+            <motion.div 
+              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${
+                activeView === 'trending' 
+                  ? 'text-primary font-semibold scale-110' 
+                  : 'text-muted-foreground/80 hover:text-foreground hover:scale-105'
+              }`}
+              onClick={() => handleNavigationClick('trending')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <TrendingUp className="h-4 w-4" />
               <span>Trending</span>
-            </div>
+            </motion.div>
             <div className="w-1 h-1 bg-muted-foreground/50 rounded-full"></div>
-            <div className="flex items-center gap-2">
+            <motion.div 
+              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${
+                activeView === 'community' 
+                  ? 'text-primary font-semibold scale-110' 
+                  : 'text-muted-foreground/80 hover:text-foreground hover:scale-105'
+              }`}
+              onClick={() => handleNavigationClick('community')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Users className="h-4 w-4" />
               <span>Community</span>
-            </div>
+            </motion.div>
             <div className="w-1 h-1 bg-muted-foreground/50 rounded-full"></div>
-            <div className="flex items-center gap-2">
+            <motion.div 
+              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${
+                activeView === 'fanlove' 
+                  ? 'text-primary font-semibold scale-110' 
+                  : 'text-muted-foreground/80 hover:text-foreground hover:scale-105'
+              }`}
+              onClick={() => handleNavigationClick('fanlove')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Heart className="h-4 w-4" />
               <span>Fan Love</span>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </motion.div>
@@ -953,50 +1038,174 @@ const Feed = () => {
       <MobileContainer>
         <div className="max-w-md mx-auto space-y-6">
 
-        {/* TikTok-Style Tab Pills */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="flex gap-3 justify-center mb-6"
-        >
-          {[
-            { id: 'community', label: 'Feed', icon: Users, gradient: 'from-blue-500 to-purple-600' },
-            { id: 'fanlove', label: 'Fan Love', icon: Heart, gradient: 'from-pink-500 to-red-600' }
-          ].map((tab, index) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <motion.button
-                key={tab.id}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.4 + index * 0.1, duration: 0.5, type: "spring" }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${
-                  isActive
-                    ? `bg-gradient-to-r ${tab.gradient} text-white shadow-2xl border-2 border-white/20`
-                    : "glass-card text-muted-foreground hover:text-foreground border-2 border-transparent"
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{tab.label}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 rounded-2xl bg-white/10"
-                    initial={false}
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
-              </motion.button>
-            );
-          })}
-        </motion.div>
+        {/* Content based on activeView */}
+        <AnimatePresence mode="wait">
+          {activeView === 'trending' && (
+            <motion.div
+              key="trending"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <MobileCard className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Flame className="h-5 w-5 text-orange-500" />
+                  <h3 className="text-xl font-bold text-gradient-primary">Trending Creators</h3>
+                  <TrendingUp className="h-5 w-5 text-blue-500" />
+                </div>
+                <p className="text-muted-foreground">
+                  Discover creators with the highest engagement and growing fan bases
+                </p>
+              </MobileCard>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="h-20 bg-muted rounded-lg"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : trendingCreators.length === 0 ? (
+                <MobileCard className="text-center py-12">
+                  <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No trending creators found yet</p>
+                </MobileCard>
+              ) : (
+                <div className="space-y-4">
+                  {trendingCreators.map((creator, index) => (
+                    <motion.div
+                      key={creator.creator_id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      onClick={() => navigate(`/universal-profile?userId=${creator.creator_id}`)}
+                      className="cursor-pointer"
+                    >
+                      <MobileCard className="relative overflow-hidden bg-gradient-to-br from-orange-500/10 to-red-500/10 border-2 border-orange-200/20 hover:border-orange-400/40 transition-all duration-300">
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/5"></div>
+                        <div className="relative z-10 flex items-center gap-4 p-4">
+                          <div className="relative">
+                            <Avatar className="h-12 w-12 border-2 border-orange-300/30">
+                              <AvatarImage 
+                                src={creator.profiles?.avatar_url} 
+                                alt={creator.profiles?.display_name || creator.profiles?.username || 'Creator'} 
+                              />
+                              <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold">
+                                {(creator.profiles?.display_name || creator.profiles?.username || 'TC').slice(0,2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">#{index + 1}</span>
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-bold text-gradient-primary">
+                              {creator.profiles?.display_name || creator.profiles?.username || 'Trending Creator'}
+                            </p>
+                            {creator.profiles?.bio && (
+                              <p className="text-sm text-muted-foreground line-clamp-1">
+                                {creator.profiles.bio}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-4 mt-2 text-xs">
+                              <div className="flex items-center gap-1">
+                                <Users className="h-3 w-3 text-blue-500" />
+                                <span className="text-muted-foreground">
+                                  {creator.total_fans?.toLocaleString() || 0} fans
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <TrendingUp className="h-3 w-3 text-green-500" />
+                                <span className="text-muted-foreground">
+                                  {creator.engagement_rate?.toFixed(1) || 0}% engagement
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Trophy className="h-3 w-3 text-yellow-500" />
+                                <span className="text-muted-foreground">
+                                  {creator.total_xp_awarded?.toLocaleString() || 0} XP
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button size="sm" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-none">
+                            View
+                          </Button>
+                        </div>
+                      </MobileCard>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeView === 'community' && (
+            <motion.div
+              key="community"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+            </motion.div>
+          )}
+
+          {activeView === 'fanlove' && (
+            <motion.div
+              key="fanlove"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                {/* TikTok-Style Tab Pills */}
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="flex gap-3 justify-center mb-6"
+                >
+                  {[
+                    { id: 'community', label: 'Feed', icon: Users, gradient: 'from-blue-500 to-purple-600' },
+                    { id: 'fanlove', label: 'Fan Love', icon: Heart, gradient: 'from-pink-500 to-red-600' }
+                  ].map((tab, index) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <motion.button
+                        key={tab.id}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.4 + index * 0.1, duration: 0.5, type: "spring" }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${
+                          isActive
+                            ? `bg-gradient-to-r ${tab.gradient} text-white shadow-2xl border-2 border-white/20`
+                            : "glass-card text-muted-foreground hover:text-foreground border-2 border-transparent"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span>{tab.label}</span>
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeTab"
+                            className="absolute inset-0 rounded-2xl bg-white/10"
+                            initial={false}
+                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                          />
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
 
           <TabsContent value="community" className="space-y-6">
             {/* TikTok-Style Upload Button */}
@@ -1545,7 +1754,10 @@ const Feed = () => {
               </div>
             )}
           </TabsContent>
-        </Tabs>
+                </Tabs>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </MobileContainer>
 
