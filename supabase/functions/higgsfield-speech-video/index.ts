@@ -1,12 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { getErrorMessage } from '../_shared/error-utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async (req): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -160,7 +161,7 @@ serve(async (req) => {
         console.log('ElevenLabs TTS WAV audio generated and uploaded successfully:', audioUrl);
       } catch (e) {
         console.error('ElevenLabs TTS error:', e);
-        throw new Error(`TTS generation failed: ${e.message}`);
+        throw new Error(`TTS generation failed: ${getErrorMessage(e)}`);
       }
     }
 
@@ -269,7 +270,7 @@ serve(async (req) => {
         console.log(`Status check (attempt ${attempts + 1}):`, statusData.jobs?.length ? `${statusData.jobs.length} jobs` : 'No jobs');
         
         // Check if all jobs are completed
-        const allJobsCompleted = statusData.jobs && statusData.jobs.every(job => 
+        const allJobsCompleted = statusData.jobs && statusData.jobs.every((job: any) => 
           job.status === 'completed' || job.status === 'failed'
         );
         
@@ -277,7 +278,7 @@ serve(async (req) => {
           completed = true;
           
           // Find the first successful job with results
-          const successfulJob = statusData.jobs.find(job => 
+          const successfulJob = statusData.jobs.find((job: any) => 
             job.status === 'completed' && job.results && job.results.raw
           );
           
@@ -317,7 +318,7 @@ serve(async (req) => {
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
-        } else if (statusData.jobs && statusData.jobs.some(job => job.status === 'failed')) {
+        } else if (statusData.jobs && statusData.jobs.some((job: any) => job.status === 'failed')) {
           throw new Error('Speech-to-video generation failed');
         }
       } catch (pollError) {

@@ -36,7 +36,7 @@ serve(async (req) => {
         const emailResult = await sendEmailNotification(event_type, user_id, data)
         results.push({ channel: 'email', status: 'success', ...emailResult })
       } catch (error) {
-        results.push({ channel: 'email', status: 'failed', error: error.message })
+        results.push({ channel: 'email', status: 'failed', error: getErrorMessage(error) })
       }
     }
 
@@ -46,7 +46,7 @@ serve(async (req) => {
         const smsResult = await sendSMSNotification(event_type, preferences.phone_number, data)
         results.push({ channel: 'sms', status: 'success', ...smsResult })
       } catch (error) {
-        results.push({ channel: 'sms', status: 'failed', error: error.message })
+        results.push({ channel: 'sms', status: 'failed', error: getErrorMessage(error) })
       }
     }
 
@@ -54,9 +54,9 @@ serve(async (req) => {
     if (preferences?.discord_webhook_url) {
       try {
         const discordResult = await sendDiscordNotification(event_type, preferences.discord_webhook_url, data)
-        results.push({ channel: 'discord', status: 'success', ...discordResult })
+        results.push({ channel: 'discord', ...discordResult })
       } catch (error) {
-        results.push({ channel: 'discord', status: 'failed', error: error.message })
+        results.push({ channel: 'discord', status: 'failed', error: getErrorMessage(error) })
       }
     }
 
@@ -64,9 +64,9 @@ serve(async (req) => {
     if (preferences?.slack_webhook_url) {
       try {
         const slackResult = await sendSlackNotification(event_type, preferences.slack_webhook_url, data)
-        results.push({ channel: 'slack', status: 'success', ...slackResult })
+        results.push({ channel: 'slack', ...slackResult })
       } catch (error) {
-        results.push({ channel: 'slack', status: 'failed', error: error.message })
+        results.push({ channel: 'slack', status: 'failed', error: getErrorMessage(error) })
       }
     }
 
@@ -76,7 +76,7 @@ serve(async (req) => {
         const pushResult = await sendPushNotification(event_type, user_id, data)
         results.push({ channel: 'push', status: 'success', ...pushResult })
       } catch (error) {
-        results.push({ channel: 'push', status: 'failed', error: error.message })
+        results.push({ channel: 'push', status: 'failed', error: getErrorMessage(error) })
       }
     }
 
@@ -91,7 +91,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Notification dispatcher error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: getErrorMessage(error) }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

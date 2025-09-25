@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { getErrorMessage } from '../_shared/error-utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,7 +36,7 @@ serve(async (req) => {
 
     if (status === 'completed') {
       // Find successful job with video results
-      const successfulJob = jobs?.find(job => 
+      const successfulJob = jobs?.find((job: any) => 
         job.status === 'completed' && job.results && job.results.raw
       );
 
@@ -91,7 +92,7 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: error.message,
+              error: getErrorMessage(error),
               jobSetId: jobSetId
             }),
             { 
@@ -146,7 +147,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: getErrorMessage(error) 
       }),
       { 
         status: 500,

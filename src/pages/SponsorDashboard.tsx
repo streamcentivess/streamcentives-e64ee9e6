@@ -57,33 +57,38 @@ export default function SponsorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-3 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Sponsor Dashboard</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Welcome back, {sponsorProfile.company_name}</p>
-          </div>
-          <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
-            <Link to="/brand-profile" className="flex-1 sm:flex-none">
-              <Button variant="outline" size="sm" className="sm:size-default w-full sm:w-auto">
-                <User className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">View Brand Profile</span>
-                <span className="sm:hidden">Brand</span>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
+      <div className="absolute inset-0 bg-grid-subtle opacity-[0.02]" />
+      <div className="relative max-w-7xl mx-auto space-y-4 md:space-y-6 p-3 md:p-6">
+        <div className="glass-card p-4 md:p-6 border-primary/20">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Sponsor Dashboard
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Welcome back, {sponsorProfile.company_name}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
+              <Link to="/brand-profile" className="flex-1 sm:flex-none">
+                <Button variant="outline" size="sm" className="sm:size-default w-full sm:w-auto btn-glass">
+                  <User className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">View Brand Profile</span>
+                  <span className="sm:hidden">Brand</span>
+                </Button>
+              </Link>
+              <Link to="/sponsor-profile" className="flex-1 sm:flex-none">
+                <Button variant="outline" size="sm" className="sm:size-default w-full sm:w-auto btn-glass">
+                  <Building2 className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Sponsor Profile</span>
+                  <span className="sm:hidden">Profile</span>
+                </Button>
+              </Link>
+              <Button size="sm" className="sm:size-default flex-1 sm:flex-none btn-primary">
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">New Campaign</span>
+                <span className="sm:hidden">New</span>
               </Button>
-            </Link>
-            <Link to="/sponsor-profile" className="flex-1 sm:flex-none">
-              <Button variant="outline" size="sm" className="sm:size-default w-full sm:w-auto">
-                <Building2 className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Sponsor Profile</span>
-                <span className="sm:hidden">Profile</span>
-              </Button>
-            </Link>
-            <Button size="sm" className="sm:size-default flex-1 sm:flex-none">
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">New Campaign</span>
-              <span className="sm:hidden">New</span>
-            </Button>
+            </div>
           </div>
         </div>
 
@@ -118,13 +123,13 @@ export default function SponsorDashboard() {
 
           <TabsContent value="overview">
             <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-              <Card>
+              <Card className="card-glow border-primary/20">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gradient-primary">
                     <span className="hidden sm:inline">Active Partnerships</span>
                     <span className="sm:hidden">Partners</span>
                   </CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-xl sm:text-2xl font-bold">0</div>
@@ -132,13 +137,13 @@ export default function SponsorDashboard() {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="card-glow border-primary/20">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gradient-primary">
                     <span className="hidden sm:inline">Total Reach</span>
                     <span className="sm:hidden">Reach</span>
                   </CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <TrendingUp className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-xl sm:text-2xl font-bold">0</div>
@@ -149,13 +154,13 @@ export default function SponsorDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-glow border-primary/20">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gradient-primary">
                     <span className="hidden sm:inline">Campaign ROI</span>
                     <span className="sm:hidden">ROI</span>
                   </CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <DollarSign className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-xl sm:text-2xl font-bold">0%</div>
@@ -166,13 +171,13 @@ export default function SponsorDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-glow border-primary/20">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gradient-primary">
                     <span className="hidden sm:inline">Pending Offers</span>
                     <span className="sm:hidden">Offers</span>
                   </CardTitle>
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <MessageSquare className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-xl sm:text-2xl font-bold">0</div>
@@ -184,9 +189,9 @@ export default function SponsorDashboard() {
               </Card>
             </div>
 
-            <Card className="mt-4 md:mt-6">
+            <Card className="mt-4 md:mt-6 glass-card border-primary/20">
               <CardContent className="p-4 md:p-6">
-                <h3 className="text-base sm:text-lg font-medium mb-3 md:mb-4">Welcome to Your Sponsor Dashboard</h3>
+                <h3 className="text-base sm:text-lg font-medium mb-3 md:mb-4 text-gradient-primary">Welcome to Your Sponsor Dashboard</h3>
                 <p className="text-sm sm:text-base text-muted-foreground mb-3 md:mb-4">
                   Get started by discovering creators that match your brand and campaign goals.
                 </p>
@@ -197,7 +202,7 @@ export default function SponsorDashboard() {
                     creatorsTab?.click();
                   }}
                   size={isMobile ? "sm" : "default"}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto btn-primary"
                 >
                   <Users className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Discover Creators</span>
