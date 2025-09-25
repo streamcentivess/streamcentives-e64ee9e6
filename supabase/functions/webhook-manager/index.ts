@@ -87,11 +87,11 @@ serve(async (req) => {
             webhook_subscription_id: webhook.id,
             event_type,
             payload: { event_type, data, user_id },
-            error_message: error.message,
+            error_message: error instanceof Error ? error.message : 'Unknown error',
             delivered_at: new Date().toISOString()
           })
 
-          return { webhook_id: webhook.id, status: 'failed', error: error.message }
+          return { webhook_id: webhook.id, status: 'failed', error: error instanceof Error ? error.message : 'Unknown error' }
         }
       })
     )
@@ -109,7 +109,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Webhook manager error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

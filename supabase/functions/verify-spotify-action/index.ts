@@ -85,7 +85,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Spotify verification error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400
@@ -186,7 +186,7 @@ async function verifySpotifyPlay(trackUrl: string, userId: string): Promise<bool
       .gte('listened_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
       .limit(1);
 
-    return (recentListens && recentListens.length > 0);
+    return !!(recentListens && recentListens.length > 0);
 
   } catch (error) {
     console.error('Spotify play verification error:', error);

@@ -332,6 +332,19 @@ serve(async (req): Promise<Response> => {
       throw new Error('Speech-to-video generation timeout');
     }
 
+    // Return success response with completion message
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Speech-to-video generation completed successfully',
+        status: 'completed'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 200 
+      }
+    );
+
   } catch (error) {
     console.error('HiggsField speech-to-video error:', error);
     return new Response(
