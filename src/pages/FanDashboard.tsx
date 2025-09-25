@@ -648,7 +648,7 @@ const FanDashboard = () => {
 
       {/* XP Animation */}
       <XPRewardAnimation 
-        amount={xpAnimationAmount}
+        xpAmount={xpAnimationAmount}
         show={showXPAnimation}
         onComplete={() => setShowXPAnimation(false)}
       />
