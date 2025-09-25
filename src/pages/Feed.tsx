@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { FeedPopupSystem } from '@/components/FeedPopupSystem';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileContainer, MobileHeader, MobileCard } from '@/components/ui/mobile-container';
 import { 
   Heart, 
   MessageCircle, 
@@ -28,7 +30,12 @@ import {
   Users,
   Repeat2,
   Sparkles,
-  UserPlus
+  UserPlus,
+  Camera,
+  TrendingUp,
+  Star,
+  Flame,
+  Music
 } from 'lucide-react';
 
 interface Post {
@@ -823,64 +830,218 @@ const Feed = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-background via-surface to-background"
+      >
         <AppNavigation />
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading feed...</p>
-          </div>
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-center space-y-4"
+          >
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-transparent bg-gradient-to-r from-primary to-secondary bg-clip-border mx-auto"></div>
+              <div className="absolute inset-0 rounded-full animate-pulse bg-gradient-to-r from-primary/20 to-secondary/20"></div>
+            </div>
+            <motion.p 
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-lg font-medium text-gradient-primary"
+            >
+              Loading amazing content...
+            </motion.p>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gradient-to-br from-background via-surface to-background"
+    >
       <AppNavigation />
       <FeedPopupSystem />
       
-      <main className="max-w-2xl mx-auto px-4 py-8">
-        <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent flex items-center justify-center gap-2">
-            <Sparkles className="h-8 w-8 text-primary animate-pulse" />
-            Community Vibes
-            <Sparkles className="h-8 w-8 text-primary animate-pulse" />
-          </h1>
-          <p className="text-muted-foreground mt-2">
+      {/* Hero Section - TikTok Style */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative overflow-hidden hero-gradient py-8 text-center"
+      >
+        <div className="absolute inset-0 bg-grid-subtle opacity-20"></div>
+        <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6, type: "spring" }}
+            className="flex items-center justify-center gap-3"
+          >
+            <motion.div
+              animate={{ 
+                rotate: [0, 10, -10, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center"
+            >
+              <Flame className="h-6 w-6 text-white" />
+            </motion.div>
+            <h1 className="text-4xl font-black text-gradient-primary">
+              Community Vibes
+            </h1>
+            <motion.div
+              animate={{ 
+                rotate: [0, -10, 10, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity,
+                repeatType: "reverse",
+                delay: 0.5
+              }}
+              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center"
+            >
+              <Star className="h-6 w-6 text-white" />
+            </motion.div>
+          </motion.div>
+          
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="text-lg font-medium text-muted-foreground"
+          >
             Discover amazing content and spread the love ✨
-          </p>
+          </motion.p>
+          
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="flex items-center justify-center gap-6 text-sm text-muted-foreground/80"
+          >
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span>Trending</span>
+            </div>
+            <div className="w-1 h-1 bg-muted-foreground/50 rounded-full"></div>
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span>Community</span>
+            </div>
+            <div className="w-1 h-1 bg-muted-foreground/50 rounded-full"></div>
+            <div className="flex items-center gap-2">
+              <Heart className="h-4 w-4" />
+              <span>Fan Love</span>
+            </div>
+          </motion.div>
         </div>
+      </motion.div>
+      
+      <MobileContainer>
+        <div className="max-w-md mx-auto space-y-6">
+
+        {/* TikTok-Style Tab Pills */}
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="flex gap-3 justify-center mb-6"
+        >
+          {[
+            { id: 'community', label: 'Feed', icon: Users, gradient: 'from-blue-500 to-purple-600' },
+            { id: 'fanlove', label: 'Fan Love', icon: Heart, gradient: 'from-pink-500 to-red-600' }
+          ].map((tab, index) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <motion.button
+                key={tab.id}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.4 + index * 0.1, duration: 0.5, type: "spring" }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setActiveTab(tab.id)}
+                className={`relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${
+                  isActive
+                    ? `bg-gradient-to-r ${tab.gradient} text-white shadow-2xl border-2 border-white/20`
+                    : "glass-card text-muted-foreground hover:text-foreground border-2 border-transparent"
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span>{tab.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 rounded-2xl bg-white/10"
+                    initial={false}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </motion.div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="community" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Community Feed
-            </TabsTrigger>
-            <TabsTrigger value="fanlove" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              Fan Love
-            </TabsTrigger>
-          </TabsList>
 
           <TabsContent value="community" className="space-y-6">
-            {/* Compact Upload Button - Always show at top */}
-            <div className="flex justify-center">
+            {/* TikTok-Style Upload Button */}
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.6, type: "spring" }}
+              className="flex justify-center"
+            >
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button 
-                    variant="outline"
-                    className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-dashed border-primary/30 hover:border-primary/50 bg-primary/5 hover:bg-primary/10 transition-all duration-300"
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative group"
                   >
-                    <UserPlus className="h-5 w-5 text-primary" />
-                    <span className="font-medium text-primary">Upload to Feed</span>
-                  </Button>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-gradient-shift"></div>
+                    <Button 
+                      className="relative flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg shadow-2xl border-0 hover:shadow-3xl transition-all duration-300"
+                    >
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Camera className="h-6 w-6" />
+                      </motion.div>
+                      <span>Create Magic</span>
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        <Sparkles className="h-5 w-5" />
+                      </motion.div>
+                    </Button>
+                  </motion.div>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-card border-2 border-primary/20">
                   <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-primary" />
+                    <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Sparkles className="h-6 w-6 text-primary" />
+                      </motion.div>
                       Share with Community
                     </DialogTitle>
                   </DialogHeader>
@@ -894,77 +1055,146 @@ const Feed = () => {
                   </div>
                 </DialogContent>
               </Dialog>
-            </div>
+            </motion.div>
             
-            {posts.length === 0 ? (
-              <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-dashed border-primary/20">
-                <CardContent className="text-center py-12">
-                  <Users className="h-16 w-16 text-primary mx-auto mb-4 animate-bounce" />
-                  <h3 className="font-bold text-xl mb-2 bg-gradient-primary bg-clip-text text-transparent">No posts yet</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Be the first to share something amazing! 🚀
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              posts.map((post) => (
-                <Card key={post.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar 
-                        className="h-12 w-12 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/40 transition-all" 
-                        onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+            <AnimatePresence mode="popLayout">
+              {posts.length === 0 ? (
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  transition={{ duration: 0.6, type: "spring" }}
+                >
+                  <MobileCard className="bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 border-2 border-dashed border-primary/30">
+                    <div className="text-center py-12 space-y-6">
+                      <motion.div
+                        animate={{ 
+                          y: [0, -10, 0],
+                          rotate: [0, 5, -5, 0]
+                        }}
+                        transition={{ 
+                          duration: 3, 
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
                       >
-                        <AvatarImage src={post.profiles?.avatar_url || undefined} />
-                        <AvatarFallback className="bg-gradient-primary text-white font-bold">
-                          {post.profiles?.display_name?.[0] || post.profiles?.username?.[0] || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p 
-                            className="font-bold cursor-pointer hover:text-primary transition-colors"
-                            onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
-                          >
-                            {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
-                          </p>
-                          <UserPlus className="w-4 h-4 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(post.created_at).toLocaleDateString()}
+                        <Users className="h-20 w-20 text-primary mx-auto" />
+                      </motion.div>
+                      <div>
+                        <h3 className="font-black text-2xl mb-2 text-gradient-primary">No posts yet</h3>
+                        <p className="text-muted-foreground text-lg">
+                          Be the first to share something amazing! 🚀
                         </p>
                       </div>
                     </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    {/* Post Content */}
-                    <div className="relative rounded-xl overflow-hidden">
-                      {post.content_type.startsWith('video/') ? (
-                        <div className="relative bg-black rounded-xl overflow-hidden">
-                          <video 
-                            controls 
-                            className="w-full max-h-96 object-contain"
-                            preload="metadata"
-                            playsInline
+                  </MobileCard>
+                </motion.div>
+              ) : (
+                posts.map((post, index) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -50, scale: 0.95 }}
+                    transition={{ 
+                      duration: 0.6, 
+                      type: "spring",
+                      delay: index * 0.1
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    className="group"
+                  >
+                    <MobileCard className="relative overflow-hidden border-2 hover:border-primary/40 transition-all duration-500 bg-gradient-to-br from-background to-surface hover:shadow-2xl hover:shadow-primary/10">
+                      {/* Animated Background Gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      
+                      <CardHeader className="relative pb-3">
+                        <div className="flex items-center gap-3">
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
                           >
-                            <source src={post.content_url} type={post.content_type} />
-                            Your browser does not support the video tag.
-                          </video>
+                            <Avatar 
+                              className="h-14 w-14 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/60 transition-all duration-300" 
+                              onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+                            >
+                              <AvatarImage src={post.profiles?.avatar_url || undefined} />
+                              <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
+                                {post.profiles?.display_name?.[0] || post.profiles?.username?.[0] || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                          </motion.div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <motion.p 
+                                whileHover={{ scale: 1.05 }}
+                                className="font-bold cursor-pointer hover:text-primary transition-colors text-lg"
+                                onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+                              >
+                                {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
+                              </motion.p>
+                              <motion.div
+                                whileHover={{ scale: 1.2, rotate: 180 }}
+                                whileTap={{ scale: 0.8 }}
+                              >
+                                <UserPlus className="w-5 h-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+                              </motion.div>
+                            </div>
+                            <p className="text-sm text-muted-foreground font-medium">
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        <img 
-                          src={post.content_url} 
-                          alt="Post content"
-                          className="w-full max-h-96 object-cover rounded-xl shadow-lg"
-                        />
-                      )}
-                    </div>
+                      </CardHeader>
 
-                    {/* Caption */}
-                    {post.caption && (
-                      <p className="text-sm leading-relaxed">{post.caption}</p>
-                    )}
+                      <CardContent className="relative space-y-4">
+                        {/* Post Content - TikTok Style */}
+                        <motion.div 
+                          whileHover={{ scale: 1.02 }}
+                          className="relative rounded-2xl overflow-hidden shadow-2xl"
+                        >
+                          {post.content_type.startsWith('video/') ? (
+                            <div className="relative bg-gradient-to-br from-black to-gray-900 rounded-2xl overflow-hidden">
+                              <motion.video 
+                                controls 
+                                className="w-full max-h-96 object-contain"
+                                preload="metadata"
+                                playsInline
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <source src={post.content_url} type={post.content_type} />
+                                Your browser does not support the video tag.
+                              </motion.video>
+                              {/* Video Overlay Gradient */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                            </div>
+                          ) : (
+                            <div className="relative">
+                              <motion.img 
+                                src={post.content_url} 
+                                alt="Post content"
+                                className="w-full max-h-96 object-cover rounded-2xl"
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ duration: 0.3 }}
+                              />
+                              {/* Image Overlay Gradient */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-2xl"></div>
+                            </div>
+                          )}
+                        </motion.div>
+
+                        {/* Caption - Enhanced */}
+                        {post.caption && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="bg-gradient-to-r from-muted/50 to-transparent rounded-xl p-4"
+                          >
+                            <p className="text-sm leading-relaxed font-medium">{post.caption}</p>
+                          </motion.div>
+                        )}
 
                     {/* Campaign Info */}
                     {post.campaign && (
@@ -1045,54 +1275,81 @@ const Feed = () => {
                       </>
                     )}
 
-                    {/* Post Actions */}
-                    <div className="flex items-center justify-between pt-3">
-                      <div className="flex items-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className={`flex items-center gap-2 hover:bg-red-50 hover:text-red-500 transition-all rounded-full ${
-                            post.is_liked ? 'text-red-500 bg-red-50' : ''
-                          }`}
-                          onClick={() => handleLike(post.id)}
-                        >
-                          <Heart className={`h-5 w-5 ${post.is_liked ? 'fill-current' : ''}`} />
-                          {post.likes}
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className={`flex items-center gap-2 hover:bg-blue-50 hover:text-blue-500 transition-all rounded-full ${
-                            showCommentInput === post.id ? 'text-blue-500 bg-blue-50' : ''
-                          }`}
-                          onClick={() => handleComment(post.id)}
-                        >
-                          <MessageCircle className="h-5 w-5" />
-                          {post.comments}
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className={`flex items-center gap-2 hover:bg-purple-50 hover:text-purple-500 transition-all rounded-full ${
-                            post.is_reposted ? 'text-purple-500 bg-purple-50' : ''
-                          }`}
-                          onClick={() => handleRepost(post.id)}
-                          title="Add to Fan Love"
-                        >
-                          <Repeat2 className={`h-5 w-5 ${post.is_reposted ? 'fill-current' : ''}`} />
-                          {post.repost_count || 0}
-                        </Button>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="hover:bg-primary/10 hover:text-primary transition-all rounded-full"
-                        onClick={() => handleShare(post)}
-                        title="Share post"
-                      >
-                        <Share2 className="h-5 w-5" />
-                      </Button>
-                    </div>
+                        {/* Post Actions - TikTok Style */}
+                        <div className="flex items-center justify-between pt-4">
+                          <div className="flex items-center gap-2">
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className={`flex items-center gap-2 rounded-2xl px-4 py-2 font-bold transition-all duration-300 ${
+                                  post.is_liked 
+                                    ? 'text-red-500 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200' 
+                                    : 'hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 hover:text-red-500 hover:border hover:border-red-200'
+                                }`}
+                                onClick={() => handleLike(post.id)}
+                              >
+                                <motion.div
+                                  animate={post.is_liked ? { scale: [1, 1.3, 1] } : {}}
+                                  transition={{ duration: 0.3 }}
+                                >
+                                  <Heart className={`h-5 w-5 ${post.is_liked ? 'fill-current' : ''}`} />
+                                </motion.div>
+                                <span className="font-semibold">{post.likes}</span>
+                              </Button>
+                            </motion.div>
+                            
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className={`flex items-center gap-2 rounded-2xl px-4 py-2 font-bold transition-all duration-300 ${
+                                  showCommentInput === post.id 
+                                    ? 'text-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200' 
+                                    : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-500 hover:border hover:border-blue-200'
+                                }`}
+                                onClick={() => handleComment(post.id)}
+                              >
+                                <MessageCircle className="h-5 w-5" />
+                                <span className="font-semibold">{post.comments}</span>
+                              </Button>
+                            </motion.div>
+                            
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className={`flex items-center gap-2 rounded-2xl px-4 py-2 font-bold transition-all duration-300 ${
+                                  post.is_reposted 
+                                    ? 'text-purple-500 bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200' 
+                                    : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-500 hover:border hover:border-purple-200'
+                                }`}
+                                onClick={() => handleRepost(post.id)}
+                                title="Add to Fan Love"
+                              >
+                                <motion.div
+                                  animate={post.is_reposted ? { rotate: 360 } : {}}
+                                  transition={{ duration: 0.5 }}
+                                >
+                                  <Repeat2 className={`h-5 w-5 ${post.is_reposted ? 'fill-current' : ''}`} />
+                                </motion.div>
+                                <span className="font-semibold">{post.repost_count || 0}</span>
+                              </Button>
+                            </motion.div>
+                          </div>
+                          
+                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="rounded-2xl px-4 py-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 hover:text-primary transition-all duration-300"
+                              onClick={() => handleShare(post)}
+                              title="Share post"
+                            >
+                              <Share2 className="h-5 w-5" />
+                            </Button>
+                          </motion.div>
+                        </div>
 
                     {/* Comment Input */}
                     {showCommentInput === post.id && (
@@ -1120,41 +1377,88 @@ const Feed = () => {
                         </div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </MobileCard>
+                  </motion.div>
                 ))
-            )}
+              )}
+            </AnimatePresence>
             
-            {/* Loading more indicator */}
+            {/* Loading more indicator - Enhanced */}
             {loadingMore && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                <p className="text-sm text-muted-foreground">Loading more amazing content...</p>
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-8"
+              >
+                <div className="relative mx-auto mb-4 w-12 h-12">
+                  <div className="absolute inset-0 rounded-full border-4 border-transparent bg-gradient-to-r from-primary to-secondary bg-clip-border animate-spin"></div>
+                  <div className="absolute inset-2 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 animate-pulse"></div>
+                </div>
+                <motion.p 
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-lg font-medium text-gradient-primary"
+                >
+                  Loading more amazing content...
+                </motion.p>
+              </motion.div>
             )}
           </TabsContent>
 
           <TabsContent value="fanlove" className="space-y-6">
-            {reposts.length === 0 ? (
-              <Card className="bg-gradient-to-br from-pink-50 to-purple-50 border-2 border-dashed border-pink-200 dark:from-pink-950/20 dark:to-purple-950/20">
-                <CardContent className="text-center py-12">
-                  <Heart className="h-16 w-16 text-pink-500 mx-auto mb-4 animate-pulse" />
-                  <h3 className="font-bold text-xl mb-2 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                    No Fan Love Yet
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Start spreading the love by reposting content you enjoy! 💖
-                  </p>
-                  <Button 
-                    onClick={() => setActiveTab('community')} 
-                    className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-semibold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    <Heart className="h-4 w-4 mr-2" />
-                    Explore Community
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
+            <AnimatePresence mode="popLayout">
+              {reposts.length === 0 ? (
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  transition={{ duration: 0.6, type: "spring" }}
+                >
+                  <MobileCard className="bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-red-500/10 border-2 border-dashed border-pink-300/50">
+                    <div className="text-center py-12 space-y-6">
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          rotate: [0, 10, -10, 0]
+                        }}
+                        transition={{ 
+                          duration: 2, 
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        <Heart className="h-20 w-20 text-pink-500 mx-auto" />
+                      </motion.div>
+                      <div>
+                        <h3 className="font-black text-2xl mb-2 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                          No Fan Love Yet
+                        </h3>
+                        <p className="text-muted-foreground text-lg mb-6">
+                          Start spreading the love by reposting content you enjoy! 💖
+                        </p>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button 
+                            onClick={() => setActiveTab('community')} 
+                            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-bold px-8 py-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 text-lg"
+                          >
+                            <motion.div
+                              animate={{ scale: [1, 1.2, 1] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            >
+                              <Heart className="h-5 w-5 mr-2" />
+                            </motion.div>
+                            Explore Community
+                          </Button>
+                        </motion.div>
+                      </div>
+                    </div>
+                  </MobileCard>
+                </motion.div>
+              ) : (
               reposts.map((repost) => (
                 <Card key={repost.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-pink-200">
                   <CardHeader className="pb-2">
@@ -1231,6 +1535,7 @@ const Feed = () => {
                 </Card>
               ))
             )}
+            </AnimatePresence>
             
             {/* Loading more indicator for reposts */}
             {loadingMore && (
@@ -1241,13 +1546,14 @@ const Feed = () => {
             )}
           </TabsContent>
         </Tabs>
-      </main>
+        </div>
+      </MobileContainer>
 
       {/* User Search Modal */}
       <Dialog open={showUserSearch} onOpenChange={setShowUserSearch}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto glass-card">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
               💌 Send to StreamCentives DM
             </DialogTitle>
           </DialogHeader>
@@ -1259,7 +1565,7 @@ const Feed = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 };
 
