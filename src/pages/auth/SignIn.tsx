@@ -155,7 +155,10 @@ const SignIn = () => {
                 type="text"
                 placeholder="Enter username, company name, or email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  console.log('Email input changed:', e.target.value);
+                  setEmail(e.target.value);
+                }}
                 required
               />
             </div>
@@ -167,7 +170,10 @@ const SignIn = () => {
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  console.log('Password input changed:', e.target.value);
+                  setPassword(e.target.value);
+                }}
                 required
               />
             </div>

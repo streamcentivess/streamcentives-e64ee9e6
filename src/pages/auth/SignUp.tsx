@@ -117,7 +117,10 @@ const SignUp = () => {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  console.log('SignUp email input changed:', e.target.value);
+                  setEmail(e.target.value);
+                }}
                 required
               />
             </div>
@@ -129,7 +132,10 @@ const SignUp = () => {
                 type="password"
                 placeholder="Create a password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  console.log('SignUp password input changed:', e.target.value);
+                  setPassword(e.target.value);
+                }}
                 required
                 minLength={6}
               />
@@ -142,7 +148,10 @@ const SignUp = () => {
                 type="password"
                 placeholder="Confirm your password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  console.log('SignUp confirm password input changed:', e.target.value);
+                  setConfirmPassword(e.target.value);
+                }}
                 required
                 minLength={6}
               />
