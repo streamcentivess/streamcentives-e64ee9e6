@@ -18,6 +18,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileContainer, MobileHeader, MobileCard } from '@/components/ui/mobile-container';
+import { FeedFilters, FeedFilterState } from '@/components/FeedFilters';
+import { CreatorTypeBadge } from '@/components/CreatorTypeBadge';
 import { 
   Heart, 
   MessageCircle, 
@@ -49,6 +51,7 @@ interface Post {
     display_name: string | null;
     username: string | null;
     avatar_url: string | null;
+    creator_type?: string | null;
   } | null;
   likes: number;
   comments: number;
@@ -102,6 +105,10 @@ const Feed = () => {
   const [sharePostData, setSharePostData] = useState<{ post: Post; shareText: string; shareUrl: string } | null>(null);
   const [showCommentInput, setShowCommentInput] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
+  const [feedFilters, setFeedFilters] = useState<FeedFilterState>({
+    contentType: 'all',
+    creatorTypes: []
+  });
   const POSTS_PER_PAGE = 5;
 
   useEffect(() => {
@@ -114,7 +121,7 @@ const Feed = () => {
         fetchReposts(0, true);
       }
     }
-  }, [user, activeView]);
+  }, [user, activeView, feedFilters]);
 
   const fetchTrendingCreators = async () => {
     try {
@@ -173,11 +180,47 @@ const Feed = () => {
         setLoadingMore(true);
       }
 
-      // Fetch posts with pagination - only community posts
-      const { data: postsData, error: postsError } = await supabase
+      // Build query for posts with filtering
+      let query = supabase
         .from('posts')
         .select('*')
-        .eq('is_community_post', true)
+        .eq('is_community_post', true);
+
+      // Apply content type filter by getting user IDs first
+      let userIds: string[] = [];
+      if (feedFilters.contentType === 'creators') {
+        // Get posts from users who have a creator_type set
+        const { data: creatorProfiles } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .not('creator_type', 'is', null);
+        
+        if (creatorProfiles && creatorProfiles.length > 0) {
+          userIds = creatorProfiles.map(p => p.user_id);
+          query = query.in('user_id', userIds);
+        } else {
+          // No creators found, return empty
+          setPosts([]);
+          return;
+        }
+      } else if (feedFilters.contentType === 'fans') {
+        // Get posts from users who don't have a creator_type set (fans)
+        const { data: fanProfiles } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .is('creator_type', null);
+        
+        if (fanProfiles && fanProfiles.length > 0) {
+          userIds = fanProfiles.map(p => p.user_id);
+          query = query.in('user_id', userIds);
+        } else {
+          // No fans found, return empty
+          setPosts([]);
+          return;
+        }
+      }
+
+      const { data: postsData, error: postsError } = await query
         .order('created_at', { ascending: false })
         .range(pageNum * POSTS_PER_PAGE, (pageNum + 1) * POSTS_PER_PAGE - 1);
 
@@ -193,11 +236,11 @@ const Feed = () => {
       }
 
       // Fetch profiles for all post authors
-      const userIds = [...new Set(postsData.map(post => post.user_id))];
+      const postUserIds = [...new Set(postsData.map(post => post.user_id))];
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, display_name, username, avatar_url')
-        .in('user_id', userIds);
+        .select('user_id, display_name, username, avatar_url, creator_type')
+        .in('user_id', postUserIds);
 
       if (profilesError) throw profilesError;
 
@@ -207,9 +250,18 @@ const Feed = () => {
         profilesMap.set(profile.user_id, profile);
       });
 
+      // Filter posts by creator type if specified
+      let filteredPostsData = postsData;
+      if (feedFilters.creatorTypes.length > 0) {
+        filteredPostsData = postsData.filter(post => {
+          const profile = profilesMap.get(post.user_id);
+          return profile && profile.creator_type && feedFilters.creatorTypes.includes(profile.creator_type);
+        });
+      }
+
       // Get likes, comments, reposts count and user interaction status for each post
       const postsWithCounts = await Promise.all(
-        postsData.map(async (post) => {
+        filteredPostsData.map(async (post) => {
           const [likesResult, commentsResult, repostsResult, userLikeResult, userRepostResult] = await Promise.all([
             supabase
               .from('post_likes')
@@ -1251,6 +1303,12 @@ const Feed = () => {
                 </Dialog>
               </motion.div>
               
+              {/* Add Filter Component */}
+              <FeedFilters 
+                onFiltersChange={setFeedFilters}
+                initialFilters={feedFilters}
+              />
+
               <AnimatePresence mode="popLayout">
                 {posts.length === 0 ? (
                   <motion.div
@@ -1319,21 +1377,27 @@ const Feed = () => {
                               </Avatar>
                             </motion.div>
                             <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <motion.p 
-                                  whileHover={{ scale: 1.05 }}
-                                  className="font-bold cursor-pointer hover:text-primary transition-colors text-lg"
-                                  onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
-                                >
-                                  {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
-                                </motion.p>
-                                <motion.div
-                                  whileHover={{ scale: 1.2, rotate: 180 }}
-                                  whileTap={{ scale: 0.8 }}
-                                >
-                                  <UserPlus className="w-5 h-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-                                </motion.div>
-                              </div>
+                               <div className="flex items-center gap-2">
+                                 <motion.p 
+                                   whileHover={{ scale: 1.05 }}
+                                   className="font-bold cursor-pointer hover:text-primary transition-colors text-lg"
+                                   onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+                                 >
+                                   {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
+                                 </motion.p>
+                                 {post.profiles?.creator_type && (
+                                   <CreatorTypeBadge 
+                                     creatorType={post.profiles.creator_type} 
+                                     size="sm" 
+                                   />
+                                 )}
+                                 <motion.div
+                                   whileHover={{ scale: 1.2, rotate: 180 }}
+                                   whileTap={{ scale: 0.8 }}
+                                 >
+                                   <UserPlus className="w-5 h-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+                                 </motion.div>
+                               </div>
                               <p className="text-sm text-muted-foreground font-medium">
                                 {new Date(post.created_at).toLocaleDateString()}
                               </p>
