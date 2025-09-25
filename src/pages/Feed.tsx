@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -111,6 +111,58 @@ const Feed = () => {
     sponsorTypes: []
   });
   const POSTS_PER_PAGE = 5;
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Video autoplay functionality
+  const setupVideoObserver = useCallback(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            // Video is more than 50% visible, play it
+            video.play().catch(() => {
+              // Autoplay failed, user needs to interact first
+            });
+          } else {
+            // Video is not visible enough, pause it
+            video.pause();
+          }
+        });
+      },
+      {
+        threshold: 0.5, // Trigger when 50% of video is visible
+        rootMargin: '0px 0px -50px 0px' // Add some margin for better UX
+      }
+    );
+
+    // Observe all current videos
+    videoRefs.current.forEach((video) => {
+      if (observerRef.current) {
+        observerRef.current.observe(video);
+      }
+    });
+  }, []);
+
+  const addVideoRef = useCallback((postId: string, video: HTMLVideoElement | null) => {
+    if (video) {
+      videoRefs.current.set(postId, video);
+      if (observerRef.current) {
+        observerRef.current.observe(video);
+      }
+    } else {
+      const existingVideo = videoRefs.current.get(postId);
+      if (existingVideo && observerRef.current) {
+        observerRef.current.unobserve(existingVideo);
+      }
+      videoRefs.current.delete(postId);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -123,6 +175,24 @@ const Feed = () => {
       }
     }
   }, [user, activeView, feedFilters]);
+
+  // Setup video observer when posts change
+  useEffect(() => {
+    if (posts.length > 0) {
+      setTimeout(() => {
+        setupVideoObserver();
+      }, 100); // Small delay to ensure videos are rendered
+    }
+  }, [posts, setupVideoObserver]);
+
+  // Cleanup observer on unmount
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
 
   const fetchTrendingCreators = async () => {
     try {
@@ -1473,10 +1543,13 @@ const Feed = () => {
                             {post.content_type === 'video' ? (
                               <div className="relative bg-gradient-to-br from-black to-gray-900 rounded-2xl overflow-hidden">
                                 <motion.video 
+                                  ref={(el) => addVideoRef(post.id, el)}
                                   controls 
                                   className="w-full max-h-96 object-contain"
                                   preload="metadata"
                                   playsInline
+                                  muted
+                                  loop
                                   whileHover={{ scale: 1.05 }}
                                   transition={{ duration: 0.3 }}
                                 >
