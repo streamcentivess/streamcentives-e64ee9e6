@@ -988,49 +988,58 @@ const Feed = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="flex items-center justify-center gap-6 text-sm"
+            className="flex items-center justify-center gap-4"
           >
-            <motion.div 
-              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${
+            <motion.button 
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 border-2 ${
                 activeView === 'trending' 
-                  ? 'text-primary font-semibold scale-110' 
-                  : 'text-muted-foreground/80 hover:text-foreground hover:scale-105'
+                  ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white border-orange-300/50 shadow-2xl shadow-orange-500/20' 
+                  : 'glass-card text-muted-foreground hover:text-foreground hover:border-orange-300/30 border-transparent hover:shadow-lg'
               }`}
               onClick={() => handleNavigationClick('trending')}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
               <TrendingUp className="h-4 w-4" />
               <span>Trending</span>
-            </motion.div>
-            <div className="w-1 h-1 bg-muted-foreground/50 rounded-full"></div>
-            <motion.div 
-              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${
+              {activeView === 'trending' && (
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              )}
+            </motion.button>
+            
+            <motion.button 
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 border-2 ${
                 activeView === 'community' 
-                  ? 'text-primary font-semibold scale-110' 
-                  : 'text-muted-foreground/80 hover:text-foreground hover:scale-105'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-blue-300/50 shadow-2xl shadow-blue-500/20' 
+                  : 'glass-card text-muted-foreground hover:text-foreground hover:border-blue-300/30 border-transparent hover:shadow-lg'
               }`}
               onClick={() => handleNavigationClick('community')}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
               <Users className="h-4 w-4" />
               <span>Community</span>
-            </motion.div>
-            <div className="w-1 h-1 bg-muted-foreground/50 rounded-full"></div>
-            <motion.div 
-              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${
+              {activeView === 'community' && (
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              )}
+            </motion.button>
+            
+            <motion.button 
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 border-2 ${
                 activeView === 'fanlove' 
-                  ? 'text-primary font-semibold scale-110' 
-                  : 'text-muted-foreground/80 hover:text-foreground hover:scale-105'
+                  ? 'bg-gradient-to-r from-pink-500 to-red-600 text-white border-pink-300/50 shadow-2xl shadow-pink-500/20' 
+                  : 'glass-card text-muted-foreground hover:text-foreground hover:border-pink-300/30 border-transparent hover:shadow-lg'
               }`}
               onClick={() => handleNavigationClick('fanlove')}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
               <Heart className="h-4 w-4" />
               <span>Fan Love</span>
-            </motion.div>
+              {activeView === 'fanlove' && (
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              )}
+            </motion.button>
           </motion.div>
         </div>
       </motion.div>
@@ -1151,7 +1160,143 @@ const Feed = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              className="space-y-6"
             >
+              {/* TikTok-Style Upload Button */}
+              <motion.div 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.6, type: "spring" }}
+                className="flex justify-center"
+              >
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="relative group"
+                    >
+                      <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-gradient-shift"></div>
+                      <Button 
+                        className="relative flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg shadow-2xl border-0 hover:shadow-3xl transition-all duration-300"
+                      >
+                        <motion.div
+                          animate={{ rotate: [0, 10, -10, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          <Camera className="h-6 w-6" />
+                        </motion.div>
+                        <span>Create Magic</span>
+                        <motion.div
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          <Sparkles className="h-5 w-5" />
+                        </motion.div>
+                      </Button>
+                    </motion.div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-card border-2 border-primary/20">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        >
+                          <Sparkles className="h-6 w-6 text-primary" />
+                        </motion.div>
+                        Share with Community
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="mt-4">
+                      <CommunityUpload onUploadComplete={() => {
+                        fetchPosts(0, true);
+                        // Close the dialog after successful upload
+                        const closeButton = document.querySelector('[data-dialog-close]') as HTMLButtonElement;
+                        closeButton?.click();
+                      }} />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </motion.div>
+              
+              <AnimatePresence mode="popLayout">
+                {posts.length === 0 ? (
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    transition={{ duration: 0.6, type: "spring" }}
+                  >
+                    <MobileCard className="bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 border-2 border-dashed border-primary/30">
+                      <div className="text-center py-12 space-y-6">
+                        <motion.div
+                          animate={{ 
+                            y: [0, -10, 0],
+                            rotate: [0, 5, -5, 0]
+                          }}
+                          transition={{ 
+                            duration: 3, 
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        >
+                          <Users className="h-20 w-20 text-primary mx-auto" />
+                        </motion.div>
+                        <div>
+                          <h3 className="font-black text-2xl mb-2 text-gradient-primary">No posts yet</h3>
+                          <p className="text-muted-foreground text-lg">
+                            Be the first to share something amazing! 🚀
+                          </p>
+                        </div>
+                      </div>
+                    </MobileCard>
+                  </motion.div>
+                ) : (
+                  posts.map((post, index) => (
+                    <motion.div
+                      key={post.id}
+                      initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -50, scale: 0.95 }}
+                      transition={{ 
+                        duration: 0.6, 
+                        type: "spring",
+                        delay: index * 0.1
+                      }}
+                      whileHover={{ scale: 1.02 }}
+                      className="group"
+                    >
+                      <MobileCard className="relative overflow-hidden border-2 hover:border-primary/40 transition-all duration-500 bg-gradient-to-br from-background to-surface hover:shadow-2xl hover:shadow-primary/10">
+                        <div className="text-center py-8">
+                          <p className="text-muted-foreground">Post content will be displayed here</p>
+                        </div>
+                      </MobileCard>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
+              
+              {/* Loading more indicator */}
+              {loadingMore && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-8"
+                >
+                  <div className="relative mx-auto mb-4 w-12 h-12">
+                    <div className="absolute inset-0 rounded-full border-4 border-transparent bg-gradient-to-r from-primary to-secondary bg-clip-border animate-spin"></div>
+                    <div className="absolute inset-2 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 animate-pulse"></div>
+                  </div>
+                  <motion.p 
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-lg font-medium text-gradient-primary"
+                  >
+                    Loading more amazing content...
+                  </motion.p>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -1162,601 +1307,147 @@ const Feed = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              className="space-y-6"
             >
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                {/* TikTok-Style Tab Pills */}
-                <motion.div 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  className="flex gap-3 justify-center mb-6"
-                >
-                  {[
-                    { id: 'community', label: 'Feed', icon: Users, gradient: 'from-blue-500 to-purple-600' },
-                    { id: 'fanlove', label: 'Fan Love', icon: Heart, gradient: 'from-pink-500 to-red-600' }
-                  ].map((tab, index) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <motion.button
-                        key={tab.id}
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.4 + index * 0.1, duration: 0.5, type: "spring" }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`relative flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${
-                          isActive
-                            ? `bg-gradient-to-r ${tab.gradient} text-white shadow-2xl border-2 border-white/20`
-                            : "glass-card text-muted-foreground hover:text-foreground border-2 border-transparent"
-                        }`}
-                      >
-                        <Icon className="h-5 w-5" />
-                        <span>{tab.label}</span>
-                        {isActive && (
-                          <motion.div
-                            layoutId="activeTab"
-                            className="absolute inset-0 rounded-2xl bg-white/10"
-                            initial={false}
-                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                          />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </motion.div>
-
-          <TabsContent value="community" className="space-y-6">
-            {/* TikTok-Style Upload Button */}
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.6, type: "spring" }}
-              className="flex justify-center"
-            >
-              <Dialog>
-                <DialogTrigger asChild>
+              <AnimatePresence mode="popLayout">
+                {reposts.length === 0 ? (
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative group"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    transition={{ duration: 0.6, type: "spring" }}
                   >
-                    <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-gradient-shift"></div>
-                    <Button 
-                      className="relative flex items-center gap-3 px-8 py-4 rounded-3xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg shadow-2xl border-0 hover:shadow-3xl transition-all duration-300"
-                    >
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        <Camera className="h-6 w-6" />
-                      </motion.div>
-                      <span>Create Magic</span>
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        <Sparkles className="h-5 w-5" />
-                      </motion.div>
-                    </Button>
-                  </motion.div>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-card border-2 border-primary/20">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Sparkles className="h-6 w-6 text-primary" />
-                      </motion.div>
-                      Share with Community
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="mt-4">
-                    <CommunityUpload onUploadComplete={() => {
-                      fetchPosts(0, true);
-                      // Close the dialog after successful upload
-                      const closeButton = document.querySelector('[data-dialog-close]') as HTMLButtonElement;
-                      closeButton?.click();
-                    }} />
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </motion.div>
-            
-            <AnimatePresence mode="popLayout">
-              {posts.length === 0 ? (
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                  transition={{ duration: 0.6, type: "spring" }}
-                >
-                  <MobileCard className="bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 border-2 border-dashed border-primary/30">
-                    <div className="text-center py-12 space-y-6">
-                      <motion.div
-                        animate={{ 
-                          y: [0, -10, 0],
-                          rotate: [0, 5, -5, 0]
-                        }}
-                        transition={{ 
-                          duration: 3, 
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      >
-                        <Users className="h-20 w-20 text-primary mx-auto" />
-                      </motion.div>
-                      <div>
-                        <h3 className="font-black text-2xl mb-2 text-gradient-primary">No posts yet</h3>
-                        <p className="text-muted-foreground text-lg">
-                          Be the first to share something amazing! 🚀
-                        </p>
-                      </div>
-                    </div>
-                  </MobileCard>
-                </motion.div>
-              ) : (
-                posts.map((post, index) => (
-                  <motion.div
-                    key={post.id}
-                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -50, scale: 0.95 }}
-                    transition={{ 
-                      duration: 0.6, 
-                      type: "spring",
-                      delay: index * 0.1
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    className="group"
-                  >
-                    <MobileCard className="relative overflow-hidden border-2 hover:border-primary/40 transition-all duration-500 bg-gradient-to-br from-background to-surface hover:shadow-2xl hover:shadow-primary/10">
-                      {/* Animated Background Gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      
-                      <CardHeader className="relative pb-3">
-                        <div className="flex items-center gap-3">
+                    <MobileCard className="bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-red-500/10 border-2 border-dashed border-pink-300/50">
+                      <div className="text-center py-12 space-y-6">
+                        <motion.div
+                          animate={{ 
+                            scale: [1, 1.2, 1],
+                            rotate: [0, 10, -10, 0]
+                          }}
+                          transition={{ 
+                            duration: 2, 
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        >
+                          <Heart className="h-20 w-20 text-pink-500 mx-auto" />
+                        </motion.div>
+                        <div>
+                          <h3 className="font-black text-2xl mb-2 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                            No Fan Love Yet
+                          </h3>
+                          <p className="text-muted-foreground text-lg mb-6">
+                            Start spreading the love by reposting content you enjoy! 💖
+                          </p>
                           <motion.div
-                            whileHover={{ scale: 1.1 }}
+                            whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
-                            <Avatar 
-                              className="h-14 w-14 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/60 transition-all duration-300" 
-                              onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
-                            >
-                              <AvatarImage src={post.profiles?.avatar_url || undefined} />
-                              <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
-                                {post.profiles?.display_name?.[0] || post.profiles?.username?.[0] || 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                          </motion.div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <motion.p 
-                                whileHover={{ scale: 1.05 }}
-                                className="font-bold cursor-pointer hover:text-primary transition-colors text-lg"
-                                onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
-                              >
-                                {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
-                              </motion.p>
-                              <motion.div
-                                whileHover={{ scale: 1.2, rotate: 180 }}
-                                whileTap={{ scale: 0.8 }}
-                              >
-                                <UserPlus className="w-5 h-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-                              </motion.div>
-                            </div>
-                            <p className="text-sm text-muted-foreground font-medium">
-                              {new Date(post.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="relative space-y-4">
-                        {/* Post Content - TikTok Style */}
-                        <motion.div 
-                          whileHover={{ scale: 1.02 }}
-                          className="relative rounded-2xl overflow-hidden shadow-2xl"
-                        >
-                          {post.content_type.startsWith('video/') ? (
-                            <div className="relative bg-gradient-to-br from-black to-gray-900 rounded-2xl overflow-hidden">
-                              <motion.video 
-                                controls 
-                                className="w-full max-h-96 object-contain"
-                                preload="metadata"
-                                playsInline
-                                whileHover={{ scale: 1.05 }}
-                                transition={{ duration: 0.3 }}
-                              >
-                                <source src={post.content_url} type={post.content_type} />
-                                Your browser does not support the video tag.
-                              </motion.video>
-                              {/* Video Overlay Gradient */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
-                            </div>
-                          ) : (
-                            <div className="relative">
-                              <motion.img 
-                                src={post.content_url} 
-                                alt="Post content"
-                                className="w-full max-h-96 object-cover rounded-2xl"
-                                whileHover={{ scale: 1.05 }}
-                                transition={{ duration: 0.3 }}
-                              />
-                              {/* Image Overlay Gradient */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-2xl"></div>
-                            </div>
-                          )}
-                        </motion.div>
-
-                        {/* Caption - Enhanced */}
-                        {post.caption && (
-                          <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="bg-gradient-to-r from-muted/50 to-transparent rounded-xl p-4"
-                          >
-                            <p className="text-sm leading-relaxed font-medium">{post.caption}</p>
-                          </motion.div>
-                        )}
-
-                    {/* Campaign Info */}
-                    {post.campaign && (
-                      <>
-                        <Separator />
-                        <div className="bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 rounded-xl p-4 space-y-3 border border-primary/20">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Target className="h-5 w-5 text-primary" />
-                                <Badge variant="secondary" className="bg-primary/20 text-primary font-semibold">
-                                  {post.campaign.type}
-                                </Badge>
-                              </div>
-                              <h4 className="font-bold text-lg mb-1">{post.campaign.title}</h4>
-                              {post.campaign.description && (
-                                <p className="text-sm text-muted-foreground mb-3">
-                                  {post.campaign.description}
-                                </p>
-                              )}
-                              
-                              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-1 font-semibold">
-                                  <Trophy className="h-4 w-4 text-yellow-500" />
-                                  {post.campaign.xp_reward} XP
-                                </div>
-                                {post.campaign.cash_reward && (
-                                  <div className="flex items-center gap-1 font-semibold">
-                                    <DollarSign className="h-4 w-4 text-green-500" />
-                                    ${post.campaign.cash_reward}
-                                  </div>
-                                )}
-                                <div className="flex items-center gap-1">
-                                  <Users className="h-4 w-4" />
-                                  {post.campaign.participant_count} joined
-                                </div>
-                                {post.campaign.end_date && (
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="h-4 w-4" />
-                                    {formatTimeRemaining(post.campaign.end_date)}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2">
-                            {post.campaign.is_joined ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleViewCampaign(post.campaign!.id)}
-                                className="flex-1 border-primary/20 hover:bg-primary/10"
-                              >
-                                View Campaign
-                              </Button>
-                            ) : (
-                              <>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleJoinCampaign(post.campaign!.id)}
-                                  className="flex-1 bg-gradient-primary hover:opacity-90 text-white font-semibold shadow-md"
-                                >
-                                  Join Campaign
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleViewCampaign(post.campaign!.id)}
-                                  className="border-primary/20 hover:bg-primary/10"
-                                >
-                                  Details
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                        {/* Post Actions - TikTok Style */}
-                        <div className="flex items-center justify-between pt-4">
-                          <div className="flex items-center gap-2">
-                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className={`flex items-center gap-2 rounded-2xl px-4 py-2 font-bold transition-all duration-300 ${
-                                  post.is_liked 
-                                    ? 'text-red-500 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200' 
-                                    : 'hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 hover:text-red-500 hover:border hover:border-red-200'
-                                }`}
-                                onClick={() => handleLike(post.id)}
-                              >
-                                <motion.div
-                                  animate={post.is_liked ? { scale: [1, 1.3, 1] } : {}}
-                                  transition={{ duration: 0.3 }}
-                                >
-                                  <Heart className={`h-5 w-5 ${post.is_liked ? 'fill-current' : ''}`} />
-                                </motion.div>
-                                <span className="font-semibold">{post.likes}</span>
-                              </Button>
-                            </motion.div>
-                            
-                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className={`flex items-center gap-2 rounded-2xl px-4 py-2 font-bold transition-all duration-300 ${
-                                  showCommentInput === post.id 
-                                    ? 'text-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200' 
-                                    : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-500 hover:border hover:border-blue-200'
-                                }`}
-                                onClick={() => handleComment(post.id)}
-                              >
-                                <MessageCircle className="h-5 w-5" />
-                                <span className="font-semibold">{post.comments}</span>
-                              </Button>
-                            </motion.div>
-                            
-                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className={`flex items-center gap-2 rounded-2xl px-4 py-2 font-bold transition-all duration-300 ${
-                                  post.is_reposted 
-                                    ? 'text-purple-500 bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200' 
-                                    : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-500 hover:border hover:border-purple-200'
-                                }`}
-                                onClick={() => handleRepost(post.id)}
-                                title="Add to Fan Love"
-                              >
-                                <motion.div
-                                  animate={post.is_reposted ? { rotate: 360 } : {}}
-                                  transition={{ duration: 0.5 }}
-                                >
-                                  <Repeat2 className={`h-5 w-5 ${post.is_reposted ? 'fill-current' : ''}`} />
-                                </motion.div>
-                                <span className="font-semibold">{post.repost_count || 0}</span>
-                              </Button>
-                            </motion.div>
-                          </div>
-                          
-                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                             <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="rounded-2xl px-4 py-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 hover:text-primary transition-all duration-300"
-                              onClick={() => handleShare(post)}
-                              title="Share post"
+                              onClick={() => handleNavigationClick('community')} 
+                              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-bold px-8 py-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 text-lg"
                             >
-                              <Share2 className="h-5 w-5" />
+                              <motion.div
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                              >
+                                <Heart className="h-5 w-5 mr-2" />
+                              </motion.div>
+                              Explore Community
                             </Button>
                           </motion.div>
                         </div>
-
-                    {/* Comment Input */}
-                    {showCommentInput === post.id && (
-                      <div className="pt-3 border-t">
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Write a comment..."
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                submitComment(post.id);
-                              }
-                            }}
-                            className="flex-1"
-                          />
-                          <Button 
-                            size="sm" 
-                            onClick={() => submitComment(post.id)}
-                            disabled={!newComment.trim()}
-                          >
-                            Post
-                          </Button>
-                        </div>
                       </div>
-                    )}
-                      </CardContent>
                     </MobileCard>
                   </motion.div>
+                ) : (
+                reposts.map((repost) => (
+                  <Card key={repost.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-pink-200">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Avatar className="h-8 w-8 ring-1 ring-pink-200">
+                          <AvatarImage src={repost.profiles?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-to-r from-pink-400 to-purple-400 text-white text-xs">
+                            {repost.profiles?.display_name?.[0] || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Repeat2 className="h-4 w-4 text-purple-500" />
+                          <span className="font-medium">{repost.profiles?.display_name}</span>
+                          <span>shared with love</span>
+                          <span>•</span>
+                          <span>{new Date(repost.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                          <AvatarImage src={repost.posts.profiles?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-primary text-white">
+                            {repost.posts.profiles?.display_name?.[0] || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold">
+                            {repost.posts.profiles?.display_name || 'Anonymous'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Original • {new Date(repost.posts.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      <div className="relative rounded-xl overflow-hidden">
+                        {repost.posts.content_type.startsWith('video/') ? (
+                          <video 
+                            controls 
+                            className="w-full max-h-96 object-contain rounded-xl"
+                            preload="metadata"
+                            playsInline
+                          >
+                            <source src={repost.posts.content_url} type={repost.posts.content_type} />
+                            Your browser does not support the video tag.
+                          </video>
+                        ) : (
+                          <img 
+                            src={repost.posts.content_url} 
+                            alt="Reposted content"
+                            className="w-full max-h-96 object-cover rounded-xl"
+                          />
+                        )}
+                      </div>
+
+                      {repost.posts.caption && (
+                        <p className="text-sm leading-relaxed">{repost.posts.caption}</p>
+                      )}
+
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Heart className="h-4 w-4" />
+                          {repost.posts.likes}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="h-4 w-4" />
+                          {repost.posts.comments}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))
               )}
-            </AnimatePresence>
-            
-            {/* Loading more indicator - Enhanced */}
-            {loadingMore && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-8"
-              >
-                <div className="relative mx-auto mb-4 w-12 h-12">
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent bg-gradient-to-r from-primary to-secondary bg-clip-border animate-spin"></div>
-                  <div className="absolute inset-2 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 animate-pulse"></div>
+              </AnimatePresence>
+              
+              {/* Loading more indicator for reposts */}
+              {loadingMore && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">Loading more fan love...</p>
                 </div>
-                <motion.p 
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="text-lg font-medium text-gradient-primary"
-                >
-                  Loading more amazing content...
-                </motion.p>
-              </motion.div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="fanlove" className="space-y-6">
-            <AnimatePresence mode="popLayout">
-              {reposts.length === 0 ? (
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                  transition={{ duration: 0.6, type: "spring" }}
-                >
-                  <MobileCard className="bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-red-500/10 border-2 border-dashed border-pink-300/50">
-                    <div className="text-center py-12 space-y-6">
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.2, 1],
-                          rotate: [0, 10, -10, 0]
-                        }}
-                        transition={{ 
-                          duration: 2, 
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      >
-                        <Heart className="h-20 w-20 text-pink-500 mx-auto" />
-                      </motion.div>
-                      <div>
-                        <h3 className="font-black text-2xl mb-2 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                          No Fan Love Yet
-                        </h3>
-                        <p className="text-muted-foreground text-lg mb-6">
-                          Start spreading the love by reposting content you enjoy! 💖
-                        </p>
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button 
-                            onClick={() => setActiveTab('community')} 
-                            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-bold px-8 py-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 text-lg"
-                          >
-                            <motion.div
-                              animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ duration: 1.5, repeat: Infinity }}
-                            >
-                              <Heart className="h-5 w-5 mr-2" />
-                            </motion.div>
-                            Explore Community
-                          </Button>
-                        </motion.div>
-                      </div>
-                    </div>
-                  </MobileCard>
-                </motion.div>
-              ) : (
-              reposts.map((repost) => (
-                <Card key={repost.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-pink-200">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Avatar className="h-8 w-8 ring-1 ring-pink-200">
-                        <AvatarImage src={repost.profiles?.avatar_url || undefined} />
-                        <AvatarFallback className="bg-gradient-to-r from-pink-400 to-purple-400 text-white text-xs">
-                          {repost.profiles?.display_name?.[0] || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Repeat2 className="h-4 w-4 text-purple-500" />
-                        <span className="font-medium">{repost.profiles?.display_name}</span>
-                        <span>shared with love</span>
-                        <span>•</span>
-                        <span>{new Date(repost.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                        <AvatarImage src={repost.posts.profiles?.avatar_url || undefined} />
-                        <AvatarFallback className="bg-gradient-primary text-white">
-                          {repost.posts.profiles?.display_name?.[0] || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">
-                          {repost.posts.profiles?.display_name || 'Anonymous'}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Original • {new Date(repost.posts.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <div className="relative rounded-xl overflow-hidden">
-                      {repost.posts.content_type.startsWith('video/') ? (
-                        <video 
-                          controls 
-                          className="w-full max-h-96 object-contain rounded-xl"
-                          preload="metadata"
-                          playsInline
-                        >
-                          <source src={repost.posts.content_url} type={repost.posts.content_type} />
-                          Your browser does not support the video tag.
-                        </video>
-                      ) : (
-                        <img 
-                          src={repost.posts.content_url} 
-                          alt="Reposted content"
-                          className="w-full max-h-96 object-cover rounded-xl"
-                        />
-                      )}
-                    </div>
-
-                    {repost.posts.caption && (
-                      <p className="text-sm leading-relaxed">{repost.posts.caption}</p>
-                    )}
-
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Heart className="h-4 w-4" />
-                        {repost.posts.likes}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageCircle className="h-4 w-4" />
-                        {repost.posts.comments}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-            </AnimatePresence>
-            
-            {/* Loading more indicator for reposts */}
-            {loadingMore && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mx-auto mb-2"></div>
-                <p className="text-sm text-muted-foreground">Loading more fan love...</p>
-              </div>
-            )}
-          </TabsContent>
-                </Tabs>
-              </motion.div>
-            )}
+              )}
+            </motion.div>
+          )}
           </AnimatePresence>
         </div>
       </MobileContainer>
