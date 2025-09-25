@@ -83,7 +83,7 @@ const YouTubeCallback = () => {
           description: `Successfully connected your YouTube channel: ${tokenData.channel_name}`,
         });
 
-        navigate('/universal-profile?tab=integrations', { replace: true });
+        navigate('/social-integrations', { replace: true });
 
       } catch (error) {
         console.error('YouTube callback error:', error);
@@ -92,7 +92,7 @@ const YouTubeCallback = () => {
           description: error.message || "Failed to connect YouTube account",
           variant: "destructive"
         });
-        navigate('/universal-profile?tab=integrations', { replace: true });
+        navigate('/social-integrations', { replace: true });
       }
     };
 
