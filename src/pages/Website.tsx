@@ -220,7 +220,7 @@ const Website = () => {
               <p className="text-white">• <strong>For Creators:</strong> Transform your audience into an active community, gain powerful insights, and create new revenue streams.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/role-selection">
+              <Link to="/auth/signup">
                 <Button size="lg" className="text-lg px-8 bg-blue-400 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:shadow-[0_0_30px_rgba(96,165,250,0.8)] transition-all duration-300">
                   Get Started Free
                   <ArrowRight className="ml-2 w-5 h-5" />
