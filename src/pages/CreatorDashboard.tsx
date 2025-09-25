@@ -59,6 +59,7 @@ const CreatorDashboard = () => {
       fetchProfile();
     }
   }, [user]);
+
   useEffect(() => {
     if (!user) return;
     const fetchLeaderboard = async () => {
@@ -126,7 +127,6 @@ const CreatorDashboard = () => {
       console.error('Error fetching profile:', error);
     }
   };
-
 
   const handleConnectMerchStore = async () => {
     try {
@@ -399,491 +399,576 @@ const CreatorDashboard = () => {
             transition={{ delay: 0.6, duration: 0.6 }}
             className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}
           >
-          <div className={`flex gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
-            <Button onClick={() => navigate('/advanced-analytics')} variant="outline" size="sm">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics Hub
-            </Button>
-            <Button onClick={() => navigate('/creator-subscription')} variant={isProSubscriber ? "default" : "outline"} size="sm">
-              <Trophy className="h-4 w-4 mr-2" />
-              {isProSubscriber ? 'Creator Pro ✓' : 'Upgrade Pro'}
-            </Button>
-            <Button onClick={() => navigate('/brand-deals')} variant="outline" size="sm">
-              <Handshake className="h-4 w-4 mr-2" />
-              Brand Deals
-            </Button>
-            <Button onClick={() => setShowEarningsTracker(true)} variant="outline" size="sm">
-              <DollarSign className="h-4 w-4 mr-2" />
-              Earnings
-            </Button>
-            <Button onClick={() => navigate('/monetization-tools')} variant="outline" size="sm">
-              <DollarSign className="h-4 w-4 mr-2" />
-              Monetization
-            </Button>
-            <Button onClick={() => navigate('/communication-hub')} variant="outline" size="sm">
-              <Mail className="h-4 w-4 mr-2" />
-              Communications
-            </Button>
-            <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Campaign
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/universal-profile')}>
-              Profile
-            </Button>
-            <Button variant="outline" onClick={signOut}>
-              Sign Out
-            </Button>
+            <div className={`flex gap-2 ${isMobile ? 'flex-wrap' : ''}`}>
+              <Button onClick={() => navigate('/advanced-analytics')} variant="outline" size="sm">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Analytics Hub
+              </Button>
+              <Button onClick={() => navigate('/creator-subscription')} variant={isProSubscriber ? "default" : "outline"} size="sm">
+                <Trophy className="h-4 w-4 mr-2" />
+                {isProSubscriber ? 'Creator Pro ✓' : 'Upgrade Pro'}
+              </Button>
+              <Button onClick={() => navigate('/brand-deals')} variant="outline" size="sm">
+                <Handshake className="h-4 w-4 mr-2" />
+                Brand Deals
+              </Button>
+              <Button onClick={() => setShowEarningsTracker(true)} variant="outline" size="sm">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Earnings
+              </Button>
+              <Button onClick={() => navigate('/monetization-tools')} variant="outline" size="sm">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Monetization
+              </Button>
+              <Button onClick={() => navigate('/communication-hub')} variant="outline" size="sm">
+                <Mail className="h-4 w-4 mr-2" />
+                Communications
+              </Button>
+              <Button onClick={() => navigate('/campaigns')} className="bg-gradient-primary hover:opacity-90">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Campaign
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/universal-profile')}>
+                Profile
+              </Button>
+              <Button variant="outline" onClick={signOut}>
+                Sign Out
+              </Button>
             </div>
           </motion.div>
 
-        {/* Key Metrics - TikTok Style */}
-        <motion.div 
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4"
-        >
-          <motion.div
-            whileHover={{ scale: 1.05, y: -5 }}
-            transition={{ type: "spring", stiffness: 300 }}
+          {/* Key Metrics - TikTok Style */}
+          <motion.div 
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4"
           >
-            <MobileCard className="relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-200/20 hover:border-blue-400/40 transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
-              <CardContent className="p-4 relative z-10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Total Fans</p>
-                    <motion.p 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 1, type: "spring" }}
-                      className="text-2xl font-black text-gradient-primary"
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <MobileCard className="relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-200/20 hover:border-blue-400/40 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"></div>
+                <CardContent className="p-4 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground font-medium">Total Fans</p>
+                      <motion.p 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 1, type: "spring" }}
+                        className="text-2xl font-black text-gradient-primary"
+                      >
+                        {metrics.totalFans.toLocaleString()}
+                      </motion.p>
+                    </div>
+                    <motion.div
+                      animate={{ rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 4, repeat: Infinity }}
                     >
-                      {metrics.totalFans.toLocaleString()}
-                    </motion.p>
+                      <Users className="h-8 w-8 text-blue-500" />
+                    </motion.div>
                   </div>
-                  <motion.div
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 4, repeat: Infinity }}
-                  >
-                    <Users className="h-8 w-8 text-blue-500" />
-                  </motion.div>
-                </div>
-              </CardContent>
-            </MobileCard>
+                </CardContent>
+              </MobileCard>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <MobileCard className="relative overflow-hidden bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-2 border-yellow-200/20 hover:border-yellow-400/40 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5"></div>
+                <CardContent className="p-4 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground font-medium">XP Distributed</p>
+                      <motion.p 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 1.2, type: "spring" }}
+                        className="text-2xl font-black text-gradient-primary"
+                      >
+                        {metrics.totalXPDistributed.toLocaleString()}
+                      </motion.p>
+                    </div>
+                    <motion.div
+                      animate={{ 
+                        rotate: [0, 360],
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{ duration: 5, repeat: Infinity }}
+                    >
+                      <Zap className="h-8 w-8 text-yellow-500" />
+                    </motion.div>
+                  </div>
+                </CardContent>
+              </MobileCard>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <MobileCard className="relative overflow-hidden bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-2 border-green-200/20 hover:border-green-400/40 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
+                <CardContent className="p-4 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground font-medium">Active Campaigns</p>
+                      <motion.p 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 1.4, type: "spring" }}
+                        className="text-2xl font-black text-gradient-primary"
+                      >
+                        {metrics.activeCampaigns}
+                      </motion.p>
+                    </div>
+                    <motion.div
+                      animate={{ 
+                        y: [0, -5, 0],
+                        rotate: [0, 5, -5, 0]
+                      }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    >
+                      <Target className="h-8 w-8 text-green-500" />
+                    </motion.div>
+                  </div>
+                </CardContent>
+              </MobileCard>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <MobileCard className="relative overflow-hidden bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-2 border-emerald-200/20 hover:border-emerald-400/40 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5"></div>
+                <CardContent className="p-4 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground font-medium">Revenue</p>
+                      <motion.p 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 1.6, type: "spring" }}
+                        className="text-2xl font-black text-gradient-primary"
+                      >
+                        ${metrics.totalRevenue.toFixed(2)}
+                      </motion.p>
+                    </div>
+                    <motion.div
+                      animate={{ 
+                        scale: [1, 1.2, 1],
+                        rotate: [0, 10, -10, 0]
+                      }}
+                      transition={{ duration: 4, repeat: Infinity }}
+                    >
+                      <DollarSign className="h-8 w-8 text-emerald-500" />
+                    </motion.div>
+                  </div>
+                </CardContent>
+              </MobileCard>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <MobileCard className="relative overflow-hidden bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-200/20 hover:border-purple-400/40 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
+                <CardContent className="p-4 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground font-medium">Conversion</p>
+                      <motion.p 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 1.8, type: "spring" }}
+                        className="text-2xl font-black text-gradient-primary"
+                      >
+                        {metrics.conversionRate.toFixed(1)}%
+                      </motion.p>
+                    </div>
+                    <motion.div
+                      animate={{ 
+                        y: [0, -3, 0],
+                        x: [0, 2, -2, 0]
+                      }}
+                      transition={{ duration: 3.5, repeat: Infinity }}
+                    >
+                      <TrendingUp className="h-8 w-8 text-purple-500" />
+                    </motion.div>
+                  </div>
+                </CardContent>
+              </MobileCard>
+            </motion.div>
           </motion.div>
 
-          {/* ... keep existing code for other metric cards */}
-        </motion.div>
-              </CardContent>
-            </MobileCard>
-          </motion.div>
-
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">XP Distributed</p>
-                  <p className="text-2xl font-bold">{metrics.totalXPDistributed.toLocaleString()}</p>
-                </div>
-                <div className="xp-orb"></div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Campaigns</p>
-                  <p className="text-2xl font-bold">{metrics.activeCampaigns}</p>
-                </div>
-                <Target className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Revenue</p>
-                  <p className="text-2xl font-bold">${metrics.totalRevenue.toFixed(2)}</p>
-                </div>
-                <DollarSign className="h-8 w-8 text-success" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-modern">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Conversion</p>
-                  <p className="text-2xl font-bold">{metrics.conversionRate.toFixed(1)}%</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-success" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Creator Earnings Dashboard */}
-            <CreatorEarningsDashboard />
-            
-            {/* Active Campaigns */}
-            <Card className="card-modern">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Active Campaigns
-                  </CardTitle>
-                  <Button size="sm" onClick={() => navigate('/campaigns')}>
-                    View All
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {realtimeLoading ? (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">Loading campaigns...</p>
-                  </div>
-                ) : realActiveCampaigns.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-muted-foreground mb-2">No Active Campaigns</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Create your first campaign to start engaging with fans and earning revenue
-                    </p>
-                   <Button onClick={() => navigate('/campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Campaign
+          {/* Main Dashboard Content */}
+          <motion.div 
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 1, duration: 0.6 }}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6"
+          >
+            {/* Left Column */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Creator Earnings Dashboard */}
+              <CreatorEarningsDashboard />
+              
+              {/* Active Campaigns */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Active Campaigns
+                    </CardTitle>
+                    <Button size="sm" onClick={() => navigate('/campaigns')}>
+                      View All
                     </Button>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {realActiveCampaigns.map((campaign) => {
-                      const participantCount = campaign.campaign_participants?.length || 0;
-                      const daysLeft = campaign.end_date 
-                        ? Math.max(0, Math.ceil((new Date(campaign.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-                        : null;
-                      
-                      return (
-                        <div key={campaign.id} className="flex items-center justify-between p-4 rounded-lg bg-surface border hover:bg-surface/80 transition-colors cursor-pointer" onClick={() => navigate(`/campaigns`)}>
+                </CardHeader>
+                <CardContent>
+                  {realtimeLoading ? (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">Loading campaigns...</p>
+                    </div>
+                  ) : realActiveCampaigns.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Active Campaigns</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Create your first campaign to start engaging with fans and earning revenue
+                      </p>
+                     <Button onClick={() => navigate('/campaigns')} className="bg-sky-400 hover:bg-sky-500 text-white">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Campaign
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {realActiveCampaigns.map((campaign) => {
+                        const participantCount = campaign.campaign_participants?.length || 0;
+                        const daysLeft = campaign.end_date 
+                          ? Math.max(0, Math.ceil((new Date(campaign.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+                          : null;
+                        
+                        return (
+                          <div key={campaign.id} className="flex items-center justify-between p-4 rounded-lg bg-surface border hover:bg-surface/80 transition-colors cursor-pointer" onClick={() => navigate(`/campaigns`)}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+                                <Music className="h-5 w-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{campaign.title}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {participantCount} participants
+                                  {daysLeft !== null && ` • ${daysLeft} days left`}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <Badge className="bg-success/20 text-success">Active</Badge>
+                              <p className="text-sm text-muted-foreground mt-1">{campaign.current_progress || 0} progress</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Analytics Overview */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Analytics Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="text-center p-4 rounded-lg bg-surface">
+                      <div className="stat-number">{metrics.newFansThisWeek}</div>
+                      <p className="text-sm text-muted-foreground">New Fans This Week</p>
+                    </div>
+                    <div className="text-center p-4 rounded-lg bg-surface">
+                      <div className="stat-number">{metrics.streamsGenerated.toLocaleString()}</div>
+                      <p className="text-sm text-muted-foreground">Streams Generated</p>
+                    </div>
+                    <div className="text-center p-4 rounded-lg bg-surface">
+                      <div className="stat-number">{metrics.socialShares}</div>
+                      <p className="text-sm text-muted-foreground">Social Shares</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Real-time Leaderboard */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Creator Leaderboard
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loadingLeaderboard ? (
+                    <p className="text-sm text-muted-foreground">Loading leaderboard...</p>
+                  ) : leaderboard.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No activity yet. As fans listen, they’ll appear here.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {leaderboard.map((entry, index) => (
+                        <div 
+                          key={entry.fan_user_id} 
+                          className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
+                          onClick={() => navigate(`/universal-profile?userId=${entry.fan_user_id}`)}
+                        >
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-                              <Music className="h-5 w-5 text-white" />
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
+                              {entry.rank_position ?? index + 1}
                             </div>
-                            <div>
-                              <p className="font-medium">{campaign.title}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {participantCount} participants
-                                {daysLeft !== null && ` • ${daysLeft} days left`}
-                              </p>
-                            </div>
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={entry.profile?.avatar_url || undefined} alt={`${entry.profile?.display_name || entry.profile?.username || 'Fan'} avatar`} />
+                              <AvatarFallback>{(entry.profile?.display_name || entry.profile?.username || 'FN').slice(0,2).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{entry.profile?.display_name || entry.profile?.username || entry.fan_user_id.slice(0,8)}</span>
                           </div>
                           <div className="text-right">
-                            <Badge className="bg-success/20 text-success">Active</Badge>
-                            <p className="text-sm text-muted-foreground mt-1">{campaign.current_progress || 0} progress</p>
+                            <p className="font-bold text-primary">{entry.total_xp_earned} XP</p>
+                            <p className="text-xs text-muted-foreground">{entry.total_listens} listens</p>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* Analytics Overview */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Analytics Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                  <div className="text-center p-4 rounded-lg bg-surface">
-                    <div className="stat-number">{metrics.newFansThisWeek}</div>
-                    <p className="text-sm text-muted-foreground">New Fans This Week</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-surface">
-                    <div className="stat-number">{metrics.streamsGenerated.toLocaleString()}</div>
-                    <p className="text-sm text-muted-foreground">Streams Generated</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-surface">
-                    <div className="stat-number">{metrics.socialShares}</div>
-                    <p className="text-sm text-muted-foreground">Social Shares</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            {/* Real-time Leaderboard */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Creator Leaderboard
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loadingLeaderboard ? (
-                  <p className="text-sm text-muted-foreground">Loading leaderboard...</p>
-                ) : leaderboard.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No activity yet. As fans listen, they’ll appear here.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {leaderboard.map((entry, index) => (
-                      <div 
-                        key={entry.fan_user_id} 
-                        className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
-                        onClick={() => navigate(`/universal-profile?userId=${entry.fan_user_id}`)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
-                            {entry.rank_position ?? index + 1}
+              {/* Top Contributors - Now using real leaderboard data */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Top Contributors This Month
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loadingLeaderboard ? (
+                    <p className="text-sm text-muted-foreground">Loading contributors...</p>
+                  ) : leaderboard.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No contributors yet. As fans engage with your campaigns, they'll appear here.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {leaderboard.slice(0, 5).map((entry, index) => (
+                        <div 
+                          key={entry.fan_user_id} 
+                          className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
+                          onClick={() => navigate(`/universal-profile?userId=${entry.fan_user_id}`)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
+                              {entry.rank_position ?? index + 1}
+                            </div>
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={entry.profile?.avatar_url || undefined} alt={`${entry.profile?.display_name || entry.profile?.username || 'Fan'} avatar`} />
+                              <AvatarFallback>{(entry.profile?.display_name || entry.profile?.username || 'FN').slice(0,2).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{entry.profile?.display_name || entry.profile?.username || entry.fan_user_id.slice(0,8)}</span>
                           </div>
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={entry.profile?.avatar_url || undefined} alt={`${entry.profile?.display_name || entry.profile?.username || 'Fan'} avatar`} />
-                            <AvatarFallback>{(entry.profile?.display_name || entry.profile?.username || 'FN').slice(0,2).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">{entry.profile?.display_name || entry.profile?.username || entry.fan_user_id.slice(0,8)}</span>
+                          <div className="text-right">
+                            <p className="font-bold text-primary">{entry.total_xp_earned} XP</p>
+                            <p className="text-xs text-muted-foreground">{entry.total_listens} listens</p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-primary">{entry.total_xp_earned} XP</p>
-                          <p className="text-xs text-muted-foreground">{entry.total_listens} listens</p>
-                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* All Integrations Hub */}
+              <IntegrationsHub userRole="creator" />
+
+              {/* Quick Actions */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    onClick={() => navigate('/campaigns')} 
+                    variant="outline" 
+                    className="w-full justify-start"
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    AI Campaign Builder
+                  </Button>
+                  <Button 
+                    onClick={() => isProSubscriber ? setShowContentAssistant(true) : navigate('/creator-subscription')} 
+                    variant="outline" 
+                    className="w-full justify-start"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Content Assistant
+                    {!isProSubscriber && <Lock className="h-3 w-3 ml-auto" />}
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/content-creator-studio')} 
+                    variant="outline" 
+                    className="w-full justify-start"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Content Studio
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/social-integrations')} 
+                    variant="outline" 
+                    className="w-full justify-start"
+                  >
+                    <Link className="h-4 w-4 mr-2" />
+                    Social Integrations
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/manage-rewards')} 
+                    variant="outline" 
+                    className="w-full justify-start"
+                  >
+                    <Gift className="h-4 w-4 mr-2" />
+                    Manage Rewards
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* AI Tools */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-gradient-primary"></div>
+                    Advanced A.I Tools
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    className="w-full bg-gradient-primary text-white hover:shadow-glow transition-all" 
+                    onClick={() => navigate('/campaigns')}
+                  >
+                    🤖 AI Campaign Builder
+                  </Button>
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => isProSubscriber ? setShowContentAssistant(true) : navigate('/creator-subscription')}
+                  >
+                    ✨ Content Assistant {!isProSubscriber && "🔒"}
+                  </Button>
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => navigate('/shoutout-generator')}
+                  >
+                    🎤 Shoutout Generator
+                  </Button>
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => navigate('/sentiment-analysis')}
+                  >
+                    📊 Sentiment Analysis
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {realtimeLoading ? (
+                    <p className="text-sm text-muted-foreground">Loading activity...</p>
+                  ) : recentActivity.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-muted-foreground">No recent activity yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">Activity will appear here as fans engage with your campaigns</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentActivity.slice(0, 8).map((activity) => {
+                        const getActivityColor = (type: string) => {
+                          switch (type) {
+                            case 'campaign_join': return 'bg-success';
+                            case 'campaign_complete': return 'bg-primary';
+                            case 'share': return 'bg-brand-accent';
+                            case 'xp_earned': return 'bg-warning';
+                            default: return 'bg-muted-foreground';
+                          }
+                        };
+
+                        return (
+                          <div key={activity.id} className="flex items-center gap-2 text-sm">
+                            <div className={`w-2 h-2 rounded-full ${getActivityColor(activity.type)}`}></div>
+                            <span className="flex-1">{activity.description}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(activity.timestamp).toLocaleDateString()}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Performance Summary */}
+              <Card className="card-modern">
+                <CardHeader>
+                  <CardTitle>This Week</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {realtimeLoading ? (
+                    <p className="text-sm text-muted-foreground">Loading performance data...</p>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Fan Growth</span>
+                        <span className={`text-sm font-medium ${weeklyPerformance.fanGrowth >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {weeklyPerformance.fanGrowth >= 0 ? '+' : ''}{weeklyPerformance.fanGrowth}%
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Top Contributors - Now using real leaderboard data */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Top Contributors This Month
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loadingLeaderboard ? (
-                  <p className="text-sm text-muted-foreground">Loading contributors...</p>
-                ) : leaderboard.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No contributors yet. As fans engage with your campaigns, they'll appear here.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {leaderboard.slice(0, 5).map((entry, index) => (
-                      <div 
-                        key={entry.fan_user_id} 
-                        className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
-                        onClick={() => navigate(`/universal-profile?userId=${entry.fan_user_id}`)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
-                            {entry.rank_position ?? index + 1}
-                          </div>
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={entry.profile?.avatar_url || undefined} alt={`${entry.profile?.display_name || entry.profile?.username || 'Fan'} avatar`} />
-                            <AvatarFallback>{(entry.profile?.display_name || entry.profile?.username || 'FN').slice(0,2).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">{entry.profile?.display_name || entry.profile?.username || entry.fan_user_id.slice(0,8)}</span>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-primary">{entry.total_xp_earned} XP</p>
-                          <p className="text-xs text-muted-foreground">{entry.total_listens} listens</p>
-                        </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Engagement</span>
+                        <span className={`text-sm font-medium ${weeklyPerformance.engagement >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {weeklyPerformance.engagement >= 0 ? '+' : ''}{weeklyPerformance.engagement}%
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* All Integrations Hub */}
-            <IntegrationsHub userRole="creator" />
-
-            {/* Quick Actions */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Quick Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  onClick={() => navigate('/campaigns')} 
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
-                  <Target className="h-4 w-4 mr-2" />
-                  AI Campaign Builder
-                </Button>
-                <Button 
-                  onClick={() => isProSubscriber ? setShowContentAssistant(true) : navigate('/creator-subscription')} 
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Content Assistant
-                  {!isProSubscriber && <Lock className="h-3 w-3 ml-auto" />}
-                </Button>
-                <Button 
-                  onClick={() => navigate('/content-creator-studio')} 
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Content Studio
-                </Button>
-                <Button 
-                  onClick={() => navigate('/social-integrations')} 
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
-                  <Link className="h-4 w-4 mr-2" />
-                  Social Integrations
-                </Button>
-                <Button 
-                  onClick={() => navigate('/manage-rewards')} 
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
-                  <Gift className="h-4 w-4 mr-2" />
-                  Manage Rewards
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* AI Tools */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-gradient-primary"></div>
-                  Advanced A.I Tools
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  className="w-full bg-gradient-primary text-white hover:shadow-glow transition-all" 
-                  onClick={() => navigate('/campaigns')}
-                >
-                  🤖 AI Campaign Builder
-                </Button>
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                  onClick={() => isProSubscriber ? setShowContentAssistant(true) : navigate('/creator-subscription')}
-                >
-                  ✨ Content Assistant {!isProSubscriber && "🔒"}
-                </Button>
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                  onClick={() => navigate('/shoutout-generator')}
-                >
-                  🎤 Shoutout Generator
-                </Button>
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                  onClick={() => navigate('/sentiment-analysis')}
-                >
-                  📊 Sentiment Analysis
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {realtimeLoading ? (
-                  <p className="text-sm text-muted-foreground">Loading activity...</p>
-                ) : recentActivity.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground">No recent activity yet</p>
-                    <p className="text-xs text-muted-foreground mt-1">Activity will appear here as fans engage with your campaigns</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {recentActivity.slice(0, 8).map((activity) => {
-                      const getActivityColor = (type: string) => {
-                        switch (type) {
-                          case 'campaign_join': return 'bg-success';
-                          case 'campaign_complete': return 'bg-primary';
-                          case 'share': return 'bg-brand-accent';
-                          case 'xp_earned': return 'bg-warning';
-                          default: return 'bg-muted-foreground';
-                        }
-                      };
-
-                      return (
-                        <div key={activity.id} className="flex items-center gap-2 text-sm">
-                          <div className={`w-2 h-2 rounded-full ${getActivityColor(activity.type)}`}></div>
-                          <span className="flex-1">{activity.description}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleDateString()}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Performance Summary */}
-            <Card className="card-modern">
-              <CardHeader>
-                <CardTitle>This Week</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {realtimeLoading ? (
-                  <p className="text-sm text-muted-foreground">Loading performance data...</p>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Fan Growth</span>
-                      <span className={`text-sm font-medium ${weeklyPerformance.fanGrowth >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {weeklyPerformance.fanGrowth >= 0 ? '+' : ''}{weeklyPerformance.fanGrowth}%
-                      </span>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">XP Efficiency</span>
+                        <span className="text-sm font-medium text-primary">{weeklyPerformance.xpEfficiency}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Revenue</span>
+                        <span className={`text-sm font-medium ${weeklyPerformance.revenue >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {weeklyPerformance.revenue >= 0 ? '+' : ''}${Math.abs(weeklyPerformance.revenue).toFixed(2)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Engagement</span>
-                      <span className={`text-sm font-medium ${weeklyPerformance.engagement >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {weeklyPerformance.engagement >= 0 ? '+' : ''}{weeklyPerformance.engagement}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">XP Efficiency</span>
-                      <span className="text-sm font-medium text-primary">{weeklyPerformance.xpEfficiency}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Revenue</span>
-                      <span className={`text-sm font-medium ${weeklyPerformance.revenue >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {weeklyPerformance.revenue >= 0 ? '+' : ''}${Math.abs(weeklyPerformance.revenue).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </motion.div>
         </div>
       </MobileContainer>
       

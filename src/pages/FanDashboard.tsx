@@ -636,7 +636,7 @@ const FanDashboard = () => {
             </TabsContent>
 
             <TabsContent value="creator-tools" className="mt-6">
-              <CreatorToolsHub />
+              <CreatorToolsHub userRole="fan" />
             </TabsContent>
 
             <TabsContent value="integrations" className="mt-6">
