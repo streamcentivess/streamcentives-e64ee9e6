@@ -157,7 +157,7 @@ const StreamseekerDashboard = () => {
       // Use the new get_creators_by_category function
       const { data, error } = await supabase.rpc('get_creators_by_category', {
         category_filter: selectedContentType,
-        fan_user_id: user.id,
+        fan_user_id_param: user.id,
         limit_count: 3
       });
 

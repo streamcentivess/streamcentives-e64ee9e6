@@ -6782,7 +6782,7 @@ export type Database = {
       get_creators_by_category: {
         Args: {
           category_filter?: string
-          fan_user_id?: string
+          fan_user_id_param?: string
           limit_count?: number
         }
         Returns: {
