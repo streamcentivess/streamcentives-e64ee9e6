@@ -77,7 +77,7 @@ serve(async (req) => {
         }
       } catch (error) {
         console.error(`Exception updating user ${profile.user_id}:`, error)
-        errors.push(`User ${profile.user_id}: ${error.message}`)
+        errors.push(`User ${profile.user_id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
 
@@ -102,7 +102,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

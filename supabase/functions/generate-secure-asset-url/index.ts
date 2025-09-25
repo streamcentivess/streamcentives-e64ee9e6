@@ -157,7 +157,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in generate-secure-asset-url:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

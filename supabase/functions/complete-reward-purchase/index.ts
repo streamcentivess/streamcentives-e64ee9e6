@@ -117,7 +117,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error completing reward purchase:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
       success: false 
     }), {
       status: 500,

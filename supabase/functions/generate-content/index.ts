@@ -602,8 +602,8 @@ Format response as JSON array with objects containing:
           }
           case 'carousel': {
             // For carousel, generate multiple image prompts
-            const slides = idea.content.split('\n\n').filter(slide => slide.trim());
-            generatedItem.carouselSlides = slides.map((slide, index) => ({
+            const slides = idea.content.split('\n\n').filter((slide: string) => slide.trim());
+            generatedItem.carouselSlides = slides.map((slide: string, index: number) => ({
               id: crypto.randomUUID(),
               title: `Slide ${index + 1}`,
               content: slide,
@@ -645,7 +645,7 @@ Format response as JSON array with objects containing:
       }),
     });
 
-    let trendingData = { trending_topics: [], recommended_hashtags: [] };
+    let trendingData: { trending_topics: string[], recommended_hashtags: string[] } = { trending_topics: [], recommended_hashtags: [] };
 
     // Retry on rate limits once
     let trendingOk = trendingResponse.ok;
@@ -689,7 +689,7 @@ Format response as JSON array with objects containing:
       }
     } else {
       // Default lightweight trending fallback
-      const kw = (prompt || '').split(/\s+/).filter(Boolean).slice(0, 4).map(w => w.replace(/[^a-z0-9]/gi, ''));
+      const kw = (prompt || '').split(/\s+/).filter(Boolean).slice(0, 4).map((w: string) => w.replace(/[^a-z0-9]/gi, ''));
       trendingData = {
         trending_topics: [
           'Behind-the-scenes drops',
@@ -698,7 +698,7 @@ Format response as JSON array with objects containing:
           'Duet/challenge remix ideas'
         ],
         recommended_hashtags: [
-          ...kw.map(k => `#${k.toLowerCase()}`),
+          ...kw.map((k: string) => `#${k.toLowerCase()}`),
           '#NowPlaying', '#NewMusic', '#Creator', '#FYP'
         ].slice(0, 10)
       };

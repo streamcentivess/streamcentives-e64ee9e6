@@ -181,19 +181,19 @@ Consider context, intent, and cultural nuances. Be accurate but err on the side 
       .select('setting_name, setting_value')
       .in('setting_name', ['auto_remove_threshold', 'shadow_ban_threshold', 'manual_review_threshold']);
 
-    const settingsMap = settings?.reduce((acc, setting) => {
+    const settingsMap = settings?.reduce((acc: Record<string, any>, setting: any) => {
       acc[setting.setting_name] = setting.setting_value;
       return acc;
-    }, {}) || {};
+    }, {} as Record<string, any>) || {};
 
     // Apply automated actions based on thresholds and AI recommendation
     let finalAction = 'approved';
     let requiresManualReview = false;
 
     if (!analysis.is_appropriate) {
-      const autoRemoveThreshold = settingsMap.auto_remove_threshold || { confidence: 0.9, severity: 'critical' };
-      const shadowBanThreshold = settingsMap.shadow_ban_threshold || { confidence: 0.7, severity: 'high' };
-      const manualReviewThreshold = settingsMap.manual_review_threshold || { confidence: 0.5, severity: 'medium' };
+      const autoRemoveThreshold = settingsMap['auto_remove_threshold'] || { confidence: 0.9, severity: 'critical' };
+      const shadowBanThreshold = settingsMap['shadow_ban_threshold'] || { confidence: 0.7, severity: 'high' };
+      const manualReviewThreshold = settingsMap['manual_review_threshold'] || { confidence: 0.5, severity: 'medium' };
 
       if (analysis.confidence >= autoRemoveThreshold.confidence && 
           (analysis.severity === 'critical' || analysis.severity === 'high')) {
@@ -259,7 +259,7 @@ Consider context, intent, and cultural nuances. Be accurate but err on the side 
     
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

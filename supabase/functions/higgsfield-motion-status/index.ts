@@ -79,7 +79,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Motion status error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message || 'Unexpected error' }),
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unexpected error' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }

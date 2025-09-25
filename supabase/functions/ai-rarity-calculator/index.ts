@@ -179,8 +179,9 @@ Respond with only one word: legendary, epic, rare, uncommon, or common
 
   } catch (error) {
     console.error('Error calculating rarity:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: errorMessage,
       success: false 
     }), {
       status: 500,

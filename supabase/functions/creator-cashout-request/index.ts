@@ -98,7 +98,7 @@ serve(async (req) => {
         status: 'pending',
         metadata: {
           bank_account_details: bankAccountDetails || {},
-          conversion_rate_id: conversionRate.id
+          conversion_rate_id: (conversionRate as any).id || null
         }
       })
       .select()
@@ -114,7 +114,7 @@ serve(async (req) => {
       .from('user_xp_balances')
       .update({
         current_xp: userBalance.current_xp - xpAmount,
-        total_spent_xp: (userBalance.total_spent_xp || 0) + xpAmount,
+        total_spent_xp: ((userBalance as any).total_spent_xp || 0) + xpAmount,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id);
@@ -165,7 +165,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in creator-cashout-request:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

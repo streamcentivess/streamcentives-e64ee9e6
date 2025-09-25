@@ -87,12 +87,7 @@ serve(async (req) => {
 
           // Update job progress
           await supabase
-            .from('bulk_upload_jobs')
-            .update({
-              processed_files: supabase.sql`processed_files + 1`,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', payload.job_id)
+            .rpc('increment_processed_files', { job_id: payload.job_id })
             .eq('creator_id', user.user.id);
 
           return new Response(JSON.stringify(updatedFile), {
@@ -100,22 +95,30 @@ serve(async (req) => {
           });
 
         } catch (fileError) {
+          const errorMessage = fileError instanceof Error ? fileError.message : 'Unknown file processing error';
+          
           // Mark file as failed
           await supabase
             .from('bulk_upload_files')
             .update({
               status: 'failed',
-              error_message: fileError.message,
+              error_message: errorMessage,
               updated_at: new Date().toISOString()
             })
             .eq('id', payload.file_id)
             .eq('creator_id', user.user.id);
 
-          // Update job failed count
+          // Increment failed count
+          const { data: currentJob } = await supabase
+            .from('bulk_upload_jobs')
+            .select('failed_files')
+            .eq('id', payload.job_id)
+            .single();
+          
           await supabase
             .from('bulk_upload_jobs')
             .update({
-              failed_files: supabase.sql`failed_files + 1`,
+              failed_files: (currentJob?.failed_files || 0) + 1,
               updated_at: new Date().toISOString()
             })
             .eq('id', payload.job_id)
@@ -176,7 +179,7 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Error in bulk-upload-manager function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
