@@ -51,7 +51,7 @@ const StreamseekerDashboard = () => {
   const { role } = useUserRole();
   const navigate = useNavigate();
   const [selectedContentType, setSelectedContentType] = useState('musician');
-  const [currentArtist, setCurrentArtist] = useState<SuggestedArtist | null>(null);
+  const [currentArtists, setCurrentArtists] = useState<SuggestedArtist[]>([]);
   const [loading, setLoading] = useState(false);
   const [dailyQuest, setDailyQuest] = useState<DailyQuest>({ 
     discoveries_completed: 0, 
@@ -158,7 +158,7 @@ const StreamseekerDashboard = () => {
       const { data, error } = await supabase.rpc('get_creators_by_category', {
         category_filter: selectedContentType,
         fan_user_id: user.id,
-        limit_count: 1
+        limit_count: 3
       });
 
       if (error) {
@@ -172,9 +172,8 @@ const StreamseekerDashboard = () => {
       }
 
       if (data && data.length > 0) {
-        const creator = data[0];
         // Transform the data to match our interface
-        setCurrentArtist({
+        const artists = data.map(creator => ({
           user_id: creator.user_id,
           username: creator.username,
           display_name: creator.display_name,
@@ -184,11 +183,13 @@ const StreamseekerDashboard = () => {
           spotify_connected: creator.spotify_connected,
           follower_count: creator.follower_count,
           content_count: creator.content_count
-        });
+        }));
+        
+        setCurrentArtists(artists);
         
         toast({
-          title: `${creator.creator_type ? creator.creator_type.charAt(0).toUpperCase() + creator.creator_type.slice(1) : 'Creator'} Found!`,
-          description: `Discover ${creator.display_name || creator.username}`,
+          title: `${data.length} ${contentTypes.find(t => t.id === selectedContentType)?.label} Found!`,
+          description: `Choose who to discover`,
           variant: "default"
         });
       } else {
@@ -230,9 +231,7 @@ const StreamseekerDashboard = () => {
     }
   };
 
-  const handleFollow = async () => {
-    if (!currentArtist || hasFollowed) return;
-
+  const handleFollow = async (artist: SuggestedArtist) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -241,7 +240,7 @@ const StreamseekerDashboard = () => {
         .from('follows')
         .insert({
           follower_id: user.id,
-          following_id: currentArtist.user_id
+          following_id: artist.user_id
         });
 
       if (error) {
@@ -249,10 +248,9 @@ const StreamseekerDashboard = () => {
         return;
       }
 
-      setHasFollowed(true);
       toast({
         title: "Following!",
-        description: `You're now following ${currentArtist.display_name || currentArtist.username}!`,
+        description: `You're now following ${artist.display_name || artist.username}!`,
         variant: "default"
       });
     } catch (error) {
@@ -260,9 +258,7 @@ const StreamseekerDashboard = () => {
     }
   };
 
-  const completeDiscovery = async () => {
-    if (!currentArtist) return;
-
+  const completeDiscovery = async (artist: SuggestedArtist, hasEngagedWithArtist: boolean = false, hasFollowedArtist: boolean = false) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -273,10 +269,10 @@ const StreamseekerDashboard = () => {
 
       const { data, error } = await supabase.rpc('complete_streamseeker_discovery', {
         fan_user_id: user.id,
-        artist_user_id: currentArtist.user_id,
+        artist_user_id: artist.user_id,
         content_type_param: selectedContentType,
-        engagement_completed_param: hasEngaged,
-        followed_param: hasFollowed,
+        engagement_completed_param: hasEngagedWithArtist,
+        followed_param: hasFollowedArtist,
         engagement_duration_param: engagementDuration
       });
 
@@ -295,7 +291,8 @@ const StreamseekerDashboard = () => {
           });
 
           fetchDailyQuest();
-          setCurrentArtist(null);
+          // Remove the discovered artist from the current list
+          setCurrentArtists(prev => prev.filter(a => a.user_id !== artist.user_id));
         }
       }
     } catch (error) {
@@ -532,162 +529,126 @@ const StreamseekerDashboard = () => {
           </motion.button>
         </motion.div>
 
-        {/* Artist Discovery Card - Instagram/TikTok Level */}
+        {/* Artist Discovery Cards - Show 3 profiles */}
         <AnimatePresence mode="wait">
-          {currentArtist && (
+          {currentArtists.length > 0 && (
             <motion.div
-              key={currentArtist.user_id}
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: -20 }}
               transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
-              className="glass-card rounded-3xl overflow-hidden shadow-2xl"
+              className="space-y-6"
             >
-              {/* Artist Header */}
-              <div className="p-8 text-center space-y-6">
+              {currentArtists.map((artist, index) => (
                 <motion.div
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.6, type: "spring" }}
-                  className="relative"
+                  key={artist.user_id}
+                  initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.6, type: "spring", bounce: 0.3 }}
+                  className="glass-card rounded-3xl overflow-hidden shadow-2xl"
                 >
-                  <Avatar className="h-36 w-36 mx-auto ring-4 ring-brand-primary/20 shadow-2xl">
-                    <AvatarImage src={currentArtist.avatar_url} className="object-cover" />
-                    <AvatarFallback className="text-3xl bg-gradient-to-br from-brand-primary to-brand-secondary text-white font-black">
-                      {(currentArtist.display_name || currentArtist.username)?.[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <motion.div
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-primary/20 to-brand-glow/20"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  />
-                </motion.div>
-                
-                <motion.div 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.6 }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <h3 className="text-3xl font-black text-gradient-primary mb-2">
-                      {currentArtist.display_name || currentArtist.username}
-                    </h3>
-                    <p className="text-muted-foreground font-medium">@{currentArtist.username}</p>
-                  </div>
-                  
-                  <div className="flex items-center justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-brand-primary" />
-                      <span className="font-bold">{currentArtist.follower_count}</span>
-                      <span className="text-muted-foreground">followers</span>
-                    </div>
-                    <div className="w-1 h-1 bg-muted-foreground rounded-full"></div>
-                    <div className="flex items-center gap-2">
-                      <Music className="h-4 w-4 text-brand-secondary" />
-                      <span className="font-bold">{currentArtist.content_count}</span>
-                      <span className="text-muted-foreground">tracks</span>
-                    </div>
-                  </div>
-                  
-                  <Badge variant="outline" className="text-sm font-medium px-4 py-1 border-brand-primary/30 text-brand-primary">
-                    {currentArtist.creator_type ? currentArtist.creator_type.charAt(0).toUpperCase() + currentArtist.creator_type.slice(1) : 'Creator'}
-                  </Badge>
-                </motion.div>
+                  {/* Artist Header */}
+                  <div className="p-6 text-center space-y-4">
+                    <motion.div
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.2 + index * 0.1, duration: 0.6, type: "spring" }}
+                      className="relative"
+                    >
+                      <Avatar className="h-24 w-24 mx-auto ring-4 ring-brand-primary/20 shadow-2xl">
+                        <AvatarImage src={artist.avatar_url} className="object-cover" />
+                        <AvatarFallback className="text-2xl bg-gradient-to-br from-brand-primary to-brand-secondary text-white font-black">
+                          {(artist.display_name || artist.username)?.[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </motion.div>
+                    
+                    <motion.div 
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.4 + index * 0.1, duration: 0.6 }}
+                      className="space-y-3"
+                    >
+                      <div>
+                        <h3 className="text-xl font-black text-gradient-primary mb-1">
+                          {artist.display_name || artist.username}
+                        </h3>
+                        <p className="text-muted-foreground text-sm">@{artist.username}</p>
+                      </div>
+                      
+                      <div className="flex items-center justify-center gap-4 text-xs">
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3 text-brand-primary" />
+                          <span className="font-bold">{artist.follower_count}</span>
+                        </div>
+                        <div className="w-1 h-1 bg-muted-foreground rounded-full"></div>
+                        <div className="flex items-center gap-1">
+                          <Music className="h-3 w-3 text-brand-secondary" />
+                          <span className="font-bold">{artist.content_count}</span>
+                        </div>
+                      </div>
+                      
+                      <Badge variant="outline" className="text-xs font-medium px-3 py-1 border-brand-primary/30 text-brand-primary">
+                        {artist.creator_type ? artist.creator_type.charAt(0).toUpperCase() + artist.creator_type.slice(1) : 'Creator'}
+                      </Badge>
+                    </motion.div>
 
-                {currentArtist.bio && (
-                  <motion.p 
+                    {artist.bio && (
+                      <motion.p 
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.6 + index * 0.1, duration: 0.6 }}
+                        className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto"
+                      >
+                        {artist.bio}
+                      </motion.p>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <motion.div 
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.6, duration: 0.6 }}
-                    className="text-muted-foreground leading-relaxed max-w-xs mx-auto"
+                    transition={{ delay: 0.7 + index * 0.1, duration: 0.6 }}
+                    className="p-6 pt-0 space-y-3"
                   >
-                    {currentArtist.bio}
-                  </motion.p>
-                )}
-              </div>
-
-              {/* Content Player */}
-              <motion.div 
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.6 }}
-                className="px-8 pb-6"
-              >
-                <div className="glass-card rounded-3xl p-6">
-                  <div className="flex items-center gap-4">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={handleEngagement}
-                      disabled={hasEngaged}
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${
-                        hasEngaged 
-                          ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg" 
-                          : "bg-gradient-to-r from-brand-primary to-brand-glow text-white shadow-xl animate-pulse-glow"
-                      }`}
-                    >
-                      <Play className="h-6 w-6" />
-                    </motion.button>
-                    
-                    <div className="flex-1">
-                      <div className="font-bold text-lg">Featured Track</div>
-                      <div className="text-muted-foreground">
-                        {hasEngaged ? "✨ Listened (30s) +20 XP" : "🎵 Listen for 30s to earn 20 XP"}
-                      </div>
+                    <div className="flex gap-3">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleFollow(artist)}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300"
+                      >
+                        <Heart className="h-4 w-4" />
+                        Follow (+50 XP)
+                      </motion.button>
+                      
+                      <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl glass-card border border-border/20 transition-all duration-300 hover:border-brand-primary/30"
+                      >
+                        <Share className="h-4 w-4" />
+                      </motion.button>
                     </div>
-                  </div>
-                </div>
-              </motion.div>
 
-              {/* Action Buttons */}
-              <motion.div 
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.6 }}
-                className="p-8 pt-0 space-y-4"
-              >
-                <div className="flex gap-4">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleFollow}
-                    disabled={hasFollowed}
-                    className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
-                      hasFollowed
-                        ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
-                        : "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xl hover:shadow-2xl"
-                    }`}
-                  >
-                    <Heart className={`h-6 w-6 ${hasFollowed ? "fill-current" : ""}`} />
-                    {hasFollowed ? "Following" : "Follow (+50 XP)"}
-                  </motion.button>
-                  
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl glass-card border-2 border-border/20 transition-all duration-300 hover:border-brand-primary/30"
-                  >
-                    <Share className="h-6 w-6" />
-                  </motion.button>
-                </div>
-
-                <motion.button 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={completeDiscovery}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-accent to-brand-secondary text-white font-bold text-lg shadow-xl transition-all duration-300"
-                >
-                  Complete Discovery ✨
-                </motion.button>
-              </motion.div>
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => completeDiscovery(artist, false, false)}
+                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-brand-accent to-brand-secondary text-white font-bold text-sm shadow-xl transition-all duration-300"
+                    >
+                      Discover ✨
+                    </motion.button>
+                  </motion.div>
+                </motion.div>
+              ))}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Empty State - No Artist */}
-        {!currentArtist && (
+        {/* Empty State - No Artists */}
+        {currentArtists.length === 0 && (
           <motion.div 
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
