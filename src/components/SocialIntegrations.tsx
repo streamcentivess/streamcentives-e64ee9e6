@@ -179,14 +179,27 @@ const SocialIntegrations = () => {
           break;
         
         case 'youtube':
-          // Call YouTube OAuth function
+          // Get YouTube OAuth URL from edge function
           const { data, error } = await supabase.functions.invoke('youtube-oauth', {
-            body: { action: 'authorize' }
+            body: { 
+              action: 'get_auth_url',
+              state: btoa(JSON.stringify({ 
+                user_id: user?.id,
+                app_origin: window.location.origin 
+              }))
+            }
           });
+          
+          if (error) {
+            console.error('YouTube OAuth error:', error);
+            toast.error('Failed to initialize YouTube connection');
+            return;
+          }
+          
           if (data?.auth_url) {
             window.location.href = data.auth_url;
           } else {
-            toast.error('Failed to initialize YouTube connection');
+            toast.error('Failed to get YouTube authorization URL');
           }
           break;
         
