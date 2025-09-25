@@ -156,14 +156,11 @@ const Feed = () => {
   };
 
   const handleNavigationClick = (view: 'trending' | 'community' | 'fanlove') => {
-    if (view === 'community' && activeView !== 'community') {
-      // Navigate to community hub
-      navigate('/community-hub');
-      return;
-    }
     setActiveView(view);
     setPage(0);
     setRepostPage(0);
+    setHasMorePosts(true);
+    setHasMoreReposts(true);
   };
 
   const fetchPosts = async (pageNum: number = 0, reset: boolean = false) => {
@@ -676,6 +673,40 @@ const Feed = () => {
       toast({
         title: "Error",
         description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCommentSubmit = async (postId: string) => {
+    if (!newComment.trim() || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from('post_comments')
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          content: newComment.trim()
+        });
+
+      if (error) throw error;
+
+      setNewComment('');
+      setShowCommentInput(null);
+      
+      // Refresh posts to show new comment count
+      fetchPosts(0, true);
+      
+      toast({
+        title: "Comment added!",
+        description: "Your comment has been posted."
+      });
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add comment. Please try again.",
         variant: "destructive"
       });
     }
@@ -1268,9 +1299,262 @@ const Feed = () => {
                       className="group"
                     >
                       <MobileCard className="relative overflow-hidden border-2 hover:border-primary/40 transition-all duration-500 bg-gradient-to-br from-background to-surface hover:shadow-2xl hover:shadow-primary/10">
-                        <div className="text-center py-8">
-                          <p className="text-muted-foreground">Post content will be displayed here</p>
-                        </div>
+                        {/* Animated Background Gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <CardHeader className="relative pb-3">
+                          <div className="flex items-center gap-3">
+                            <motion.div
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Avatar 
+                                className="h-14 w-14 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/60 transition-all duration-300" 
+                                onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+                              >
+                                <AvatarImage src={post.profiles?.avatar_url || undefined} />
+                                <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
+                                  {post.profiles?.display_name?.[0] || post.profiles?.username?.[0] || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                            </motion.div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <motion.p 
+                                  whileHover={{ scale: 1.05 }}
+                                  className="font-bold cursor-pointer hover:text-primary transition-colors text-lg"
+                                  onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+                                >
+                                  {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
+                                </motion.p>
+                                <motion.div
+                                  whileHover={{ scale: 1.2, rotate: 180 }}
+                                  whileTap={{ scale: 0.8 }}
+                                >
+                                  <UserPlus className="w-5 h-5 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
+                                </motion.div>
+                              </div>
+                              <p className="text-sm text-muted-foreground font-medium">
+                                {new Date(post.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </CardHeader>
+
+                        <CardContent className="relative space-y-4">
+                          {/* Post Content */}
+                          <motion.div 
+                            whileHover={{ scale: 1.02 }}
+                            className="relative rounded-2xl overflow-hidden shadow-2xl"
+                          >
+                            {post.content_type === 'video' ? (
+                              <div className="relative bg-gradient-to-br from-black to-gray-900 rounded-2xl overflow-hidden">
+                                <motion.video 
+                                  controls 
+                                  className="w-full max-h-96 object-contain"
+                                  preload="metadata"
+                                  playsInline
+                                  whileHover={{ scale: 1.05 }}
+                                  transition={{ duration: 0.3 }}
+                                >
+                                  <source src={post.content_url} type="video/mp4" />
+                                  Your browser does not support the video tag.
+                                </motion.video>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                              </div>
+                            ) : (
+                              <div className="relative">
+                                <motion.img 
+                                  src={post.content_url} 
+                                  alt="Post content"
+                                  className="w-full max-h-96 object-cover rounded-2xl"
+                                  whileHover={{ scale: 1.05 }}
+                                  transition={{ duration: 0.3 }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-2xl"></div>
+                              </div>
+                            )}
+                          </motion.div>
+
+                          {/* Caption */}
+                          {post.caption && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.2 }}
+                              className="bg-gradient-to-r from-muted/50 to-transparent rounded-xl p-4"
+                            >
+                              <p className="text-sm leading-relaxed font-medium">{post.caption}</p>
+                            </motion.div>
+                          )}
+
+                          {/* Campaign Info */}
+                          {post.campaign && (
+                            <>
+                              <Separator />
+                              <div className="bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 rounded-xl p-4 space-y-3 border border-primary/20">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Target className="h-5 w-5 text-primary" />
+                                      <Badge variant="secondary" className="bg-primary/20 text-primary font-semibold">
+                                        {post.campaign.type}
+                                      </Badge>
+                                    </div>
+                                    <h4 className="font-bold text-lg mb-1">{post.campaign.title}</h4>
+                                    {post.campaign.description && (
+                                      <p className="text-sm text-muted-foreground mb-3">
+                                        {post.campaign.description}
+                                      </p>
+                                    )}
+                                    
+                                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                                      <div className="flex items-center gap-1 font-semibold">
+                                        <Trophy className="h-4 w-4 text-yellow-500" />
+                                        {post.campaign.xp_reward} XP
+                                      </div>
+                                      {post.campaign.cash_reward && (
+                                        <div className="flex items-center gap-1 font-semibold">
+                                          <DollarSign className="h-4 w-4 text-green-500" />
+                                          ${post.campaign.cash_reward}
+                                        </div>
+                                      )}
+                                      <div className="flex items-center gap-1">
+                                        <Users className="h-4 w-4" />
+                                        {post.campaign.participant_count} joined
+                                      </div>
+                                      {post.campaign.end_date && (
+                                        <div className="flex items-center gap-1">
+                                          <Calendar className="h-4 w-4" />
+                                          {formatTimeRemaining(post.campaign.end_date)}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  {post.campaign.is_joined ? (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleViewCampaign(post.campaign!.id)}
+                                      className="flex-1 border-primary/20 hover:bg-primary/10"
+                                    >
+                                      View Campaign
+                                    </Button>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleJoinCampaign(post.campaign!.id)}
+                                        className="flex-1 bg-gradient-primary hover:opacity-90 text-white font-semibold shadow-md"
+                                      >
+                                        Join Campaign
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleViewCampaign(post.campaign!.id)}
+                                        className="border-primary/20 hover:bg-primary/10"
+                                      >
+                                        Details
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {/* Post Actions */}
+                          <div className="flex items-center justify-between pt-4">
+                            <div className="flex items-center gap-2">
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className={`flex items-center gap-2 rounded-2xl px-4 py-2 font-bold transition-all duration-300 ${
+                                    post.is_liked 
+                                      ? 'text-red-500 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200' 
+                                      : 'hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 hover:text-red-500 hover:border hover:border-red-200'
+                                  }`}
+                                  onClick={() => handleLike(post.id)}
+                                >
+                                  <Heart className={`h-4 w-4 ${post.is_liked ? 'fill-current' : ''}`} />
+                                  <span>{post.likes}</span>
+                                </Button>
+                              </motion.div>
+
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="flex items-center gap-2 rounded-2xl px-4 py-2 font-bold hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-500 hover:border hover:border-blue-200 transition-all duration-300"
+                                  onClick={() => handleComment(post.id)}
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                  <span>{post.comments}</span>
+                                </Button>
+                              </motion.div>
+
+                                  <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className={`flex items-center gap-2 rounded-2xl px-4 py-2 font-bold transition-all duration-300 ${
+                                    post.is_reposted 
+                                      ? 'text-purple-500 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200' 
+                                      : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-500 hover:border hover:border-purple-200'
+                                  }`}
+                                  onClick={() => handleRepost(post.id)}
+                                >
+                                  <Repeat2 className={`h-4 w-4 ${post.is_reposted ? 'fill-current' : ''}`} />
+                                  <span>{post.repost_count || 0}</span>
+                                </Button>
+                            </div>
+
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="rounded-2xl px-4 py-2 font-bold hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 hover:text-green-500 hover:border hover:border-green-200 transition-all duration-300"
+                                onClick={() => handleShare(post)}
+                              >
+                                <Share2 className="h-4 w-4" />
+                              </Button>
+                            </motion.div>
+                          </div>
+
+                          {/* Comment Input */}
+                          {showCommentInput === post.id && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="mt-4 p-4 bg-gradient-to-r from-muted/30 to-transparent rounded-xl border border-primary/10"
+                            >
+                              <div className="flex gap-3">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={user?.user_metadata?.avatar_url} />
+                                  <AvatarFallback className="bg-gradient-primary text-white text-xs">
+                                    {user?.user_metadata?.display_name?.[0] || 'U'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 flex gap-2">
+                                  <Input
+                                    placeholder="Add a comment..."
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    className="flex-1 border-primary/20 focus:border-primary/40"
+                                  />
+                                  <Button size="sm" onClick={() => handleCommentSubmit(post.id)}>
+                                    <MessageCircle className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </CardContent>
                       </MobileCard>
                     </motion.div>
                   ))

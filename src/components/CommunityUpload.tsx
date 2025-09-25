@@ -90,13 +90,25 @@ const CommunityUpload: React.FC<CommunityUploadProps> = ({ onUploadComplete }) =
         .from('posts')
         .getPublicUrl(filePath);
 
-      // Create post record
+      // Create post record with normalized content type
+      let normalizedContentType = 'image'; // default
+      
+      // Map MIME types to database allowed values
+      if (selectedFile.type.startsWith('image/')) {
+        normalizedContentType = 'image';
+      } else if (selectedFile.type.startsWith('video/')) {
+        normalizedContentType = 'video';
+      } else {
+        // For other types, default to image
+        normalizedContentType = 'image';
+      }
+
       const { error: postError } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
           content_url: publicUrlData.publicUrl,
-          content_type: selectedFile.type,
+          content_type: normalizedContentType,
           caption: caption || null,
           is_community_post: true,
           is_cross_posted: false
