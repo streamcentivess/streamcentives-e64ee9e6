@@ -1550,6 +1550,7 @@ const Feed = () => {
                                   playsInline
                                   muted
                                   loop
+                                  autoPlay
                                   whileHover={{ scale: 1.05 }}
                                   transition={{ duration: 0.3 }}
                                 >
@@ -1882,10 +1883,14 @@ const Feed = () => {
                       <div className="relative rounded-xl overflow-hidden">
                         {repost.posts.content_type.startsWith('video/') ? (
                           <video 
+                            ref={(el) => addVideoRef(repost.id, el)}
                             controls 
                             className="w-full max-h-96 object-contain rounded-xl"
                             preload="metadata"
                             playsInline
+                            muted
+                            loop
+                            autoPlay
                           >
                             <source src={repost.posts.content_url} type={repost.posts.content_type} />
                             Your browser does not support the video tag.
