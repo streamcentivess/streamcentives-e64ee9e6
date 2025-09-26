@@ -117,37 +117,19 @@ const MessageCreator: React.FC<MessageCreatorProps> = ({
     setIsLoading(true);
 
     try {
-      // Create message with appropriate status
-      const messageStatus = isFreeMessage ? 'pending' : 'pending'; // Both go to pending initially
+      // Send message using the RPC function for both free and paid messages
       const messageXPCost = actualXPCost;
 
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          sender_id: (await supabase.auth.getUser()).data.user?.id,
-          recipient_id: recipientId,
-          content: messageContent.trim(),
-          xp_cost: messageXPCost,
-          status: messageStatus
-        })
-        .select()
-        .single();
+      const { data, error } = await supabase.rpc('send_message_with_xp', {
+        recipient_id_param: recipientId,
+        content_param: messageContent.trim(),
+        xp_cost_param: messageXPCost
+      });
 
       if (error) throw error;
 
-      // Only deduct XP if it's a priority message
-      if (!isFreeMessage && actualXPCost > 0) {
-        const { error: xpError } = await supabase.rpc('send_message_with_xp', {
-          recipient_id_param: recipientId,
-          content_param: messageContent.trim(),
-          xp_cost_param: actualXPCost
-        });
-
-        if (xpError) throw xpError;
-      }
-
       // Trigger AI analysis
-      const messageId = data.id;
+      const messageId = data;
       await supabase.functions.invoke('analyze-message-sentiment', {
         body: { message: messageContent.trim(), messageId }
       });
