@@ -110,6 +110,9 @@ const UniversalProfile = () => {
   // Haptic feedback
   const { triggerHaptic } = useHapticFeedback();
 
+  // Guard against stale profile fetches when switching users rapidly
+  const fetchTokenRef = useRef(0);
+
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId') || searchParams.get('user');
   const viewingUsername = searchParams.get('username');
@@ -134,55 +137,45 @@ const UniversalProfile = () => {
     enabled: !!profile && !isOwnProfile
   });
   useEffect(() => {
-    // Clear all state when switching profiles
-    if (user) {
-      // Clear all profile-related state first
-      setProfile(null);
-      setIsVerified(false);
-      setFollowing(false);
-      setFollowStats({ followers_count: 0, following_count: 0 });
-      setPostCount(0);
-      setXpBalance(0);
-      setJoinedCampaigns([]);
-      setMarketplaceItems([]);
-      setRedemptionHistory([]);
-      setSearchResults([]);
-      setFollowers([]);
-      setFollowingUsers([]);
-      setSupporters([]);
-      setHaters([]);
-      setUserFollowStates({});
-      setUserRoles({});
-      setSupporterStates({});
-      setHaterStates({});
-      setLoading(true);
-      
-      // Then fetch fresh data
-      fetchProfile();
-      fetchFollowStats();
-      // Force refresh XP balance if on own profile
-      if (isOwnProfile) {
-        setTimeout(() => fetchXpBalance(), 1000);
-      }
-      // Clear follow states when switching profiles
-      setUserFollowStates({});
-      // Determine user role from sessionStorage or URL params
-      const savedRole = sessionStorage.getItem('selectedRole') as 'fan' | 'creator' | null;
-      if (savedRole) {
-        setUserRole(savedRole);
-      } else {
-        // Try to infer role from current path or default to fan
-        const currentPath = window.location.pathname;
-        if (currentPath.includes('creator')) {
-          setUserRole('creator');
-        } else if (currentPath.includes('fan')) {
-          setUserRole('fan');
-        } else {
-          setUserRole('fan'); // Default to fan
-        }
-      }
+    // Clear all profile-related state when switching viewed profile
+    setProfile(null);
+    setIsVerified(false);
+    setFollowing(false);
+    setFollowStats({ followers_count: 0, following_count: 0 });
+    setPostCount(0);
+    setXpBalance(0);
+    setJoinedCampaigns([]);
+    setMarketplaceItems([]);
+    setRedemptionHistory([]);
+    setSearchResults([]);
+    setFollowers([]);
+    setFollowingUsers([]);
+    setSupporters([]);
+    setHaters([]);
+    setUserFollowStates({});
+    setUserRoles({});
+    setSupporterStates({});
+    setHaterStates({});
+    setLoading(true);
+
+    // Start fresh fetches guarded by token
+    fetchProfile();
+    fetchFollowStats();
+    if (isOwnProfile) {
+      setTimeout(() => fetchXpBalance(), 1000);
     }
-  }, [user, finalUserId, finalUsername]);
+
+    // Determine user role from sessionStorage or URL params
+    const savedRole = sessionStorage.getItem('selectedRole') as 'fan' | 'creator' | null;
+    if (savedRole) {
+      setUserRole(savedRole);
+    } else {
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('creator')) setUserRole('creator');
+      else if (currentPath.includes('fan')) setUserRole('fan');
+      else setUserRole('fan');
+    }
+  }, [finalUserId, finalUsername]);
 
   // Fetch campaigns after profile is loaded to ensure we have the correct user ID
   useEffect(() => {
@@ -210,6 +203,35 @@ const UniversalProfile = () => {
       supabase.removeChannel(channel);
     };
   }, [profile?.user_id]);
+
+  // Realtime updates for the viewed user's profile row
+  useEffect(() => {
+    const targetUserId = profile?.user_id || finalUserId || null;
+    if (!targetUserId) return;
+
+    const channel = supabase
+      .channel(`profile-updates-${targetUserId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'profiles',
+        filter: `user_id=eq.${targetUserId}`
+      }, (payload: any) => {
+        setProfile(prev => {
+          if (!prev || !payload?.new) return prev;
+          if (prev.user_id !== payload.new.user_id) return prev;
+          return { ...prev, ...payload.new };
+        });
+        // Refresh derived stats
+        fetchFollowStats();
+        fetchPostCount();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.user_id, finalUserId]);
 
   // Set up real-time campaign participation updates
   useEffect(() => {
@@ -328,63 +350,51 @@ const UniversalProfile = () => {
   };
 
   const fetchProfile = async () => {
+    const requestId = ++fetchTokenRef.current;
     const targetUserId = finalUsername ? null : finalUserId || user?.id;
-    if (!targetUserId && !finalUsername) return;
+    if (!targetUserId && !finalUsername) {
+      setLoading(false);
+      return;
+    }
     try {
       let profileRes: any;
       if (finalUsername) {
-        // For username lookup, still use direct query since RLS allows it for current user
         profileRes = await supabase.from('profiles').select('*').eq('username', finalUsername).maybeSingle();
+      } else if (isOwnProfile) {
+        profileRes = await supabase.from('profiles').select('*').eq('user_id', targetUserId as string).maybeSingle();
       } else {
-        // For user ID lookup, use the secure RPC function if not own profile
-        if (isOwnProfile) {
-          profileRes = await supabase.from('profiles').select('*').eq('user_id', targetUserId as string).maybeSingle();
-        } else {
-          // Use secure RPC function for other users' profiles
-          const { data: rpcData, error: rpcError } = await supabase.rpc('get_public_profile_safe', { 
-            target_user_id: targetUserId 
-          });
-          profileRes = { 
-            data: rpcData?.[0] || null, 
-            error: rpcError 
-          };
-        }
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_public_profile_safe', { target_user_id: targetUserId });
+        profileRes = { data: rpcData?.[0] || null, error: rpcError };
       }
-      const {
-        data,
-        error
-      } = profileRes;
+
+      const { data, error } = profileRes;
       if (error) {
         console.error('Error fetching profile:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load profile data",
-          variant: "destructive"
-        });
-      } else {
-        setProfile(data);
-        // Check profile owner role after setting profile
-        if (data) {
-          setTimeout(() => checkProfileOwnerRole(), 100);
-          // Check verification status
-          setTimeout(() => fetchVerificationStatus(data.user_id), 100);
+        if (requestId === fetchTokenRef.current) {
+          toast({ title: 'Error', description: 'Failed to load profile data', variant: 'destructive' });
         }
-        // If loaded by username, fetch follow stats now that we have user_id
-        if (finalUsername) {
-          fetchFollowStats();
-        }
-        // Check if current user is following this profile (if not own profile)
-        if (!isOwnProfile && user) {
-          checkFollowStatus();
-        }
-        // Fetch post count and XP balance for this profile
-        fetchPostCount();
-        fetchXpBalance();
+        return;
       }
+
+      if (requestId !== fetchTokenRef.current) return; // stale response
+
+      setProfile(data);
+      if (data) {
+        setTimeout(() => checkProfileOwnerRole(), 100);
+        setTimeout(() => fetchVerificationStatus(data.user_id), 100);
+      }
+      if (finalUsername) {
+        fetchFollowStats();
+      }
+      if (!isOwnProfile && user) {
+        checkFollowStatus();
+      }
+      fetchPostCount();
+      fetchXpBalance();
     } catch (error) {
       console.error('Unexpected error:', error);
     } finally {
-      setLoading(false);
+      if (requestId === fetchTokenRef.current) setLoading(false);
     }
   };
   const fetchFollowStats = async () => {
