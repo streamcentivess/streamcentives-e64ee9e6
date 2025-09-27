@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileNotificationToast } from './MobileNotificationToast';
@@ -36,6 +37,7 @@ interface MobileNotificationProviderProps {
 
 export function MobileNotificationProvider({ children }: MobileNotificationProviderProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeNotifications, setActiveNotifications] = useState<Notification[]>([]);
   const [lastFetchTime, setLastFetchTime] = useState<Date>(new Date());
 
@@ -106,19 +108,18 @@ export function MobileNotificationProvider({ children }: MobileNotificationProvi
     // Handle navigation based on notification type
     switch (notification.type) {
       case 'social_interaction':
-        if (notification.data?.content_id) {
-          // Navigate to post or content
-          window.location.href = `/universal-profile?user=${notification.data.actor_id}`;
+        if (notification.data?.actor_id) {
+          navigate(`/universal-profile?userId=${notification.data.actor_id}`);
         }
         break;
       case 'profile_view':
         if (notification.data?.viewer_id) {
-          window.location.href = `/universal-profile?user=${notification.data.viewer_id}`;
+          navigate(`/universal-profile?userId=${notification.data.viewer_id}`);
         }
         break;
       case 'follow':
         if (notification.data?.follower_id) {
-          window.location.href = `/universal-profile?user=${notification.data.follower_id}`;
+          navigate(`/universal-profile?userId=${notification.data.follower_id}`);
         }
         break;
     }

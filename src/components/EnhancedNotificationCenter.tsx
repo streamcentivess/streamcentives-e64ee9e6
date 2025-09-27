@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ interface Notification {
 
 export function EnhancedNotificationCenter() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -183,6 +185,32 @@ export function EnhancedNotificationCenter() {
 
   const counts = getFilterCounts();
 
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if not already read
+    if (!notification.is_read) {
+      await markAsRead([notification.id]);
+    }
+
+    // Navigate based on notification type
+    switch (notification.type) {
+      case 'social_interaction':
+        if (notification.data?.actor_id) {
+          navigate(`/universal-profile?userId=${notification.data.actor_id}`);
+        }
+        break;
+      case 'profile_view': 
+        if (notification.data?.viewer_id) {
+          navigate(`/universal-profile?userId=${notification.data.viewer_id}`);
+        }
+        break;
+      case 'follow':
+        if (notification.data?.follower_id) {
+          navigate(`/universal-profile?userId=${notification.data.follower_id}`);
+        }
+        break;
+    }
+  };
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -285,7 +313,10 @@ export function EnhancedNotificationCenter() {
               <div className="space-y-3">
                 {filteredNotifications.map((notification, index) => (
                   <div key={notification.id}>
-                    <Card className={`${!notification.is_read ? 'ring-2 ring-primary/20' : ''} transition-all hover:shadow-md`}>
+                    <Card 
+                      className={`${!notification.is_read ? 'ring-2 ring-primary/20' : ''} transition-all hover:shadow-md cursor-pointer`}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 mt-0.5">
@@ -322,7 +353,10 @@ export function EnhancedNotificationCenter() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => markAsRead([notification.id])}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      markAsRead([notification.id]);
+                                    }}
                                     className="h-6 w-6 p-0"
                                   >
                                     <Check className="h-3 w-3" />
@@ -331,7 +365,10 @@ export function EnhancedNotificationCenter() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => deleteNotification(notification.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteNotification(notification.id);
+                                  }}
                                   className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                                 >
                                   <Trash2 className="h-3 w-3" />
