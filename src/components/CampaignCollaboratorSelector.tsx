@@ -8,12 +8,14 @@ import { X, Search, Users, Building2, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { VerificationBadge } from '@/components/VerificationBadge';
 
 interface Collaborator {
   user_id: string;
   username: string;
   display_name: string | null;
   avatar_url: string | null;
+  creator_type?: string;
   role: 'creator' | 'sponsor' | 'collaborator';
 }
 
@@ -81,6 +83,7 @@ export const CampaignCollaboratorSelector: React.FC<CampaignCollaboratorSelector
         username: profile.username,
         display_name: profile.display_name,
         avatar_url: profile.avatar_url,
+        creator_type: profile.creator_type,
         role: profile.spotify_connected ? 'creator' as const : 'collaborator' as const
       }));
 
@@ -184,8 +187,15 @@ export const CampaignCollaboratorSelector: React.FC<CampaignCollaboratorSelector
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="text-sm font-medium">
-                      {user.display_name || user.username}
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm font-medium">
+                        {user.display_name || user.username}
+                      </div>
+                      <VerificationBadge 
+                        isVerified={!!user.creator_type}
+                        followerCount={0}
+                        size="sm"
+                      />
                     </div>
                     <div className="text-xs text-muted-foreground">
                       @{user.username}

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, MapPin, Music, Store } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { VerificationBadge } from '@/components/VerificationBadge';
 
 interface PublicProfile {
   user_id: string;
@@ -17,6 +18,8 @@ interface PublicProfile {
   spotify_connected?: boolean;
   merch_store_connected?: boolean;
   created_at: string;
+  creator_type?: string;
+  follower_count?: number;
   // Removed sensitive fields: location, interests, age, merch_store_url
 }
 
@@ -162,6 +165,11 @@ export const UserProfileSearch: React.FC<UserProfileSearchProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 mb-1">
                     <h3 className="font-semibold text-sm">{profile.display_name}</h3>
+                    <VerificationBadge 
+                      isVerified={!!profile.creator_type}
+                      followerCount={profile.follower_count || 0}
+                      size="sm"
+                    />
                     <span className="text-muted-foreground text-xs">@{profile.username}</span>
                   </div>
 

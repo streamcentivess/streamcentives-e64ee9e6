@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, Send, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { VerificationBadge } from '@/components/VerificationBadge';
 
 interface Creator {
   user_id: string;
   username: string;
   display_name: string;
   avatar_url?: string;
+  creator_type?: string;
 }
 
 interface SponsorMessageComposerProps {
@@ -162,6 +164,11 @@ export function SponsorMessageComposer({ onMessageSent }: SponsorMessageComposer
                     </div>
                   )}
                   <span>{creator.display_name || creator.username}</span>
+                  <VerificationBadge 
+                    isVerified={!!creator.creator_type}
+                    followerCount={0}
+                    size="sm"
+                  />
                   <span className="text-muted-foreground">@{creator.username}</span>
                 </div>
               </SelectItem>

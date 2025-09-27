@@ -1930,15 +1930,22 @@ const UniversalProfile = () => {
                           {result.display_name?.[0] || result.username?.[0]?.toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium">
-                          {result.display_name || result.username || 'Anonymous User'}
-                        </div>
-                        {result.username && result.display_name && <div className="text-sm text-muted-foreground">@{result.username}</div>}
-                        {result.bio && <div className="text-sm text-muted-foreground truncate">
-                            {result.bio}
-                          </div>}
-                      </div>
+                       <div className="flex-1">
+                         <div className="flex items-center gap-2">
+                           <div className="font-medium">
+                             {result.display_name || result.username || 'Anonymous User'}
+                           </div>
+                           <VerificationBadge 
+                             isVerified={!!(result as any).creator_type}
+                             followerCount={0}
+                             size="sm"
+                           />
+                         </div>
+                         {result.username && result.display_name && <div className="text-sm text-muted-foreground">@{result.username}</div>}
+                         {result.bio && <div className="text-sm text-muted-foreground truncate">
+                             {result.bio}
+                           </div>}
+                       </div>
                       <div className="flex items-center gap-1">
                         {/* Follow indicator */}
                         {userFollowStates[result.user_id] && (
@@ -2632,12 +2639,19 @@ const UniversalProfile = () => {
                                         {profile.display_name?.[0] || profile.username?.[0]?.toUpperCase() || '?'}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <div className="flex-1">
-                                      <div className="font-medium">
-                                        {profile.display_name || profile.username || 'Anonymous User'}
-                                      </div>
-                                      {profile.username && profile.display_name && <div className="text-sm text-muted-foreground">@{profile.username}</div>}
-                                    </div>
+                                     <div className="flex-1">
+                                       <div className="flex items-center gap-2">
+                                         <div className="font-medium">
+                                           {profile.display_name || profile.username || 'Anonymous User'}
+                                         </div>
+                                         <VerificationBadge 
+                                           isVerified={!!(profile as any).creator_type}
+                                           followerCount={0}
+                                           size="sm"
+                                         />
+                                       </div>
+                                       {profile.username && profile.display_name && <div className="text-sm text-muted-foreground">@{profile.username}</div>}
+                                     </div>
                                     <Button 
                                       size="sm" 
                                       variant={supporterStates[profile.user_id] ? "outline" : "default"}
@@ -2770,12 +2784,19 @@ const UniversalProfile = () => {
                                         {profile.display_name?.[0] || profile.username?.[0]?.toUpperCase() || '?'}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <div className="flex-1">
-                                      <div className="font-medium">
-                                        {profile.display_name || profile.username || 'Anonymous User'}
-                                      </div>
-                                      {profile.username && profile.display_name && <div className="text-sm text-muted-foreground">@{profile.username}</div>}
-                                    </div>
+                                     <div className="flex-1">
+                                       <div className="flex items-center gap-2">
+                                         <div className="font-medium">
+                                           {profile.display_name || profile.username || 'Anonymous User'}
+                                         </div>
+                                         <VerificationBadge 
+                                           isVerified={!!(profile as any).creator_type}
+                                           followerCount={0}
+                                           size="sm"
+                                         />
+                                       </div>
+                                       {profile.username && profile.display_name && <div className="text-sm text-muted-foreground">@{profile.username}</div>}
+                                     </div>
                                     <Button 
                                       size="sm" 
                                       variant={haterStates[profile.user_id] ? "outline" : "default"}

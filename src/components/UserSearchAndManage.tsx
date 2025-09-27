@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Search, Plus, X, UserPlus, UserMinus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { VerificationBadge } from "@/components/VerificationBadge";
 
 interface UserSearchAndManageProps {
   type: 'supporters' | 'haters';
@@ -224,7 +225,14 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{profile.display_name || profile.username}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">{profile.display_name || profile.username}</p>
+                              <VerificationBadge 
+                                isVerified={!!profile.creator_type}
+                                followerCount={0}
+                                size="sm"
+                              />
+                            </div>
                             <p className="text-sm text-muted-foreground">@{profile.username}</p>
                           </div>
                         </div>
