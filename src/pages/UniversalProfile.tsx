@@ -27,6 +27,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { SmartLinkManager } from '@/components/SmartLinkManager';
 import { SmartLinkButton } from '@/components/SmartLinkButton';
 import { CreatorTypeBadge } from '@/components/CreatorTypeBadge';
+import { VerificationBadge } from '@/components/VerificationBadge';
 interface Profile {
   id?: string;
   user_id: string;
@@ -87,6 +88,7 @@ const UniversalProfile = () => {
   const [marketplaceItems, setMarketplaceItems] = useState<any[]>([]);
   const [redemptionHistory, setRedemptionHistory] = useState<any[]>([]);
   const [marketplaceLoading, setMarketplaceLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const unreadCount = useUnreadMessages();
 
   // Pull-to-refresh state
@@ -281,6 +283,25 @@ const UniversalProfile = () => {
     }
   };
 
+  const fetchVerificationStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('streamseeker_artists')
+        .select('eligibility_status')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching verification status:', error);
+      }
+      
+      setIsVerified(data?.eligibility_status === 'approved');
+    } catch (error) {
+      console.error('Error checking verification status:', error);
+      setIsVerified(false);
+    }
+  };
+
   const fetchProfile = async () => {
     const targetUserId = finalUsername ? null : finalUserId || user?.id;
     if (!targetUserId && !finalUsername) return;
@@ -320,6 +341,8 @@ const UniversalProfile = () => {
         // Check profile owner role after setting profile
         if (data) {
           setTimeout(() => checkProfileOwnerRole(), 100);
+          // Check verification status
+          setTimeout(() => fetchVerificationStatus(data.user_id), 100);
         }
         // If loaded by username, fetch follow stats now that we have user_id
         if (finalUsername) {
@@ -2041,12 +2064,19 @@ const UniversalProfile = () => {
                   <h2 className="text-lg font-bold">
                     {profile.display_name || 'New User'}
                   </h2>
-                  {profile.creator_type && (
-                    <CreatorTypeBadge 
-                      creatorType={profile.creator_type} 
-                      size="default"
+                  <div className="flex items-center gap-1">
+                    {profile.creator_type && (
+                      <CreatorTypeBadge 
+                        creatorType={profile.creator_type} 
+                        size="default"
+                      />
+                    )}
+                    <VerificationBadge 
+                      isVerified={isVerified}
+                      followerCount={followStats.followers_count}
+                      size="lg"
                     />
-                  )}
+                  </div>
                 </div>
                 {profile.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}
               </div>
