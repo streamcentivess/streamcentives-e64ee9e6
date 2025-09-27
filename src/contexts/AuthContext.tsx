@@ -42,6 +42,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_IN' && session?.user) {
+          // Mark user as returning user for future visits
+          localStorage.setItem('streamcentives_returning_user', 'true');
+          
           // Check if user has a profile, create one if not
           setTimeout(async () => {
             try {
@@ -337,6 +340,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           variant: "destructive"
         });
       } else {
+        // Mark user as having created an account for future visits
+        localStorage.setItem('streamcentives_returning_user', 'true');
+        
         toast({
           title: "Account created successfully!",
           description: "Welcome! You can now complete your profile setup.",
@@ -389,6 +395,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Clear local state regardless of API response
       setSession(null);
       setUser(null);
+      
+      // Clear the returning user flag when signing out
+      localStorage.removeItem('streamcentives_returning_user');
       
       if (error) {
         console.error('Sign out error:', error);

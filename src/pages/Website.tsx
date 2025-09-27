@@ -176,17 +176,22 @@ const Website = () => {
               <img src={logoUrl} alt="Streamcentives" className="w-8 h-8 rounded-full" width={32} height={32} />
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/pitch-deck" className="order-1 sm:order-2">
+              <Link to="/auth/signin" className="order-1 sm:order-3">
+                <Button variant="outline" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/pitch-deck" className="order-2 sm:order-4">
                 <Button variant="ghost" size="sm">
                   Investor Pitch
                 </Button>
               </Link>
-              <Link to="/team" className="order-2 sm:order-1">
+              <Link to="/team" className="order-3 sm:order-1">
                 <Button variant="ghost" size="sm">
                   Team
                 </Button>
               </Link>
-              <Button className="order-3 bg-blue-400 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:shadow-[0_0_30px_rgba(96,165,250,0.8)] transition-all duration-300" onClick={() => document.getElementById('signup')?.scrollIntoView({
+              <Button className="order-4 sm:order-2 bg-blue-400 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(96,165,250,0.6)] hover:shadow-[0_0_30px_rgba(96,165,250,0.8)] transition-all duration-300" onClick={() => document.getElementById('signup')?.scrollIntoView({
               behavior: 'smooth'
             })}>
                 Get Started
