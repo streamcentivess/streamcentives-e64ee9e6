@@ -87,16 +87,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId,
 
       // Fetch profiles for all unique user IDs
       const userIds = [...new Set(data?.flatMap(m => [m.sender_id, m.recipient_id]) || [])];
-      // Get profiles using the safe function
-      const profilePromises = userIds.map(id => 
-        supabase.rpc('get_public_profile_safe', { target_user_id: id })
-      );
-      const profileResults = await Promise.all(profilePromises);
-      const profiles = profileResults
-        .map(result => result.data?.[0])
-        .filter(Boolean);
+      
+      // Fetch profiles directly from the profiles table
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, username')
+        .in('user_id', userIds);
 
-      const profileMap = profiles?.reduce((acc: any, profile: any) => {
+      const profileMap = profilesData?.reduce((acc: any, profile: any) => {
         acc[profile.user_id] = profile;
         return acc;
       }, {}) || {};
