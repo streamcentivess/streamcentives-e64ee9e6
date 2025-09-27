@@ -1,17 +1,21 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Users, TrendingUp, Medal, Crown, Star, Zap, Target, Gift } from 'lucide-react';
+import { Trophy, Users, TrendingUp, Medal, Crown, Star, Zap, Target, Gift, ShoppingBag, Music, Share, DollarSign, ArrowLeft, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from '@/hooks/use-toast';
 import { MobileContainer, MobileHeader } from '@/components/ui/mobile-container';
 import { VerificationBadge } from '@/components/VerificationBadge';
 import AppNavigation from '@/components/AppNavigation';
-import { VerificationBadge } from '@/components/VerificationBadge';
 
 interface LeaderboardEntry {
   id: string;
