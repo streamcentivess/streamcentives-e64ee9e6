@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { VerificationBadge } from '@/components/VerificationBadge';
 
 interface PendingArtist {
   user_id: string;
@@ -39,6 +40,7 @@ interface PendingArtist {
   social_media_linked: boolean;
   content_uploaded: boolean;
   checklist_score: number;
+  follower_count: number;
 }
 
 const StreamseekerAdminPanel = () => {
@@ -103,6 +105,23 @@ const StreamseekerAdminPanel = () => {
         return;
       }
 
+      // Get follower counts for these users
+      const { data: followersData, error: followersError } = await supabase
+        .from('follows')
+        .select('following_id')
+        .in('following_id', userIds);
+
+      if (followersError) {
+        console.error('Error fetching followers:', followersError);
+        return;
+      }
+
+      // Calculate follower counts
+      const followerCounts = userIds.reduce((acc, userId) => {
+        acc[userId] = followersData?.filter(f => f.following_id === userId).length || 0;
+        return acc;
+      }, {} as Record<string, number>);
+
       // Combine the data
       const formattedData = artistsData.map(artist => {
         const profile = profilesData?.find(p => p.user_id === artist.user_id);
@@ -121,7 +140,8 @@ const StreamseekerAdminPanel = () => {
           profile_complete: checklist?.profile_complete || false,
           social_media_linked: checklist?.social_media_linked || false,
           content_uploaded: checklist?.content_uploaded || false,
-          checklist_score: checklist?.checklist_score || 0
+          checklist_score: checklist?.checklist_score || 0,
+          follower_count: followerCounts[artist.user_id] || 0
         };
       });
 
@@ -288,14 +308,21 @@ const StreamseekerAdminPanel = () => {
                         <h3 className="text-lg font-semibold">
                           {artist.display_name || artist.username}
                         </h3>
-                        <Badge variant={getStatusColor(artist.eligibility_status)}>
-                          {getStatusIcon(artist.eligibility_status)}
-                          {artist.eligibility_status}
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Badge variant={getStatusColor(artist.eligibility_status)}>
+                            {getStatusIcon(artist.eligibility_status)}
+                            {artist.eligibility_status}
+                          </Badge>
+                          <VerificationBadge 
+                            isVerified={artist.eligibility_status === 'approved'}
+                            followerCount={artist.follower_count}
+                            size="sm"
+                          />
+                        </div>
                       </div>
                       
                       <p className="text-sm text-muted-foreground mb-3">
-                        @{artist.username}
+                        @{artist.username} • {artist.follower_count.toLocaleString()} followers
                       </p>
                       
                       {artist.bio && (

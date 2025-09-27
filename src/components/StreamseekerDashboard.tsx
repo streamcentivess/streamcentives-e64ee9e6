@@ -28,6 +28,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate } from 'react-router-dom';
+import { VerificationBadge } from '@/components/VerificationBadge';
 
 interface SuggestedArtist {
   user_id: string;
@@ -385,7 +386,7 @@ const StreamseekerDashboard = () => {
                 </div>
               </div>
               <Button 
-                onClick={() => navigate('/streamseeker/admin')}
+                onClick={() => navigate('/streamseeker/onboarding')}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto text-sm sm:text-base"
               >
                 <Settings className="h-4 w-4 mr-2" />
@@ -570,9 +571,16 @@ const StreamseekerDashboard = () => {
                       className="space-y-3"
                     >
                       <div>
-                        <h3 className="text-lg sm:text-xl font-black text-gradient-primary mb-1">
-                          {artist.display_name || artist.username}
-                        </h3>
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <h3 className="text-lg sm:text-xl font-black text-gradient-primary">
+                            {artist.display_name || artist.username}
+                          </h3>
+                          <VerificationBadge 
+                            isVerified={true}
+                            followerCount={artist.follower_count}
+                            size="sm"
+                          />
+                        </div>
                         <p className="text-muted-foreground text-xs sm:text-sm">@{artist.username}</p>
                       </div>
                       

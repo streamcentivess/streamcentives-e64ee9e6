@@ -1,16 +1,16 @@
 import React from 'react';
-import StreamseekerAdminPanel from '@/components/StreamseekerAdminPanel';
+import StreamseekerArtistOnboarding from '@/components/StreamseekerArtistOnboarding';
 import AppNavigation from '@/components/AppNavigation';
 
-const StreamseekerAdminPage = () => {
+const StreamseekerOnboardingPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppNavigation />
       <main className="py-6">
-        <StreamseekerAdminPanel />
+        <StreamseekerArtistOnboarding />
       </main>
     </div>
   );
 };
 
-export default StreamseekerAdminPage;
+export default StreamseekerOnboardingPage;

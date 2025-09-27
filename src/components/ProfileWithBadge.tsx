@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CreatorTypeBadge } from './CreatorTypeBadge';
+import { VerificationBadge } from './VerificationBadge';
 
 interface ProfileWithBadgeProps {
   profile: {
@@ -13,13 +14,17 @@ interface ProfileWithBadgeProps {
   size?: 'sm' | 'md' | 'lg';
   showBio?: boolean;
   className?: string;
+  followerCount?: number;
+  isVerified?: boolean;
 }
 
 export const ProfileWithBadge: React.FC<ProfileWithBadgeProps> = ({
   profile,
   size = 'md',
   showBio = false,
-  className = ''
+  className = '',
+  followerCount = 0,
+  isVerified = false
 }) => {
   const avatarSizes = {
     sm: 'h-8 w-8',
@@ -47,12 +52,19 @@ export const ProfileWithBadge: React.FC<ProfileWithBadgeProps> = ({
           <h3 className={`${textSizes[size]} font-semibold truncate`}>
             {profile.display_name || profile.username}
           </h3>
-          {profile.creator_type && (
-            <CreatorTypeBadge 
-              creatorType={profile.creator_type} 
-              size={size === 'lg' ? 'default' : 'sm'}
+          <div className="flex items-center gap-1">
+            {profile.creator_type && (
+              <CreatorTypeBadge 
+                creatorType={profile.creator_type} 
+                size={size === 'lg' ? 'default' : 'sm'}
+              />
+            )}
+            <VerificationBadge 
+              isVerified={isVerified}
+              followerCount={followerCount}
+              size={size}
             />
-          )}
+          </div>
         </div>
         
         {profile.username && profile.display_name && (
