@@ -160,7 +160,6 @@ const UniversalProfile = () => {
 
     // Start fresh fetches guarded by token
     fetchProfile();
-    fetchFollowStats();
     if (isOwnProfile) {
       setTimeout(() => fetchXpBalance(), 1000);
     }
@@ -223,7 +222,7 @@ const UniversalProfile = () => {
           return { ...prev, ...payload.new };
         });
         // Refresh derived stats
-        fetchFollowStats();
+        fetchFollowStats(targetUserId);
         fetchPostCount();
       })
       .subscribe();
@@ -383,8 +382,8 @@ const UniversalProfile = () => {
         setTimeout(() => checkProfileOwnerRole(), 100);
         setTimeout(() => fetchVerificationStatus(data.user_id), 100);
       }
-      if (finalUsername) {
-        fetchFollowStats();
+      if (data?.user_id) {
+        fetchFollowStats(data.user_id);
       }
       if (!isOwnProfile && user) {
         checkFollowStatus();
@@ -397,17 +396,18 @@ const UniversalProfile = () => {
       if (requestId === fetchTokenRef.current) setLoading(false);
     }
   };
-  const fetchFollowStats = async () => {
-    const targetUserId = profile?.user_id || finalUserId;
+  const fetchFollowStats = async (targetUserIdParam?: string) => {
+    const targetUserId = targetUserIdParam || profile?.user_id || finalUserId;
     if (!targetUserId) {
       console.log('No target user ID available for fetchFollowStats, skipping');
       return;
     }
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('user_follow_stats').select('followers_count, following_count').eq('user_id', targetUserId).maybeSingle();
+      const { data, error } = await supabase
+        .from('user_follow_stats')
+        .select('followers_count, following_count')
+        .eq('user_id', targetUserId)
+        .maybeSingle();
       if (error) {
         console.error('Error fetching follow stats:', error);
       } else if (data) {
