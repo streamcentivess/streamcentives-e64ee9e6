@@ -240,7 +240,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId,
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {messages.map((message) => {
           const isOwnMessage = message.sender_id === user?.id;
-          const profile = isOwnMessage ? message.sender_profile : message.recipient_profile;
+          const profile = message.sender_profile;
           
           return (
             <div
