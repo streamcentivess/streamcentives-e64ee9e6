@@ -2235,11 +2235,6 @@ const UniversalProfile = () => {
               {/* Universal Smart Link Section */}
               <div className="flex flex-col gap-2">
                 <div className="grid grid-cols-2 gap-2">
-                  {profile.spotify_connected && <Badge className="bg-[#1db954] hover:bg-[#1ed760] text-white text-xs">
-                    <Music className="h-3 w-3 mr-1" />
-                      Spotify Connected
-                    </Badge>}
-                  
                   <Badge variant="outline" className="text-xs">
                     <Share2 className="h-3 w-3 mr-1" />
                     Social Ready
