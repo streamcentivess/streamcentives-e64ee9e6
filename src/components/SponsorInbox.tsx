@@ -182,14 +182,15 @@ export function SponsorInbox() {
       // Fetch sender profiles
       const messagesWithSenders = await Promise.all(
         (data || []).map(async (message: any) => {
-          const { data: profileResult } = await supabase.rpc('get_public_profile_data', { 
-            profile_user_id: message.sender_id 
-          });
-          const profile = profileResult?.[0];
+          const { data: profileResult } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, avatar_url, username')
+            .eq('user_id', message.sender_id)
+            .single();
 
           return {
             ...message,
-            sender_profile: profile || { username: 'unknown', display_name: 'Unknown User', avatar_url: null }
+            sender_profile: profileResult || { username: 'unknown', display_name: 'Unknown User', avatar_url: null }
           } as Message;
         })
       );
