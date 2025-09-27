@@ -286,8 +286,8 @@ const UniversalProfile = () => {
   const fetchVerificationStatus = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('streamseeker_artists')
-        .select('eligibility_status')
+        .from('profiles')
+        .select('creator_type')
         .eq('user_id', userId)
         .maybeSingle();
       
@@ -295,7 +295,8 @@ const UniversalProfile = () => {
         console.error('Error fetching verification status:', error);
       }
       
-      setIsVerified(data?.eligibility_status === 'approved');
+      // User is verified if they have chosen a creator type designation
+      setIsVerified(!!data?.creator_type);
     } catch (error) {
       console.error('Error checking verification status:', error);
       setIsVerified(false);
