@@ -2,16 +2,16 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Trophy, Crown, Medal, Star, Search, ArrowLeft, Users, Target, ShoppingBag, Music, Share, DollarSign } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { Trophy, Users, TrendingUp, Medal, Crown, Star, Zap, Target, Gift } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileContainer, MobileHeader } from '@/components/ui/mobile-container';
+import { VerificationBadge } from '@/components/VerificationBadge';
+import AppNavigation from '@/components/AppNavigation';
+import { VerificationBadge } from '@/components/VerificationBadge';
 
 interface LeaderboardEntry {
   id: string;
@@ -542,11 +542,11 @@ const Leaderboards = () => {
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold">{entry.user.name}</span>
-                              {entry.user.verified && (
-                                <Badge variant="secondary" className="text-xs px-1 py-0">
-                                  ✓
-                                </Badge>
-                              )}
+                              <VerificationBadge 
+                                isVerified={entry.user.verified}
+                                followerCount={0}
+                                size="sm"
+                              />
                               <span className={`text-sm ${getTierColor(entry.tier)}`}>
                                 {getTierIcon(entry.tier)}
                               </span>
@@ -590,11 +590,11 @@ const Leaderboards = () => {
                         <div>
                           <CardTitle className="flex items-center gap-2">
                             {selectedCreatorBoard.creator.name}
-                            {selectedCreatorBoard.creator.verified && (
-                              <Badge variant="secondary" className="text-xs">
-                                ✓
-                              </Badge>
-                            )}
+                            <VerificationBadge 
+                              isVerified={selectedCreatorBoard.creator.verified}
+                              followerCount={0}
+                              size="sm"
+                            />
                           </CardTitle>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                             <span className="flex items-center gap-1">
@@ -726,11 +726,11 @@ const Leaderboards = () => {
                           <div>
                             <CardTitle className="flex items-center gap-2">
                               {creatorBoard.creator.name}
-                              {creatorBoard.creator.verified && (
-                                <Badge variant="secondary" className="text-xs">
-                                  ✓
-                                </Badge>
-                              )}
+                              <VerificationBadge 
+                                isVerified={creatorBoard.creator.verified}
+                                followerCount={0}
+                                size="sm"
+                              />
                             </CardTitle>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                               <span className="flex items-center gap-1">

@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Users, MessageSquare, Calendar, MapPin, Plus, Heart, Share, Pin, Crown, Camera, X, UserPlus, Repeat2 } from 'lucide-react';
 import { LocationSearch } from '@/components/LocationSearch';
 import { UserSearchInput } from '@/components/UserSearchInput';
+import { VerificationBadge } from '@/components/VerificationBadge';
 import AppNavigation from '@/components/AppNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -1002,19 +1003,26 @@ const CommunityHub = () => {
                   <Card key={post.id} className="card-modern">
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={post.profiles?.avatar_url} alt={post.profiles?.display_name || post.profiles?.username} />
-                            <AvatarFallback>
-                              {(post.profiles?.display_name || post.profiles?.username)?.charAt(0)?.toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h4 className="font-semibold">{post.title}</h4>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <span>by @{post.profiles?.username}</span>
-                              <span>•</span>
-                              <span>in {post.communities?.name}</span>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={post.profiles?.avatar_url} alt={post.profiles?.display_name || post.profiles?.username} />
+                              <AvatarFallback>
+                                {(post.profiles?.display_name || post.profiles?.username)?.charAt(0)?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-semibold">{post.title}</h4>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <span>by @{post.profiles?.username}</span>
+                                  <VerificationBadge 
+                                    isVerified={false}
+                                    followerCount={0}
+                                    size="sm"
+                                  />
+                                </div>
+                                <span>•</span>
+                                <span>in {post.communities?.name}</span>
                               <span>•</span>
                               <span>{new Date(post.created_at).toLocaleDateString()}</span>
                             </div>
@@ -1186,7 +1194,14 @@ const CommunityHub = () => {
                                 {creator.display_name?.charAt(0) || creator.username?.charAt(0) || 'U'}
                               </div>
                               <div>
-                                <p className="font-medium">{creator.display_name || creator.username}</p>
+                                <div className="flex items-center gap-1">
+                                  <p className="font-medium">{creator.display_name || creator.username}</p>
+                                  <VerificationBadge 
+                                    isVerified={false}
+                                    followerCount={0}
+                                    size="sm"
+                                  />
+                                </div>
                                 <p className="text-sm text-muted-foreground">@{creator.username}</p>
                               </div>
                             </div>

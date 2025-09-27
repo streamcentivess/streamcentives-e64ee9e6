@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Users, TrendingUp, MessageCircle, Filter, X } from "lucide-react";
 import { SponsorOfferModal } from "@/components/SponsorOfferModal";
 import { UserProfileModal } from "@/components/UserProfileModal";
+import { VerificationBadge } from "@/components/VerificationBadge";
 
 export function CreatorDiscovery() {
   const { user } = useAuth();
@@ -418,9 +419,16 @@ export function CreatorDiscovery() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-lg truncate">
-                    {creator.display_name || creator.username}
-                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-lg truncate">
+                      {creator.display_name || creator.username}
+                    </CardTitle>
+                    <VerificationBadge 
+                      isVerified={!!creator.creator_type}
+                      followerCount={creator.followerCount || 0}
+                      size="sm"
+                    />
+                  </div>
                   <p className="text-sm text-muted-foreground">@{creator.username}</p>
                 </div>
               </div>

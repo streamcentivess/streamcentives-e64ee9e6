@@ -20,6 +20,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileContainer, MobileHeader, MobileCard } from '@/components/ui/mobile-container';
 import { FeedFilters, FeedFilterState } from '@/components/FeedFilters';
 import { CreatorTypeBadge } from '@/components/CreatorTypeBadge';
+import { VerificationBadge } from '@/components/VerificationBadge';
 import { 
   Heart, 
   MessageCircle, 
@@ -1324,9 +1325,16 @@ const Feed = () => {
                             </div>
                           </div>
                           <div className="flex-1">
-                            <p className="font-bold text-gradient-primary">
-                              {creator.profiles?.display_name || creator.profiles?.username || 'Trending Creator'}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-gradient-primary">
+                                {creator.profiles?.display_name || creator.profiles?.username || 'Trending Creator'}
+                              </p>
+                              <VerificationBadge 
+                                isVerified={true}
+                                followerCount={creator.total_fans || 0}
+                                size="sm"
+                              />
+                            </div>
                             {creator.profiles?.bio && (
                               <p className="text-sm text-muted-foreground line-clamp-1">
                                 {creator.profiles.bio}
@@ -1514,6 +1522,11 @@ const Feed = () => {
                                  >
                                    {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
                                  </motion.p>
+                                 <VerificationBadge 
+                                   isVerified={!!post.profiles?.creator_type}
+                                   followerCount={0}
+                                   size="sm"
+                                 />
                                  {post.profiles?.creator_type && (
                                    <CreatorTypeBadge 
                                      creatorType={post.profiles.creator_type} 
@@ -1854,7 +1867,14 @@ const Feed = () => {
                         </Avatar>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Repeat2 className="h-4 w-4 text-purple-500" />
-                          <span className="font-medium">{repost.profiles?.display_name}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">{repost.profiles?.display_name}</span>
+                            <VerificationBadge 
+                              isVerified={false}
+                              followerCount={0}
+                              size="sm"
+                            />
+                          </div>
                           <span>shared with love</span>
                           <span>•</span>
                           <span>{new Date(repost.created_at).toLocaleDateString()}</span>
@@ -1869,9 +1889,16 @@ const Feed = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-semibold">
-                            {repost.posts.profiles?.display_name || 'Anonymous'}
-                          </p>
+                          <div className="flex items-center gap-1">
+                            <p className="font-semibold">
+                              {repost.posts.profiles?.display_name || 'Anonymous'}
+                            </p>
+                            <VerificationBadge 
+                              isVerified={false}
+                              followerCount={0}
+                              size="sm"
+                            />
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             Original • {new Date(repost.posts.created_at).toLocaleDateString()}
                           </p>
