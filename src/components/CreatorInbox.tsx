@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Check, X, AlertTriangle, Clock, Shield, MessageCircle, Trash2, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -22,6 +23,7 @@ interface Message {
   profiles: {
     display_name: string;
     avatar_url: string | null;
+    username?: string;
   } | null;
   message_analysis: Array<{
     is_appropriate: boolean;
@@ -40,6 +42,7 @@ interface Conversation {
   profiles: {
     display_name: string;
     avatar_url: string | null;
+    username?: string;
   } | null;
 }
 
@@ -50,6 +53,7 @@ interface CreatorInboxProps {
 
 const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQuery = '' }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -148,11 +152,11 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
           sender_id: senderId,
           latest_message: {
             ...latestMessage,
-            profiles: (profile as any) || { display_name: 'Anonymous', avatar_url: null }
+            profiles: (profile as any) || { display_name: 'Anonymous', avatar_url: null, username: null }
           } as Message,
           message_count: msgs.length,
           unread_count: unreadCount,
-          profiles: (profile as any) || { display_name: 'Anonymous', avatar_url: null }
+          profiles: (profile as any) || { display_name: 'Anonymous', avatar_url: null, username: null }
         };
       })
     );
@@ -302,7 +306,14 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
+                  <Avatar 
+                    className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                      if (conversation.profiles?.username) {
+                        navigate(`/universal-profile?username=${conversation.profiles.username}`);
+                      }
+                    }}
+                  >
                     <AvatarImage src={conversation.profiles?.avatar_url || undefined} />
                     <AvatarFallback>
                       <User className="h-5 w-5" />

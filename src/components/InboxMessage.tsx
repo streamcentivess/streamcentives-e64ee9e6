@@ -8,6 +8,7 @@ import { Check, X, MessageCircle, Clock, Coins } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -30,6 +31,7 @@ interface InboxMessageProps {
 
 export const InboxMessage: React.FC<InboxMessageProps> = ({ message, onMessageUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleApprove = async () => {
     setIsLoading(true);
@@ -109,7 +111,14 @@ export const InboxMessage: React.FC<InboxMessageProps> = ({ message, onMessageUp
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10">
+          <Avatar 
+            className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => {
+              if (message.sender_profile?.username) {
+                navigate(`/universal-profile?username=${message.sender_profile.username}`);
+              }
+            }}
+          >
             <AvatarImage src={message.sender_profile?.avatar_url} />
             <AvatarFallback>
               {message.sender_profile?.display_name?.charAt(0) || 'U'}

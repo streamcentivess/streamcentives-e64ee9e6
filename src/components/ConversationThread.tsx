@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { ClickableMentions } from '@/components/ui/clickable-mentions';
 import { Send, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -24,10 +25,12 @@ interface Message {
   sender_profile?: {
     display_name: string;
     avatar_url?: string;
+    username?: string;
   };
   recipient_profile?: {
     display_name: string;
     avatar_url?: string;
+    username?: string;
   };
 }
 
@@ -38,6 +41,7 @@ interface ConversationThreadProps {
 
 const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId, onBack }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -247,7 +251,14 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId,
               key={message.id}
               className={`flex gap-3 ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}
             >
-              <Avatar className="h-8 w-8">
+              <Avatar 
+                className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity" 
+                onClick={() => {
+                  if (profile?.username) {
+                    navigate(`/universal-profile?username=${profile.username}`);
+                  }
+                }}
+              >
                 <AvatarImage src={profile?.avatar_url} />
                 <AvatarFallback>
                   {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}

@@ -12,6 +12,8 @@ import { ClickableMentions } from "@/components/ui/clickable-mentions";
 import { MessageCircle, Mail, TrendingUp, Search, DollarSign, Clock, Check, X, Send, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorMessageComposer } from "@/components/SponsorMessageComposer";
+import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface SponsorOffer {
   id: string;
@@ -61,6 +63,7 @@ interface Message {
 
 export function SponsorInbox() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [offers, setOffers] = useState<SponsorOffer[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedOffer, setSelectedOffer] = useState<SponsorOffer | null>(null);
@@ -502,9 +505,19 @@ export function SponsorInbox() {
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                        {message.sender_profile?.display_name?.[0] || message.sender_profile?.username?.[0] || 'U'}
-                      </div>
+                      <Avatar 
+                        className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => {
+                          if (message.sender_profile?.username) {
+                            navigate(`/universal-profile?username=${message.sender_profile.username}`);
+                          }
+                        }}
+                      >
+                        <AvatarImage src={message.sender_profile?.avatar_url} />
+                        <AvatarFallback>
+                          {message.sender_profile?.display_name?.[0] || message.sender_profile?.username?.[0] || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
                         <p className="font-medium">
                           {message.sender_profile?.display_name || message.sender_profile?.username}
