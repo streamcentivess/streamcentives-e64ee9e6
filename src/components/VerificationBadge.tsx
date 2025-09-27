@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface VerificationBadgeProps {
@@ -18,9 +18,9 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
   if (!isVerified) return null;
 
   const getBadgeColor = () => {
-    if (followerCount >= 100000) return 'text-yellow-500'; // Gold for 100k+
-    if (followerCount >= 10000) return 'text-blue-500'; // Blue for 10k+
-    return 'text-green-500'; // Green for verified
+    if (followerCount >= 100000) return 'bg-yellow-500'; // Gold for 100k+
+    if (followerCount >= 10000) return 'bg-blue-500'; // Blue for 10k+
+    return 'bg-green-500'; // Green for verified
   };
 
   const sizeClasses = {
@@ -29,12 +29,18 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
     lg: 'h-5 w-5'
   };
 
+  const checkSizeClasses = {
+    sm: 'h-1.5 w-1.5',
+    md: 'h-2 w-2',
+    lg: 'h-2.5 w-2.5'
+  };
+
   return (
-    <CheckCircle 
+    <div 
       className={cn(
         sizeClasses[size],
         getBadgeColor(),
-        'fill-current',
+        'rounded-full flex items-center justify-center shadow-sm',
         className
       )}
       aria-label={
@@ -44,6 +50,13 @@ export const VerificationBadge: React.FC<VerificationBadgeProps> = ({
           ? 'Blue verified creator (10k+ followers)'
           : 'Verified creator'
       }
-    />
+    >
+      <Check 
+        className={cn(
+          checkSizeClasses[size],
+          'text-white stroke-[3]'
+        )}
+      />
+    </div>
   );
 };
