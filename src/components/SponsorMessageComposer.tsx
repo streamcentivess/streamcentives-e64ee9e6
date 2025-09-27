@@ -17,6 +17,7 @@ interface Creator {
   display_name: string;
   avatar_url?: string;
   creator_type?: string;
+  follower_count?: number;
 }
 
 interface SponsorMessageComposerProps {
@@ -166,7 +167,7 @@ export function SponsorMessageComposer({ onMessageSent }: SponsorMessageComposer
                   <span>{creator.display_name || creator.username}</span>
                   <VerificationBadge 
                     isVerified={!!creator.creator_type}
-                    followerCount={0}
+                    followerCount={creator.follower_count || 0}
                     size="sm"
                   />
                   <span className="text-muted-foreground">@{creator.username}</span>

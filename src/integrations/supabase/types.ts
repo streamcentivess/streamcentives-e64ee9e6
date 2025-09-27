@@ -7044,7 +7044,9 @@ export type Database = {
           bio: string
           country_name: string
           created_at: string
+          creator_type: string
           display_name: string
+          follower_count: number
           merch_store_connected: boolean
           spotify_connected: boolean
           user_id: string

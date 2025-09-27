@@ -229,7 +229,7 @@ export function UserSearchAndManage({ type, currentUsers, onUserAdded, onUserRem
                               <p className="font-medium">{profile.display_name || profile.username}</p>
                               <VerificationBadge 
                                 isVerified={!!profile.creator_type}
-                                followerCount={0}
+                                followerCount={profile.follower_count || 0}
                                 size="sm"
                               />
                             </div>

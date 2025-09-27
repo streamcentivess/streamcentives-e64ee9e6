@@ -39,6 +39,7 @@ interface Profile {
   created_at?: string;
   offer_receiving_rate_cents?: number;
   creator_type?: string;
+  follower_count?: number;
 }
 const UniversalProfile = () => {
   const {
@@ -133,7 +134,30 @@ const UniversalProfile = () => {
     enabled: !!profile && !isOwnProfile
   });
   useEffect(() => {
+    // Clear all state when switching profiles
     if (user) {
+      // Clear all profile-related state first
+      setProfile(null);
+      setIsVerified(false);
+      setFollowing(false);
+      setFollowStats({ followers_count: 0, following_count: 0 });
+      setPostCount(0);
+      setXpBalance(0);
+      setJoinedCampaigns([]);
+      setMarketplaceItems([]);
+      setRedemptionHistory([]);
+      setSearchResults([]);
+      setFollowers([]);
+      setFollowingUsers([]);
+      setSupporters([]);
+      setHaters([]);
+      setUserFollowStates({});
+      setUserRoles({});
+      setSupporterStates({});
+      setHaterStates({});
+      setLoading(true);
+      
+      // Then fetch fresh data
       fetchProfile();
       fetchFollowStats();
       // Force refresh XP balance if on own profile
@@ -364,8 +388,11 @@ const UniversalProfile = () => {
     }
   };
   const fetchFollowStats = async () => {
-    const targetUserId = profile?.user_id || viewingUserId || user?.id;
-    if (!targetUserId) return;
+    const targetUserId = profile?.user_id || finalUserId;
+    if (!targetUserId) {
+      console.log('No target user ID available for fetchFollowStats, skipping');
+      return;
+    }
     try {
       const {
         data,
@@ -1284,8 +1311,11 @@ const UniversalProfile = () => {
     setSearchResults([]);
   };
   const fetchFollowers = async () => {
-    const targetUserId = profile?.user_id || viewingUserId || user?.id;
-    if (!targetUserId) return;
+    const targetUserId = profile?.user_id || finalUserId;
+    if (!targetUserId || !profile?.user_id) {
+      console.log('No target user ID available for fetchFollowers, skipping');
+      return;
+    }
     try {
       // First get the follow relationships
       const {
@@ -1323,8 +1353,11 @@ const UniversalProfile = () => {
     }
   };
   const fetchFollowing = async () => {
-    const targetUserId = profile?.user_id || viewingUserId || user?.id;
-    if (!targetUserId) return;
+    const targetUserId = profile?.user_id || finalUserId;
+    if (!targetUserId || !profile?.user_id) {
+      console.log('No target user ID available for fetchFollowing, skipping');
+      return;
+    }
     try {
       // First get the follow relationships  
       const {
@@ -1936,8 +1969,8 @@ const UniversalProfile = () => {
                              {result.display_name || result.username || 'Anonymous User'}
                            </div>
                            <VerificationBadge 
-                             isVerified={!!(result as any).creator_type}
-                             followerCount={0}
+                             isVerified={!!result.creator_type}
+                             followerCount={result.follower_count || 0}
                              size="sm"
                            />
                          </div>
@@ -2645,8 +2678,8 @@ const UniversalProfile = () => {
                                            {profile.display_name || profile.username || 'Anonymous User'}
                                          </div>
                                          <VerificationBadge 
-                                           isVerified={!!(profile as any).creator_type}
-                                           followerCount={0}
+                                           isVerified={!!profile.creator_type}
+                                           followerCount={profile.follower_count || 0}
                                            size="sm"
                                          />
                                        </div>
@@ -2790,8 +2823,8 @@ const UniversalProfile = () => {
                                            {profile.display_name || profile.username || 'Anonymous User'}
                                          </div>
                                          <VerificationBadge 
-                                           isVerified={!!(profile as any).creator_type}
-                                           followerCount={0}
+                                           isVerified={!!profile.creator_type}
+                                           followerCount={profile.follower_count || 0}
                                            size="sm"
                                          />
                                        </div>

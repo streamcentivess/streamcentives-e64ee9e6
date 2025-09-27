@@ -16,6 +16,7 @@ interface Collaborator {
   display_name: string | null;
   avatar_url: string | null;
   creator_type?: string;
+  follower_count?: number;
   role: 'creator' | 'sponsor' | 'collaborator';
 }
 
@@ -84,6 +85,7 @@ export const CampaignCollaboratorSelector: React.FC<CampaignCollaboratorSelector
         display_name: profile.display_name,
         avatar_url: profile.avatar_url,
         creator_type: profile.creator_type,
+        follower_count: profile.follower_count,
         role: profile.spotify_connected ? 'creator' as const : 'collaborator' as const
       }));
 
@@ -193,7 +195,7 @@ export const CampaignCollaboratorSelector: React.FC<CampaignCollaboratorSelector
                       </div>
                       <VerificationBadge 
                         isVerified={!!user.creator_type}
-                        followerCount={0}
+                        followerCount={user.follower_count || 0}
                         size="sm"
                       />
                     </div>
