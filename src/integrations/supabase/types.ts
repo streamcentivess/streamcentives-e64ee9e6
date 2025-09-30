@@ -3467,38 +3467,74 @@ export type Database = {
       }
       notification_preferences: {
         Row: {
+          campaign_notifications: boolean | null
+          comment_notifications: boolean | null
           created_at: string
           discord_webhook_url: string | null
           email_enabled: boolean
+          engagement_milestone_notifications: boolean | null
+          follow_notifications: boolean | null
           id: string
+          like_notifications: boolean | null
+          message_notifications: boolean | null
+          milestone_notifications: boolean | null
           phone_number: string | null
+          profile_view_notifications: boolean | null
           push_enabled: boolean
+          repost_notifications: boolean | null
+          reward_notifications: boolean | null
+          share_notifications: boolean | null
           slack_webhook_url: string | null
           sms_enabled: boolean
+          tag_notifications: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          campaign_notifications?: boolean | null
+          comment_notifications?: boolean | null
           created_at?: string
           discord_webhook_url?: string | null
           email_enabled?: boolean
+          engagement_milestone_notifications?: boolean | null
+          follow_notifications?: boolean | null
           id?: string
+          like_notifications?: boolean | null
+          message_notifications?: boolean | null
+          milestone_notifications?: boolean | null
           phone_number?: string | null
+          profile_view_notifications?: boolean | null
           push_enabled?: boolean
+          repost_notifications?: boolean | null
+          reward_notifications?: boolean | null
+          share_notifications?: boolean | null
           slack_webhook_url?: string | null
           sms_enabled?: boolean
+          tag_notifications?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          campaign_notifications?: boolean | null
+          comment_notifications?: boolean | null
           created_at?: string
           discord_webhook_url?: string | null
           email_enabled?: boolean
+          engagement_milestone_notifications?: boolean | null
+          follow_notifications?: boolean | null
           id?: string
+          like_notifications?: boolean | null
+          message_notifications?: boolean | null
+          milestone_notifications?: boolean | null
           phone_number?: string | null
+          profile_view_notifications?: boolean | null
           push_enabled?: boolean
+          repost_notifications?: boolean | null
+          reward_notifications?: boolean | null
+          share_notifications?: boolean | null
           slack_webhook_url?: string | null
           sms_enabled?: boolean
+          tag_notifications?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -6821,6 +6857,10 @@ export type Database = {
           user_id: string
           username: string
         }[]
+      }
+      get_notification_preference: {
+        Args: { preference_type: string; target_user_id: string }
+        Returns: boolean
       }
       get_public_profile_data: {
         Args: { profile_user_id: string }

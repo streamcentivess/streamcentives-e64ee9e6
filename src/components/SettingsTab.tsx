@@ -9,6 +9,7 @@ import { CreditCard, Receipt, Settings, Bell, Lock, Shield, Download } from 'luc
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { NotificationPreferences } from '@/components/NotificationPreferences';
 
 interface PurchaseHistory {
   id: string;
@@ -170,10 +171,14 @@ export default function SettingsTab() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="purchases" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="purchases" className="flex items-center gap-2">
             <Receipt className="h-4 w-4" />
             Purchase History
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
           </TabsTrigger>
           <TabsTrigger value="account" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -300,6 +305,10 @@ export default function SettingsTab() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-4">
+          <NotificationPreferences />
         </TabsContent>
 
         <TabsContent value="account" className="space-y-4">
