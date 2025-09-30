@@ -122,18 +122,13 @@ const UniversalProfile = () => {
   const isUUID = userParam && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userParam);
   const finalUserId = isUUID ? userParam : viewingUserId;
   const finalUsername = !isUUID && userParam ? userParam : viewingUsername;
-  const isOwnProfile = user && (!finalUserId && !finalUsername || finalUserId === user?.id);
   
-  // Track profile views for non-own profiles
-  useProfileViewTracking({
-    profileUserId: finalUserId || profile?.user_id || null,
-    isOwnProfile,
-    enabled: !!profile && !isOwnProfile
-  });
+  // Calculate isOwnProfile AFTER profile is fetched for accurate tracking
+  const isOwnProfile = user && profile && profile.user_id === user.id;
   
-  // Track profile views for non-own profiles
+  // Track profile views for non-own profiles (only when profile is loaded)
   useProfileViewTracking({
-    profileUserId: finalUserId || profile?.user_id || null,
+    profileUserId: profile?.user_id || null,
     isOwnProfile,
     enabled: !!profile && !isOwnProfile
   });
