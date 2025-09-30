@@ -509,7 +509,7 @@ export function SponsorInbox() {
                         className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => {
                           if (message.sender_profile?.username) {
-                            navigate(`/universal-profile?username=${message.sender_profile.username}`);
+                            navigate(`/${message.sender_profile.username}`);
                           }
                         }}
                       >

@@ -428,7 +428,10 @@ const CreatorDashboard = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 Create Campaign
               </Button>
-              <Button variant="outline" onClick={() => navigate('/universal-profile')}>
+              <Button variant="outline" onClick={async () => {
+                const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle();
+                if (profile?.username) navigate(`/${profile.username}`);
+              }}>
                 Profile
               </Button>
               <Button variant="outline" onClick={signOut}>
@@ -727,7 +730,10 @@ const CreatorDashboard = () => {
                         <div 
                           key={entry.fan_user_id} 
                           className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
-                          onClick={() => navigate(`/universal-profile?userId=${entry.fan_user_id}`)}
+                          onClick={async () => {
+                            const { data } = await supabase.from('profiles').select('username').eq('user_id', entry.fan_user_id).maybeSingle();
+                            if (data?.username) navigate(`/${data.username}`);
+                          }}
                         >
                           <div className="flex items-center gap-3">
                             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">
@@ -769,7 +775,10 @@ const CreatorDashboard = () => {
                         <div 
                           key={entry.fan_user_id} 
                           className="leaderboard-item cursor-pointer hover:bg-surface/50 transition-colors"
-                          onClick={() => navigate(`/universal-profile?userId=${entry.fan_user_id}`)}
+                          onClick={async () => {
+                            const { data } = await supabase.from('profiles').select('username').eq('user_id', entry.fan_user_id).maybeSingle();
+                            if (data?.username) navigate(`/${data.username}`);
+                          }}
                         >
                           <div className="flex items-center gap-3">
                             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white font-bold text-sm">

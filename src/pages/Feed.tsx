@@ -1304,7 +1304,10 @@ const Feed = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ scale: 1.02, y: -2 }}
-                      onClick={() => navigate(`/universal-profile?userId=${creator.creator_id}`)}
+                      onClick={async () => {
+                        const { data } = await supabase.from('profiles').select('username').eq('user_id', creator.creator_id).maybeSingle();
+                        if (data?.username) navigate(`/${data.username}`);
+                      }}
                       className="cursor-pointer"
                     >
                       <MobileCard className="relative overflow-hidden bg-gradient-to-br from-orange-500/10 to-red-500/10 border-2 border-orange-200/20 hover:border-orange-400/40 transition-all duration-300">
@@ -1505,7 +1508,9 @@ const Feed = () => {
                             >
                               <Avatar 
                                 className="h-14 w-14 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/60 transition-all duration-300" 
-                                onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+                                onClick={() => {
+                                  if (post.profiles?.username) navigate(`/${post.profiles.username}`);
+                                }}
                               >
                                 <AvatarImage src={post.profiles?.avatar_url || undefined} />
                                 <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold text-lg">
@@ -1518,7 +1523,9 @@ const Feed = () => {
                                  <motion.p 
                                    whileHover={{ scale: 1.05 }}
                                    className="font-bold cursor-pointer hover:text-primary transition-colors text-lg"
-                                   onClick={() => navigate(`/universal-profile?user=${post.user_id}`)}
+                                   onClick={() => {
+                                     if (post.profiles?.username) navigate(`/${post.profiles.username}`);
+                                   }}
                                  >
                                    {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
                                  </motion.p>

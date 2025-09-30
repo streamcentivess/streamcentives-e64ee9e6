@@ -253,7 +253,12 @@ const Inbox: React.FC = () => {
           {!isMobile && (
             <Button
               variant="outline"
-              onClick={() => navigate('/universal-profile')}
+              onClick={async () => {
+                if (user) {
+                  const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle();
+                  if (profile?.username) navigate(`/${profile.username}`);
+                }
+              }}
               className="flex items-center gap-2"
             >
               <User className="h-4 w-4" />
@@ -291,7 +296,12 @@ const Inbox: React.FC = () => {
           {!isMobile && (
             <Button
               variant="outline"
-              onClick={() => navigate('/universal-profile')}
+              onClick={async () => {
+                if (user) {
+                  const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle();
+                  if (profile?.username) navigate(`/${profile.username}`);
+                }
+              }}
               className="flex items-center gap-2"
             >
               <User className="h-4 w-4" />

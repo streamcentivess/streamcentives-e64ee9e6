@@ -115,7 +115,7 @@ export const InboxMessage: React.FC<InboxMessageProps> = ({ message, onMessageUp
             className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => {
               if (message.sender_profile?.username) {
-                navigate(`/universal-profile?username=${message.sender_profile.username}`);
+                navigate(`/${message.sender_profile.username}`);
               }
             }}
           >

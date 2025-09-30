@@ -108,18 +108,27 @@ export function MobileNotificationProvider({ children }: MobileNotificationProvi
     // Handle navigation based on notification type
     switch (notification.type) {
       case 'social_interaction':
-        if (notification.data?.actor_id) {
-          navigate(`/universal-profile?userId=${notification.data.actor_id}`);
+        if (notification.data?.actor_username) {
+          navigate(`/${notification.data.actor_username}`);
+        } else if (notification.data?.actor_id) {
+          const { data } = await supabase.from('profiles').select('username').eq('user_id', notification.data.actor_id).maybeSingle();
+          if (data?.username) navigate(`/${data.username}`);
         }
         break;
       case 'profile_view':
-        if (notification.data?.viewer_id) {
-          navigate(`/universal-profile?userId=${notification.data.viewer_id}`);
+        if (notification.data?.viewer_username) {
+          navigate(`/${notification.data.viewer_username}`);
+        } else if (notification.data?.viewer_id) {
+          const { data } = await supabase.from('profiles').select('username').eq('user_id', notification.data.viewer_id).maybeSingle();
+          if (data?.username) navigate(`/${data.username}`);
         }
         break;
       case 'follow':
-        if (notification.data?.follower_id) {
-          navigate(`/universal-profile?userId=${notification.data.follower_id}`);
+        if (notification.data?.follower_username) {
+          navigate(`/${notification.data.follower_username}`);
+        } else if (notification.data?.follower_id) {
+          const { data } = await supabase.from('profiles').select('username').eq('user_id', notification.data.follower_id).maybeSingle();
+          if (data?.username) navigate(`/${data.username}`);
         }
         break;
     }

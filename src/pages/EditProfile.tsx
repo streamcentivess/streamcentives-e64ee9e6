@@ -140,7 +140,12 @@ const EditProfile = () => {
         });
       }
       
-      navigate('/universal-profile');
+      const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle();
+      if (profile?.username) {
+        navigate(`/${profile.username}`);
+      } else {
+        navigate('/universal-profile');
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -304,7 +309,14 @@ const EditProfile = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/universal-profile')}
+            onClick={async () => {
+              const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle();
+              if (profile?.username) {
+                navigate(`/${profile.username}`);
+              } else {
+                navigate('/universal-profile');
+              }
+            }}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

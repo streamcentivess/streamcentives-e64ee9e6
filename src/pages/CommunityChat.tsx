@@ -204,7 +204,7 @@ const CommunityChat = () => {
   };
 
   const navigateToProfile = (username: string) => {
-    navigate(`/universal-profile?username=${username}`);
+    navigate(`/${username}`);
   };
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

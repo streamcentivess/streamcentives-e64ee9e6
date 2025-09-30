@@ -310,7 +310,7 @@ const CreatorInbox: React.FC<CreatorInboxProps> = ({ onViewConversation, searchQ
                     className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => {
                       if (conversation.profiles?.username) {
-                        navigate(`/universal-profile?username=${conversation.profiles.username}`);
+                        navigate(`/${conversation.profiles.username}`);
                       }
                     }}
                   >

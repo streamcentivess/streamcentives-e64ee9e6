@@ -301,6 +301,9 @@ const App = () => {
                       {/* Smart Link Public Landing */}
                       <Route path="/link/:slug" element={<SmartLinkPage />} />
                       
+                      {/* Public Profile Route - Must be BEFORE catch-all */}
+                      <Route path="/:username" element={<UniversalProfile />} />
+                      
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>

@@ -192,7 +192,7 @@ export const PostsGrid: React.FC<PostsGridProps> = ({ userId, isOwnProfile }) =>
   };
 
   const handleProfileClick = (username: string) => {
-    navigate(`/universal-profile?user=${username}`);
+    navigate(`/${username}`);
   };
 
   if (loading) {

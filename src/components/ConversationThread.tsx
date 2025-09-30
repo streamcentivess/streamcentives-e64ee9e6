@@ -255,7 +255,7 @@ const ConversationThread: React.FC<ConversationThreadProps> = ({ conversationId,
                 className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity" 
                 onClick={() => {
                   if (profile?.username) {
-                    navigate(`/universal-profile?username=${profile.username}`);
+                    navigate(`/${profile.username}`);
                   }
                 }}
               >

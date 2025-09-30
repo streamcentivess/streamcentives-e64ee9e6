@@ -396,7 +396,10 @@ const FanDashboard = () => {
             </div>
             {!isMobile && (
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => navigate('/universal-profile')}>
+                <Button variant="outline" onClick={async () => {
+                  const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle();
+                  if (profile?.username) navigate(`/${profile.username}`);
+                }}>
                   Profile
                 </Button>
                 <Button variant="outline" onClick={signOut}>

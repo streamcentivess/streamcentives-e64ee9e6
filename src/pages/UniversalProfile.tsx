@@ -12,7 +12,7 @@ import { PostsGrid } from '@/components/PostsGrid';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import MessageCreator from '@/components/MessageCreator';
 import { SponsorContactOptions } from '@/components/SponsorContactOptions';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -49,6 +49,7 @@ const UniversalProfile = () => {
   const { role: currentUserRole } = useUserRole();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { username: urlUsername } = useParams<{ username: string }>();
   const isMobile = useIsMobile();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileOwnerRole, setProfileOwnerRole] = useState<'fan' | 'creator' | 'sponsor' | null>(null);
@@ -115,13 +116,13 @@ const UniversalProfile = () => {
 
   // Check if viewing own profile or another user's profile
   const viewingUserId = searchParams.get('userId') || searchParams.get('user');
-  const viewingUsername = searchParams.get('username');
+  const viewingUsername = searchParams.get('username') || urlUsername;
   // If we have a user parameter, check if it's a UUID (user ID) or username
   const userParam = searchParams.get('user');
   const isUUID = userParam && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userParam);
   const finalUserId = isUUID ? userParam : viewingUserId;
   const finalUsername = !isUUID && userParam ? userParam : viewingUsername;
-  const isOwnProfile = !finalUserId && !finalUsername || finalUserId === user?.id;
+  const isOwnProfile = user && (!finalUserId && !finalUsername || finalUserId === user?.id);
   
   // Track profile views for non-own profiles
   useProfileViewTracking({
@@ -355,6 +356,14 @@ const UniversalProfile = () => {
       setLoading(false);
       return;
     }
+
+    // Check for reserved routes
+    const reservedRoutes = ['feed', 'marketplace', 'campaigns', 'inbox', 'leaderboards', 'profile-setup', 'role-selection', 'auth', 'streamseeker', 'brand-profile', 'sponsor-dashboard', 'creator-dashboard', 'fan-dashboard', 'events', 'community-hub', 'link', 'website', 'pitch-deck', 'pitch', 'team', 'terms', 'privacy'];
+    if (finalUsername && reservedRoutes.includes(finalUsername.toLowerCase())) {
+      navigate('/404', { replace: true });
+      return;
+    }
+
     try {
       let profileRes: any;
       if (finalUsername) {
@@ -372,6 +381,12 @@ const UniversalProfile = () => {
         if (requestId === fetchTokenRef.current) {
           toast({ title: 'Error', description: 'Failed to load profile data', variant: 'destructive' });
         }
+        return;
+      }
+
+      // Handle 404 for non-existent username
+      if (!data && finalUsername) {
+        navigate('/404', { replace: true });
         return;
       }
 
@@ -1315,8 +1330,13 @@ const UniversalProfile = () => {
     }, 300);
     return () => clearTimeout(timeoutId);
   };
-  const viewProfile = (userId: string) => {
-    navigate(`/universal-profile?userId=${userId}`);
+  const viewProfile = async (userId: string) => {
+    const { data } = await supabase.from('profiles').select('username').eq('user_id', userId).maybeSingle();
+    if (data?.username) {
+      navigate(`/${data.username}`);
+    } else {
+      navigate(`/universal-profile?userId=${userId}`); // Fallback
+    }
     setSearchQuery('');
     setSearchResults([]);
   };
@@ -1767,7 +1787,10 @@ const UniversalProfile = () => {
             </h1>
           </div>
           <div className="flex gap-1 flex-shrink-0">
-            {!isOwnProfile && <Button onClick={() => navigate('/universal-profile')} variant="ghost" size="sm" className="p-2">
+            {!isOwnProfile && user && <Button onClick={async () => {
+                const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle();
+                if (profile?.username) navigate(`/${profile.username}`);
+              }} variant="ghost" size="sm" className="p-2">
                 <Users className="h-5 w-5" />
               </Button>}
             <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
@@ -2193,7 +2216,18 @@ const UniversalProfile = () => {
                 {isOwnProfile ? <Button onClick={() => navigate('/profile/edit')} className="flex-1 btn-primary">
                     <Settings className="h-4 w-4 mr-2" />
                     Edit Profile
-                  </Button> : <>
+                  </Button> : !user ? (
+                    <>
+                      <Button onClick={() => navigate('/auth/signin')} className="flex-1 btn-primary">
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Sign in to Follow
+                      </Button>
+                      <Button onClick={() => navigate('/auth/signin')} variant="outline" className="flex-1">
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Message
+                      </Button>
+                    </>
+                  ) : <>
                     <Button onClick={handleFollowToggle} disabled={followLoading} variant={following ? "outline" : "default"} className={`flex-1 ${following ? "" : "btn-primary"}`}>
                       {following ? <>
                           <UserMinus className="h-4 w-4 mr-2" />

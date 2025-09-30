@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -12,9 +13,17 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
 
   useEffect(() => {
     if (isOpen && userId) {
-      // Navigate to the universal profile page instead of showing modal
-      navigate(`/universal-profile?user=${userId}`);
-      onClose(); // Close the modal immediately
+      // Fetch username and navigate to profile
+      const fetchAndNavigate = async () => {
+        const { data } = await supabase.from('profiles').select('username').eq('user_id', userId).maybeSingle();
+        if (data?.username) {
+          navigate(`/${data.username}`);
+        } else {
+          navigate(`/universal-profile?userId=${userId}`); // Fallback
+        }
+        onClose();
+      };
+      fetchAndNavigate();
     }
   }, [isOpen, userId, navigate, onClose]);
 

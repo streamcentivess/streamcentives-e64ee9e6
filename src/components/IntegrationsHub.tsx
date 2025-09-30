@@ -329,7 +329,13 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
               </p>
             </div>
             <Button
-              onClick={() => navigate('/universal-profile?tab=smart-links')}
+              onClick={async () => {
+                const { data } = await supabase.auth.getUser();
+                if (data.user) {
+                  const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', data.user.id).maybeSingle();
+                  if (profile?.username) navigate(`/${profile.username}?tab=smart-links`);
+                }
+              }}
               className="bg-gradient-primary"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -371,7 +377,13 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate('/universal-profile?tab=smart-links')}
+                        onClick={async () => {
+                          const { data } = await supabase.auth.getUser();
+                          if (data.user) {
+                            const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', data.user.id).maybeSingle();
+                            if (profile?.username) navigate(`/${profile.username}?tab=smart-links`);
+                          }
+                        }}
                       >
                         Manage
                       </Button>
@@ -387,7 +399,13 @@ export const IntegrationsHub: React.FC<IntegrationsHubProps> = ({ userRole = 'cr
                   Smart links let your fans complete multiple actions (follow, like, subscribe) and earn XP rewards
                 </p>
                 <Button
-                  onClick={() => navigate('/universal-profile?tab=smart-links')}
+                  onClick={async () => {
+                    const { data } = await supabase.auth.getUser();
+                    if (data.user) {
+                      const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', data.user.id).maybeSingle();
+                      if (profile?.username) navigate(`/${profile.username}?tab=smart-links`);
+                    }
+                  }}
                   className="bg-gradient-primary"
                 >
                   <Plus className="h-4 w-4 mr-2" />
