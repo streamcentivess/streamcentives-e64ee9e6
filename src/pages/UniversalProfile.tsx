@@ -358,7 +358,7 @@ const UniversalProfile = () => {
     }
 
     // Check for reserved routes
-    const reservedRoutes = ['feed', 'marketplace', 'campaigns', 'inbox', 'leaderboards', 'profile-setup', 'role-selection', 'auth', 'streamseeker', 'brand-profile', 'sponsor-dashboard', 'creator-dashboard', 'fan-dashboard', 'events', 'community-hub', 'link', 'website', 'pitch-deck', 'pitch', 'team', 'terms', 'privacy'];
+    const reservedRoutes = ['feed', 'marketplace', 'campaigns', 'inbox', 'leaderboards', 'profile-setup', 'role-selection', 'auth', 'streamseeker', 'brand-profile', 'brand', 'brands', 'sponsor', 'sponsors', 'sponsor-dashboard', 'creator-dashboard', 'fan-dashboard', 'events', 'community-hub', 'link', 'website', 'pitch-deck', 'pitch', 'team', 'terms', 'privacy'];
     if (finalUsername && reservedRoutes.includes(finalUsername.toLowerCase())) {
       navigate('/404', { replace: true });
       return;

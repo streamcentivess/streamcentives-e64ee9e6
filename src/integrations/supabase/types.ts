@@ -5166,6 +5166,7 @@ export type Database = {
           company_description: string | null
           company_logo_url: string | null
           company_name: string
+          company_slug: string
           created_at: string
           id: string
           industry: string | null
@@ -5182,6 +5183,7 @@ export type Database = {
           company_description?: string | null
           company_logo_url?: string | null
           company_name: string
+          company_slug: string
           created_at?: string
           id?: string
           industry?: string | null
@@ -5198,6 +5200,7 @@ export type Database = {
           company_description?: string | null
           company_logo_url?: string | null
           company_name?: string
+          company_slug?: string
           created_at?: string
           id?: string
           industry?: string | null

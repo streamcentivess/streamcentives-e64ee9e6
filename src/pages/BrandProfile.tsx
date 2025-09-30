@@ -8,7 +8,7 @@ import { Building2, Globe, Users, Briefcase, MapPin, Calendar, Star, Share2, Mes
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { UserCampaignDisplay } from '@/components/UserCampaignDisplay';
 import EnhancedSocialInteractions from '@/components/EnhancedSocialInteractions';
 import { UniversalShareButton } from '@/components/UniversalShareButton';
@@ -22,6 +22,7 @@ interface SponsorProfile {
   id: string;
   user_id: string;
   company_name: string;
+  company_slug: string;
   website_url?: string;
   company_description?: string;
   company_logo_url?: string;
@@ -67,21 +68,29 @@ export default function BrandProfile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const sponsorId = searchParams.get('sponsor_id');
+  const { brandSlug } = useParams<{ brandSlug?: string }>();
+  const sponsorId = searchParams.get('sponsor_id'); // Legacy support
   const isMobile = useIsMobile();
   
   const [profile, setProfile] = useState<SponsorProfile | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [supporters, setSupporters] = useState([]);
   const [blockedUsers, setBlockedUsers] = useState([]);
   
+  // Reserved brand slugs that should not be used as brand names
+  const reservedSlugs = ['brand', 'brands', 'sponsor', 'sponsors', 'feed', 'inbox', 'dashboard'];
+  
   // Determine if viewing own profile
-  const isOwnProfile = !sponsorId || (profile && profile.user_id === user?.id);
+  const isOwnProfile = !sponsorId && !brandSlug && user?.id === profile?.user_id;
+  
+  // Check if authenticated
+  const isAuthenticated = !!user;
   
   // Track profile views
   useProfileViewTracking({
@@ -91,34 +100,71 @@ export default function BrandProfile() {
   });
 
   useEffect(() => {
-    if (sponsorId) {
-      fetchProfileData();
+    // Redirect legacy URL to new slug-based URL
+    if (sponsorId && !brandSlug) {
+      redirectToSlugUrl(sponsorId);
+      return;
+    }
+    
+    if (brandSlug) {
+      // Check for reserved slugs
+      if (reservedSlugs.includes(brandSlug.toLowerCase())) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      fetchProfileBySlug(brandSlug);
       fetchSocialStats();
       fetchSupporters();
     } else if (user) {
-      // If no sponsor_id provided, show current user's profile if they're a sponsor
+      // If no slug provided, show current user's profile if they're a sponsor
       fetchOwnProfileData();
       fetchSupporters();
       fetchBlockedUsers();
+    } else {
+      setLoading(false);
     }
-  }, [sponsorId, user]);
+  }, [brandSlug, sponsorId, user]);
+  
+  const redirectToSlugUrl = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('sponsor_profiles')
+        .select('company_slug')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (data?.company_slug) {
+        navigate(`/brand/${data.company_slug}`, { replace: true });
+      }
+    } catch (error) {
+      console.error('Error redirecting to slug URL:', error);
+    }
+  };
 
-  const fetchProfileData = async () => {
+  const fetchProfileBySlug = async (slug: string) => {
     try {
       const { data, error } = await supabase
         .from('sponsor_profiles')
         .select('*')
-        .eq('user_id', sponsorId)
-        .single();
+        .eq('company_slug', slug)
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      
       setProfile(data);
 
       // Fetch campaigns created by this sponsor
       const { data: campaignData } = await supabase
         .from('campaigns')
         .select('*')
-        .eq('creator_id', sponsorId)
+        .eq('creator_id', data.user_id)
         .eq('status', 'active')
         .limit(10);
 
@@ -128,7 +174,7 @@ export default function BrandProfile() {
       const { data: rewardData } = await supabase
         .from('rewards')
         .select('*')
-        .eq('creator_id', sponsorId)
+        .eq('creator_id', data.user_id)
         .eq('is_active', true)
         .limit(10);
 
@@ -382,11 +428,13 @@ export default function BrandProfile() {
     );
   }
 
-  if (!profile) {
+  if (notFound || !profile) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Brand Profile Not Found</h1>
-        <p className="text-muted-foreground mb-6">The brand profile you're looking for doesn't exist.</p>
+        <h1 className="text-2xl font-bold mb-4">Brand Not Found</h1>
+        <p className="text-muted-foreground mb-6">
+          {notFound ? 'This brand profile does not exist.' : 'The brand profile you\'re looking for doesn\'t exist.'}
+        </p>
         <Button onClick={() => navigate('/')}>Go Home</Button>
       </div>
     );
@@ -455,7 +503,18 @@ export default function BrandProfile() {
               </div>
               
               <div className="flex flex-col gap-2 sm:gap-3 w-full sm:w-auto">
-                {!isOwnProfile && user && (
+                {!isOwnProfile && !isAuthenticated && (
+                  <Button 
+                    onClick={() => navigate('/auth/signin')}
+                    variant="default"
+                    className="w-full sm:min-w-[120px]"
+                    size={isMobile ? "sm" : "default"}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Sign in to Follow
+                  </Button>
+                )}
+                {!isOwnProfile && isAuthenticated && (
                   <>
                     <Button 
                       onClick={handleFollow}
