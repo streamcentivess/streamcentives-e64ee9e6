@@ -151,39 +151,6 @@ export const useNotifications = () => {
     return true;
   }, [notifications, markAsRead]);
 
-  // Delete notification
-  const deleteNotification = useCallback(async (notificationId: string) => {
-    if (!user) return false;
-
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', notificationId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      // Update local state
-      const notification = notifications.find(n => n.id === notificationId);
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      
-      if (notification && !notification.is_read) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error deleting notification:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete notification.",
-        variant: "destructive"
-      });
-      return false;
-    }
-  }, [user, notifications, toast]);
-
   // Create a new notification (admin function)
   const createNotification = useCallback(async (
     userId: string,
@@ -226,7 +193,6 @@ export const useNotifications = () => {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
-    deleteNotification,
     createNotification
   };
 };

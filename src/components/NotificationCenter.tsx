@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Bell, BellRing, Check, X, Trash2, Settings, Filter } from 'lucide-react';
+import { Bell, BellRing, Check, X, Settings, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -31,6 +31,7 @@ const NotificationCenter: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread' | 'high_priority'>('all');
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -118,30 +119,25 @@ const NotificationCenter: React.FC = () => {
     }
   };
 
-  const deleteNotification = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', notificationId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      
-      toast({
-        title: "Notification deleted",
-        description: "The notification has been removed."
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+  // Auto-mark notifications as read when sheet is opened
+  useEffect(() => {
+    if (isOpen && notifications.length > 0) {
+      const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+      if (unreadIds.length > 0) {
+        // Mark as read silently (without toast)
+        supabase.rpc('mark_notifications_read', {
+          notification_ids: unreadIds
+        }).then(({ error }) => {
+          if (!error) {
+            setNotifications(prev =>
+              prev.map(n => unreadIds.includes(n.id) ? { ...n, is_read: true } : n)
+            );
+            setUnreadCount(0);
+          }
+        });
+      }
     }
-  };
+  }, [isOpen, notifications.length]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -174,7 +170,7 @@ const NotificationCenter: React.FC = () => {
   });
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="sm" className="relative">
           <BellRing className="h-4 w-4" />
@@ -265,29 +261,9 @@ const NotificationCenter: React.FC = () => {
                                   <span className="text-xs text-muted-foreground">
                                     {format(new Date(notification.created_at), 'MMM dd, HH:mm')}
                                   </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                {!notification.is_read && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => markAsRead([notification.id])}
-                                    className="h-6 w-6 p-0"
-                                  >
-                                    <Check className="h-3 w-3" />
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => deleteNotification(notification.id)}
-                                  className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
+                                 </div>
+                               </div>
+                             </div>
                           </div>
                         </div>
                       </CardContent>
