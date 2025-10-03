@@ -290,7 +290,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-black">
       {/* Story Progress Bars */}
-      <div className="absolute top-0 left-0 right-0 flex gap-1 z-20 p-2" style={{ paddingTop: 'env(safe-area-inset-top, 0.5rem)' }}>
+      <div className="absolute top-0 left-0 right-0 flex gap-1 z-20 p-2 pointer-events-none" style={{ paddingTop: 'env(safe-area-inset-top, 0.5rem)' }}>
         {stories.map((_, index) => (
           <Progress
             key={index}
@@ -303,14 +303,15 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       </div>
 
       {/* Header - Top Left */}
-      <div className="absolute left-4 z-20 flex items-center gap-2" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}>
-        <button onClick={onClose} className="text-white p-2 hover:bg-white/10 rounded-full">
+      <div className="absolute left-4 z-50 pointer-events-auto flex items-center gap-2" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}>
+        <button onClick={onClose} className="text-white p-2 hover:bg-white/10 rounded-full" aria-label="Close stories">
           <X className="h-6 w-6" />
         </button>
         {isOwnStory && (
           <button
             onClick={() => setShowDeleteDialog(true)}
             disabled={isDeleting}
+            aria-label="Delete story"
             className="text-white p-2 hover:bg-white/10 rounded-full disabled:opacity-50"
           >
             <Trash2 className="h-5 w-5" />
@@ -319,12 +320,12 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       </div>
 
       {/* Header - Top Right (Profile) */}
-      <div className="absolute right-4 z-20 flex items-center gap-3" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}>
-        <div className="text-white text-right">
+      <div className="absolute right-4 z-50 pointer-events-auto flex items-center gap-3" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}>
+        <div className="text-white text-right select-none">
           <p className="font-semibold text-sm">{currentStory.profile?.display_name}</p>
           <p className="text-xs opacity-75">{getRelativeTime(currentStory.created_at)}</p>
         </div>
-        <Avatar className="h-10 w-10 border-2 border-white">
+        <Avatar className="h-10 w-10 border-2 border-white pointer-events-none">
           <AvatarImage src={currentStory.profile?.avatar_url} />
           <AvatarFallback>{currentStory.profile?.display_name?.[0]}</AvatarFallback>
         </Avatar>
@@ -371,8 +372,9 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       {currentStory.media_type === 'video' && (
         <button
           onClick={toggleMute}
-          className="absolute right-4 bottom-32 z-20 text-white p-3 bg-black/50 hover:bg-black/70 rounded-full"
+          className="absolute right-4 bottom-32 z-40 text-white p-3 bg-black/50 hover:bg-black/70 rounded-full"
           style={{ bottom: 'calc(env(safe-area-inset-bottom, 1rem) + 8rem)' }}
+          aria-label={isMuted ? 'Unmute video' : 'Mute video'}
         >
           {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
         </button>
@@ -380,7 +382,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
 
       {/* Sound Prompt */}
       {showSoundPrompt && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-black/75 text-white px-4 py-2 rounded-full text-sm">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-black/75 text-white px-4 py-2 rounded-full text-sm pointer-events-none">
           Tap for sound 🔊
         </div>
       )}
@@ -388,7 +390,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       {/* Bottom Interaction Bar */}
       {!isOwnStory && (
         <div 
-          className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 space-y-3"
+          className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 space-y-3"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 1rem)' }}
         >
           {/* Caption */}
@@ -445,10 +447,10 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       {/* Caption for own stories */}
       {isOwnStory && currentStory.caption && (
         <div 
-          className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/60 to-transparent text-white"
+          className="absolute bottom-0 left-0 right-0 z-30 p-4 bg-gradient-to-t from-black/60 to-transparent text-white"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 2rem)' }}
         >
-          <p className="text-sm">{currentStory.caption}</p>
+          <p className="text-sm select-none">{currentStory.caption}</p>
         </div>
       )}
 
