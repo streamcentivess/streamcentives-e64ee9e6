@@ -146,19 +146,27 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDeleting(true);
-    console.log('[StoryViewer] Deleting story:', currentStory.id);
+    console.log('[StoryViewer] Starting delete for story:', currentStory.id);
     
     try {
       const success = await deleteStory(currentStory.id);
       console.log('[StoryViewer] Delete result:', success);
       
       if (success) {
-        // Optimistic UI update - immediately close and notify parent
+        console.log('[StoryViewer] Delete successful, closing viewer');
+        toast.success('Story deleted successfully');
         setShowDeleteDialog(false);
-        onDelete?.(); // Remove from parent's array first
-        onClose(); // Then close viewer
+        onDelete?.(); // Notify parent to refresh
+        onClose(); // Close viewer
+      } else {
+        console.error('[StoryViewer] Delete failed');
+        toast.error('Failed to delete story');
       }
+    } catch (error) {
+      console.error('[StoryViewer] Delete error:', error);
+      toast.error('Failed to delete story');
     } finally {
       setIsDeleting(false);
     }
@@ -515,9 +523,17 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel 
+              disabled={isDeleting}
+              onClick={() => console.log('[StoryViewer] Delete cancelled')}
+            >
+              Cancel
+            </AlertDialogCancel>
             <button
-              onClick={handleDelete}
+              onClick={(e) => {
+                console.log('[StoryViewer] Delete button clicked');
+                handleDelete(e);
+              }}
               disabled={isDeleting}
               className="inline-flex h-10 items-center justify-center rounded-md bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             >
