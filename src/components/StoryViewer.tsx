@@ -147,16 +147,19 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
     }
   };
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDelete = async (e?: any) => {
+    e?.preventDefault();
+    if ('stopPropagation' in (e || {})) {
+      // @ts-ignore - generic event guard for both MouseEvent and Radix SelectEvent
+      e.stopPropagation?.();
+    }
     setIsDeleting(true);
     console.log('[StoryViewer] Starting delete for story:', currentStory.id);
-    
+
     try {
       const success = await deleteStory(currentStory.id);
       console.log('[StoryViewer] Delete result:', success);
-      
+
       if (success) {
         console.log('[StoryViewer] Delete successful, closing viewer');
         toast.success('Story deleted successfully');
@@ -361,12 +364,9 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
               onCloseAutoFocus={(e) => e.preventDefault()}
             >
               <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                onSelect={() => {
                   console.log('[StoryViewer] Delete selected from menu', currentStory.id);
-                  // Defer opening until after menu closes to avoid focus/z-index race
-                  setTimeout(() => setShowDeleteDialog(true), 0);
+                  handleDelete();
                 }}
                 disabled={isDeleting}
                 className="text-destructive focus:text-destructive cursor-pointer"
