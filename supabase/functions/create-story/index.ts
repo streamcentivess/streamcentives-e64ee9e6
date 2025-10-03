@@ -28,7 +28,7 @@ serve(async (req) => {
       });
     }
 
-    const { mediaUrl, mediaType, caption, duration } = await req.json();
+    const { mediaUrl, mediaType, caption, durationSeconds } = await req.json();
 
     if (!mediaUrl || !mediaType) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -43,11 +43,11 @@ serve(async (req) => {
     const { data: story, error: insertError } = await supabase
       .from('stories')
       .insert({
-        user_id: user.id,
+        creator_id: user.id,
         media_url: mediaUrl,
         media_type: mediaType,
         caption: caption || null,
-        duration: duration || (mediaType === 'video' ? 15 : 5),
+        duration_seconds: durationSeconds || (mediaType === 'video' ? 15 : 5),
         expires_at: expiresAt.toISOString(),
         is_active: true
       })
