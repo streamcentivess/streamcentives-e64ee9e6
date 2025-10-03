@@ -84,6 +84,7 @@ export const useCreateStory = () => {
         return false;
       }
 
+      console.log('Invoking edge function delete-story for', storyId);
       const { data, error } = await supabase.functions.invoke('delete-story', {
         body: { storyId }
       });
@@ -95,7 +96,7 @@ export const useCreateStory = () => {
 
       if (data?.error) {
         console.error('Story deletion error:', data.error);
-        const errorMsg = data.error === 'Forbidden' 
+        const errorMsg = data.error === 'Forbidden'
           ? 'You can only delete your own stories'
           : data.error === 'Story not found'
           ? 'Story not found'
@@ -113,11 +114,32 @@ export const useCreateStory = () => {
       });
 
       return true;
-    } catch (error) {
-      console.error('Error deleting story:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message.toLowerCase() : '';
+      // Fallback: if the edge function is unavailable (not found), try client-side owner update
+      const shouldFallback = message.includes('not found') || message.includes('404') || message.includes('delete-story');
+      const isForbiddenOrMissing = message.includes('forbidden') || message.includes('story not found');
+
+      if (user?.id && shouldFallback && !isForbiddenOrMissing) {
+        console.warn('Edge function unavailable. Falling back to client-side update for', storyId);
+        const { error: updateError } = await supabase
+          .from('stories')
+          .update({ is_active: false })
+          .eq('id', storyId)
+          .eq('creator_id', user.id);
+
+        if (!updateError) {
+          toast({ title: 'Story deleted', description: 'Your story has been removed' });
+          return true;
+        }
+
+        console.error('Client-side deletion failed:', updateError);
+      }
+
+      console.error('Error deleting story:', err);
       toast({
         title: 'Failed to delete story',
-        description: error instanceof Error ? error.message : 'Please try again',
+        description: err instanceof Error ? err.message : 'Please try again',
         variant: 'destructive'
       });
       return false;
