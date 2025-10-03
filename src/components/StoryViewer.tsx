@@ -141,16 +141,17 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     setIsDeleting(true);
-    console.log('Deleting story:', currentStory.id);
+    console.log('[StoryViewer] Deleting story:', currentStory.id);
     
     try {
       const success = await deleteStory(currentStory.id);
-      console.log('Delete result:', success);
+      console.log('[StoryViewer] Delete result:', success);
       
       if (success) {
+        // Optimistic UI update - immediately close and notify parent
         setShowDeleteDialog(false);
-        onClose();
-        onDelete?.();
+        onDelete?.(); // Remove from parent's array first
+        onClose(); // Then close viewer
       }
     } finally {
       setIsDeleting(false);

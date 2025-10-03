@@ -84,18 +84,22 @@ export const useCreateStory = () => {
         return false;
       }
 
-      console.log('Invoking edge function delete-story for', storyId);
+      console.log('[deleteStory] Invoking edge function for story:', storyId);
       const { data, error } = await supabase.functions.invoke('delete-story', {
         body: { storyId }
       });
 
       if (error) {
-        console.error('Edge function error:', error);
+        console.error('[deleteStory] Edge function invoke error:', {
+          name: error.name,
+          message: error.message,
+          error
+        });
         throw error;
       }
 
       if (data?.error) {
-        console.error('Story deletion error:', data.error);
+        console.error('[deleteStory] Edge function returned error:', data.error);
         const errorMsg = data.error === 'Forbidden'
           ? 'You can only delete your own stories'
           : data.error === 'Story not found'
@@ -108,6 +112,7 @@ export const useCreateStory = () => {
         throw new Error('Failed to delete story');
       }
 
+      console.log('[deleteStory] Successfully deleted via edge function');
       toast({
         title: 'Story deleted',
         description: 'Your story has been removed'
@@ -116,12 +121,14 @@ export const useCreateStory = () => {
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message.toLowerCase() : '';
-      // Fallback: if the edge function is unavailable (not found), try client-side owner update
-      const shouldFallback = message.includes('not found') || message.includes('404') || message.includes('delete-story');
+      
+      // Skip fallback for explicit auth/ownership errors
       const isForbiddenOrMissing = message.includes('forbidden') || message.includes('story not found');
 
-      if (user?.id && shouldFallback && !isForbiddenOrMissing) {
-        console.warn('Edge function unavailable. Falling back to client-side update for', storyId);
+      // Try client-side fallback for any other error (including edge function unavailable)
+      if (user?.id && !isForbiddenOrMissing) {
+        console.warn('[deleteStory] Attempting client-side fallback for', storyId, 'Error was:', err);
+        
         const { error: updateError } = await supabase
           .from('stories')
           .update({ is_active: false })
@@ -129,14 +136,19 @@ export const useCreateStory = () => {
           .eq('creator_id', user.id);
 
         if (!updateError) {
+          console.log('[deleteStory] Successfully deleted via client-side fallback');
           toast({ title: 'Story deleted', description: 'Your story has been removed' });
           return true;
         }
 
-        console.error('Client-side deletion failed:', updateError);
+        console.error('[deleteStory] Client-side fallback failed:', {
+          code: updateError.code,
+          message: updateError.message,
+          details: updateError.details
+        });
       }
 
-      console.error('Error deleting story:', err);
+      console.error('[deleteStory] Final error:', err);
       toast({
         title: 'Failed to delete story',
         description: err instanceof Error ? err.message : 'Please try again',
