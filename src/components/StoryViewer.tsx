@@ -207,6 +207,16 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
     if (!user?.id || !replyMessage.trim() || !currentStory) return;
 
     try {
+      // Send as free DM request (0 XP cost)
+      const { error: messageError } = await supabase.rpc('send_message_with_xp', {
+        recipient_id_param: currentStory.creator_id,
+        content_param: replyMessage.trim(),
+        xp_cost_param: 0
+      });
+      
+      if (messageError) throw messageError;
+      
+      // Best-effort insert into story_replies
       await supabase.from('story_replies').insert({
         story_id: currentStory.id,
         sender_id: user.id,
@@ -214,11 +224,11 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         message: replyMessage.trim()
       });
       
-      toast.success('Message sent!');
+      toast.success('Reply sent!');
       setReplyMessage('');
     } catch (error) {
       console.error('Reply error:', error);
-      toast.error('Failed to send message');
+      toast.error('Failed to send reply');
     }
   };
 
@@ -309,6 +319,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
 
         <button
           onClick={togglePause}
+          onDoubleClick={handleLike}
           className="absolute left-1/3 right-1/3 top-0 bottom-0 z-10"
         />
 
@@ -375,6 +386,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
                 value={replyMessage}
                 onChange={(e) => setReplyMessage(e.target.value)}
                 placeholder="Send message..."
+                maxLength={500}
                 className="bg-transparent border-0 text-white placeholder:text-white/60 focus-visible:ring-0 focus-visible:ring-offset-0"
                 onKeyDown={(e) => e.key === 'Enter' && handleSendReply()}
               />
