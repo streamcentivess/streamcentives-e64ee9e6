@@ -302,16 +302,36 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         ))}
       </div>
 
-      {/* Header - Top Left */}
-      <div className="absolute left-4 z-50 pointer-events-auto flex items-center gap-2" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }} onClickCapture={(e) => e.stopPropagation()}>
-        <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="text-white p-2 hover:bg-white/10 rounded-full" aria-label="Close stories">
+      {/* Header - Top Left (Rebuilt) */}
+      <div
+        className="absolute left-4 z-50 pointer-events-auto flex items-center gap-2"
+        style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}
+        onClickCapture={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('[StoryViewer] Close clicked');
+            onClose();
+          }}
+          className="text-white p-2 hover:bg-white/10 rounded-full"
+          aria-label="Close stories"
+          title="Close"
+        >
           <X className="h-6 w-6" />
         </button>
         {isOwnStory && (
           <button
-            onClick={(e) => { e.stopPropagation(); console.log('[StoryViewer] Trash clicked for story:', currentStory.id); setShowDeleteDialog(true); }}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('[StoryViewer] Delete icon clicked', currentStory.id);
+              setShowDeleteDialog(true);
+            }}
             disabled={isDeleting}
             aria-label="Delete story"
+            title="Delete story"
             className="text-white p-2 hover:bg-white/10 rounded-full disabled:opacity-50"
           >
             <Trash2 className="h-5 w-5" />
@@ -332,7 +352,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       </div>
 
       {/* Story Content */}
-      <div className="absolute inset-0">
+      <div className={cn("absolute inset-0", showDeleteDialog && "pointer-events-none")}>
         {currentStory.media_type === 'image' ? (
           <img
             src={currentStory.media_url}
