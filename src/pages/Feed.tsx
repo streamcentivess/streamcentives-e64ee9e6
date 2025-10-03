@@ -19,6 +19,7 @@ import { FeedFilters, FeedFilterState } from '@/components/FeedFilters';
 import { CreatorTypeBadge } from '@/components/CreatorTypeBadge';
 import { VerificationBadge } from '@/components/VerificationBadge';
 import { CommentsDialog } from '@/components/CommentsDialog';
+import { EnhancedNotificationCenter } from '@/components/EnhancedNotificationCenter';
 import { 
   Heart, 
   MessageCircle, 
@@ -1186,6 +1187,8 @@ const Feed = () => {
 
           {/* Upload & Filter Buttons */}
           <div className="flex items-center gap-2">
+            <EnhancedNotificationCenter />
+            
             {activeView === 'community' && (
               <Dialog open={showFilters} onOpenChange={setShowFilters}>
                 <DialogTrigger asChild>

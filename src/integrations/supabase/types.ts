@@ -3576,6 +3576,7 @@ export type Database = {
       }
       notification_preferences: {
         Row: {
+          campaign_join_notifications: boolean | null
           campaign_notifications: boolean | null
           comment_notifications: boolean | null
           created_at: string
@@ -3587,11 +3588,13 @@ export type Database = {
           like_notifications: boolean | null
           message_notifications: boolean | null
           milestone_notifications: boolean | null
+          offer_notifications: boolean | null
           phone_number: string | null
           profile_view_notifications: boolean | null
           push_enabled: boolean
           repost_notifications: boolean | null
           reward_notifications: boolean | null
+          reward_purchase_notifications: boolean | null
           share_notifications: boolean | null
           slack_webhook_url: string | null
           sms_enabled: boolean
@@ -3600,6 +3603,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          campaign_join_notifications?: boolean | null
           campaign_notifications?: boolean | null
           comment_notifications?: boolean | null
           created_at?: string
@@ -3611,11 +3615,13 @@ export type Database = {
           like_notifications?: boolean | null
           message_notifications?: boolean | null
           milestone_notifications?: boolean | null
+          offer_notifications?: boolean | null
           phone_number?: string | null
           profile_view_notifications?: boolean | null
           push_enabled?: boolean
           repost_notifications?: boolean | null
           reward_notifications?: boolean | null
+          reward_purchase_notifications?: boolean | null
           share_notifications?: boolean | null
           slack_webhook_url?: string | null
           sms_enabled?: boolean
@@ -3624,6 +3630,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          campaign_join_notifications?: boolean | null
           campaign_notifications?: boolean | null
           comment_notifications?: boolean | null
           created_at?: string
@@ -3635,11 +3642,13 @@ export type Database = {
           like_notifications?: boolean | null
           message_notifications?: boolean | null
           milestone_notifications?: boolean | null
+          offer_notifications?: boolean | null
           phone_number?: string | null
           profile_view_notifications?: boolean | null
           push_enabled?: boolean
           repost_notifications?: boolean | null
           reward_notifications?: boolean | null
+          reward_purchase_notifications?: boolean | null
           share_notifications?: boolean | null
           slack_webhook_url?: string | null
           sms_enabled?: boolean

@@ -190,13 +190,23 @@ export function EnhancedNotificationCenter() {
     // Navigate based on notification type
     switch (notification.type) {
       case 'social_interaction':
-        if (notification.data?.actor_username) {
-          navigate(`/${notification.data.actor_username}`);
-        } else if (notification.data?.actor_id) {
-          const { data } = await supabase.from('profiles').select('username').eq('user_id', notification.data.actor_id).maybeSingle();
-          if (data?.username) navigate(`/${data.username}`);
+        const interactionType = notification.data?.interaction_type;
+        const contentId = notification.data?.content_id;
+        
+        if (interactionType === 'comment' && contentId) {
+          navigate(`/feed?post=${contentId}&comments=open`);
+        } else if (interactionType === 'follow') {
+          if (notification.data?.actor_username) {
+            navigate(`/${notification.data.actor_username}`);
+          } else if (notification.data?.actor_id) {
+            const { data } = await supabase.from('profiles').select('username').eq('user_id', notification.data.actor_id).maybeSingle();
+            if (data?.username) navigate(`/${data.username}`);
+          }
+        } else if (contentId) {
+          navigate(`/feed?post=${contentId}`);
         }
         break;
+        
       case 'profile_view': 
         if (notification.data?.viewer_username) {
           navigate(`/${notification.data.viewer_username}`);
@@ -205,6 +215,7 @@ export function EnhancedNotificationCenter() {
           if (data?.username) navigate(`/${data.username}`);
         }
         break;
+        
       case 'follow':
         if (notification.data?.follower_username) {
           navigate(`/${notification.data.follower_username}`);
@@ -213,7 +224,32 @@ export function EnhancedNotificationCenter() {
           if (data?.username) navigate(`/${data.username}`);
         }
         break;
+        
+      case 'new_message':
+        navigate('/inbox');
+        break;
+        
+      case 'sponsor_offer':
+        navigate('/sponsor-dashboard');
+        break;
+        
+      case 'reward_purchased':
+        navigate('/manage-rewards');
+        break;
+        
+      case 'campaign_join':
+      case 'campaign_invite':
+        navigate('/campaigns');
+        break;
+        
+      default:
+        if (notification.action_url) {
+          navigate(notification.action_url);
+        }
+        break;
     }
+    
+    setIsOpen(false);
   };
 
   return (

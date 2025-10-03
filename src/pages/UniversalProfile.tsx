@@ -23,6 +23,7 @@ import { useProfileViewTracking } from '@/hooks/useProfileViewTracking';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { HeartAnimation } from '@/components/ui/heart-animation';
 import { ContextMenuGesture } from '@/components/ui/context-menu-gesture';
+import { EnhancedNotificationCenter } from '@/components/EnhancedNotificationCenter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SmartLinkManager } from '@/components/SmartLinkManager';
 import { SmartLinkButton } from '@/components/SmartLinkButton';
@@ -1782,6 +1783,7 @@ const UniversalProfile = () => {
             </h1>
           </div>
           <div className="flex gap-1 flex-shrink-0">
+            {isOwnProfile && <EnhancedNotificationCenter />}
             {!isOwnProfile && user && <Button onClick={async () => {
                 const { data: profile } = await supabase.from('profiles').select('username').eq('user_id', user.id).maybeSingle();
                 if (profile?.username) navigate(`/${profile.username}`);

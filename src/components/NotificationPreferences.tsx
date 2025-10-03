@@ -21,6 +21,9 @@ interface NotificationPrefs {
   campaign_notifications: boolean;
   reward_notifications: boolean;
   profile_view_notifications: boolean;
+  offer_notifications: boolean;
+  reward_purchase_notifications: boolean;
+  campaign_join_notifications: boolean;
 }
 
 const defaultPrefs: NotificationPrefs = {
@@ -36,6 +39,9 @@ const defaultPrefs: NotificationPrefs = {
   campaign_notifications: true,
   reward_notifications: true,
   profile_view_notifications: false,
+  offer_notifications: true,
+  reward_purchase_notifications: true,
+  campaign_join_notifications: true,
 };
 
 export const NotificationPreferences = () => {
@@ -79,6 +85,9 @@ export const NotificationPreferences = () => {
           campaign_notifications: data.campaign_notifications ?? true,
           reward_notifications: data.reward_notifications ?? true,
           profile_view_notifications: data.profile_view_notifications ?? false,
+          offer_notifications: data.offer_notifications ?? true,
+          reward_purchase_notifications: data.reward_purchase_notifications ?? true,
+          campaign_join_notifications: data.campaign_join_notifications ?? true,
         });
       }
     } catch (error) {
@@ -349,6 +358,21 @@ export const NotificationPreferences = () => {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
+              <Label htmlFor="campaign-joins">Campaign Joins</Label>
+              <p className="text-sm text-muted-foreground">
+                When fans join your campaigns
+              </p>
+            </div>
+            <Switch
+              id="campaign-joins"
+              checked={preferences.campaign_join_notifications}
+              onCheckedChange={(checked) => updatePreference('campaign_join_notifications', checked)}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
               <Label htmlFor="rewards">Rewards & Shoutouts</Label>
               <p className="text-sm text-muted-foreground">
                 When you receive rewards or shoutouts
@@ -358,6 +382,36 @@ export const NotificationPreferences = () => {
               id="rewards"
               checked={preferences.reward_notifications}
               onCheckedChange={(checked) => updatePreference('reward_notifications', checked)}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="reward-purchases">Reward Purchases</Label>
+              <p className="text-sm text-muted-foreground">
+                When fans redeem your rewards
+              </p>
+            </div>
+            <Switch
+              id="reward-purchases"
+              checked={preferences.reward_purchase_notifications}
+              onCheckedChange={(checked) => updatePreference('reward_purchase_notifications', checked)}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="offers">Sponsor Offers</Label>
+              <p className="text-sm text-muted-foreground">
+                When sponsors send you offers
+              </p>
+            </div>
+            <Switch
+              id="offers"
+              checked={preferences.offer_notifications}
+              onCheckedChange={(checked) => updatePreference('offer_notifications', checked)}
               disabled={saving}
             />
           </div>
