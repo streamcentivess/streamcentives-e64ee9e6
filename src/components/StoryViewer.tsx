@@ -108,18 +108,18 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView }: Stor
       </div>
 
       {/* Story Content */}
-      <div className="relative w-full max-w-md h-full flex items-center justify-center">
+      <div className="relative w-full h-full flex items-center justify-center">
         {currentStory.media_type === 'image' ? (
           <img
             src={currentStory.media_url}
             alt="Story"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
           />
         ) : (
           <video
             ref={videoRef}
             src={currentStory.media_url}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             muted
             playsInline
             onEnded={nextStory}
