@@ -328,11 +328,14 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
           <X className="h-6 w-6" />
         </button>
         {isOwnStory && (
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={(open) => console.log('[StoryViewer] Dropdown menu open:', open)}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('[StoryViewer] 3-dots trigger clicked');
+                }}
                 disabled={isDeleting}
                 aria-label="Story options"
                 title="Options"
@@ -343,7 +346,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="start" 
-              className="bg-background border-border"
+              className="z-[10050] bg-background border-border"
               onCloseAutoFocus={(e) => e.preventDefault()}
             >
               <DropdownMenuItem
