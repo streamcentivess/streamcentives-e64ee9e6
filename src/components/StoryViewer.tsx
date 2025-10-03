@@ -293,6 +293,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
             ref={videoRef}
             src={currentStory.media_url}
             className="w-full h-full object-cover"
+            autoPlay
             playsInline
             onEnded={nextStory}
           />

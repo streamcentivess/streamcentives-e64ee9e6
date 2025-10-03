@@ -84,13 +84,12 @@ export const useCreateStory = () => {
         return false;
       }
 
-      const { error } = await supabase
-        .from('stories')
-        .update({ is_active: false })
-        .eq('id', storyId)
-        .eq('creator_id', user.id);
+      const { data, error } = await supabase.functions.invoke('delete-story', {
+        body: { storyId }
+      });
 
       if (error) throw error;
+      if (!data?.success) throw new Error('Failed to delete');
 
       toast({
         title: 'Story deleted',
