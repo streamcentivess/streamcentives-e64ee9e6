@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Search, Plus, Heart, User, Trophy, MessageSquare, Store } from 'lucide-react';
+import { Home, Search, Plus, Heart, User, Trophy, MessageSquare, Store, Camera, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,20 +30,21 @@ const MobileNavigation = () => {
       path: '/feed',
     },
     {
-      icon: Search,
-      label: 'Discover',
-      path: '/community-hub',
+      icon: Camera,
+      label: 'Stories',
+      path: '/stories',
+      requiresAuth: true,
+    },
+    {
+      icon: Radio,
+      label: 'Live',
+      path: '/live-streams',
+      requiresAuth: true,
     },
     {
       icon: Store,
       label: 'Shop',  
       path: '/marketplace',
-    },
-    {
-      icon: MessageSquare,
-      label: 'Messages',
-      path: '/inbox',
-      requiresAuth: true,
     },
     {
       icon: User,

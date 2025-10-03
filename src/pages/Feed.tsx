@@ -1,3 +1,4 @@
+import { StoriesRing } from '@/components/StoriesRing';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1236,10 +1237,17 @@ const Feed = () => {
         </div>
       </motion.div>
 
+      {/* Stories Ring - Below Navigation */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border/50">
+        <div className="max-w-7xl mx-auto">
+          <StoriesRing />
+        </div>
+      </div>
+
       {/* Full-Screen Snap-Scroll Container */}
       <div 
         ref={containerRef}
-        className="snap-y snap-mandatory h-screen overflow-y-scroll scroll-smooth pt-16"
+        className="snap-y snap-mandatory h-screen overflow-y-scroll scroll-smooth pt-32"
         style={{ scrollSnapType: 'y mandatory' }}
       >
         {activeView === 'community' && posts.map((post, index) => (

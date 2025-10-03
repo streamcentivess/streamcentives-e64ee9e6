@@ -32,7 +32,9 @@ import {
   Rss,
   Building2,
   Calendar,
-  Search
+  Search,
+  Camera,
+  Radio
 } from 'lucide-react';
 const streamcentivesLogo = '/lovable-uploads/streamcentivesloveable.PNG';
 
@@ -47,6 +49,8 @@ const AppNavigation = () => {
   const navigationItems = [
     { name: 'Home', href: '/feed', icon: Home },
     { name: 'Feed', href: '/feed', icon: Rss },
+    { name: 'Stories', href: '/stories', icon: Camera },
+    { name: 'Live', href: '/live-streams', icon: Radio },
     { name: 'Campaigns', href: '/campaigns', icon: Target },
     { name: 'Streamseeker', href: '/streamseeker', icon: Search },
     { name: 'Events', href: '/events', icon: Calendar },

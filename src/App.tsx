@@ -69,6 +69,8 @@ const StreamseekerAdminPage = lazy(() => import("./pages/StreamseekerAdminPage")
 const StreamseekerOnboardingPage = lazy(() => import("./pages/StreamseekerOnboardingPage"));
 const SponsorOnboarding = lazy(() => import("./components/SponsorOnboarding"));
 const FinancialOnboardingPage = lazy(() => import("./pages/FinancialOnboardingPage"));
+const Stories = lazy(() => import("./pages/Stories"));
+const LiveStreams = lazy(() => import("./pages/LiveStreams"));
 import { NavigationIntegration } from "./components/NavigationIntegration";
 import { MobileNotificationProvider } from "./components/MobileNotificationProvider";
 
@@ -302,14 +304,26 @@ const App = () => {
                       } />
                       
                       {/* Smart Link Public Landing */}
-                      <Route path="/link/:slug" element={<SmartLinkPage />} />
-                      
-                      {/* Post Landing Page - Public */}
+          <Route path="/link/:slug" element={<SmartLinkPage />} />
+          
+          {/* Post Landing Page - Public */}
           <Route path="/post/:postId" element={<PostLanding />} />
           <Route path="/live/:streamId" element={<LiveStream />} />
           <Route path="/leaderboard" element={<GlobalLeaderboard />} />
-                      
-                      {/* Public Brand Profile Route - Must be BEFORE /:username */}
+          
+          {/* Stories and Live Streams */}
+          <Route path="/stories" element={
+            <ProtectedRoute>
+              <Stories />
+            </ProtectedRoute>
+          } />
+          <Route path="/live-streams" element={
+            <ProtectedRoute>
+              <LiveStreams />
+            </ProtectedRoute>
+          } />
+          
+          {/* Public Brand Profile Route - Must be BEFORE /:username */}
                       <Route path="/brand/:brandSlug" element={<BrandProfile />} />
                       
                       {/* Public Profile Route - Must be BEFORE catch-all */}

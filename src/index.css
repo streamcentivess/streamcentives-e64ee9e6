@@ -349,6 +349,16 @@ html {
   .interactive:active {
     transform: scale(0.95);
   }
+
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Dark mode - already applied by default */
