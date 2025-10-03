@@ -152,11 +152,11 @@ export function CommentsDialog({
         title: "Success",
         description: "Comment added successfully"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding comment:', error);
       toast({
         title: "Error",
-        description: "Failed to add comment",
+        description: error?.message ? `Failed to add comment: ${error.message}` : "Failed to add comment",
         variant: "destructive"
       });
     } finally {

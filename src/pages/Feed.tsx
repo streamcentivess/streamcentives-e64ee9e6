@@ -38,7 +38,9 @@ import {
   Flame, 
   Music, 
   Home, 
-  Filter
+  Filter,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 
 interface Post {
@@ -119,6 +121,8 @@ const Feed = () => {
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
   const observerRef = useRef<IntersectionObserver | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [unmutedIds, setUnmutedIds] = useState<Set<string>>(new Set());
+  const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
 
   // Video autoplay functionality
   const setupVideoObserver = useCallback(() => {
@@ -612,6 +616,29 @@ const Feed = () => {
   const handleComment = async (postId: string, postOwnerId: string) => {
     if (!user) return;
     setShowCommentDialog({ postId, postOwnerId });
+  };
+
+  const toggleMute = (postId: string) => {
+    setUnmutedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(postId)) next.delete(postId); else next.add(postId);
+      const video = videoRefs.current.get(postId);
+      if (video) video.muted = !next.has(postId);
+      return next;
+    });
+  };
+
+  const handleFollow = async (targetUserId: string) => {
+    if (!user || user.id === targetUserId) return;
+    try {
+      const { error } = await supabase.from('follows').insert({ follower_id: user.id, following_id: targetUserId });
+      if (error && error.code !== '23505') throw error;
+      setFollowedIds(prev => new Set(prev).add(targetUserId));
+      toast({ title: 'Followed', description: 'You are now following this creator.' });
+    } catch (e) {
+      console.error('Follow error', e);
+      toast({ title: 'Error', description: 'Unable to follow user', variant: 'destructive' });
+    }
   };
 
   const handleCommentAdded = () => {
@@ -1187,202 +1214,33 @@ const Feed = () => {
             className="snap-start snap-always h-screen relative bg-black"
           >
             {/* Video Content */}
-            {post.content_type === 'video' ? (
-              <video
-                ref={(video) => addVideoRef(post.id, video)}
-                src={post.content_url}
-                className="absolute inset-0 w-full h-full object-cover"
-                loop
-                playsInline
-                muted
-                onClick={(e) => {
-                  const video = e.currentTarget;
-                  if (video.paused) {
-                    video.play();
-                  } else {
-                    video.pause();
-                  }
-                }}
-              />
-            ) : (
-              <img
-                src={post.content_url}
-                alt={post.caption || 'Post content'}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            )}
-
-            {/* Bottom Overlay - Creator Info & Caption */}
-            <div className="absolute bottom-0 left-0 right-16 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-              <div 
-                className="flex items-center gap-3 mb-3 cursor-pointer"
-                onClick={async () => {
-                  const { data } = await supabase.from('profiles').select('username').eq('user_id', post.user_id).maybeSingle();
-                  if (data?.username) navigate(`/${data.username}`);
-                }}
-              >
-                <Avatar className="h-12 w-12 border-2 border-white/20">
-                  <AvatarImage src={post.profiles?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white">
-                    {(post.profiles?.display_name || post.profiles?.username || 'U').slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-white text-lg">
-                      {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
-                    </p>
-                    <VerificationBadge 
-                      isVerified={true}
-                      followerCount={1000}
-                      size="sm"
-                    />
-                  </div>
-                  {post.profiles?.creator_type && (
-                    <CreatorTypeBadge creatorType={post.profiles.creator_type} size="sm" />
-                  )}
-                </div>
-              </div>
-
-              {/* Caption */}
-              {post.caption && (
-                <p className="text-white text-sm mb-2 line-clamp-2">
-                  {post.caption}
-                </p>
-              )}
-
-              {/* Campaign Badge */}
-              {post.campaign && (
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge 
-                    className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-0 cursor-pointer hover:scale-105 transition-transform"
-                    onClick={() => handleViewCampaign(post.campaign!.id)}
+              {post.content_type === 'video' ? (
+                <>
+                  <video
+                    ref={(video) => addVideoRef(post.id, video)}
+                    src={post.content_url}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loop
+                    playsInline
+                    muted={!unmutedIds.has(post.id)}
+                    onClick={(e) => {
+                      const video = e.currentTarget;
+                      if (video.paused) {
+                        video.play();
+                      } else {
+                        video.pause();
+                      }
+                    }}
+                  />
+                  <button
+                    className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center"
+                    onClick={() => toggleMute(post.id)}
+                    aria-label={unmutedIds.has(post.id) ? 'Mute' : 'Unmute'}
                   >
-                    <Trophy className="h-3 w-3 mr-1" />
-                    {post.campaign.title}
-                  </Badge>
-                  {!post.campaign.is_joined && (
-                    <Button
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleJoinCampaign(post.campaign!.id);
-                      }}
-                      className="h-6 text-xs bg-gradient-to-r from-green-500 to-emerald-600"
-                    >
-                      Join Campaign
-                    </Button>
-                  )}
-                </div>
-              )}
-
-              {/* Music Attribution */}
-              <div className="flex items-center gap-2 text-white/80 text-xs">
-                <Music className="h-3 w-3" />
-                <span>Original audio</span>
-              </div>
-            </div>
-
-            {/* Right Side Actions - Vertical Stack */}
-            <div className="absolute right-4 bottom-20 flex flex-col items-center gap-6">
-              {/* Profile Avatar Button */}
-              <motion.div
-                whileTap={{ scale: 0.9 }}
-                className="relative cursor-pointer"
-                onClick={async () => {
-                  const { data } = await supabase.from('profiles').select('username').eq('user_id', post.user_id).maybeSingle();
-                  if (data?.username) navigate(`/${data.username}`);
-                }}
-              >
-                <Avatar className="h-14 w-14 border-2 border-white">
-                  <AvatarImage src={post.profiles?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold">
-                    {(post.profiles?.display_name || post.profiles?.username || 'U').slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </motion.div>
-
-              {/* Like Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => handleLike(post.id)}
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                  <Heart 
-                    className={`h-7 w-7 ${post.is_liked ? 'fill-red-500 text-red-500' : 'text-white'}`}
-                  />
-                </div>
-                <span className="text-white text-xs font-semibold">{post.likes}</span>
-              </motion.button>
-
-              {/* Comment Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => handleComment(post.id, post.user_id)}
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                  <MessageCircle className="h-7 w-7 text-white" />
-                </div>
-                <span className="text-white text-xs font-semibold">{post.comments}</span>
-              </motion.button>
-
-              {/* Repost Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => handleRepost(post.id)}
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                  <Repeat2 
-                    className={`h-7 w-7 ${post.is_reposted ? 'text-green-500' : 'text-white'}`}
-                  />
-                </div>
-                <span className="text-white text-xs font-semibold">{post.repost_count || 0}</span>
-              </motion.button>
-
-              {/* Share Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => handleShare(post)}
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                  <Share2 className="h-7 w-7 text-white" />
-                </div>
-                <span className="text-white text-xs font-semibold">Share</span>
-              </motion.button>
-            </div>
-
-            {/* Heart Animation */}
-            {showHeartAnimation === post.id && (
-              <HeartAnimation isVisible={true} />
-            )}
-          </div>
-        ))}
-
-        {/* Fan Love Posts */}
-        {activeView === 'fanlove' && reposts.map((repost) => (
-          <div key={repost.id} className="relative snap-start h-screen flex-shrink-0 bg-black">
-            {/* Video/Image Content */}
-            {repost.posts?.content_type === 'video' ? (
-              <video
-                ref={(video) => addVideoRef(repost.posts!.id, video)}
-                src={repost.posts.content_url}
-                className="absolute inset-0 w-full h-full object-cover"
-                loop
-                playsInline
-                muted
-                onClick={(e) => {
-                  const video = e.currentTarget;
-                  if (video.paused) {
-                    video.play();
-                  } else {
-                    video.pause();
-                  }
-                }}
-              />
+                    {unmutedIds.has(post.id) ? <Volume2 className="h-5 w-5 text-white" /> : <VolumeX className="h-5 w-5 text-white" />}
+                  </button>
+                </>
+              ) : (
             ) : (
               <img
                 src={repost.posts?.content_url}
@@ -1486,6 +1344,20 @@ const Feed = () => {
                   </AvatarFallback>
                 </Avatar>
               </motion.div>
+
+              {/* Follow Button */}
+              {user && user.id !== repost.posts?.user_id && (
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => handleFollow(repost.posts!.user_id)}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                    <UserPlus className={`h-7 w-7 ${followedIds.has(repost.posts!.user_id) ? 'text-green-500' : 'text-white'}`} />
+                  </div>
+                  <span className="text-white text-xs font-semibold">{followedIds.has(repost.posts!.user_id) ? 'Following' : 'Follow'}</span>
+                </motion.button>
+              )}
 
               {/* Like Button */}
               <motion.button

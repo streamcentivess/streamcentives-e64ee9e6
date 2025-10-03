@@ -202,14 +202,15 @@ export default function PostLanding() {
 
   return (
     <div className="min-h-screen bg-black relative">
-      <div className="relative h-screen w-full flex items-center justify-center">
+      <div className="relative h-screen w-full">
         {post.content_type === 'video' ? (
           <video
             src={post.content_url || ''}
-            className="max-h-screen w-auto"
+            className="absolute inset-0 w-full h-full object-cover"
             controls={!!user}
             autoPlay
             playsInline
+            muted={!user}
             onEnded={handleVideoEnded}
           />
         ) : post.content_url ? (
