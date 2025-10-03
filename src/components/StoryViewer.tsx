@@ -303,13 +303,13 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       </div>
 
       {/* Header - Top Left */}
-      <div className="absolute left-4 z-50 pointer-events-auto flex items-center gap-2" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}>
-        <button onClick={onClose} className="text-white p-2 hover:bg-white/10 rounded-full" aria-label="Close stories">
+      <div className="absolute left-4 z-50 pointer-events-auto flex items-center gap-2" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }} onClickCapture={(e) => e.stopPropagation()}>
+        <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="text-white p-2 hover:bg-white/10 rounded-full" aria-label="Close stories">
           <X className="h-6 w-6" />
         </button>
         {isOwnStory && (
           <button
-            onClick={() => setShowDeleteDialog(true)}
+            onClick={(e) => { e.stopPropagation(); console.log('[StoryViewer] Trash clicked for story:', currentStory.id); setShowDeleteDialog(true); }}
             disabled={isDeleting}
             aria-label="Delete story"
             className="text-white p-2 hover:bg-white/10 rounded-full disabled:opacity-50"
@@ -320,7 +320,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       </div>
 
       {/* Header - Top Right (Profile) */}
-      <div className="absolute right-4 z-50 pointer-events-auto flex items-center gap-3" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}>
+      <div className="absolute right-4 z-50 pointer-events-auto flex items-center gap-3" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }} onClickCapture={(e) => e.stopPropagation()}>
         <div className="text-white text-right select-none">
           <p className="font-semibold text-sm">{currentStory.profile?.display_name}</p>
           <p className="text-xs opacity-75">{getRelativeTime(currentStory.created_at)}</p>
@@ -354,17 +354,22 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         <button
           onClick={previousStory}
           className="absolute left-0 top-0 bottom-0 w-1/3 z-10"
-          disabled={currentStoryIndex === 0}
+          style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 56px)' }}
+          disabled={showDeleteDialog || currentStoryIndex === 0}
         />
 
         <button
           onClick={handleTapCenter}
           className="absolute left-1/3 right-1/3 top-0 bottom-0 z-10"
+          style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 56px)' }}
+          disabled={showDeleteDialog}
         />
 
         <button
           onClick={nextStory}
           className="absolute right-0 top-0 bottom-0 w-1/3 z-10"
+          style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 56px)' }}
+          disabled={showDeleteDialog}
         />
       </div>
 
