@@ -93,7 +93,7 @@ const Feed = () => {
   const [trendingCreators, setTrendingCreators] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [activeTab, setActiveTab] = useState('community');
+  
   const [activeView, setActiveView] = useState<'trending' | 'community' | 'fanlove'>('community');
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [hasMoreReposts, setHasMoreReposts] = useState(true);
@@ -1005,20 +1005,6 @@ const Feed = () => {
     }
   };
 
-  useEffect(() => {
-    if (!user) return;
-    if (activeView === 'community') {
-      setPosts([]);
-      setPage(0);
-      setHasMorePosts(true);
-      fetchPosts(0, true);
-    } else if (activeView === 'fanlove') {
-      setReposts([]);
-      setRepostPage(0);
-      setHasMoreReposts(true);
-      fetchReposts(0, true);
-    }
-  }, [user, activeView]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1039,7 +1025,7 @@ const Feed = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadingMore, hasMorePosts, hasMoreReposts, activeTab, page, repostPage]);
+  }, [loadingMore, hasMorePosts, hasMoreReposts, activeView, page, repostPage]);
 
   if (loading) {
     return (
