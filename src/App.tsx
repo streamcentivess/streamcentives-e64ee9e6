@@ -46,6 +46,8 @@ const BrandProfile = lazy(() => import("./pages/BrandProfile"));
 const Campaigns = lazy(() => import("./pages/Campaigns"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Leaderboards = lazy(() => import("./pages/Leaderboards"));
+const GlobalLeaderboard = lazy(() => import("./pages/GlobalLeaderboard"));
+const LiveStream = lazy(() => import("./pages/LiveStream"));
 const ManageRewards = lazy(() => import("./pages/ManageRewards"));
 const RoleSelection = lazy(() => import("./pages/RoleSelection"));
 const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
@@ -303,7 +305,9 @@ const App = () => {
                       <Route path="/link/:slug" element={<SmartLinkPage />} />
                       
                       {/* Post Landing Page - Public */}
-                      <Route path="/post/:postId" element={<PostLanding />} />
+          <Route path="/post/:postId" element={<PostLanding />} />
+          <Route path="/live/:streamId" element={<LiveStream />} />
+          <Route path="/leaderboard" element={<GlobalLeaderboard />} />
                       
                       {/* Public Brand Profile Route - Must be BEFORE /:username */}
                       <Route path="/brand/:brandSlug" element={<BrandProfile />} />

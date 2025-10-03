@@ -179,9 +179,11 @@ const Feed = () => {
 
   useEffect(() => {
     if (posts.length > 0) {
-      setTimeout(() => {
+      // Increased delay to ensure videos are fully rendered
+      const timer = setTimeout(() => {
         setupVideoObserver();
-      }, 100);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [posts, setupVideoObserver]);
 

@@ -2632,6 +2632,39 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_types: {
+        Row: {
+          animation_type: string
+          created_at: string
+          creator_type: string
+          icon_name: string
+          id: string
+          name: string
+          rarity: string
+          xp_cost: number
+        }
+        Insert: {
+          animation_type: string
+          created_at?: string
+          creator_type: string
+          icon_name: string
+          id?: string
+          name: string
+          rarity?: string
+          xp_cost: number
+        }
+        Update: {
+          animation_type?: string
+          created_at?: string
+          creator_type?: string
+          icon_name?: string
+          id?: string
+          name?: string
+          rarity?: string
+          xp_cost?: number
+        }
+        Relationships: []
+      }
       instant_redemptions: {
         Row: {
           created_at: string | null
@@ -2753,6 +2786,82 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      live_stream_gifts: {
+        Row: {
+          created_at: string
+          gift_type: string
+          gift_value_xp: number
+          id: string
+          is_anonymous: boolean | null
+          message: string | null
+          sender_id: string
+          stream_id: string
+        }
+        Insert: {
+          created_at?: string
+          gift_type: string
+          gift_value_xp: number
+          id?: string
+          is_anonymous?: boolean | null
+          message?: string | null
+          sender_id: string
+          stream_id: string
+        }
+        Update: {
+          created_at?: string
+          gift_type?: string
+          gift_value_xp?: number
+          id?: string
+          is_anonymous?: boolean | null
+          message?: string | null
+          sender_id?: string
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_stream_gifts_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_stream_viewers: {
+        Row: {
+          id: string
+          joined_at: string
+          left_at: string | null
+          stream_id: string
+          total_watch_time_seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          stream_id: string
+          total_watch_time_seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          stream_id?: string
+          total_watch_time_seconds?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_stream_viewers_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       live_streams: {
         Row: {
@@ -3831,6 +3940,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_follow_stats"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
           },
         ]
       }
