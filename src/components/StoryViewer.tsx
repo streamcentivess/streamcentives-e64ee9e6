@@ -356,8 +356,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
               onCloseAutoFocus={(e) => e.preventDefault()}
             >
               <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
+                onSelect={() => {
                   console.log('[StoryViewer] Delete selected from menu', currentStory.id);
                   setShowDeleteDialog(true);
                 }}
