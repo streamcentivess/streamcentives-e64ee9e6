@@ -158,13 +158,17 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
 
       if (success) {
         console.log('[StoryViewer] Delete successful, closing viewer');
+        toast.success('Story deleted');
         if (onDelete) {
           onDelete();
         }
         onClose();
+      } else {
+        toast.error('Failed to delete story');
       }
     } catch (error) {
       console.error('[StoryViewer] Delete error:', error);
+      toast.error('Failed to delete story');
     } finally {
       setIsDeleting(false);
     }
