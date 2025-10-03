@@ -88,8 +88,24 @@ export const useCreateStory = () => {
         body: { storyId }
       });
 
-      if (error) throw error;
-      if (!data?.success) throw new Error('Failed to delete');
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      if (data?.error) {
+        console.error('Story deletion error:', data.error);
+        const errorMsg = data.error === 'Forbidden' 
+          ? 'You can only delete your own stories'
+          : data.error === 'Story not found'
+          ? 'Story not found'
+          : data.error;
+        throw new Error(errorMsg);
+      }
+
+      if (!data?.success) {
+        throw new Error('Failed to delete story');
+      }
 
       toast({
         title: 'Story deleted',
