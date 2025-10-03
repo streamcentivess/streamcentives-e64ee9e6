@@ -10,12 +10,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSocialNotifications } from '@/hooks/useSocialNotifications';
+import { HeartAnimation } from '@/components/ui/heart-animation';
 import CommunityUpload from '@/components/CommunityUpload';
 import UserProfileSearch from '@/components/UserProfileSearch';
 import { FeedPopupSystem } from '@/components/FeedPopupSystem';
 import { FeedFilters, FeedFilterState } from '@/components/FeedFilters';
 import { CreatorTypeBadge } from '@/components/CreatorTypeBadge';
 import { VerificationBadge } from '@/components/VerificationBadge';
+import { CommentsDialog } from '@/components/CommentsDialog';
 import { 
   Heart, 
   MessageCircle, 
@@ -88,6 +91,7 @@ const Feed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { createSocialNotification } = useSocialNotifications();
   const [posts, setPosts] = useState<Post[]>([]);
   const [reposts, setReposts] = useState<Repost[]>([]);
   const [trendingCreators, setTrendingCreators] = useState<any[]>([]);
@@ -101,11 +105,11 @@ const Feed = () => {
   const [repostPage, setRepostPage] = useState(0);
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [sharePostData, setSharePostData] = useState<{ post: Post; shareText: string; shareUrl: string } | null>(null);
-  const [showCommentInput, setShowCommentInput] = useState<string | null>(null);
-  const [newComment, setNewComment] = useState('');
+  const [showCommentDialog, setShowCommentDialog] = useState<{ postId: string; postOwnerId: string } | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [showHeartAnimation, setShowHeartAnimation] = useState<string | null>(null);
   const [feedFilters, setFeedFilters] = useState<FeedFilterState>({
     contentType: 'all',
     creatorTypes: [],
@@ -537,10 +541,14 @@ const Feed = () => {
     if (!user) return;
 
     try {
-      const post = posts.find(p => p.id === postId);
+      const post = posts.find(p => p.id === postId) || 
+        reposts.find(r => r.posts.id === postId)?.posts;
       if (!post) return;
 
-      if (post.is_liked) {
+      const isCurrentlyLiked = post.is_liked;
+      const postOwnerId = post.user_id;
+
+      if (isCurrentlyLiked) {
         await supabase
           .from('post_likes')
           .delete()
@@ -553,14 +561,41 @@ const Feed = () => {
             post_id: postId,
             user_id: user.id
           });
+
+        // Show heart animation
+        setShowHeartAnimation(postId);
+        setTimeout(() => setShowHeartAnimation(null), 1200);
+
+        // Send notification to post owner
+        if (postOwnerId && postOwnerId !== user.id) {
+          await createSocialNotification(
+            postOwnerId,
+            'like',
+            'post',
+            postId
+          );
+        }
       }
 
+      // Update posts state
       setPosts(prev => prev.map(p => 
         p.id === postId ? {
           ...p,
-          is_liked: !p.is_liked,
-          likes: p.is_liked ? p.likes - 1 : p.likes + 1
+          is_liked: !isCurrentlyLiked,
+          likes: isCurrentlyLiked ? p.likes - 1 : p.likes + 1
         } : p
+      ));
+
+      // Update reposts state
+      setReposts(prev => prev.map(r => 
+        r.posts.id === postId ? {
+          ...r,
+          posts: {
+            ...r.posts,
+            is_liked: !isCurrentlyLiked,
+            likes: isCurrentlyLiked ? r.posts.likes - 1 : r.posts.likes + 1
+          }
+        } : r
       ));
     } catch (error) {
       console.error('Error liking post:', error);
@@ -572,55 +607,17 @@ const Feed = () => {
     }
   };
 
-  const handleComment = async (postId: string) => {
+  const handleComment = async (postId: string, postOwnerId: string) => {
     if (!user) return;
-
-    if (showCommentInput === postId) {
-      setShowCommentInput(null);
-      setNewComment('');
-    } else {
-      setShowCommentInput(postId);
-      setNewComment('');
-    }
+    setShowCommentDialog({ postId, postOwnerId });
   };
 
-  const submitComment = async (postId: string) => {
-    if (!user || !newComment.trim()) return;
-
-    try {
-      const { error } = await supabase
-        .from('post_comments')
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-          content: newComment.trim()
-        });
-
-      if (error) throw error;
-
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
-            ? { ...post, comments: post.comments + 1 }
-            : post
-        )
-      );
-
-      setNewComment('');
-      setShowCommentInput(null);
-
-      toast({
-        title: "Success",
-        description: "Comment added successfully"
-      });
-
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add comment",
-        variant: "destructive"
-      });
+  const handleCommentAdded = () => {
+    // Refresh post counts
+    if (activeView === 'community') {
+      fetchPosts(page);
+    } else if (activeView === 'fanlove') {
+      fetchReposts(repostPage);
     }
   };
 
@@ -810,39 +807,6 @@ const Feed = () => {
       toast({
         title: "Error",
         description: errorMessage,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleCommentSubmit = async (postId: string) => {
-    if (!newComment.trim() || !user) return;
-
-    try {
-      const { error } = await supabase
-        .from('post_comments')
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-          content: newComment.trim()
-        });
-
-      if (error) throw error;
-
-      setNewComment('');
-      setShowCommentInput(null);
-      
-      fetchPosts(0, true);
-      
-      toast({
-        title: "Comment added!",
-        description: "Your comment has been posted."
-      });
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add comment. Please try again.",
         variant: "destructive"
       });
     }
@@ -1303,7 +1267,7 @@ const Feed = () => {
               {/* Comment Button */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={() => handleComment(post.id)}
+                onClick={() => handleComment(post.id, post.user_id)}
                 className="flex flex-col items-center gap-1"
               >
                 <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
@@ -1339,36 +1303,9 @@ const Feed = () => {
               </motion.button>
             </div>
 
-            {/* Comment Input Overlay */}
-            {showCommentInput === post.id && (
-              <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 100, opacity: 0 }}
-                className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg p-4 border-t border-border"
-              >
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add a comment..."
-                    className="flex-1"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        submitComment(post.id);
-                      }
-                    }}
-                  />
-                  <Button
-                    onClick={() => submitComment(post.id)}
-                    disabled={!newComment.trim()}
-                    size="sm"
-                  >
-                    Post
-                  </Button>
-                </div>
-              </motion.div>
+            {/* Heart Animation */}
+            {showHeartAnimation === post.id && (
+              <HeartAnimation isVisible={true} />
             )}
           </div>
         ))}
@@ -1515,7 +1452,7 @@ const Feed = () => {
               {/* Comment Button */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={() => handleComment(repost.posts!.id)}
+                onClick={() => handleComment(repost.posts!.id, repost.posts!.user_id)}
                 className="flex flex-col items-center gap-1"
               >
                 <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
@@ -1537,36 +1474,9 @@ const Feed = () => {
               </motion.button>
             </div>
 
-            {/* Comment Input Overlay */}
-            {showCommentInput === repost.posts?.id && (
-              <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 100, opacity: 0 }}
-                className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg p-4 border-t border-border"
-              >
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add a comment..."
-                    className="flex-1"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        submitComment(repost.posts!.id);
-                      }
-                    }}
-                  />
-                  <Button
-                    onClick={() => submitComment(repost.posts!.id)}
-                    disabled={!newComment.trim()}
-                    size="sm"
-                  >
-                    Post
-                  </Button>
-                </div>
-              </motion.div>
+            {/* Heart Animation */}
+            {showHeartAnimation === repost.posts?.id && (
+              <HeartAnimation isVisible={true} />
             )}
           </div>
         ))}
@@ -1612,6 +1522,17 @@ const Feed = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Comments Dialog */}
+      {showCommentDialog && (
+        <CommentsDialog
+          open={!!showCommentDialog}
+          onOpenChange={(open) => !open && setShowCommentDialog(null)}
+          postId={showCommentDialog.postId}
+          postOwnerId={showCommentDialog.postOwnerId}
+          onCommentAdded={handleCommentAdded}
+        />
+      )}
     </div>
   );
 };
