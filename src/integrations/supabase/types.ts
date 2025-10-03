@@ -2787,6 +2787,41 @@ export type Database = {
         }
         Relationships: []
       }
+      live_stream_comments: {
+        Row: {
+          comment_text: string
+          created_at: string | null
+          id: string
+          is_pinned: boolean | null
+          stream_id: string
+          user_id: string
+        }
+        Insert: {
+          comment_text: string
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          stream_id: string
+          user_id: string
+        }
+        Update: {
+          comment_text?: string
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          stream_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_stream_comments_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_stream_gifts: {
         Row: {
           created_at: string
@@ -2821,6 +2856,82 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "live_stream_gifts_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_stream_guests: {
+        Row: {
+          created_at: string | null
+          guest_id: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          status: string
+          stream_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          guest_id: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          status?: string
+          stream_id: string
+        }
+        Update: {
+          created_at?: string | null
+          guest_id?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          status?: string
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_stream_guests_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_stream_invites: {
+        Row: {
+          created_at: string | null
+          id: string
+          invitee_id: string
+          inviter_id: string
+          responded_at: string | null
+          status: string
+          stream_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          responded_at?: string | null
+          status?: string
+          stream_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          responded_at?: string | null
+          status?: string
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_stream_invites_stream_id_fkey"
             columns: ["stream_id"]
             isOneToOne: false
             referencedRelation: "live_streams"
@@ -2866,47 +2977,65 @@ export type Database = {
       live_streams: {
         Row: {
           actual_start_time: string | null
+          category: string | null
           created_at: string | null
           creator_id: string
           end_time: string | null
+          guest_ids: Json | null
           id: string
+          is_multi_guest: boolean | null
+          max_guests: number | null
           peak_viewers: number | null
           platform: string
+          privacy_level: string | null
           scheduled_start_time: string | null
           status: string | null
           stream_description: string | null
           stream_title: string
           stream_url: string | null
+          thumbnail_url: string | null
           viewer_count: number | null
         }
         Insert: {
           actual_start_time?: string | null
+          category?: string | null
           created_at?: string | null
           creator_id: string
           end_time?: string | null
+          guest_ids?: Json | null
           id?: string
+          is_multi_guest?: boolean | null
+          max_guests?: number | null
           peak_viewers?: number | null
           platform: string
+          privacy_level?: string | null
           scheduled_start_time?: string | null
           status?: string | null
           stream_description?: string | null
           stream_title: string
           stream_url?: string | null
+          thumbnail_url?: string | null
           viewer_count?: number | null
         }
         Update: {
           actual_start_time?: string | null
+          category?: string | null
           created_at?: string | null
           creator_id?: string
           end_time?: string | null
+          guest_ids?: Json | null
           id?: string
+          is_multi_guest?: boolean | null
+          max_guests?: number | null
           peak_viewers?: number | null
           platform?: string
+          privacy_level?: string | null
           scheduled_start_time?: string | null
           status?: string | null
           stream_description?: string | null
           stream_title?: string
           stream_url?: string | null
+          thumbnail_url?: string | null
           viewer_count?: number | null
         }
         Relationships: []
@@ -5484,6 +5613,104 @@ export type Database = {
         }
         Relationships: []
       }
+      stories: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          creator_id: string
+          duration_seconds: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          media_type: string
+          media_url: string
+          view_count: number | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          creator_id: string
+          duration_seconds: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          media_type: string
+          media_url: string
+          view_count?: number | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          creator_id?: string
+          duration_seconds?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          media_type?: string
+          media_url?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      story_highlights: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string | null
+          creator_id: string
+          id: string
+          story_ids: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          story_ids?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          story_ids?: Json | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      story_views: {
+        Row: {
+          id: string
+          story_id: string
+          viewed_at: string | null
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          viewed_at?: string | null
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          viewed_at?: string | null
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       streamseeker_admin_actions: {
         Row: {
           action_type: string
@@ -6883,6 +7110,10 @@ export type Database = {
           total_xp_amount_param: number
         }
         Returns: Json
+      }
+      expire_old_stories: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       generate_redemption_code: {
         Args: Record<PropertyKey, never>
