@@ -322,7 +322,6 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       <div
         className="absolute left-4 z-50 pointer-events-auto flex items-center gap-2"
         style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}
-        onClickCapture={(e) => e.stopPropagation()}
       >
         <button
           type="button"
