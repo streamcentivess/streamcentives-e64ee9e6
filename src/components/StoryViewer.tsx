@@ -39,7 +39,9 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const [replyMessage, setReplyMessage] = useState('');
   const [isLiked, setIsLiked] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lastTapRef = useRef<number>(0);
   const { deleteStory } = useCreateStory();
   const { user } = useAuth();
   const currentStory = stories[currentStoryIndex];
@@ -137,11 +139,19 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   };
 
   const handleDelete = async () => {
-    const success = await deleteStory(currentStory.id);
-    if (success) {
-      setShowDeleteDialog(false);
-      onClose();
-      onDelete?.();
+    setIsDeleting(true);
+    try {
+      const success = await deleteStory(currentStory.id);
+      if (success) {
+        toast.success('Story deleted');
+        setShowDeleteDialog(false);
+        onClose();
+        onDelete?.();
+      } else {
+        toast.error('Failed to delete story');
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -154,7 +164,9 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   };
 
   const handleLike = async () => {
-    if (!user?.id || !currentStory) return;
+    if (!user?.id || !currentStory || isLiked) return;
+    
+    setIsLiked(true);
     
     try {
       await supabase.from('social_interactions').insert({
@@ -164,11 +176,34 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         content_type: 'story',
         interaction_type: 'like'
       });
-      setIsLiked(true);
+      
+      // Show a visual heart animation
+      const heart = document.createElement('div');
+      heart.innerHTML = '❤️';
+      heart.style.cssText = 'position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); font-size: 4rem; z-index: 10000; pointer-events: none; animation: heartPop 0.6s ease-out forwards;';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 600);
+      
       toast.success('Liked!');
     } catch (error) {
       console.error('Like error:', error);
+      setIsLiked(false);
     }
+  };
+
+  const handleTapCenter = () => {
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    if (timeSinceLastTap < 300) {
+      // Double tap detected
+      handleLike();
+    } else {
+      // Single tap - toggle pause
+      togglePause();
+    }
+    
+    lastTapRef.current = now;
   };
 
   const handleShare = async () => {
@@ -272,7 +307,8 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         {isOwnStory && (
           <button
             onClick={() => setShowDeleteDialog(true)}
-            className="text-white p-2 hover:bg-white/10 rounded-full"
+            disabled={isDeleting}
+            className="text-white p-2 hover:bg-white/10 rounded-full disabled:opacity-50"
           >
             <Trash2 className="h-5 w-5" />
           </button>
@@ -318,8 +354,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         />
 
         <button
-          onClick={togglePause}
-          onDoubleClick={handleLike}
+          onClick={handleTapCenter}
           className="absolute left-1/3 right-1/3 top-0 bottom-0 z-10"
         />
 
@@ -423,9 +458,13 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete} 
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
