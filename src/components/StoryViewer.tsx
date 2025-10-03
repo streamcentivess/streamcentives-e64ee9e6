@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Trash2, Heart, Share2, Send, Volume2, VolumeX } from 'lucide-react';
 import { Story } from '@/hooks/useStories';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -238,7 +239,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
 
   if (!currentStory) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[9999] bg-black">
       {/* Story Progress Bars */}
       <div className="absolute top-0 left-0 right-0 flex gap-1 z-20 p-2" style={{ paddingTop: 'env(safe-area-inset-top, 0.5rem)' }}>
@@ -417,6 +418,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </div>,
+    document.body
   );
 };
