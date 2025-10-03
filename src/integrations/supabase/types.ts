@@ -7715,9 +7715,9 @@ export type Database = {
         Args: {
           content_param: string
           recipient_id_param: string
-          xp_cost_param: number
+          xp_cost_param?: number
         }
-        Returns: string
+        Returns: Json
       }
       update_artist_eligibility: {
         Args: { artist_user_id: string }
