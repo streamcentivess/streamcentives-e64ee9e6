@@ -1530,76 +1530,61 @@ export type Database = {
       }
       content_moderation: {
         Row: {
-          action_taken: Database["public"]["Enums"]["moderation_action"] | null
-          ai_analysis: Json | null
-          auto_actioned: boolean | null
-          categories:
-            | Database["public"]["Enums"]["moderation_category"][]
-            | null
-          confidence: number
-          content_hash: string | null
+          ai_moderation_flags: Json | null
+          ai_moderation_score: number | null
           content_id: string
-          content_type: Database["public"]["Enums"]["content_type"]
+          content_owner_id: string
+          content_type: string
           created_at: string
-          detected_language: string | null
-          flags: string[] | null
           id: string
-          is_appropriate: boolean
-          media_urls: string[] | null
-          original_content: string | null
+          moderation_status: string
+          report_description: string | null
+          report_reason: string
+          reported_by_user_id: string | null
           reviewed_at: string | null
-          reviewed_by: string | null
-          severity: Database["public"]["Enums"]["moderation_severity"] | null
+          reviewed_by_user_id: string | null
+          reviewer_action: string | null
+          reviewer_notes: string | null
+          severity: string
           updated_at: string
-          user_id: string
         }
         Insert: {
-          action_taken?: Database["public"]["Enums"]["moderation_action"] | null
-          ai_analysis?: Json | null
-          auto_actioned?: boolean | null
-          categories?:
-            | Database["public"]["Enums"]["moderation_category"][]
-            | null
-          confidence?: number
-          content_hash?: string | null
+          ai_moderation_flags?: Json | null
+          ai_moderation_score?: number | null
           content_id: string
-          content_type: Database["public"]["Enums"]["content_type"]
+          content_owner_id: string
+          content_type: string
           created_at?: string
-          detected_language?: string | null
-          flags?: string[] | null
           id?: string
-          is_appropriate?: boolean
-          media_urls?: string[] | null
-          original_content?: string | null
+          moderation_status?: string
+          report_description?: string | null
+          report_reason: string
+          reported_by_user_id?: string | null
           reviewed_at?: string | null
-          reviewed_by?: string | null
-          severity?: Database["public"]["Enums"]["moderation_severity"] | null
+          reviewed_by_user_id?: string | null
+          reviewer_action?: string | null
+          reviewer_notes?: string | null
+          severity?: string
           updated_at?: string
-          user_id: string
         }
         Update: {
-          action_taken?: Database["public"]["Enums"]["moderation_action"] | null
-          ai_analysis?: Json | null
-          auto_actioned?: boolean | null
-          categories?:
-            | Database["public"]["Enums"]["moderation_category"][]
-            | null
-          confidence?: number
-          content_hash?: string | null
+          ai_moderation_flags?: Json | null
+          ai_moderation_score?: number | null
           content_id?: string
-          content_type?: Database["public"]["Enums"]["content_type"]
+          content_owner_id?: string
+          content_type?: string
           created_at?: string
-          detected_language?: string | null
-          flags?: string[] | null
           id?: string
-          is_appropriate?: boolean
-          media_urls?: string[] | null
-          original_content?: string | null
+          moderation_status?: string
+          report_description?: string | null
+          report_reason?: string
+          reported_by_user_id?: string | null
           reviewed_at?: string | null
-          reviewed_by?: string | null
-          severity?: Database["public"]["Enums"]["moderation_severity"] | null
+          reviewed_by_user_id?: string | null
+          reviewer_action?: string | null
+          reviewer_notes?: string | null
+          severity?: string
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -1954,14 +1939,14 @@ export type Database = {
       creator_payouts: {
         Row: {
           bank_account_last4: string | null
-          conversion_rate: number
           created_at: string
           creator_id: string
+          failed_reason: string | null
           fee_amount_cents: number
           fiat_amount_cents: number
           id: string
-          metadata: Json | null
           net_amount_cents: number
+          payout_method: string
           processed_at: string | null
           requested_at: string
           status: string
@@ -1971,14 +1956,14 @@ export type Database = {
         }
         Insert: {
           bank_account_last4?: string | null
-          conversion_rate: number
           created_at?: string
           creator_id: string
-          fee_amount_cents: number
+          failed_reason?: string | null
+          fee_amount_cents?: number
           fiat_amount_cents: number
           id?: string
-          metadata?: Json | null
           net_amount_cents: number
+          payout_method: string
           processed_at?: string | null
           requested_at?: string
           status?: string
@@ -1988,20 +1973,68 @@ export type Database = {
         }
         Update: {
           bank_account_last4?: string | null
-          conversion_rate?: number
           created_at?: string
           creator_id?: string
+          failed_reason?: string | null
           fee_amount_cents?: number
           fiat_amount_cents?: number
           id?: string
-          metadata?: Json | null
           net_amount_cents?: number
+          payout_method?: string
           processed_at?: string | null
           requested_at?: string
           status?: string
           stripe_payout_id?: string | null
           updated_at?: string
           xp_amount?: number
+        }
+        Relationships: []
+      }
+      creator_verifications: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          rejection_reason: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          status: string
+          submitted_documents: Json | null
+          updated_at: string
+          user_id: string
+          verification_type: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          rejection_reason?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_documents?: Json | null
+          updated_at?: string
+          user_id: string
+          verification_type: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          rejection_reason?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_documents?: Json | null
+          updated_at?: string
+          user_id?: string
+          verification_type?: string
         }
         Relationships: []
       }
@@ -3601,15 +3634,7 @@ export type Database = {
           user_id?: string
           user_statement?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "moderation_appeals_moderation_id_fkey"
-            columns: ["moderation_id"]
-            isOneToOne: false
-            referencedRelation: "content_moderation"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       moderation_queue: {
         Row: {
@@ -3651,15 +3676,7 @@ export type Database = {
           status?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "moderation_queue_moderation_id_fkey"
-            columns: ["moderation_id"]
-            isOneToOne: false
-            referencedRelation: "content_moderation"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       moderation_settings: {
         Row: {
@@ -3738,84 +3755,69 @@ export type Database = {
       notification_preferences: {
         Row: {
           campaign_join_notifications: boolean | null
-          campaign_notifications: boolean | null
           comment_notifications: boolean | null
           created_at: string
-          discord_webhook_url: string | null
-          email_enabled: boolean
-          engagement_milestone_notifications: boolean | null
+          daily_digest: boolean | null
+          email_notifications: boolean | null
           follow_notifications: boolean | null
-          id: string
           like_notifications: boolean | null
           message_notifications: boolean | null
           milestone_notifications: boolean | null
           offer_notifications: boolean | null
-          phone_number: string | null
-          profile_view_notifications: boolean | null
-          push_enabled: boolean
+          push_notifications: boolean | null
           repost_notifications: boolean | null
           reward_notifications: boolean | null
           reward_purchase_notifications: boolean | null
           share_notifications: boolean | null
-          slack_webhook_url: string | null
-          sms_enabled: boolean
+          sms_notifications: boolean | null
           tag_notifications: boolean | null
           updated_at: string
           user_id: string
+          weekly_digest: boolean | null
         }
         Insert: {
           campaign_join_notifications?: boolean | null
-          campaign_notifications?: boolean | null
           comment_notifications?: boolean | null
           created_at?: string
-          discord_webhook_url?: string | null
-          email_enabled?: boolean
-          engagement_milestone_notifications?: boolean | null
+          daily_digest?: boolean | null
+          email_notifications?: boolean | null
           follow_notifications?: boolean | null
-          id?: string
           like_notifications?: boolean | null
           message_notifications?: boolean | null
           milestone_notifications?: boolean | null
           offer_notifications?: boolean | null
-          phone_number?: string | null
-          profile_view_notifications?: boolean | null
-          push_enabled?: boolean
+          push_notifications?: boolean | null
           repost_notifications?: boolean | null
           reward_notifications?: boolean | null
           reward_purchase_notifications?: boolean | null
           share_notifications?: boolean | null
-          slack_webhook_url?: string | null
-          sms_enabled?: boolean
+          sms_notifications?: boolean | null
           tag_notifications?: boolean | null
           updated_at?: string
           user_id: string
+          weekly_digest?: boolean | null
         }
         Update: {
           campaign_join_notifications?: boolean | null
-          campaign_notifications?: boolean | null
           comment_notifications?: boolean | null
           created_at?: string
-          discord_webhook_url?: string | null
-          email_enabled?: boolean
-          engagement_milestone_notifications?: boolean | null
+          daily_digest?: boolean | null
+          email_notifications?: boolean | null
           follow_notifications?: boolean | null
-          id?: string
           like_notifications?: boolean | null
           message_notifications?: boolean | null
           milestone_notifications?: boolean | null
           offer_notifications?: boolean | null
-          phone_number?: string | null
-          profile_view_notifications?: boolean | null
-          push_enabled?: boolean
+          push_notifications?: boolean | null
           repost_notifications?: boolean | null
           reward_notifications?: boolean | null
           reward_purchase_notifications?: boolean | null
           share_notifications?: boolean | null
-          slack_webhook_url?: string | null
-          sms_enabled?: boolean
+          sms_notifications?: boolean | null
           tag_notifications?: boolean | null
           updated_at?: string
           user_id?: string
+          weekly_digest?: boolean | null
         }
         Relationships: []
       }
@@ -4030,6 +4032,57 @@ export type Database = {
           slug?: string
           updated_at?: string | null
           website_url?: string | null
+        }
+        Relationships: []
+      }
+      platform_revenue: {
+        Row: {
+          brand_deal_fees_cents: number
+          created_at: string
+          creator_cashout_fees_cents: number
+          date: string
+          id: string
+          marketplace_fees_cents: number
+          subscription_revenue_cents: number
+          total_active_users: number
+          total_marketplace_transactions: number
+          total_new_users: number
+          total_xp_purchased: number
+          total_xp_spent: number
+          updated_at: string
+          xp_sales_cents: number
+        }
+        Insert: {
+          brand_deal_fees_cents?: number
+          created_at?: string
+          creator_cashout_fees_cents?: number
+          date?: string
+          id?: string
+          marketplace_fees_cents?: number
+          subscription_revenue_cents?: number
+          total_active_users?: number
+          total_marketplace_transactions?: number
+          total_new_users?: number
+          total_xp_purchased?: number
+          total_xp_spent?: number
+          updated_at?: string
+          xp_sales_cents?: number
+        }
+        Update: {
+          brand_deal_fees_cents?: number
+          created_at?: string
+          creator_cashout_fees_cents?: number
+          date?: string
+          id?: string
+          marketplace_fees_cents?: number
+          subscription_revenue_cents?: number
+          total_active_users?: number
+          total_marketplace_transactions?: number
+          total_new_users?: number
+          total_xp_purchased?: number
+          total_xp_spent?: number
+          updated_at?: string
+          xp_sales_cents?: number
         }
         Relationships: []
       }
@@ -6563,15 +6616,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_moderation_history_moderation_id_fkey"
-            columns: ["moderation_id"]
-            isOneToOne: false
-            referencedRelation: "content_moderation"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_quest_progress: {
         Row: {
