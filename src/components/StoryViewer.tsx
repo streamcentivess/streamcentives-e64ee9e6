@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, Pause, Play, Trash2 } from 'lucide-react';
+import { X, Trash2, Heart, Share2, Send, Volume2, VolumeX } from 'lucide-react';
 import { Story } from '@/hooks/useStories';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -16,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useCreateStory } from '@/hooks/useCreateStory';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface StoryViewerProps {
@@ -31,19 +34,63 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [showSoundPrompt, setShowSoundPrompt] = useState(false);
+  const [replyMessage, setReplyMessage] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { deleteStory } = useCreateStory();
   const { user } = useAuth();
   const currentStory = stories[currentStoryIndex];
+
+  // Lock body scroll and pause background media
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    // Pause all background videos and audio
+    const videos = document.querySelectorAll('video');
+    const audios = document.querySelectorAll('audio');
+    
+    videos.forEach(v => {
+      if (v !== videoRef.current) v.pause();
+    });
+    audios.forEach(a => a.pause());
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentStory) return;
 
     onView(currentStory.id);
     setProgress(0);
+    setReplyMessage('');
+    setIsLiked(false);
+    setShowSoundPrompt(false);
 
     if (currentStory.media_type === 'video' && videoRef.current) {
-      videoRef.current.play();
+      const video = videoRef.current;
+      video.muted = false;
+      video.volume = 1;
+      
+      const playPromise = video.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay with sound blocked, fallback to muted
+          video.muted = true;
+          setIsMuted(true);
+          setShowSoundPrompt(true);
+          video.play().catch(() => {});
+        });
+      }
     }
   }, [currentStoryIndex]);
 
@@ -91,13 +138,100 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   const handleDelete = async () => {
     const success = await deleteStory(currentStory.id);
     if (success) {
-      toast.success('Story deleted successfully');
       setShowDeleteDialog(false);
       onClose();
       onDelete?.();
-    } else {
-      toast.error('Failed to delete story');
     }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+      setShowSoundPrompt(false);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!user?.id || !currentStory) return;
+    
+    try {
+      await supabase.from('social_interactions').insert({
+        user_id: user.id,
+        target_user_id: currentStory.creator_id,
+        target_content_id: currentStory.id,
+        content_type: 'story',
+        interaction_type: 'like'
+      });
+      setIsLiked(true);
+      toast.success('Liked!');
+    } catch (error) {
+      console.error('Like error:', error);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!currentStory) return;
+    
+    const shareData = {
+      title: `Story by ${currentStory.profile?.display_name}`,
+      text: currentStory.caption || 'Check out this story!',
+      url: window.location.origin + `/stories/${currentStory.id}`
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        
+        if (user?.id) {
+          await supabase.from('social_interactions').insert({
+            user_id: user.id,
+            target_user_id: currentStory.creator_id,
+            target_content_id: currentStory.id,
+            content_type: 'story',
+            interaction_type: 'share'
+          });
+        }
+        toast.success('Shared!');
+      } else {
+        await navigator.clipboard.writeText(shareData.url);
+        toast.success('Link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+    }
+  };
+
+  const handleSendReply = async () => {
+    if (!user?.id || !replyMessage.trim() || !currentStory) return;
+
+    try {
+      await supabase.from('story_replies').insert({
+        story_id: currentStory.id,
+        sender_id: user.id,
+        recipient_id: currentStory.creator_id,
+        message: replyMessage.trim()
+      });
+      
+      toast.success('Message sent!');
+      setReplyMessage('');
+    } catch (error) {
+      console.error('Reply error:', error);
+      toast.error('Failed to send message');
+    }
+  };
+
+  const getRelativeTime = (dateString: string) => {
+    const now = new Date();
+    const then = new Date(dateString);
+    const diffMs = now.getTime() - then.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    return `${diffDays}d`;
   };
 
   const isOwnStory = user?.id === currentStory?.creator_id;
@@ -105,9 +239,9 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   if (!currentStory) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] bg-black">
       {/* Story Progress Bars */}
-      <div className="absolute top-0 left-0 right-0 flex gap-1 z-10 p-2" style={{ paddingTop: 'env(safe-area-inset-top, 1rem)' }}>
+      <div className="absolute top-0 left-0 right-0 flex gap-1 z-20 p-2" style={{ paddingTop: 'env(safe-area-inset-top, 0.5rem)' }}>
         {stories.map((_, index) => (
           <Progress
             key={index}
@@ -119,86 +253,147 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         ))}
       </div>
 
-      {/* Header */}
-      <div className="absolute left-4 right-4 flex items-center justify-between z-10" style={{ top: 'calc(env(safe-area-inset-top, 1rem) + 3rem)' }}>
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 border-2 border-white">
-            <AvatarImage src={currentStory.profile?.avatar_url} />
-            <AvatarFallback>{currentStory.profile?.display_name?.[0]}</AvatarFallback>
-          </Avatar>
-          <div className="text-white">
-            <p className="font-semibold">{currentStory.profile?.display_name}</p>
-            <p className="text-xs opacity-75">
-              {new Date(currentStory.created_at).toLocaleTimeString()}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {isOwnStory && (
-            <button
-              onClick={() => setShowDeleteDialog(true)}
-              className="text-white p-2 hover:bg-white/10 rounded-full"
-            >
-              <Trash2 className="h-5 w-5" />
-            </button>
-          )}
-          <button onClick={onClose} className="text-white p-2 hover:bg-white/10 rounded-full">
-            <X className="h-6 w-6" />
+      {/* Header - Top Left */}
+      <div className="absolute left-4 z-20 flex items-center gap-2" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}>
+        <button onClick={onClose} className="text-white p-2 hover:bg-white/10 rounded-full">
+          <X className="h-6 w-6" />
+        </button>
+        {isOwnStory && (
+          <button
+            onClick={() => setShowDeleteDialog(true)}
+            className="text-white p-2 hover:bg-white/10 rounded-full"
+          >
+            <Trash2 className="h-5 w-5" />
           </button>
+        )}
+      </div>
+
+      {/* Header - Top Right (Profile) */}
+      <div className="absolute right-4 z-20 flex items-center gap-3" style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}>
+        <div className="text-white text-right">
+          <p className="font-semibold text-sm">{currentStory.profile?.display_name}</p>
+          <p className="text-xs opacity-75">{getRelativeTime(currentStory.created_at)}</p>
         </div>
+        <Avatar className="h-10 w-10 border-2 border-white">
+          <AvatarImage src={currentStory.profile?.avatar_url} />
+          <AvatarFallback>{currentStory.profile?.display_name?.[0]}</AvatarFallback>
+        </Avatar>
       </div>
 
       {/* Story Content */}
-      <div className="relative w-screen h-screen">
+      <div className="absolute inset-0">
         {currentStory.media_type === 'image' ? (
           <img
             src={currentStory.media_url}
             alt="Story"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="w-full h-full object-cover"
           />
         ) : (
           <video
             ref={videoRef}
             src={currentStory.media_url}
-            className="absolute inset-0 w-full h-full object-cover"
-            muted
+            className="w-full h-full object-cover"
             playsInline
             onEnded={nextStory}
           />
         )}
 
-        {/* Navigation Areas */}
+        {/* Tap Navigation Areas */}
         <button
           onClick={previousStory}
-          className="absolute left-0 top-0 bottom-0 w-1/3 flex items-center justify-start pl-4 opacity-0 hover:opacity-100"
+          className="absolute left-0 top-0 bottom-0 w-1/3 z-10"
           disabled={currentStoryIndex === 0}
-        >
-          <ChevronLeft className="h-8 w-8 text-white" />
-        </button>
+        />
 
         <button
           onClick={togglePause}
-          className="absolute left-1/3 right-1/3 top-0 bottom-0 flex items-center justify-center"
-        >
-          {isPaused && (
-            <div className="bg-black/50 p-4 rounded-full">
-              <Play className="h-8 w-8 text-white" />
-            </div>
-          )}
-        </button>
+          className="absolute left-1/3 right-1/3 top-0 bottom-0 z-10"
+        />
 
         <button
           onClick={nextStory}
-          className="absolute right-0 top-0 bottom-0 w-1/3 flex items-center justify-end pr-4 opacity-0 hover:opacity-100"
-        >
-          <ChevronRight className="h-8 w-8 text-white" />
-        </button>
+          className="absolute right-0 top-0 bottom-0 w-1/3 z-10"
+        />
       </div>
 
-      {/* Caption */}
-      {currentStory.caption && (
+      {/* Volume Control */}
+      {currentStory.media_type === 'video' && (
+        <button
+          onClick={toggleMute}
+          className="absolute right-4 bottom-32 z-20 text-white p-3 bg-black/50 hover:bg-black/70 rounded-full"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 1rem) + 8rem)' }}
+        >
+          {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+        </button>
+      )}
+
+      {/* Sound Prompt */}
+      {showSoundPrompt && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-black/75 text-white px-4 py-2 rounded-full text-sm">
+          Tap for sound 🔊
+        </div>
+      )}
+
+      {/* Bottom Interaction Bar */}
+      {!isOwnStory && (
         <div 
-          className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white"
+          className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 space-y-3"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 1rem)' }}
+        >
+          {/* Caption */}
+          {currentStory.caption && (
+            <p className="text-white text-sm mb-2">{currentStory.caption}</p>
+          )}
+
+          {/* Actions Row */}
+          <div className="flex items-center gap-3">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleLike}
+              className={cn(
+                "text-white hover:bg-white/10 rounded-full",
+                isLiked && "text-red-500"
+              )}
+            >
+              <Heart className={cn("h-6 w-6", isLiked && "fill-current")} />
+            </Button>
+
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleShare}
+              className="text-white hover:bg-white/10 rounded-full"
+            >
+              <Share2 className="h-6 w-6" />
+            </Button>
+
+            <div className="flex-1 flex items-center gap-2 bg-white/10 rounded-full px-4 py-2">
+              <Input
+                value={replyMessage}
+                onChange={(e) => setReplyMessage(e.target.value)}
+                placeholder="Send message..."
+                className="bg-transparent border-0 text-white placeholder:text-white/60 focus-visible:ring-0 focus-visible:ring-offset-0"
+                onKeyDown={(e) => e.key === 'Enter' && handleSendReply()}
+              />
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleSendReply}
+                disabled={!replyMessage.trim()}
+                className="text-white hover:bg-white/10 rounded-full h-8 w-8"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Caption for own stories */}
+      {isOwnStory && currentStory.caption && (
+        <div 
+          className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/60 to-transparent text-white"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 2rem)' }}
         >
           <p className="text-sm">{currentStory.caption}</p>

@@ -84,19 +84,13 @@ export const useCreateStory = () => {
         return false;
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('stories')
         .update({ is_active: false })
         .eq('id', storyId)
-        .eq('creator_id', user.id)
-        .select('id')
-        .single();
+        .eq('creator_id', user.id);
 
       if (error) throw error;
-
-      if (!data) {
-        throw new Error('Story not found or you do not have permission to delete it');
-      }
 
       toast({
         title: 'Story deleted',
