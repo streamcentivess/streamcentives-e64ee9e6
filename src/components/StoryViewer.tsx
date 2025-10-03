@@ -147,14 +147,10 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
     }
   };
 
-  const handleDelete = async (e?: any) => {
-    e?.preventDefault();
-    if ('stopPropagation' in (e || {})) {
-      // @ts-ignore - generic event guard for both MouseEvent and Radix SelectEvent
-      e.stopPropagation?.();
-    }
+  const handleDeleteConfirm = async () => {
     setIsDeleting(true);
-    console.log('[StoryViewer] Starting delete for story:', currentStory.id);
+    setShowDeleteDialog(false);
+    console.log('[StoryViewer] Starting delete for story:', currentStory.id, 'by creator:', currentStory.creator_id, 'current user:', user?.id);
 
     try {
       const success = await deleteStory(currentStory.id);
@@ -162,17 +158,13 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
 
       if (success) {
         console.log('[StoryViewer] Delete successful, closing viewer');
-        toast.success('Story deleted successfully');
-        setShowDeleteDialog(false);
-        onDelete?.(); // Notify parent to refresh
-        onClose(); // Close viewer
-      } else {
-        console.error('[StoryViewer] Delete failed');
-        toast.error('Failed to delete story');
+        if (onDelete) {
+          onDelete();
+        }
+        onClose();
       }
     } catch (error) {
       console.error('[StoryViewer] Delete error:', error);
-      toast.error('Failed to delete story');
     } finally {
       setIsDeleting(false);
     }
@@ -364,9 +356,10 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
               onCloseAutoFocus={(e) => e.preventDefault()}
             >
               <DropdownMenuItem
-                onSelect={() => {
+                onSelect={(e) => {
+                  e.preventDefault();
                   console.log('[StoryViewer] Delete selected from menu', currentStory.id);
-                  handleDelete();
+                  setShowDeleteDialog(true);
                 }}
                 disabled={isDeleting}
                 className="text-destructive focus:text-destructive cursor-pointer"
@@ -519,31 +512,24 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         </div>
       )}
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => { console.log('[StoryViewer] AlertDialog onOpenChange:', open); setShowDeleteDialog(open); }}>
-        <AlertDialogContent>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="z-[100000]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Story</AlertDialogTitle>
+            <AlertDialogTitle>Delete Story?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this story? This action cannot be undone.
+              This action cannot be undone. Your story will be permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              onClick={() => console.log('[StoryViewer] Delete cancelled')}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <button
-              onClick={(e) => {
-                console.log('[StoryViewer] Delete button clicked');
-                handleDelete(e);
-              }}
-              disabled={isDeleting}
-              className="inline-flex h-10 items-center justify-center rounded-md bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

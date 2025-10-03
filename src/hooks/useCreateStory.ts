@@ -84,70 +84,58 @@ export const useCreateStory = () => {
         return false;
       }
 
-      console.log('[deleteStory] Invoking edge function for story:', storyId);
-      const { data, error } = await supabase.functions.invoke('delete-story', {
-        body: { storyId }
-      });
+      console.log('[deleteStory] Attempting direct delete for story:', storyId, 'by user:', user.id);
 
-      if (error) {
-        console.error('[deleteStory] Edge function invoke error:', {
-          name: error.name,
-          message: error.message,
-          error
+      // First try direct delete via RLS
+      const { error: deleteError } = await supabase
+        .from('stories')
+        .delete()
+        .eq('id', storyId)
+        .eq('creator_id', user.id);
+
+      if (!deleteError) {
+        console.log('[deleteStory] Successfully deleted via direct RLS delete');
+        toast({
+          title: 'Story deleted',
+          description: 'Your story has been removed'
         });
-        throw error;
+        return true;
       }
 
-      if (data?.error) {
-        console.error('[deleteStory] Edge function returned error:', data.error);
-        const errorMsg = data.error === 'Forbidden'
-          ? 'You can only delete your own stories'
-          : data.error === 'Story not found'
-          ? 'Story not found'
-          : data.error;
-        throw new Error(errorMsg);
-      }
-
-      if (!data?.success) {
-        throw new Error('Failed to delete story');
-      }
-
-      console.log('[deleteStory] Successfully deleted via edge function');
-      toast({
-        title: 'Story deleted',
-        description: 'Your story has been removed'
+      // If direct delete fails, log the error details
+      console.error('[deleteStory] Direct delete failed:', {
+        code: deleteError.code,
+        message: deleteError.message,
+        details: deleteError.details,
+        hint: deleteError.hint
       });
 
-      return true;
+      // Try soft delete as fallback
+      console.log('[deleteStory] Attempting soft delete fallback');
+      const { error: updateError } = await supabase
+        .from('stories')
+        .update({ is_active: false })
+        .eq('id', storyId)
+        .eq('creator_id', user.id);
+
+      if (!updateError) {
+        console.log('[deleteStory] Successfully soft-deleted via RLS update');
+        toast({
+          title: 'Story deleted',
+          description: 'Your story has been removed'
+        });
+        return true;
+      }
+
+      // If both fail, surface the exact error
+      console.error('[deleteStory] Soft delete also failed:', {
+        code: updateError.code,
+        message: updateError.message,
+        details: updateError.details
+      });
+
+      throw new Error(`Delete failed: ${updateError.message || 'Unknown error'}`);
     } catch (err) {
-      const message = err instanceof Error ? err.message.toLowerCase() : '';
-      
-      // Skip fallback for explicit auth/ownership errors
-      const isForbiddenOrMissing = message.includes('forbidden') || message.includes('story not found');
-
-      // Try client-side fallback for any other error (including edge function unavailable)
-      if (user?.id && !isForbiddenOrMissing) {
-        console.warn('[deleteStory] Attempting client-side fallback for', storyId, 'Error was:', err);
-        
-        const { error: updateError } = await supabase
-          .from('stories')
-          .update({ is_active: false })
-          .eq('id', storyId)
-          .eq('creator_id', user.id);
-
-        if (!updateError) {
-          console.log('[deleteStory] Successfully deleted via client-side fallback');
-          toast({ title: 'Story deleted', description: 'Your story has been removed' });
-          return true;
-        }
-
-        console.error('[deleteStory] Client-side fallback failed:', {
-          code: updateError.code,
-          message: updateError.message,
-          details: updateError.details
-        });
-      }
-
       console.error('[deleteStory] Final error:', err);
       toast({
         title: 'Failed to delete story',
