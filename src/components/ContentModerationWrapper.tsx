@@ -60,13 +60,16 @@ export const ContentModerationWrapper: React.FC<ContentModerationWrapperProps> =
       const { data: restrictionData } = await supabase
         .rpc('is_user_restricted', { target_user_id: userId || user.id });
 
+      const isAppropriate = moderationData?.moderation_status === 'approved';
+      const actionTaken = moderationData?.moderation_status || 'approved';
+      
       setModerationStatus({
         is_moderated: !!moderationData,
-        is_appropriate: moderationData?.is_appropriate ?? true,
-        action_taken: moderationData?.action_taken || 'approved',
-        severity: moderationData?.severity,
-        can_appeal: moderationData && !moderationData.is_appropriate && 
-                   !restrictionData && (moderationData.action_taken !== 'approved'),
+        is_appropriate: isAppropriate,
+        action_taken: actionTaken,
+        severity: undefined,
+        can_appeal: moderationData && !isAppropriate && 
+                   !restrictionData && (actionTaken !== 'approved'),
         user_strike_count: strikeData || 0
       });
 

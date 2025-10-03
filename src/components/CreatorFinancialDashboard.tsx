@@ -33,7 +33,7 @@ interface PayoutRequest {
   fiat_amount_cents: number;
   fee_amount_cents: number;
   net_amount_cents: number;
-  conversion_rate: number;
+  conversion_rate?: number;
   status: string;
   requested_at: string;
   processed_at: string | null;
@@ -373,9 +373,11 @@ const CreatorFinancialDashboard = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">{formatCurrency(payout.net_amount_cents)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Rate: {payout.conversion_rate} XP/$1
-                        </p>
+                        {payout.conversion_rate && (
+                          <p className="text-xs text-muted-foreground">
+                            Rate: {payout.conversion_rate} XP/$1
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}

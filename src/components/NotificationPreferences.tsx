@@ -17,10 +17,7 @@ interface NotificationPrefs {
   repost_notifications: boolean;
   tag_notifications: boolean;
   milestone_notifications: boolean;
-  engagement_milestone_notifications: boolean;
-  campaign_notifications: boolean;
   reward_notifications: boolean;
-  profile_view_notifications: boolean;
   offer_notifications: boolean;
   reward_purchase_notifications: boolean;
   campaign_join_notifications: boolean;
@@ -35,10 +32,7 @@ const defaultPrefs: NotificationPrefs = {
   repost_notifications: true,
   tag_notifications: true,
   milestone_notifications: true,
-  engagement_milestone_notifications: true,
-  campaign_notifications: true,
   reward_notifications: true,
-  profile_view_notifications: false,
   offer_notifications: true,
   reward_purchase_notifications: true,
   campaign_join_notifications: true,
@@ -81,10 +75,7 @@ export const NotificationPreferences = () => {
           repost_notifications: data.repost_notifications ?? true,
           tag_notifications: data.tag_notifications ?? true,
           milestone_notifications: data.milestone_notifications ?? true,
-          engagement_milestone_notifications: data.engagement_milestone_notifications ?? true,
-          campaign_notifications: data.campaign_notifications ?? true,
           reward_notifications: data.reward_notifications ?? true,
-          profile_view_notifications: data.profile_view_notifications ?? false,
           offer_notifications: data.offer_notifications ?? true,
           reward_purchase_notifications: data.reward_purchase_notifications ?? true,
           campaign_join_notifications: data.campaign_join_notifications ?? true,
@@ -313,23 +304,6 @@ export const NotificationPreferences = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="engagement">
-                <TrendingUp className="h-3 w-3 inline mr-1" />
-                Content Engagement
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                When your posts reach like/share milestones
-              </p>
-            </div>
-            <Switch
-              id="engagement"
-              checked={preferences.engagement_milestone_notifications}
-              onCheckedChange={(checked) => updatePreference('engagement_milestone_notifications', checked)}
-              disabled={saving}
-            />
-          </div>
         </div>
 
         <Separator />
@@ -341,21 +315,6 @@ export const NotificationPreferences = () => {
             Campaigns & Rewards
           </h3>
           
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="campaigns">Campaign Invitations</Label>
-              <p className="text-sm text-muted-foreground">
-                When you're invited to join a campaign
-              </p>
-            </div>
-            <Switch
-              id="campaigns"
-              checked={preferences.campaign_notifications}
-              onCheckedChange={(checked) => updatePreference('campaign_notifications', checked)}
-              disabled={saving}
-            />
-          </div>
-
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="campaign-joins">Campaign Joins</Label>
@@ -412,28 +371,6 @@ export const NotificationPreferences = () => {
               id="offers"
               checked={preferences.offer_notifications}
               onCheckedChange={(checked) => updatePreference('offer_notifications', checked)}
-              disabled={saving}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Other */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold">Other</h3>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="profile-views">Profile Views</Label>
-              <p className="text-sm text-muted-foreground">
-                When someone views your profile (off by default)
-              </p>
-            </div>
-            <Switch
-              id="profile-views"
-              checked={preferences.profile_view_notifications}
-              onCheckedChange={(checked) => updatePreference('profile_view_notifications', checked)}
               disabled={saving}
             />
           </div>
