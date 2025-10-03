@@ -76,6 +76,9 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   }, []);
 
   useEffect(() => {
+    console.log('[StoryViewer] showDeleteDialog state:', showDeleteDialog);
+  }, [showDeleteDialog]);
+  useEffect(() => {
     if (!currentStory) return;
 
     onView(currentStory.id);
@@ -361,7 +364,8 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
                 onClick={(e) => {
                   e.stopPropagation();
                   console.log('[StoryViewer] Delete clicked from menu', currentStory.id);
-                  setShowDeleteDialog(true);
+                  // Defer opening until after menu closes to avoid focus/z-index race
+                  setTimeout(() => setShowDeleteDialog(true), 0);
                 }}
                 disabled={isDeleting}
                 className="text-destructive focus:text-destructive cursor-pointer"
