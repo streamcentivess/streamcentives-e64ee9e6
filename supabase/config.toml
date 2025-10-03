@@ -8,3 +8,15 @@ verify_jwt = false
 
 [functions.process-live-gift]
 verify_jwt = true
+
+[functions.upload-story-media]
+verify_jwt = true
+
+[functions.create-story]
+verify_jwt = true
+
+[functions.track-story-view]
+verify_jwt = true
+
+[functions.upload-live-thumbnail]
+verify_jwt = true
