@@ -357,8 +357,16 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
             >
               <DropdownMenuItem
                 onSelect={() => {
-                  console.log('[StoryViewer] Delete selected from menu', currentStory.id);
-                  setShowDeleteDialog(true);
+                  console.log('[StoryViewer] Delete selected (onSelect)', currentStory.id);
+                  // Delay opening until after menu closes to avoid Radix preventing focus
+                  setTimeout(() => setShowDeleteDialog(true), 0);
+                }}
+                onClick={(e) => {
+                  // Extra safety: make sure click also opens dialog
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('[StoryViewer] Delete selected (onClick)', currentStory.id);
+                  setTimeout(() => setShowDeleteDialog(true), 0);
                 }}
                 disabled={isDeleting}
                 className="text-destructive focus:text-destructive cursor-pointer"
@@ -512,7 +520,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => { console.log('[StoryViewer] AlertDialog open change:', open); setShowDeleteDialog(open); }}>
         <AlertDialogContent className="z-[100000]">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Story?</AlertDialogTitle>
