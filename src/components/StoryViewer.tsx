@@ -138,17 +138,19 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
     setIsDeleting(true);
+    console.log('Deleting story:', currentStory.id);
+    
     try {
       const success = await deleteStory(currentStory.id);
+      console.log('Delete result:', success);
+      
       if (success) {
-        toast.success('Story deleted');
         setShowDeleteDialog(false);
         onClose();
         onDelete?.();
-      } else {
-        toast.error('Failed to delete story');
       }
     } finally {
       setIsDeleting(false);
@@ -459,13 +461,13 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete} 
+            <button
+              onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
+            </button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
