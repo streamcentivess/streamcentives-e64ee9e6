@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Trash2, Heart, Share2, Send, Volume2, VolumeX } from 'lucide-react';
+import { X, Heart, Share2, Send, Volume2, VolumeX, MoreVertical, Trash2 } from 'lucide-react';
 import { Story } from '@/hooks/useStories';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -302,7 +308,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         ))}
       </div>
 
-      {/* Header - Top Left (Rebuilt) */}
+      {/* Header - Top Left */}
       <div
         className="absolute left-4 z-50 pointer-events-auto flex items-center gap-2"
         style={{ top: 'calc(env(safe-area-inset-top, 0.5rem) + 2.5rem)' }}
@@ -322,20 +328,38 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
           <X className="h-6 w-6" />
         </button>
         {isOwnStory && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('[StoryViewer] Delete icon clicked', currentStory.id);
-              setShowDeleteDialog(true);
-            }}
-            disabled={isDeleting}
-            aria-label="Delete story"
-            title="Delete story"
-            className="text-white p-2 hover:bg-white/10 rounded-full disabled:opacity-50"
-          >
-            <Trash2 className="h-5 w-5" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                disabled={isDeleting}
+                aria-label="Story options"
+                title="Options"
+                className="text-white p-2 hover:bg-white/10 rounded-full disabled:opacity-50"
+              >
+                <MoreVertical className="h-5 w-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="start" 
+              className="bg-background border-border"
+              onCloseAutoFocus={(e) => e.preventDefault()}
+            >
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('[StoryViewer] Delete clicked from menu', currentStory.id);
+                  setShowDeleteDialog(true);
+                }}
+                disabled={isDeleting}
+                className="text-destructive focus:text-destructive cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Story
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
