@@ -124,6 +124,7 @@ const Stories = () => {
           stories={creatorGroups[selectedStoryIndex]?.stories || []}
           onClose={handleCloseViewer}
           onView={trackView}
+          onDelete={refetch}
         />
       )}
 

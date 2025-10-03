@@ -1,22 +1,39 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Pause, Play, Trash2 } from 'lucide-react';
 import { Story } from '@/hooks/useStories';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useCreateStory } from '@/hooks/useCreateStory';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface StoryViewerProps {
   stories: Story[];
   initialIndex?: number;
   onClose: () => void;
   onView: (storyId: string) => void;
+  onDelete?: () => void;
 }
 
-export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView }: StoryViewerProps) => {
+export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDelete }: StoryViewerProps) => {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(initialIndex);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { deleteStory } = useCreateStory();
+  const { user } = useAuth();
   const currentStory = stories[currentStoryIndex];
 
   useEffect(() => {
@@ -71,6 +88,20 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView }: Stor
     }
   };
 
+  const handleDelete = async () => {
+    const success = await deleteStory(currentStory.id);
+    if (success) {
+      toast.success('Story deleted successfully');
+      setShowDeleteDialog(false);
+      onClose();
+      onDelete?.();
+    } else {
+      toast.error('Failed to delete story');
+    }
+  };
+
+  const isOwnStory = user?.id === currentStory?.creator_id;
+
   if (!currentStory) return null;
 
   return (
@@ -102,9 +133,19 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView }: Stor
             </p>
           </div>
         </div>
-        <button onClick={onClose} className="text-white p-2 hover:bg-white/10 rounded-full">
-          <X className="h-6 w-6" />
-        </button>
+        <div className="flex items-center gap-2">
+          {isOwnStory && (
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="text-white p-2 hover:bg-white/10 rounded-full"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          )}
+          <button onClick={onClose} className="text-white p-2 hover:bg-white/10 rounded-full">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
       </div>
 
       {/* Story Content */}
@@ -160,6 +201,23 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView }: Stor
           <p className="text-sm bg-black/50 px-4 py-2 rounded-lg">{currentStory.caption}</p>
         </div>
       )}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Story</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this story? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
