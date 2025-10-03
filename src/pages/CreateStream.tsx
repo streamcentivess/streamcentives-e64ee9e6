@@ -38,14 +38,14 @@ export default function CreateStream() {
     try {
       const { data, error } = await supabase
         .from('live_streams')
-        .insert({
+        .insert([{
           creator_id: user.id,
           title: formData.title,
           description: formData.description || null,
           platform: formData.platform,
           status: 'live',
           started_at: new Date().toISOString()
-        })
+        } as any])
         .select()
         .single();
 

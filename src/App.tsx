@@ -71,6 +71,7 @@ const SponsorOnboarding = lazy(() => import("./components/SponsorOnboarding"));
 const FinancialOnboardingPage = lazy(() => import("./pages/FinancialOnboardingPage"));
 const Stories = lazy(() => import("./pages/Stories"));
 const LiveStreams = lazy(() => import("./pages/LiveStreams"));
+const CreateStream = lazy(() => import("./pages/CreateStream"));
 import { NavigationIntegration } from "./components/NavigationIntegration";
 import { MobileNotificationProvider } from "./components/MobileNotificationProvider";
 
@@ -320,6 +321,11 @@ const App = () => {
           <Route path="/live-streams" element={
             <ProtectedRoute>
               <LiveStreams />
+            </ProtectedRoute>
+          } />
+          <Route path="/create-stream" element={
+            <ProtectedRoute>
+              <CreateStream />
             </ProtectedRoute>
           } />
           
