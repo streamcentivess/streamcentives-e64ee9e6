@@ -5684,6 +5684,45 @@ export type Database = {
         }
         Relationships: []
       }
+      story_highlight_items: {
+        Row: {
+          added_at: string | null
+          highlight_id: string
+          id: string
+          sort_order: number | null
+          story_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          highlight_id: string
+          id?: string
+          sort_order?: number | null
+          story_id: string
+        }
+        Update: {
+          added_at?: string | null
+          highlight_id?: string
+          id?: string
+          sort_order?: number | null
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_highlight_items_highlight_id_fkey"
+            columns: ["highlight_id"]
+            isOneToOne: false
+            referencedRelation: "story_highlights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_highlight_items_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       story_highlights: {
         Row: {
           cover_image_url: string | null
@@ -5714,6 +5753,47 @@ export type Database = {
         }
         Relationships: []
       }
+      story_replies: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+          story_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+          story_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_replies_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       story_views: {
         Row: {
           id: string
@@ -5739,6 +5819,115 @@ export type Database = {
             columns: ["story_id"]
             isOneToOne: false
             referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stream_analytics: {
+        Row: {
+          average_watch_time_seconds: number | null
+          created_at: string | null
+          creator_id: string
+          date: string
+          id: string
+          new_followers: number | null
+          peak_viewers: number | null
+          stream_id: string
+          total_chat_messages: number | null
+          total_gifts_received: number | null
+          total_views: number | null
+          total_xp_earned: number | null
+          unique_viewers: number | null
+        }
+        Insert: {
+          average_watch_time_seconds?: number | null
+          created_at?: string | null
+          creator_id: string
+          date?: string
+          id?: string
+          new_followers?: number | null
+          peak_viewers?: number | null
+          stream_id: string
+          total_chat_messages?: number | null
+          total_gifts_received?: number | null
+          total_views?: number | null
+          total_xp_earned?: number | null
+          unique_viewers?: number | null
+        }
+        Update: {
+          average_watch_time_seconds?: number | null
+          created_at?: string | null
+          creator_id?: string
+          date?: string
+          id?: string
+          new_followers?: number | null
+          peak_viewers?: number | null
+          stream_id?: string
+          total_chat_messages?: number | null
+          total_gifts_received?: number | null
+          total_views?: number | null
+          total_xp_earned?: number | null
+          unique_viewers?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stream_analytics_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stream_recordings: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          is_public: boolean | null
+          published_at: string | null
+          recording_url: string
+          stream_id: string
+          thumbnail_url: string | null
+          title: string
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_public?: boolean | null
+          published_at?: string | null
+          recording_url: string
+          stream_id: string
+          thumbnail_url?: string | null
+          title: string
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_public?: boolean | null
+          published_at?: string | null
+          recording_url?: string
+          stream_id?: string
+          thumbnail_url?: string | null
+          title?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stream_recordings_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
             referencedColumns: ["id"]
           },
         ]
