@@ -938,6 +938,16 @@ const Feed = () => {
             user_id: user.id
           });
 
+        // Send notification to post owner
+        if (post.user_id !== user.id) {
+          await createSocialNotification(
+            post.user_id,
+            'repost',
+            'post',
+            postId
+          );
+        }
+
         toast({
           title: "Added to Fan Love! ✨",
           description: "Post saved to your Fan Love collection",
