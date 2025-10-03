@@ -904,7 +904,7 @@ const Feed = () => {
 
     try {
       if (reset) {
-        setLoadingMore(false);
+        setLoading(true);
         setReposts([]);
         setRepostPage(0);
       } else {
@@ -914,6 +914,7 @@ const Feed = () => {
       const { data: repostsData, error: repostsError } = await supabase
         .from('reposts')
         .select('id, user_id, post_id, created_at')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .range(pageNum * POSTS_PER_PAGE, (pageNum + 1) * POSTS_PER_PAGE - 1);
 
@@ -999,25 +1000,25 @@ const Feed = () => {
         variant: "destructive"
       });
     } finally {
+      setLoading(false);
       setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    if (user) {
-      if (activeTab === 'community') {
-        setPosts([]);
-        setPage(0);
-        setHasMorePosts(true);
-        fetchPosts(0, true);
-      } else {
-        setReposts([]);
-        setRepostPage(0);
-        setHasMoreReposts(true);
-        fetchReposts(0, true);
-      }
+    if (!user) return;
+    if (activeView === 'community') {
+      setPosts([]);
+      setPage(0);
+      setHasMorePosts(true);
+      fetchPosts(0, true);
+    } else if (activeView === 'fanlove') {
+      setReposts([]);
+      setRepostPage(0);
+      setHasMoreReposts(true);
+      fetchReposts(0, true);
     }
-  }, [user, activeTab]);
+  }, [user, activeView]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1028,9 +1029,9 @@ const Feed = () => {
       const clientHeight = document.documentElement.clientHeight;
 
       if (scrollTop + clientHeight >= scrollHeight - 300) {
-        if (activeTab === 'community' && hasMorePosts) {
+        if (activeView === 'community' && hasMorePosts) {
           fetchPosts(page + 1, false);
-        } else if (activeTab === 'reposts' && hasMoreReposts) {
+        } else if (activeView === 'fanlove' && hasMoreReposts) {
           fetchReposts(repostPage + 1, false);
         }
       }
