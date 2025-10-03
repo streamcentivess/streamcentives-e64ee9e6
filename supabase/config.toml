@@ -2,3 +2,6 @@ project_id = "fuoefkfekhzhlsblloal"
 
 [functions.google-oauth-handler]
 verify_jwt = false
+
+[functions.post-meta-tags]
+verify_jwt = false

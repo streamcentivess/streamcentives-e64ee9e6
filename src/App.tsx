@@ -61,6 +61,7 @@ const ShoutoutGenerator = lazy(() => import("./pages/ShoutoutGenerator"));
 const MessageTemplates = lazy(() => import("./pages/MessageTemplates"));
 const SentimentAnalysis = lazy(() => import("./pages/SentimentAnalysis"));
 const SmartLinkPage = lazy(() => import("./pages/SmartLinkPage"));
+const PostLanding = lazy(() => import("./pages/PostLanding"));
 const StreamseekerPage = lazy(() => import("./pages/StreamseekerPage"));
 const StreamseekerAdminPage = lazy(() => import("./pages/StreamseekerAdminPage"));
 const StreamseekerOnboardingPage = lazy(() => import("./pages/StreamseekerOnboardingPage"));
@@ -300,6 +301,9 @@ const App = () => {
                       
                       {/* Smart Link Public Landing */}
                       <Route path="/link/:slug" element={<SmartLinkPage />} />
+                      
+                      {/* Post Landing Page - Public */}
+                      <Route path="/post/:postId" element={<PostLanding />} />
                       
                       {/* Public Brand Profile Route - Must be BEFORE /:username */}
                       <Route path="/brand/:brandSlug" element={<BrandProfile />} />

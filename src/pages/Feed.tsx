@@ -731,6 +731,29 @@ const Feed = () => {
     if (choice === 'copy') {
       try {
         await navigator.clipboard.writeText(shareUrl);
+        
+        // Track share
+        if (user) {
+          await supabase
+            .from('social_interactions')
+            .insert({
+              user_id: user.id,
+              target_content_id: post.id,
+              target_user_id: post.user_id,
+              interaction_type: 'share',
+              content_type: 'post'
+            });
+
+          if (post.user_id !== user.id) {
+            await createSocialNotification(
+              post.user_id,
+              'share',
+              'post',
+              post.id
+            );
+          }
+        }
+        
         toast({
           title: "Link Copied!",
           description: "Share link copied to clipboard",
@@ -745,7 +768,34 @@ const Feed = () => {
     } else {
       const selectedOption = shareOptions.find(opt => opt.name === choice);
       if (selectedOption) {
+        // Track share
+        if (user) {
+          await supabase
+            .from('social_interactions')
+            .insert({
+              user_id: user.id,
+              target_content_id: post.id,
+              target_user_id: post.user_id,
+              interaction_type: 'share',
+              content_type: 'post'
+            });
+
+          if (post.user_id !== user.id) {
+            await createSocialNotification(
+              post.user_id,
+              'share',
+              'post',
+              post.id
+            );
+          }
+        }
+        
         window.open(selectedOption.url, '_blank', 'noopener,noreferrer');
+        
+        toast({
+          title: "Shared!",
+          description: `Post shared on ${choice}`,
+        });
       }
     }
   };

@@ -53,26 +53,38 @@ export function CommentsDialog({
   const fetchComments = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: commentsData, error } = await supabase
         .from('post_comments')
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles:user_id (
-            display_name,
-            username,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('post_id', postId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setComments(data || []);
-    } catch (error) {
-      console.error('Error fetching comments:', error);
+      if (error) {
+        console.error('Fetch comments error:', error);
+        throw error;
+      }
+
+      // Fetch profiles separately
+      if (commentsData && commentsData.length > 0) {
+        const userIds = [...new Set(commentsData.map(c => c.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, username, avatar_url')
+          .in('user_id', userIds);
+
+        const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
+
+        const enrichedComments = commentsData.map(comment => ({
+          ...comment,
+          profiles: profilesMap.get(comment.user_id) || null
+        }));
+
+        setComments(enrichedComments as Comment[]);
+      } else {
+        setComments([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching comments:', error, error.message, error.details);
       toast({
         title: "Error",
         description: "Failed to load comments",
@@ -88,15 +100,21 @@ export function CommentsDialog({
 
     setSubmitting(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('post_comments')
         .insert({
           post_id: postId,
           user_id: user.id,
           content: newComment.trim()
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Insert comment error:', error, error.message, error.details, error.hint);
+        throw error;
+      }
+
+      console.log('Comment inserted successfully:', data);
 
       // Create notification for post owner
       if (postOwnerId && postOwnerId !== user.id) {
