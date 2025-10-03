@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Users, Gift, Eye } from 'lucide-react';
 import { LiveStreamPlayer } from '@/components/LiveStreamPlayer';
 import { LiveGiftSystem } from '@/components/LiveGiftSystem';
+import { LiveChat } from '@/components/LiveChat';
 
 interface LiveStream {
   id: string;
@@ -192,8 +193,15 @@ export default function LiveStream() {
             </Card>
           </div>
 
-          {/* Gift System Sidebar */}
-          <div className="lg:col-span-1">
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* Live Chat */}
+            <LiveChat
+              streamId={stream.id}
+              creatorId={stream.creator_id}
+            />
+
+            {/* Gift System */}
             <LiveGiftSystem
               streamId={stream.id}
               creatorId={stream.creator_id}
