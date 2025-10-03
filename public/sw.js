@@ -1,8 +1,15 @@
-const CACHE_NAME = 'streamcentives-v3';
+const CACHE_NAME = 'streamcentives-v4';
 
 self.addEventListener('install', (event) => {
   // Activate new SW immediately
   self.skipWaiting();
+  
+  // Notify clients that a new version is available
+  event.waitUntil(
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
+    })
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -25,6 +32,19 @@ function isScriptRequest(request) {
   );
 }
 
+function isHTMLRequest(request) {
+  const url = new URL(request.url);
+  const sameOrigin = url.origin === self.location.origin;
+  return (
+    sameOrigin && (
+      request.mode === 'navigate' ||
+      request.destination === 'document' ||
+      url.pathname === '/' ||
+      request.headers.get('accept')?.includes('text/html')
+    )
+  );
+}
+
 function isStaticAsset(request) {
   const url = new URL(request.url);
   const sameOrigin = url.origin === self.location.origin;
@@ -39,7 +59,6 @@ function isStaticAsset(request) {
       url.pathname.endsWith('.ico') ||
       url.pathname.endsWith('.json') ||
       url.pathname.startsWith('/lovable-uploads/') ||
-      url.pathname === '/' ||
       url.pathname === '/manifest.json'
     )
   );
@@ -70,6 +89,12 @@ async function cacheFirst(event) {
 self.addEventListener('fetch', (event) => {
   // Only handle GET
   if (event.request.method !== 'GET') return;
+
+  // HTML requests - always network-first to get latest version
+  if (isHTMLRequest(event.request)) {
+    event.respondWith(networkFirst(event));
+    return;
+  }
 
   if (isScriptRequest(event.request)) {
     // Network-first for JS and module chunks to avoid stale React duplicates

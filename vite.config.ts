@@ -41,6 +41,12 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
+    assetsInlineLimit: 0,
+  },
+  preview: {
+    headers: {
+      'Cache-Control': 'public, max-age=0, must-revalidate',
+    }
   },
   optimizeDeps: {
     include: [

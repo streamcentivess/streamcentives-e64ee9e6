@@ -52,13 +52,36 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-              console.log('SW registered: ', registration);
-            })
-            .catch(function(registrationError) {
-              console.log('SW registration failed: ', registrationError);
+          navigator.serviceWorker.register('/sw.js', {
+            updateViaCache: 'none'
+          }).then(function(registration) {
+            console.log('SW registered: ', registration);
+            
+            // Check for updates immediately and every 60 seconds
+            setInterval(function() {
+              registration.update();
+            }, 60000);
+            
+            // Listen for updates
+            registration.addEventListener('updatefound', function() {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', function() {
+                if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+                  window.location.reload();
+                }
+              });
             });
+          }).catch(function(registrationError) {
+            console.log('SW registration failed: ', registrationError);
+          });
+          
+          // Listen for messages from service worker
+          navigator.serviceWorker.addEventListener('message', function(event) {
+            if (event.data.type === 'SW_UPDATED') {
+              console.log('New version available, reloading...');
+              window.location.reload();
+            }
+          });
         });
       }
     </script>
