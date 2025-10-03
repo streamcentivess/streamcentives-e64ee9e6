@@ -1251,14 +1251,20 @@ const Feed = () => {
               {/* Campaign Badge */}
               {post.campaign && (
                 <div className="flex items-center gap-2 mb-2">
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-0">
+                  <Badge 
+                    className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-0 cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => handleViewCampaign(post.campaign!.id)}
+                  >
                     <Trophy className="h-3 w-3 mr-1" />
                     {post.campaign.title}
                   </Badge>
                   {!post.campaign.is_joined && (
                     <Button
                       size="sm"
-                      onClick={() => handleJoinCampaign(post.campaign!.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJoinCampaign(post.campaign!.id);
+                      }}
                       className="h-6 text-xs bg-gradient-to-r from-green-500 to-emerald-600"
                     >
                       Join Campaign
@@ -1380,7 +1386,205 @@ const Feed = () => {
           </div>
         ))}
 
-        {/* Empty State */}
+        {/* Fan Love Posts */}
+        {activeView === 'fanlove' && reposts.map((repost) => (
+          <div key={repost.id} className="relative snap-start h-screen flex-shrink-0 bg-black">
+            {/* Video/Image Content */}
+            {repost.posts?.content_type === 'video' ? (
+              <video
+                ref={(video) => addVideoRef(repost.posts!.id, video)}
+                src={repost.posts.content_url}
+                className="absolute inset-0 w-full h-full object-cover"
+                loop
+                playsInline
+                muted
+                onClick={(e) => {
+                  const video = e.currentTarget;
+                  if (video.paused) {
+                    video.play();
+                  } else {
+                    video.pause();
+                  }
+                }}
+              />
+            ) : (
+              <img
+                src={repost.posts?.content_url}
+                alt={repost.posts?.caption || 'Reposted content'}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+
+            {/* Bottom Overlay - Creator Info & Caption */}
+            <div className="absolute bottom-0 left-0 right-16 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+              {/* Reposted By Indicator */}
+              <div className="flex items-center gap-2 mb-2 text-white/80 text-sm">
+                <Repeat2 className="h-4 w-4 text-green-500" />
+                <span>Reposted by you</span>
+              </div>
+
+              <div 
+                className="flex items-center gap-3 mb-3 cursor-pointer"
+                onClick={async () => {
+                  const { data } = await supabase.from('profiles').select('username').eq('user_id', repost.posts?.user_id).maybeSingle();
+                  if (data?.username) navigate(`/${data.username}`);
+                }}
+              >
+                <Avatar className="h-12 w-12 border-2 border-white/20">
+                  <AvatarImage src={repost.posts?.profiles?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white">
+                    {(repost.posts?.profiles?.display_name || repost.posts?.profiles?.username || 'U').slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-white text-lg">
+                      {repost.posts?.profiles?.display_name || repost.posts?.profiles?.username || 'Anonymous'}
+                    </p>
+                    <VerificationBadge 
+                      isVerified={true}
+                      followerCount={1000}
+                      size="sm"
+                    />
+                  </div>
+                  {repost.posts?.profiles?.creator_type && (
+                    <CreatorTypeBadge creatorType={repost.posts.profiles.creator_type} size="sm" />
+                  )}
+                </div>
+              </div>
+
+              {/* Caption */}
+              {repost.posts?.caption && (
+                <p className="text-white text-sm mb-2 line-clamp-2">
+                  {repost.posts.caption}
+                </p>
+              )}
+
+              {/* Campaign Badge */}
+              {repost.posts?.campaign && (
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge 
+                    className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-0 cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => handleViewCampaign(repost.posts!.campaign!.id)}
+                  >
+                    <Trophy className="h-3 w-3 mr-1" />
+                    {repost.posts.campaign.title}
+                  </Badge>
+                  {!repost.posts.campaign.is_joined && (
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJoinCampaign(repost.posts!.campaign!.id);
+                      }}
+                      className="h-6 text-xs bg-gradient-to-r from-green-500 to-emerald-600"
+                    >
+                      Join Campaign
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Music Attribution */}
+              <div className="flex items-center gap-2 text-white/80 text-xs">
+                <Music className="h-3 w-3" />
+                <span>Original audio</span>
+              </div>
+            </div>
+
+            {/* Right Side Actions - Vertical Stack */}
+            <div className="absolute right-4 bottom-20 flex flex-col items-center gap-6">
+              {/* Profile Avatar Button */}
+              <motion.div
+                whileTap={{ scale: 0.9 }}
+                className="relative cursor-pointer"
+                onClick={async () => {
+                  const { data } = await supabase.from('profiles').select('username').eq('user_id', repost.posts?.user_id).maybeSingle();
+                  if (data?.username) navigate(`/${data.username}`);
+                }}
+              >
+                <Avatar className="h-14 w-14 border-2 border-white">
+                  <AvatarImage src={repost.posts?.profiles?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold">
+                    {(repost.posts?.profiles?.display_name || repost.posts?.profiles?.username || 'U').slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </motion.div>
+
+              {/* Like Button */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => handleLike(repost.posts!.id)}
+                className="flex flex-col items-center gap-1"
+              >
+                <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                  <Heart 
+                    className={`h-7 w-7 ${repost.posts?.is_liked ? 'fill-red-500 text-red-500' : 'text-white'}`}
+                  />
+                </div>
+                <span className="text-white text-xs font-semibold">{repost.posts?.likes || 0}</span>
+              </motion.button>
+
+              {/* Comment Button */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => handleComment(repost.posts!.id)}
+                className="flex flex-col items-center gap-1"
+              >
+                <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                  <MessageCircle className="h-7 w-7 text-white" />
+                </div>
+                <span className="text-white text-xs font-semibold">{repost.posts?.comments || 0}</span>
+              </motion.button>
+
+              {/* Share Button */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => handleShare(repost.posts!)}
+                className="flex flex-col items-center gap-1"
+              >
+                <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                  <Share2 className="h-7 w-7 text-white" />
+                </div>
+                <span className="text-white text-xs font-semibold">Share</span>
+              </motion.button>
+            </div>
+
+            {/* Comment Input Overlay */}
+            {showCommentInput === repost.posts?.id && (
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg p-4 border-t border-border"
+              >
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Add a comment..."
+                    className="flex-1"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        submitComment(repost.posts!.id);
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={() => submitComment(repost.posts!.id)}
+                    disabled={!newComment.trim()}
+                    size="sm"
+                  >
+                    Post
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        ))}
+
+        {/* Empty State - Community */}
         {activeView === 'community' && posts.length === 0 && !loading && (
           <div className="snap-start h-screen flex items-center justify-center bg-background">
             <div className="text-center space-y-4 p-8">
@@ -1391,6 +1595,17 @@ const Feed = () => {
                 <Camera className="h-4 w-4" />
                 Create Post
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Empty State - Fan Love */}
+        {activeView === 'fanlove' && reposts.length === 0 && !loading && (
+          <div className="snap-start h-screen flex items-center justify-center bg-background">
+            <div className="text-center space-y-4 p-8">
+              <Repeat2 className="h-16 w-16 text-muted-foreground mx-auto" />
+              <h3 className="text-2xl font-bold">No Fan Love yet</h3>
+              <p className="text-muted-foreground">Repost content you love to see it here!</p>
             </div>
           </div>
         )}
