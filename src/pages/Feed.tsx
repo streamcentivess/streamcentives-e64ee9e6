@@ -1406,11 +1406,7 @@ const Feed = () => {
             <DialogTitle>Share via DM</DialogTitle>
           </DialogHeader>
           <UserProfileSearch
-            onClose={() => {
-              setShowUserSearch(false);
-              setSharePostData(null);
-            }}
-            onUserSelect={handleUserSelect}
+            onProfileSelect={handleUserSelect}
           />
         </DialogContent>
       </Dialog>
