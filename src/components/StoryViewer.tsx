@@ -105,9 +105,9 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
   if (!currentStory) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+    <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
       {/* Story Progress Bars */}
-      <div className="absolute top-4 left-4 right-4 flex gap-1 z-10">
+      <div className="absolute top-0 left-0 right-0 flex gap-1 z-10 p-2" style={{ paddingTop: 'env(safe-area-inset-top, 1rem)' }}>
         {stories.map((_, index) => (
           <Progress
             key={index}
@@ -120,7 +120,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       </div>
 
       {/* Header */}
-      <div className="absolute top-12 left-4 right-4 flex items-center justify-between z-10">
+      <div className="absolute left-4 right-4 flex items-center justify-between z-10" style={{ top: 'calc(env(safe-area-inset-top, 1rem) + 3rem)' }}>
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border-2 border-white">
             <AvatarImage src={currentStory.profile?.avatar_url} />
@@ -149,18 +149,18 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
       </div>
 
       {/* Story Content */}
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div className="relative w-screen h-screen">
         {currentStory.media_type === 'image' ? (
           <img
             src={currentStory.media_url}
             alt="Story"
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
           <video
             ref={videoRef}
             src={currentStory.media_url}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             muted
             playsInline
             onEnded={nextStory}
@@ -197,8 +197,11 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
 
       {/* Caption */}
       {currentStory.caption && (
-        <div className="absolute bottom-8 left-4 right-4 text-white text-center">
-          <p className="text-sm bg-black/50 px-4 py-2 rounded-lg">{currentStory.caption}</p>
+        <div 
+          className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 2rem)' }}
+        >
+          <p className="text-sm">{currentStory.caption}</p>
         </div>
       )}
 

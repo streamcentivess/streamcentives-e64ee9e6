@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useCreateStory = () => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const uploadMedia = async (file: File): Promise<string | null> => {
     try {
@@ -73,12 +75,28 @@ export const useCreateStory = () => {
 
   const deleteStory = async (storyId: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
+      if (!user?.id) {
+        toast({
+          title: 'Not authenticated',
+          description: 'You must be logged in to delete a story',
+          variant: 'destructive'
+        });
+        return false;
+      }
+
+      const { data, error } = await supabase
         .from('stories')
         .update({ is_active: false })
-        .eq('id', storyId);
+        .eq('id', storyId)
+        .eq('creator_id', user.id)
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      if (!data) {
+        throw new Error('Story not found or you do not have permission to delete it');
+      }
 
       toast({
         title: 'Story deleted',
@@ -90,6 +108,7 @@ export const useCreateStory = () => {
       console.error('Error deleting story:', error);
       toast({
         title: 'Failed to delete story',
+        description: error instanceof Error ? error.message : 'Please try again',
         variant: 'destructive'
       });
       return false;
