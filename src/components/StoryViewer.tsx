@@ -361,9 +361,10 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
               onCloseAutoFocus={(e) => e.preventDefault()}
             >
               <DropdownMenuItem
-                onClick={(e) => {
+                onSelect={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
-                  console.log('[StoryViewer] Delete clicked from menu', currentStory.id);
+                  console.log('[StoryViewer] Delete selected from menu', currentStory.id);
                   // Defer opening until after menu closes to avoid focus/z-index race
                   setTimeout(() => setShowDeleteDialog(true), 0);
                 }}
@@ -518,7 +519,7 @@ export const StoryViewer = ({ stories, initialIndex = 0, onClose, onView, onDele
         </div>
       )}
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => { console.log('[StoryViewer] AlertDialog onOpenChange:', open); setShowDeleteDialog(open); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Story</AlertDialogTitle>
